@@ -119,9 +119,6 @@
   /home/user/local/pkg/re2c-0.13.5$ ./configure
   /home/user/local/pkg/re2c-0.13.5$ make
   /home/user/local/pkg/re2c-0.13.5$ make install
-- Locale setting
-  locale-gen ko_KR.EUC-KR
-  export LANG=ko_KR.EUC-KR
 - Other environment variable setting
   export ALTIDEV_HOME=*source code directory*
   export ALTIBASE_DEV=${ALTIDEV_HOME}
