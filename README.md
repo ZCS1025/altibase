@@ -9,6 +9,7 @@
 - http://altibase.com/services/support/
 - http://altibase.com/case-studies/
 - http://altibase.com/faqs/product/
+- http://support.altibase.com (Korean materials)
 
 ### Q&A and Bug Reports
 - Q&A and bug reports regarding Altibase should be submitted at http://support.altibase.com
