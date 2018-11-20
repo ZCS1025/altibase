@@ -98,7 +98,8 @@
   tkdiff
   manpages-dev 
   libldap2-dev
-- Modify /usr/include/sys/select.h
+- Modify /usr/include/sys/select.h (Ubuntu: /usr/include/x86_64-linux-gnu/sys/select.h)
+  Following diff command's resulting line numbers can be different by various platforms and versions. So, search using keywords and approximate positions. 
   $ diff select.h_old select.h_new
   62a63,67
   > /* Maximum number of file descriptors in `fd_set'. */
