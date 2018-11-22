@@ -58,8 +58,8 @@
   # core filename pattern (core.execution_file_name.time)
   kernel.core_uses_pid = 0
   kernel.core_pattern = core.%e.%t
-- glibc 2.12 ~ 2.20
-- gcc 4.6.3
+- glibc 2.12 ~ 2.27 
+- gcc 4.6.3 ~ 7.3.0
 - Install following libraries  (optional)
   https://gmplib.org/ 
   http://www.mpfr.org/
