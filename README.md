@@ -58,8 +58,6 @@
   # core filename pattern (core.execution_file_name.time)
   kernel.core_uses_pid = 0
   kernel.core_pattern = core.%e.%t
-- glibc 2.12 ~ 2.27 
-- gcc 4.6.3 ~ 7.3.0
 - Install following libraries  (optional)
   https://gmplib.org/ 
   http://www.mpfr.org/
@@ -81,6 +79,8 @@
   --with-mpc=/usr/mpc \
   --with-libelf=/usr/elf \
   make; make install
+- glibc 2.12 ~ 2.27 
+- gcc 4.6.3 ~ 7.3.0
 - Install both of Oracle Java JDK 1.5 and 1.7
 - Install https://www.openssl.org/source/openssl-1.0.2o.tar.gz 
 - Install development tools 
