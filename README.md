@@ -79,9 +79,12 @@
   --with-mpc=/usr/mpc \
   --with-libelf=/usr/elf \
   make; make install
-- glibc 2.12 ~ 2.27 
-- gcc 4.6.3 ~ 7.3.0
+- glibc 2.12 ~ 2.27 (If system doesn't have right one, change OS version itself)
+- gcc 4.6.3 ~ 7.3.0 (If system doesn't have right one, change OS version itself)
 - Install both of Oracle Java JDK 1.5 and 1.7
+  Go to https://www.oracle.com/technetwork/java/archive-139210.html
+  JDK 1.5 : jdk-1_5_0_22-linux-amd64-rpm.bin or jdk-1_5_0_22-linux-amd64.bin
+  JDK 1.7 : jdk-7u80-linux-x64.rpm or jdk-7u80-linux-x64.tar.gz
 - Install https://www.openssl.org/source/openssl-1.0.2o.tar.gz 
 - Install development tools 
   autoconf
@@ -90,8 +93,8 @@
   texinfo
   g++
   gawk
-  flex (2.5.35 version)
-  bison (2.4.1 version)
+  flex (2.5.35 version) (https://github.com/westes/flex/releases)
+  bison (2.4.1 version) (http://ftp.gnu.org/gnu/bison/)
   libncurses5-dev
   binutils-dev
   ddd
@@ -115,12 +118,7 @@
   <     __fd_mask __fds_bits[__FD_SETSIZE / __NFDBITS];
   ---
   >     __fd_mask __fds_bits[FD_SETSIZE / __NFDBITS];
-- re2c 
-  /home/user/local/pkg$ tar xvf ./re2c-0.13.5.tar.gz
-  /home/user/local/pkg$ cd ./re2c-0.13.5
-  /home/user/local/pkg/re2c-0.13.5$ ./configure
-  /home/user/local/pkg/re2c-0.13.5$ make
-  /home/user/local/pkg/re2c-0.13.5$ make install
+- re2c (re2c-0.13.5.tar.gz) (http://re2c.org/install/install.html)
 - Other environment variable setting
   export ALTIDEV_HOME=*source code directory*
   export ALTIBASE_DEV=${ALTIDEV_HOME}
@@ -133,7 +131,7 @@
   export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${ALTIBASE_HOME}/lib/Altibase.jar:${CLASSPATH}
   export LD_LIBRARY_PATH=$ADAPTER_JAVA_HOME/jre/lib/amd64/server:${ALTIBASE_HOME}/lib:${LD_LIBRARY_PATH}
 - Compile Altibase
-  ./configure --with-build_mode=release
+  ./configure --with-build_mode=release ## default build mode is debug mode
   make clean
   make build
 </code></pre>
