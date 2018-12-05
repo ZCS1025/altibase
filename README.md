@@ -86,6 +86,9 @@
   JDK 1.5 : jdk-1_5_0_22-linux-amd64-rpm.bin or jdk-1_5_0_22-linux-amd64.bin
   JDK 1.7 : jdk-7u80-linux-x64.rpm or jdk-7u80-linux-x64.tar.gz
 - Install OpenSSL
+  Remove existing openssl (Ubuntu 18.04 example)
+    sudo rm -rf /usr/include/openssl
+    sudo rm -rf /usr/include/x86_64-linux-gnu/openssl
   Download : https://www.openssl.org/source/openssl-1.0.2o.tar.gz
   Make a symbolic link : sudo ln -s /usr/local/ssl/include/openssl /usr/include/openssl
 - Install development tools
