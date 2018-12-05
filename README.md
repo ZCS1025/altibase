@@ -79,45 +79,36 @@
   --with-mpc=/usr/mpc \
   --with-libelf=/usr/elf \
   make; make install
-- glibc 2.12 ~ 2.27 (If system doesn't have right one, change OS version itself)
-- gcc 4.6.3 ~ 7.3.0 (If system doesn't have right one, change OS version itself)
+- glibc 2.12 ~ 2.27 (ldd --version) (If system doesn't have right one, change OS version itself)
+- gcc 4.6.3 ~ 7.3.0 (gcc --version) (If system doesn't have right one, change OS version itself)
 - Install both of Oracle Java JDK 1.5 and 1.7
   Go to https://www.oracle.com/technetwork/java/archive-139210.html
   JDK 1.5 : jdk-1_5_0_22-linux-amd64-rpm.bin or jdk-1_5_0_22-linux-amd64.bin
   JDK 1.7 : jdk-7u80-linux-x64.rpm or jdk-7u80-linux-x64.tar.gz
 - Install https://www.openssl.org/source/openssl-1.0.2o.tar.gz 
-- Install development tools 
-  autoconf
-  autopoint
-  help2man
-  texinfo
-  g++
-  gawk
-  flex (2.5.35 version) (https://github.com/westes/flex/releases)
+- Install development tools
+  sudo apt install autoconf autopoint help2man texinfo g++ gawk
+  flex (2.5.35 version) (https://github.com/westes/flex/releases) (install method: https://github.com/westes/flex)
   bison (2.4.1 version) (http://ftp.gnu.org/gnu/bison/)
-  libncurses5-dev
-  binutils-dev
-  ddd
-  tkdiff
-  manpages-dev 
-  libldap2-dev
+  sudo apt install libncurses5-dev binutils-dev ddd tkdiff manpages-dev libldap2-dev
 - Modify /usr/include/sys/select.h (Ubuntu: /usr/include/x86_64-linux-gnu/sys/select.h)
   Following diff command's resulting line numbers can be different by various platforms and versions. So, search using keywords and approximate positions. 
-  $ diff select.h_old select.h_new
-  62a63,67
+  /usr/include/x86_64-linux-gnu/sys$ diff select.h.original select.h
+  57a58,62
   > /* Maximum number of file descriptors in `fd_set'. */
   > #ifndef FD_SETSIZE
   > #define FD_SETSIZE __FD_SETSIZE
   > #endif
   > 
-  69c74
+  64c69
   <     __fd_mask fds_bits[__FD_SETSIZE / __NFDBITS];
   ---
   >     __fd_mask fds_bits[FD_SETSIZE / __NFDBITS];
-  72c77
+  67c72
   <     __fd_mask __fds_bits[__FD_SETSIZE / __NFDBITS];
   ---
   >     __fd_mask __fds_bits[FD_SETSIZE / __NFDBITS];
+
 - re2c (re2c-0.13.5.tar.gz) (http://re2c.org/install/install.html)
 - Other environment variable setting
   export ALTIDEV_HOME=*source code directory*
@@ -125,8 +116,8 @@
   export ALTIBASE_HOME=${ALTIDEV_HOME}/altibase_home
   export ALTIBASE_NLS_USE=US7ASCII
   export ALTIBASE_PORT_NO=17730
-  export ADAPTER_JAVA_HOME=/usr/java/jdk1.7.0_71
-  export JAVA_HOME=/usr/java/jdk1.5.0_22
+  export ADAPTER_JAVA_HOME=/path/to/jdk1.7
+  export JAVA_HOME=/path/to/jdk1.5
   export PATH=.:${ALTIBASE_HOME}/bin:${JAVA_HOME}/bin:${PATH}
   export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${ALTIBASE_HOME}/lib/Altibase.jar:${CLASSPATH}
   export LD_LIBRARY_PATH=$ADAPTER_JAVA_HOME/jre/lib/amd64/server:${ALTIBASE_HOME}/lib:${LD_LIBRARY_PATH}
