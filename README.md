@@ -85,7 +85,9 @@
   Go to https://www.oracle.com/technetwork/java/archive-139210.html
   JDK 1.5 : jdk-1_5_0_22-linux-amd64-rpm.bin or jdk-1_5_0_22-linux-amd64.bin
   JDK 1.7 : jdk-7u80-linux-x64.rpm or jdk-7u80-linux-x64.tar.gz
-- Install https://www.openssl.org/source/openssl-1.0.2o.tar.gz 
+- Install OpenSSL
+  Download : https://www.openssl.org/source/openssl-1.0.2o.tar.gz
+  Make a symbolic link : sudo ln -s /usr/local/ssl/include/openssl /usr/include/openssl
 - Install development tools
   sudo apt install autoconf autopoint help2man texinfo g++ gawk
   flex (2.5.35 version) (https://github.com/westes/flex/releases) (install method: https://github.com/westes/flex)
