@@ -93,6 +93,7 @@
   sudo apt install libncurses5-dev binutils-dev ddd tkdiff manpages-dev libldap2-dev
 - Modify /usr/include/sys/select.h (Ubuntu: /usr/include/x86_64-linux-gnu/sys/select.h)
   Following diff command's resulting line numbers can be different by various platforms and versions. So, search using keywords and approximate positions. 
+  Following diff is executed on the Ubuntu 18.04.
   /usr/include/x86_64-linux-gnu/sys$ diff select.h.original select.h
   57a58,62
   > /* Maximum number of file descriptors in `fd_set'. */
@@ -111,10 +112,10 @@
 
 - re2c (re2c-0.13.5.tar.gz) (http://re2c.org/install/install.html)
 - Other environment variable setting
-  export ALTIDEV_HOME=*source code directory*
+  export ALTIDEV_HOME=/path/to/source_code_directory
   export ALTIBASE_DEV=${ALTIDEV_HOME}
   export ALTIBASE_HOME=${ALTIDEV_HOME}/altibase_home
-  export ALTIBASE_NLS_USE=US7ASCII
+  export ALTIBASE_NLS_USE=UTF8
   export ALTIBASE_PORT_NO=17730
   export ADAPTER_JAVA_HOME=/path/to/jdk1.7
   export JAVA_HOME=/path/to/jdk1.5
