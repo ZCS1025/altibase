@@ -92,7 +92,7 @@
   Download : https://www.openssl.org/source/openssl-1.0.2o.tar.gz
   Make a symbolic link : sudo ln -s /usr/local/ssl/include/openssl /usr/include/openssl
 - Install development tools
-  sudo apt install autoconf autopoint help2man texinfo g++ gawk
+  sudo apt install autoconf autopoint help2man texinfo g++ gawk flex bison
   flex (2.5.35 version) (https://github.com/westes/flex/releases) (install method: https://github.com/westes/flex)
   bison (2.4.1 version) (http://ftp.gnu.org/gnu/bison/)
   sudo apt install libncurses5-dev binutils-dev ddd tkdiff manpages-dev libldap2-dev
