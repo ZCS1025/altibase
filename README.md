@@ -21,7 +21,7 @@
 - License information can be found in the COPYING files.
 - Altibase includes GPC sources, so, if you want to use those sources for commertial use then you need to buy "General Polygon Clipper (GPC) License".
 
-### Build environment setting steps
+### Build Altibase
 <pre><code>
 - OS: Red Hat or Ubuntu
 - CPU: x86_64
@@ -80,7 +80,8 @@
   --with-libelf=/usr/elf \
   make; make install
 - glibc 2.12 ~ 2.27 (ldd --version) (If system doesn't have right one, change OS version itself)
-- gcc 4.6.3 ~ 7.3.0 (gcc --version) (If system doesn't have right one, change OS version itself)
+- gcc 4.6.3 ~ 7.3.0 (gcc --version)
+  If your gcc version is under 7.x then revert this repostory commits on Oct 16, 2018 with comment "changes for using gcc-7, g++-7"
 - Install both of Oracle Java JDK 1.5 and 1.7
   Go to https://www.oracle.com/technetwork/java/archive-139210.html
   JDK 1.5 : jdk-1_5_0_22-linux-amd64-rpm.bin or jdk-1_5_0_22-linux-amd64.bin
@@ -117,6 +118,7 @@
 
 - re2c (re2c-0.13.5.tar.gz) (http://re2c.org/install/install.html)
 - Other environment variable setting
+  export LANG=en_US.UTF-8
   export ALTIDEV_HOME=/path/to/source_code_directory
   export ALTIBASE_DEV=${ALTIDEV_HOME}
   export ALTIBASE_HOME=${ALTIDEV_HOME}/altibase_home
@@ -131,4 +133,17 @@
   ./configure --with-build_mode=release ## default build mode is debug mode
   make clean
   make build
+</code></pre>
+
+### Run Altibase
+<pre><code>
+- Prepare Altibase configuration file
+  cp $ALTIBASE_HOME/conf/altibase.properties.release $ALTIBASE_HOME/conf/altibase.properties 
+- Create Altibase database files
+  $ALTIBASE_HOME/bin/server create UTF8 UTF8
+- Start Altibase server deamon
+  $ALTIBASE_HOME/bin/server start
+- Connect Altibase server using iSQL and retrieve all table list
+  $ALTIBASE_HOME/bin/is
+  iSQL> select * from tab;
 </code></pre>
