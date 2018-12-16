@@ -21,7 +21,7 @@
 - License information can be found in the COPYING files.
 - Altibase includes GPC sources, so, if you want to use those sources for commertial use then you need to buy "General Polygon Clipper (GPC) License".
 
-### Build Altibase
+### Build and Run
 <pre><code>
 - OS: Red Hat or Ubuntu
 - CPU: x86_64
@@ -129,14 +129,12 @@
   export PATH=.:${ALTIBASE_HOME}/bin:${JAVA_HOME}/bin:${PATH}
   export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${ALTIBASE_HOME}/lib/Altibase.jar:${CLASSPATH}
   export LD_LIBRARY_PATH=$ADAPTER_JAVA_HOME/jre/lib/amd64/server:${ALTIBASE_HOME}/lib:${LD_LIBRARY_PATH}
-- Compile Altibase
+
+- Build Altibase
   ./configure --with-build_mode=release ## default build mode is debug mode
   make clean
   make build
-</code></pre>
 
-### Run Altibase
-<pre><code>
 - Prepare Altibase configuration file
   cp $ALTIBASE_HOME/conf/altibase.properties.release $ALTIBASE_HOME/conf/altibase.properties 
 - Create Altibase database files
