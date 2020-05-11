@@ -81,7 +81,7 @@
   make; make install
 - glibc 2.12 ~ 2.27 (ldd --version) (If system doesn't have right one, change OS version itself)
 - gcc 4.6.3 ~ 7.3.0 (gcc --version)
-  If your gcc version is under 7.x then revert this repostory commits on Oct 16, 2018 with comment "changes for using gcc-7, g++-7"
+  If you want to use gcc 7.x then refer this repostory Wiki page "changes for using gcc 7"
 - Install both of Oracle Java JDK 1.5 and 1.7
   Go to https://www.oracle.com/technetwork/java/archive-139210.html
   JDK 1.5 : jdk-1_5_0_22-linux-amd64-rpm.bin or jdk-1_5_0_22-linux-amd64.bin
