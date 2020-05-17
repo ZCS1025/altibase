@@ -117,6 +117,7 @@
   >     __fd_mask __fds_bits[FD_SETSIZE / __NFDBITS];
 
 - re2c (re2c-0.13.5.tar.gz) (http://re2c.org/install/install.html)
+- Nullify SVN setting(refer this repostory Wiki page "Fix build without Altibase internal SVN")
 - Other environment variable setting
   export LANG=en_US.UTF-8
   export ALTIDEV_HOME=/path/to/source_code_directory
