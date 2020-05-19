@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdrRedoMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdrRedoMgr.cpp 84847 2019-01-31 05:18:28Z jiwon.kim $
  *
  * Description :
  *
@@ -1056,7 +1056,7 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
         if ( ( smrRecoveryMgr::isCTMgrEnabled() == ID_TRUE ) && 
              ( getRecvType() == SMI_RECOVER_RESTART ) )
         {
-            IDE_TEST_CONT( sctTableSpaceMgr::isTempTableSpace(sNode->mSpaceID)== ID_TRUE,
+            IDE_TEST_CONT( sctTableSpaceMgr::isTempTableSpace(sNode->mSpaceID) == ID_TRUE,
                            skip_change_tracking );
 
             IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( 
@@ -1168,7 +1168,8 @@ IDE_RC sdrRedoMgr::applyHashedLogRec(idvSQL * aStatistics)
                                                      ID_TRUE ) // FLUSH ALL
               != IDE_SUCCESS );
 
-    sdrCorruptPageMgr::fatalReadCorruptPage();
+    // BUG-45598: 리스타트 리커버리 할 때 에러 페이지 처리 정책을 프로퍼티에 맞게 설정
+    sdrCorruptPageMgr::setPageErrPolicyByProp();
 
     return IDE_SUCCESS;
 

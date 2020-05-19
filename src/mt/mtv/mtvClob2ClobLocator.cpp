@@ -59,6 +59,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Clob2ClobLocator,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

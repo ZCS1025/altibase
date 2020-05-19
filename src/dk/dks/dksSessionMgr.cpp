@@ -400,7 +400,7 @@ IDE_RC  dksSessionMgr::destroyDataSession( dksDataSession  *aSession )
     if ( sGlobalCrd != NULL )
     {
         /* Finalize global transaction */
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCrd );
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCrd, aSession );
     }
     else
     {

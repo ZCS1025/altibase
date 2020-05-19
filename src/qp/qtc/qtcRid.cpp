@@ -27,6 +27,8 @@
 #include <qtcRid.h>
 #include <qcuSqlSourceInfo.h>
 
+extern mtxModule mtxRid; /* PROJ-2632 */
+
 static IDE_RC qtcRidEstimate(mtcNode*     aNode,
                              mtcTemplate* aTemplate,
                              mtcStack*    aStack,
@@ -64,6 +66,7 @@ mtcExecute gQtcRidExecute = {
     mtf::calculateNA,     // Aggregation 종료 함수, 없음
     qtcRidCalculate,      // calculate
     NULL,                 // 연산을 위한 부가 정보, 없음
+    mtxRid.mCommon,
     mtk::estimateRangeNA, // Key Range 크기 추출 함수, 없음
     mtk::extractRangeNA   // Key Range 생성 함수, 없음
 };

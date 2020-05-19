@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smnpModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnpModule.cpp 82916 2018-04-26 06:29:17Z seulki $
  ******************************************************************************/
 
 #include <ide.h>
@@ -1412,7 +1412,7 @@ static IDE_RC smnpGetValidVersion( smnpIterator  * aIterator,
                                            (void**)&sRow )
                     == IDE_SUCCESS );
 
-        if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+        if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, NULL )
             == ID_TRUE )
         {
             *aRow = sRow;

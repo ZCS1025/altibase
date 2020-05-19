@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemMgr.cpp 80042 2017-05-19 02:07:25Z donghyun1 $
+ * $Id: iduMemMgr.cpp 84587 2018-12-12 03:47:17Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -40,6 +40,7 @@ iduMemFuncType   iduMemMgr::mMemFunc[IDU_MEMMGR_MAX] =
         iduMemMgr::single_calloc,
         iduMemMgr::single_realloc,
         iduMemMgr::single_free,
+        iduMemMgr::single_free4malign,
         iduMemMgr::single_shrink
     },
     /* LIBC */
@@ -51,6 +52,7 @@ iduMemFuncType   iduMemMgr::mMemFunc[IDU_MEMMGR_MAX] =
         iduMemMgr::libc_calloc,
         iduMemMgr::libc_realloc,
         iduMemMgr::libc_free,
+        iduMemMgr::libc_free4malign,
         iduMemMgr::libc_shrink
     },
     /* TLSF */
@@ -62,7 +64,20 @@ iduMemFuncType   iduMemMgr::mMemFunc[IDU_MEMMGR_MAX] =
         iduMemMgr::tlsf_calloc,
         iduMemMgr::tlsf_realloc,
         iduMemMgr::tlsf_free,
+        iduMemMgr::tlsf_free4malign,
         iduMemMgr::tlsf_shrink
+    },
+    /* INNOCENSE */
+    {
+        iduMemMgr::innocense_initializeStatic,
+        iduMemMgr::innocense_destroyStatic,
+        iduMemMgr::innocense_malloc,
+        iduMemMgr::innocense_malign,
+        iduMemMgr::innocense_calloc,
+        iduMemMgr::innocense_realloc,
+        iduMemMgr::innocense_free,
+        iduMemMgr::innocense_free4malign,
+        iduMemMgr::innocense_shrink
     }
 };
 
@@ -212,7 +227,7 @@ IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
                                  &mSpinCount) == IDE_SUCCESS);
 
 #if defined(ALTIBASE_MEMORY_CHECK) || defined(ALTIBASE_USE_VALGRIND)
-            mMemType = IDU_MEMMGR_LIBC;
+            mMemType = IDU_MEMMGR_INNOCENSE;
             mUsePrivateAlloc = 0;
 #else
             switch(sAllocType)
@@ -238,7 +253,6 @@ IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
             iduMemMgr::mAutoShrink        = (sAutoShrink != 0)? ID_TRUE : ID_FALSE;
             iduMemMgr::mNoAllocators      = sInstanceMax;
 #endif
-
             IDE_ASSERT(iduMemory::initializeStatic() == IDE_SUCCESS);
             IDE_ASSERT(iduVarMemList::initializeStatic() == IDE_SUCCESS);
 
@@ -304,11 +318,13 @@ IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
 // IDU_SERVER_TYPE일 경우 mutex를 해제하고 IDU_SINGLE_TYPE으로 전환한다.
 IDE_RC iduMemMgr::destroyStatic()
 {
+    idBool sState = ID_FALSE; //if lock is held.
 #define IDE_FN "iduMemMgr::destroyStatic()"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //BUG-21080 
     IDE_ASSERT(idlOS::thread_mutex_lock(&gMemMgrInitMutex) == 0);
+    sState = ID_TRUE;    
 
     IDE_TEST(gMemMgrInitCount < 0);
 
@@ -326,6 +342,7 @@ IDE_RC iduMemMgr::destroyStatic()
         }
     }
     
+    sState = ID_FALSE;
     IDE_ASSERT(idlOS::thread_mutex_unlock(&gMemMgrInitMutex) == 0);
 
     if( IDU_MAKE_MEMPOOL_MGR == ID_TRUE ) 
@@ -339,7 +356,10 @@ IDE_RC iduMemMgr::destroyStatic()
     {
         gMemMgrInitCount = -1;
 
-        IDE_ASSERT(idlOS::thread_mutex_unlock(&gMemMgrInitMutex) == 0);
+        if( sState == ID_TRUE )
+        {
+            IDE_ASSERT(idlOS::thread_mutex_unlock(&gMemMgrInitMutex) == 0);
+        }
     }
 
     return IDE_FAILURE;
@@ -446,9 +466,20 @@ IDE_RC iduMemMgr::realloc(iduMemoryClientIndex  aIndex,
             "iduMemMgr::realloc");
 }
 
-IDE_RC iduMemMgr::free(void* aMemPtr)
+IDE_RC iduMemMgr::free(void                  * aMemPtr)
 {
     IDE_TEST(mMemFunc[mMemType].mFreeFunc(aMemPtr) != IDE_SUCCESS);
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+}
+
+IDE_RC iduMemMgr::free4malign(void                  * aMemPtr,
+                              iduMemoryClientIndex    aIndex,
+                              ULong                   aSize)
+{
+    IDE_TEST(mMemFunc[mMemType].mFree4MAlignFunc(aMemPtr,aIndex,aSize) != IDE_SUCCESS);
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -623,7 +654,7 @@ IDE_RC iduMemMgr::getTlsfAlloc(iduMemTlsf** aAlloc)
 #if defined(ALTIBASE_MEMORY_CHECK) || defined(ALTIBASE_USE_VALGRIND)
     *aAlloc = NULL;
 #else
-    if(mMemType == IDU_MEMMGR_LIBC)
+    if(mMemType == IDU_MEMMGR_LIBC || mMemType == IDU_MEMMGR_INNOCENSE) //what the XXXX.
     {
         *aAlloc = NULL;
     }

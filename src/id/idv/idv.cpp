@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idv.cpp 77977 2016-11-17 03:12:43Z reznoa $
+ * $Id: idv.cpp 83365 2018-06-27 04:23:48Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -112,6 +112,9 @@ idvStatName idvManager::mStatName[IDV_STAT_INDEX_MAX] =
     { IDV_STAT_INDEX_SESSION_TERMINATED_COUNT, "session terminated",
       IDV_ATTR_ACCUM , 0 },
 
+    { IDV_STAT_INDEX_DDL_SYNC_TIMEOUT_COUNT,   "ddl sync timeout",
+      IDV_ATTR_ACCUM , 0 },
+
     /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Count를
      *            AWI로 추가해야 합니다.*/
     { IDV_STAT_INDEX_STMT_REBUILD_COUNT,       "statement rebuild count",
@@ -213,6 +216,20 @@ idvStatName idvManager::mStatName[IDV_STAT_INDEX_MAX] =
     { IDV_STAT_INDEX_PLAN_CACHE_PPCO_MISS_X_TRY_LATCH_COUNT,
       "missing ppco x-trylatch count",
       IDV_ATTR_ACCUM, 0 },
+
+    /* PROJ-2681 */
+    { IDV_STAT_INDEX_RECV_IB_COUNT,
+      "read IB count",
+      IDV_ATTR_ACCUM , 0 },
+    { IDV_STAT_INDEX_SEND_IB_COUNT,
+      "write IB count",
+      IDV_ATTR_ACCUM , 0 },
+    { IDV_STAT_INDEX_RECV_IB_BYTE,
+      "byte received via IB",
+      IDV_ATTR_ACCUM , 0 },
+    { IDV_STAT_INDEX_SEND_IB_BYTE,
+      "byte sent via IB",
+      IDV_ATTR_ACCUM , 0 },
 
     { IDV_STAT_INDEX_OPTM_QUERY_PARSE,
       "elapsed time: query parse",
@@ -628,7 +645,7 @@ idvWaitEventName idvManager::mWaitEventName[ IDV_WAIT_INDEX_MAX + 1 ] =
       IDV_WCLASS_INDEX_CONCURRENCY },
 
     { IDV_WAIT_INDEX_LATCH_FREE_DRDB_SECONDARY_READIO_MUTEX,
-      "latch free: drdb secondary bcb mutex",
+      "latch free: drdb secondary read io mutex ",
       IDV_ATTR_ACCUM,
       IDV_WCLASS_INDEX_CONCURRENCY },
 

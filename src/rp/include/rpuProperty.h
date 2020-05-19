@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpuProperty.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpuProperty.h 84487 2018-11-30 13:31:47Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPU_PROPERTY_H_
@@ -100,6 +100,15 @@
 #define RPU_REPLICATION_SET_RESTARTSN             (rpuProperty::mSetRestartSN)
 #define RPU_REPLICATION_SENDER_RETRY_COUNT        (rpuProperty::mSenderRetryCount)
 #define RPU_REPLICATION_ALLOW_QUEUE               (rpuProperty::mAllowQueue)
+#define RPU_REPLICATION_DDL_SYNC                  (rpuProperty::mReplicationDDLSync)
+#define RPU_REPLICATION_DDL_SYNC_TIMEOUT          (rpuProperty::mReplicationDDLSyncTimeout)
+#define RPU_REPLICATION_RECEIVER_APPLIER_YIELD_COUNT        (rpuProperty::mReceiverApplierYieldCount)
+
+#define RPU_IB_ENABLE                             (rpuProperty::mIBEnable)
+#define RPU_REPLICATION_IB_PORT_NO                (rpuProperty::mIBPortNo)
+#define RPU_REPLICATION_IB_LATENCY                (rpuProperty::mIBLatency)
+
+#define RPU_REPLICATION_GAP_UNIT                  (rpuProperty::mGapUnit)
 
 class rpuProperty
 {
@@ -181,6 +190,15 @@ public:
     static UInt            mSetRestartSN;
     static UInt            mSenderRetryCount;
     static UInt            mAllowQueue;
+    static UInt            mReplicationDDLSync;
+    static UInt            mReplicationDDLSyncTimeout;
+    static UInt            mReceiverApplierYieldCount;
+    
+    static UInt            mIBEnable;
+    static UInt            mIBPortNo;
+    static UInt            mIBLatency;
+    
+    static ULong           mGapUnit;
 
     static IDE_RC notifyREPLICATION_SYNC_LOCK_TIMEOUT(idvSQL* /* aStatistics */,
                                                       SChar *aName,
@@ -453,6 +471,28 @@ public:
                                                  void  * /* aOldValue */,
                                                  void  * aNewValue,
                                                  void  * /* aArg */ );
+    
+    static inline void setReplicationDDLSync( UInt aValue )
+    {
+        mReplicationDDLSync = aValue;
+    }
+
+    static inline void setReplicationDDLSyncTimeout( UInt aValue )
+    {
+        mReplicationDDLSyncTimeout = aValue;
+    }
+
+    static IDE_RC notifyREPLICATION_RECEIVER_APPLIER_YIELD_COUNT( idvSQL* /* aStatistics */,
+                                                                  SChar * /* aName */,
+                                                                  void  * /* aOldValue */,
+                                                                  void  * aNewValue,
+                                                                  void  * /* aArg */ );
+
+    static IDE_RC notifyREPLICATION_GAP_UNIT( idvSQL* /* aStatistics */,
+                                              SChar * /* aName */,
+                                              void  * /* aOldValue */,
+                                              void  * aNewValue,
+                                              void  * /* aArg */ );
 };
 
 #endif

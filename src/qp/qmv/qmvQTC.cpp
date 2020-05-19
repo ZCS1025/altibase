@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmvQTC.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmvQTC.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -3042,7 +3042,7 @@ IDE_RC qmvQTC::searchColumnInFromTree(
                                QMV_SFWGH_SHARD_TRANS_VIEW_TRUE ) )
                         {
                             IDE_TEST( addViewColumnRefList( aStatement,
-                                                               aQtcColumn )
+                                                            aQtcColumn )
                                       != IDE_SUCCESS );
                         }
                         else
@@ -3056,29 +3056,6 @@ IDE_RC qmvQTC::searchColumnInFromTree(
                     IDE_TEST( addViewColumnRefList( aStatement,
                                                     aQtcColumn )
                               != IDE_SUCCESS );
-                }
-
-                /* PROJ-2598 Shard pilot(shard analyze) */
-                if ( sTableRef->mShardObjInfo != NULL )
-                {
-                    if ( sTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 1 )
-                    {
-                        aQtcColumn->lflag &= ~QTC_NODE_SHARD_KEY_MASK;
-                        aQtcColumn->lflag |= QTC_NODE_SHARD_KEY_TRUE;
-                    }
-                    else if ( sTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 2 )
-                    {
-                        aQtcColumn->lflag &= ~QTC_NODE_SUB_SHARD_KEY_MASK;
-                        aQtcColumn->lflag |= QTC_NODE_SUB_SHARD_KEY_TRUE;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
-                }
-                else
-                {
-                    // Nothing to do.
                 }
             }
         }
@@ -4199,7 +4176,13 @@ IDE_RC qmvQTC::searchDatePseudoColumn(
               ( idlOS::strMatch(
                   aQtcColumn->columnName.stmtText + aQtcColumn->columnName.offset,
                   aQtcColumn->columnName.size,
-                  (SChar *)"SYSTIMESTAMP", 12) == 0 ) ) )
+                  (SChar *)"SYSTIMESTAMP", 12) == 0 ) )
+            ||
+            ( ( aQtcColumn->columnName.offset > 0 ) &&
+              ( idlOS::strMatch(
+                  aQtcColumn->columnName.stmtText + aQtcColumn->columnName.offset,
+                  aQtcColumn->columnName.size,
+                  (SChar *)"SYSDATETIME", 11) == 0 ) ) )
         {
             if( QC_SHARED_TMPLATE(aStatement)->sysdate == NULL )
             {
@@ -5059,8 +5042,6 @@ IDE_RC qmvQTC::setColumnIDForShardTransView( qcStatement  * aStatement,
     qmsFrom             * sChildFrom;
     UShort                sColumnPosition = 0;
 
-    qcuSqlSourceInfo      sqlInfo;
-
     IDU_FIT_POINT_FATAL( "qmvQTC::setColumnIDForShardTransView::__FT__" );
 
     if ( ( *aIsFound == ID_FALSE  ) &&
@@ -5169,18 +5150,6 @@ IDE_RC qmvQTC::setColumnIDForShardTransView( qcStatement  * aStatement,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION_SIGNAL()
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
-    }
-    IDE_EXCEPTION( ERR_DUPLICATE_ALIAS_NAME )
-    {
-        ( void )sqlInfo.init( aStatement->qmeMem );
-        IDE_SET(
-            ideSetErrorCode( qpERR_ABORT_QMV_DUPLICATE_ALIAS,
-                             sqlInfo.getErrMessage() ) );
-        (void)sqlInfo.fini();
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

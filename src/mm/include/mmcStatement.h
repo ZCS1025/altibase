@@ -22,6 +22,8 @@
 #include <idu.h>
 #include <smi.h>
 #include <qci.h>
+#include <sdi.h>
+#include <sdiStatement.h>
 #include <mmcDef.h>
 #include <mmcPCB.h>
 #include <mmcStatementManager.h>
@@ -77,7 +79,7 @@ typedef struct mmcStatementInfo
     UInt                 mFetchStartTime;
     UInt                 mFetchEndTime;  /* BUG-19456 */
     //PROJ-1436
-    SChar               *mSQLPlanCacheTextIdStr;
+    SChar               *mSQLPlanCacheTextId;
     UInt                 mSQLPlanCachePCOId;
     idvSQL               mStatistics;
     idBool               mPreparedTimeExist; // bug-23991
@@ -95,18 +97,24 @@ typedef struct mmcStatementInfo
     /* PROJ-2616 IPCDA */
     idBool               mIsSimpleQuery;
 
+    /* BUG-45823 */
+    SChar                mShardPinStr[SDI_MAX_SHARD_PIN_STR_LEN + 1];
+    UInt                 mShardSessionType;
+    UInt                 mShardQueryType;
+    idBool               mCallShardAnalyzeProtocol;    // analyze protocol 호출 여부
+
+    ULong                mMathTempMem; /* BUG-46892 */
 } mmcStatementInfo;
 
 //PROJ-1436 SQL-Plan Cache.
 typedef struct mmcGetSmiStmt4PrepareContext
 {
-    mmcStatement                *mStatement;
-    smiTrans                    *mSmiTrans;
+    mmcStatement               *mStatement;
+    mmcTransObj                *mTrans;
     smiStatement                mPrepareStmt;
     idBool                      mNeedCommit;
     mmcTransCommt4PrepareFunc   mCommitFunc;
     mmcSoftPrepareReason        mSoftPrepareReason;
-    
 }mmcGetSmiStmt4PrepareContext;
 
 typedef struct mmcAtomicInfo
@@ -125,8 +133,12 @@ private:
 
     mmcSession       *mSession;
 
-    smiTrans         *mTrans;
-    
+    mmcTransObj      *mTrans;
+
+    /* PROJ-2701 Online Data Rebuild: for Statement Serialize */
+    mmcTransObj      *mExecutingTrans;
+    idBool            mIsShareTransSmiStmtLocked;
+
     smiStatement      mSmiStmt;
     smiStatement    * mSmiStmtPtr; // PROJ-1386 Dynamic-SQL
     
@@ -167,6 +179,9 @@ private:
 
     /* PROJ-2616 */
     idBool              mIsSimpleQuerySelectExecuted;
+
+    /* BUG-46092 */
+    sdiStatement        mSdStmt;
 
 public:
     IDE_RC initialize(mmcStmtID      aStatementID,
@@ -214,9 +229,16 @@ public:
     IDE_RC freeChildStmt( idBool aSuccess,
                           idBool aIsFree );
 
+    /* BUG-46090 Meta Node SMN 전파 */
+    void clearShardDataInfo();
+
+    /* BUG-46092 */
+    void freeAllRemoteStatement( UChar aMode );
+    void freeRemoteStatement( UInt aNodeId, UChar aMode );
+
     //PROJ-1436 SQL-Plan Cache.
-    void getSmiTrans4Prepare(smiTrans                  **aTrans,
-                             mmcTransCommt4PrepareFunc  *aCommit4PrepareFunc);
+    void getTrans4Prepare(mmcTransObj               **aTrans,
+                          mmcTransCommt4PrepareFunc  *aCommit4PrepareFunc);
     //PROJ-1436 SQL-Plan Cache.
     static IDE_RC  getSmiStatement4PrepareCallback(void* aGetSmiStmtContext,
                                                    smiStatement  **aSmiStatement4Prepare);
@@ -227,6 +249,8 @@ public:
     /* PROJ-2223 Altibase Auditing */
     UInt getExecuteResult( mmcExecutionFlag aExecutionFlag );
     
+    /* BUG-46756 */
+    void   setSmiStmt(smiStatement *aSmiStmt);
 
 private:
     IDE_RC parse(SChar* aSQLText);
@@ -237,9 +261,7 @@ private:
     IDE_RC doHardRebuild(mmcPCB                  *aPCB,
                          qciSQLPlanCacheContext  *aPlanCacheContext);
     
-    void   setSmiStmt(smiStatement *aSmiStmt);
-
-    IDE_RC beginSmiStmt(smiTrans *aTrans, UInt aFlag);
+    IDE_RC beginSmiStmt(mmcTransObj *aTrans, UInt aFlag);
     IDE_RC endSmiStmt(UInt aFlag);
 
     IDE_RC resetCursorFlag();
@@ -252,12 +274,16 @@ private:
     
     IDE_RC hardPrepare(mmcPCB                  *aPCB,
                        qciSQLPlanCacheContext  *aPlanCacheContext);
+
+    IDE_RC beginSmiStmtInternal(mmcTransObj *aTrans, UInt aFlag);
+
 public:
     mmcStatementInfo *getInfo();
 
     mmcSession       *getSession();
     
-    smiTrans         *getTrans(idBool aAllocFlag);
+    mmcTransObj      *allocTrans();
+    mmcTransObj      *getTransPtr();
     smiStatement     *getSmiStmt();
 
     qciStatement     *getQciStmt();
@@ -290,7 +316,7 @@ public:
     void              clearAtomicLastErrorCode();
 
     idBool            isRootStmt();
-    void              setTrans( smiTrans * aTrans );
+    void              setTrans( mmcTransObj * aTrans );
 
     iduList          *getChildStmtList();
 
@@ -307,9 +333,9 @@ public:
     idvAuditTrail     *getAuditTrail();
     UInt               getAuditObjectCount();
     qciAuditRefObject *getAuditObjects();
-    
+
     void               resetStatistics();
-    
+
 /*
  * Info Accessor
  */
@@ -414,6 +440,20 @@ public:
     idBool              isSimpleQuery();
     void                setSimpleQuery(idBool aIsSimpleQuery);
 
+    /* BUG-45823 */
+    void                setCallShardAnalyzeProtocol( idBool aIsCalled );
+    idBool              getCallShardAnalyzeProtocol();
+    void                setShardQueryType( sdiQueryType aQueryType );
+
+    /* BUG-46092 */
+    void *              getShardStatement();
+
+    /* PROJ-2701 Online Data Rebuild: for Statement Serialize */
+    mmcTransObj *       getShareTransForSmiStmtLock(mmcTransObj *aTrans);
+    mmcTransObj *       getExecutingTrans();
+    void                acquireShareTransSmiStmtLock(mmcTransObj *aTrans);
+    void                releaseShareTransSmiStmtLock(mmcTransObj *aTrans);
+
 private:
     /*
      * Statement Begin/End/Execute Functions
@@ -495,17 +535,22 @@ inline idvAuditTrail *mmcStatement::getAuditTrail()
     return &mAuditTrail;
 }
 
-inline smiTrans *mmcStatement::getTrans(idBool aAllocFlag)
+inline mmcTransObj *mmcStatement::allocTrans()
 {
-    if ((mTrans == NULL) && (aAllocFlag == ID_TRUE))
+    if (mTrans == NULL)
     {
-        IDE_ASSERT(mmcTrans::alloc(&mTrans) == IDE_SUCCESS);
+        IDE_ASSERT(mmcTrans::alloc(NULL, &mTrans) == IDE_SUCCESS);
     }
 
     return mTrans;
 }
 
-inline void mmcStatement::setTrans( smiTrans * aTrans )
+inline mmcTransObj *mmcStatement::getTransPtr()
+{
+    return mTrans;
+}
+
+inline void mmcStatement::setTrans( mmcTransObj * aTrans )
 {
     mTrans = aTrans;
 }
@@ -909,8 +954,8 @@ inline void mmcStatement::setPreparedTimeExist(idBool aPreparedTimeExist)
 //fix BUG-24364 valgrind direct execute으로 수행시킨 statement의  plan cache정보를 reset시켜야함.
 inline void mmcStatement::releasePlanCacheObject()
 {
-    mInfo.mSQLPlanCacheTextIdStr = (SChar*)(mmcStatement::mNoneSQLCacheTextID);
-    mInfo.mSQLPlanCachePCOId     = 0;
+    mInfo.mSQLPlanCacheTextId = (SChar*)(mmcStatement::mNoneSQLCacheTextID);
+    mInfo.mSQLPlanCachePCOId  = 0;
     mPCB->planUnFix(getStatistics());
     mPCB = NULL;
 }
@@ -1158,4 +1203,48 @@ inline void mmcStatement::setSmiStmtForAT( smiStatement * aSmiStmt )
     mSmiStmtPtr = aSmiStmt;
 }
 
+/* BUG-45823 */
+inline idBool mmcStatement::getCallShardAnalyzeProtocol()
+{
+    return mInfo.mCallShardAnalyzeProtocol;
+}
+
+inline void mmcStatement::setCallShardAnalyzeProtocol( idBool aIsCalled )
+{
+    mInfo.mCallShardAnalyzeProtocol = aIsCalled;
+}
+
+inline void mmcStatement::setShardQueryType( sdiQueryType aQueryType )
+{
+    mInfo.mShardQueryType = (UInt)aQueryType;
+}
+
+inline void * mmcStatement::getShardStatement()
+{
+    return (void *)&mSdStmt;
+}
+
+inline IDE_RC mmcStatement::beginSmiStmtInternal(mmcTransObj *aTrans, UInt aFlag)
+{
+    if( isRootStmt() == ID_TRUE )
+    {
+        /* PROJ-2446 */
+        IDE_TEST( mSmiStmt.begin( getStatistics(),
+                                  mmcTrans::getSmiStatement(aTrans),
+                                  ( getCursorFlag() | aFlag ) ) != IDE_SUCCESS );
+    }
+    else
+    {
+        /* PROJ-2446 */
+        IDE_TEST( mSmiStmt.begin( getStatistics(),
+                                  mInfo.mParentStmt->getSmiStmt(),
+                                  ( getCursorFlag() | aFlag ) ) != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 #endif

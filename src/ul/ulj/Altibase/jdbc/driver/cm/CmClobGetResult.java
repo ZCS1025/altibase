@@ -59,7 +59,7 @@ public class CmClobGetResult extends CmResult
         return mOffset;
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

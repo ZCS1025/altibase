@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxDef.h 82855 2018-04-19 05:53:31Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMX_DEF_H_
@@ -154,7 +154,7 @@ typedef struct smxSavepoint
     /* For only implicit savepoint */
     /* Savepoint를 찍은 Statement의 Depth */
     UInt            mStmtDepth;
-    /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+    /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
      * Partial Rollback을 지원해야 합니다.
      *
      * Replication과 Transaction의 Implicit Savepoint의 위치는
@@ -399,6 +399,7 @@ typedef struct smxLegacyTrans
     smSCN       mMinMemViewSCN;
     smSCN       mMinDskViewSCN;
     smSCN       mFstDskViewSCN;
+    UChar       mMadeType;
     iduMutex    mWaitForNoAccessAftDropTbl; /* BUG-42760 */
 } smxLegacyTrans;
 

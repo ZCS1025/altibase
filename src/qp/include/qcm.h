@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcm.h 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: qcm.h 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_QCM_H_
@@ -40,11 +40,11 @@ extern smiCursorProperties gMetaDefaultCursorProperty;
 
 // check SYS_DATABASE_ record
 #define QCM_META_MAJOR_VER              (8)
-#define QCM_META_MINOR_VER              (5)
+#define QCM_META_MINOR_VER              (7)
 #define QCM_META_PATCH_VER              (1)
 
 #define QCM_META_MAJOR_STR_VER          "8"
-#define QCM_META_MINOR_STR_VER          "5"
+#define QCM_META_MINOR_STR_VER          "7"
 #define QCM_META_PATCH_STR_VER          "1"
 
 #define QCM_TABLES_SEQ_STARTVALUE       ((SLong)4)
@@ -862,12 +862,15 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLICATION_APPLIER_INIT_BUFFER_SIZE    (15)
 #define QCM_REPLICATION_REMOTE_XSN                  (16)
 #define QCM_REPLICATION_PEER_REPL_NAME              (17)
+#define QCM_REPLICATION_REMOTE_LAST_DDL_XSN         (18)
 
 // SYS_REPL_HOSTS_
 #define QCM_REPLHOST_HOST_NO                    (0)
 #define QCM_REPLHOST_REPL_NAME                  (1)
 #define QCM_REPLHOST_HOST_IP                    (2)
 #define QCM_REPLHOST_PORT_NO                    (3)
+#define QCM_REPLHOST_CONN_TYPE                  (4)
+#define QCM_REPLHOST_IB_LATENCY                 (5)
 
 
 /* PROJ-1915 */
@@ -898,6 +901,13 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLOLDITEMS_TABLE_NAME             (3)
 #define QCM_REPLOLDITEMS_PARTITION_NAME         (4)
 #define QCM_REPLOLDITEMS_PRIMARY_KEY_INDEX_ID   (5)
+#define QCM_REPLOLDITEMS_REMOTE_USER_NAME       (6)
+#define QCM_REPLOLDITEMS_REMOTE_TABLE_NAME      (7)
+#define QCM_REPLOLDITEMS_REMOTE_PARTITION_NAME  (8)
+#define QCM_REPLOLDITEMS_PARTITION_ORDER        (9)
+#define QCM_REPLOLDITEMS_PARTITION_MIN_VALUE    (10)
+#define QCM_REPLOLDITEMS_PARTITION_MAX_VALUE    (11)
+#define QCM_REPLOLDITEMS_INVALID_MAX_SN         (12)
 
 // SYS_REPL_OLD_COLUMNS_
 #define QCM_REPLOLDCOLS_REPLICATION_NAME        (0)
@@ -1607,8 +1617,8 @@ public:
     static IDE_RC finiMetaCaches(smiStatement * aSmiStmt);
 
     // BUG-13725
-    static IDE_RC setOperatableFlag(
-        qcmTableInfo * aTableInfo );
+    static void setOperatableFlag( qcmTableType   aTableType,
+                                   UInt         * aOperatableFlag );
     
     // Meta Table의 Tablespace ID필드로부터 데이터를 읽어온다
     static scSpaceID getSpaceID(const void * aTableRow,
@@ -1682,7 +1692,14 @@ public:
         SInt           aTableNameSize,
         void        ** aTableHandle,     // out
         smSCN        * aSCN);            // out
-
+    
+    static IDE_RC getTableIDAndTypeByName( smiStatement     * aSmiStmt,
+                                           UInt               aUserID,
+                                           UChar            * aTableName,
+                                           SInt               aTableNameSize,
+                                           UInt             * aTableID,
+                                           qcmTableType     * aTableType );
+    
     static IDE_RC getTableHandleByID(
         smiStatement * aSmiStmt,
         UInt           aTableID,

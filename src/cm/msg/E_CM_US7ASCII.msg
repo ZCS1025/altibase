@@ -19,7 +19,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 176
+# Last Number = 194
 
 SECTION = 7
 
@@ -203,7 +203,7 @@ SECTION = 7
 # *Cause: Internal error.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
-45, cmERR_ABORT_SHM_ALREADY_CREATED = Shared memory for IPC already allocated
+# 45, cmERR_ABORT_SHM_ALREADY_CREATED = Shared memory for IPC already allocated
 # *Cause: Shared memory for IPC is already allocated. This is a system call error.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
@@ -274,7 +274,6 @@ SECTION = 7
 # 62, cmERR_ABORT_INET_NTOA_ERROR = Failed to invoke the inet_ntoa() system function
 # *Cause: Failed to invoke the inet_ntoa() system function. This is a system call error.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
-
 
 118, cmERR_FATAL_CMN_SHM_ATTACH = Unable to attach the shared memory
 # *Cause: Failed to invoke the shmat() function
@@ -468,6 +467,82 @@ SECTION = 7
 # *Cause: Failed to invoke the system function. This is a system call error.
 # *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
 
+#############################
+# IB
+#############################
+
+177, cmERR_ABORT_IB_RSOCKET_ALREADY_OPENED = IB rsocket already opened
+# *Cause: Internal error.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+178, cmERR_ABORT_IB_RSOCKET_OPEN_ERROR = Unable to create a IB rsocket, errno=<0%u>
+# *Cause: Failed to invoke the rsocket() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+179, cmERR_ABORT_IB_RBIND_ERROR = Unable to bind the IB rsocket, errno=<0%u>
+# *Cause: Failed to invoke the rbind() function on the IB rsocket.
+# *Action: Check the error number and take the appropriate action.
+
+180, cmERR_ABORT_IB_RLISTEN_ERROR = Failed to invoke the rlisten() function
+# *Cause: Failed to invoke the rlisten() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+181, cmERR_ABORT_IB_RPOLL_ERROR = Failed to invoke the rpoll() function
+# *Cause: Failed to invoke the rpoll() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+182, cmERR_ABORT_IB_RSELECT_ERROR = Failed to invoke the rselect() function
+# *Cause: Failed to invoke the rselect() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+183, cmERR_ABORT_IB_RACCEPT_ERROR = Failed to invoke the raccept() function
+# *Cause: Failed to invoke the raccept() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+184, cmERR_ABORT_IB_RCONNECT_INVALIDARG = Invalid argument supplied for rconnect()
+# *Cause: Invalid argument supplied for rconnect().
+# *Action: Check the IP address and hostname.
+
+185, cmERR_ABORT_IB_RCONNECT_ERROR = Failed to invoke the rconnect() function, errno=<0%u>
+# *Cause: Failed to invoke the rconnect() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+186, cmERR_ABORT_IB_RRECV_ERROR = Failed to invoke the rread() function
+# *Cause: Failed to invoke the rread() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+187, cmERR_ABORT_IB_RSEND_ERROR = Failed to invoke the rwrite() function
+# *Cause: Failed to invoke the rwrite() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+188, cmERR_ABORT_IB_RSOCKET_SHUTDOWN_FAILED = Unable to shut down the socket
+# *Cause: Failed to invoke the rshutdown() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+189, cmERR_ABORT_IB_RSETSOCKOPT_ERROR = Failed to invoke the rsetsockopt() function: <0%s>
+# *Cause: Failed to invoke the rsetsockopt() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+190, cmERR_ABORT_IB_RGETSOCKOPT_ERROR = Failed to invoke the rgetsockopt() function: <0%s>
+# *Cause: Failed to invoke the rgetsockopt() function.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+191, cmERR_ABORT_IB_RSOCKET_SET_BLOCKING_FAILED = Unable to set the IB rsocket to blocking mode
+# *Cause: Failed to invoke the rfcntl() function for setting a socket to blocking mode.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+192, cmERR_ABORT_IB_RSOCKET_SET_NONBLOCKING_FAILED = Unable to set the IB rsocket to non-blocking mode
+# *Cause: Failed to invoke the rfcntl() function for setting a socket to non-blocking mode.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+193, cmERR_RETRY_IB_RSOCKET_OPERATION_WOULD_BLOCK = IB rsocket operation would be blocked
+# *Cause: A IB rsocket is not ready for this operation
+# *Action: You may safely ignore this message.
+
+194, cmERR_ABORT_IB_RPOLL_INVALID_DIRECTION = Invalid direction: <0%d>
+# *Cause: Internal error.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
 ###############################################################################
 #  Server Internal Message
 ###############################################################################
@@ -489,6 +564,20 @@ CM_TRC_TCP_NODELAY_FAIL = "Failed to set TCP_NODELAY for TCP socket (errno=<%u>)
 CM_TRC_SOCKET_SET_OPTION_FAIL = "Failed to set <%s> for socket (errno=<%u>) -> ignored\n";
 
 CM_TRC_TCP_BIND_FAIL = "Failed to bind TCP socket to the port <%s> (errno=<%u>)";
+
+CM_TRC_IB_INITIALIZED = "IB is initialized successfully.";
+
+CM_TRC_IB_RSOCKET_KEEPALIVE_FAIL = "Failed to set SO_KEEPALIVE for IB rsocket (errno=<%u>) -> ignored\n";
+
+CM_TRC_IB_RSOCKET_REUSEADDR_FAIL = "Failed to set SOL_REUSEADDR for IB rsocket (errno=<%u>) -> ignored\n";
+
+CM_TRC_IB_RSOCKET_SET_BLOCKING_MODE_FAIL = "Failed to set Blocking Mode for IB rsocket (errno=<%u>)";
+
+CM_TRC_IB_TCP_NODELAY_FAIL = "Failed to set TCP_NODELAY for IB rsocket (errno=<%u>) -> ignored\n";
+
+CM_TRC_IB_RSOCKET_SET_OPTION_FAIL = "Failed to set <%s> for IB rsocket (errno=<%u>) -> ignored\n";
+
+CM_TRC_IB_RBIND_FAIL = "Failed to bind IB rsocket to the port <%s> (errno=<%u>)";
 
 CM_TRC_IPC_SHM_REMOVE_FAIL = "Failed to remove shm";
 

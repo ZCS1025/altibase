@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCnfMgr.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmoCnfMgr.cpp 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     CNF Critical Path Manager
@@ -447,7 +447,6 @@ qmoCnfMgr::optimize( qcStatement * aStatement,
     //------------------------------------------
     // Predicate의 분류
     //------------------------------------------
-
     IDE_TEST( classifyPred4Where( aStatement, sCNF, sQuerySet )
               != IDE_SUCCESS );
 
@@ -609,7 +608,7 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
 
     qmoCNF         * sCNF;
     qtcNode        * sNode;
-    qmoPredicate   * sNewPred;
+    qmoPredicate   * sNewPred = NULL;
     qcDepInfo      * sFromDependencies;
     qcDepInfo      * sGraphDependencies;
     qmgGraph      ** sBaseGraph;
@@ -618,11 +617,12 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
     idBool           sIsRownum;
     idBool           sIsConstant;
     idBool           sIsOneTable = ID_FALSE;    // TASK-3876 Code Sonar
+    idBool           sIsHierJoin = ID_FALSE;
 
     UInt             sBaseGraphCnt;
     UInt             i;
 
-    idBool           sIsPush;
+    idBool           sIsPush = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmoCnfMgr::classifyPred4Where::__FT__" );
 
@@ -653,6 +653,17 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
         sExistHierarchy = ID_FALSE;
     }
 
+    if ( ( aQuerySet->SFWGH->hierarchy != NULL ) &&
+         ( ( aQuerySet->SFWGH->from->joinType != QMS_NO_JOIN ) ||
+           ( aQuerySet->SFWGH->from->next != NULL ) ) )
+    {
+        sIsHierJoin = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     // Predicate 분류 대상 Node
     if ( sCNF->normalCNF != NULL )
     {
@@ -679,7 +690,8 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                                               & sIsRownum )
                   != IDE_SUCCESS );
 
-        if ( sIsRownum == ID_TRUE )
+        if ( ( sIsRownum == ID_TRUE ) &&
+             ( sIsHierJoin == ID_FALSE ) )
         {
             //---------------------------------------------
             // Rownum Predicate 분류
@@ -701,7 +713,8 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                                                     & sIsConstant )
                       != IDE_SUCCESS );
 
-            if ( sIsConstant == ID_TRUE )
+            if ( ( sIsConstant == ID_TRUE ) &&
+                 ( sIsHierJoin == ID_FALSE ) )
             {
                 sNewPred->flag &= ~QMO_PRED_CONSTANT_FILTER_MASK;
                 sNewPred->flag |= QMO_PRED_CONSTANT_FILTER_TRUE;
@@ -741,7 +754,8 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                         // nothing to do
                     }
                 }
-                if ( sIsOneTable == ID_TRUE )
+                if ( ( sIsOneTable == ID_TRUE ) &&
+                     ( sIsHierJoin == ID_FALSE ) )
                 {
                     //---------------------------------------------
                     // One Table Predicate 분류
@@ -762,56 +776,67 @@ qmoCnfMgr::classifyPred4Where( qcStatement       * aStatement,
                 }
                 else
                 {
-                    //---------------------------------------------
-                    // Join Predicate 분류
-                    //  constantPredicate, oneTablePredicate이 아니면
-                    //  1. PUSH_PRED hint가 존재하면,
-                    //     view 내부로 내리고,
-                    //  2. PUSH_PRED hint가 존재하지 않으면,
-                    //     joinPredicate이므로 이를 sCNF->joinPredicate에 연결
-                    //---------------------------------------------
-
-                    sIsPush = ID_FALSE;
-
-                    if( aQuerySet->SFWGH->hints->pushPredHint != NULL )
+                    if ( ( sIsOneTable == ID_TRUE ) &&
+                         ( sIsHierJoin == ID_TRUE ) )
                     {
-                        //---------------------------------------------
-                        // PROJ-1495
-                        // PUSH_PRED hint가 존재하는 경우
-                        // VIEW 내부로 join predicate을 내린다.
-                        //---------------------------------------------
-
-                        IDE_TEST( pushJoinPredInView( sNewPred,
-                                                      aQuerySet->SFWGH->hints->pushPredHint,
-                                                      sBaseGraphCnt,
-                                                      QMS_NO_JOIN, // aIsPushPredInnerJoin
-                                                      sBaseGraph,
-                                                      & sIsPush )
-                                  != IDE_SUCCESS );
-                    }
-                    else
-                    {
-                        // Nothing To Do
-                    }
-
-                    if( sIsPush == ID_TRUE )
-                    {
-                        // Nothing To Do
+                        /** PROJ-2509 HierarchyQuery Join
+                         * OneTable이면서 HierarchyJoin이면 Hierarchy Graph
+                         * 에서 처리되어야한다.
+                         */
                     }
                     else
                     {
                         //---------------------------------------------
-                        // constantPredicate, oneTablePredicate이 아니고,
-                        // PUSH_PRED hint도 없는 경우 이를
-                        // sCNF->joinPredicate에 연결
+                        // Join Predicate 분류
+                        //  constantPredicate, oneTablePredicate이 아니면
+                        //  1. PUSH_PRED hint가 존재하면,
+                        //     view 내부로 내리고,
+                        //  2. PUSH_PRED hint가 존재하지 않으면,
+                        //     joinPredicate이므로 이를 sCNF->joinPredicate에 연결
                         //---------------------------------------------
 
-                        sNewPred->flag &= ~QMO_PRED_JOIN_PRED_MASK;
-                        sNewPred->flag  |= QMO_PRED_JOIN_PRED_TRUE;
+                        sIsPush = ID_FALSE;
 
-                        sNewPred->next = sCNF->joinPredicate;
-                        sCNF->joinPredicate = sNewPred;
+                        if ( aQuerySet->SFWGH->hints->pushPredHint != NULL )
+                        {
+                            //---------------------------------------------
+                            // PROJ-1495
+                            // PUSH_PRED hint가 존재하는 경우
+                            // VIEW 내부로 join predicate을 내린다.
+                            //---------------------------------------------
 
+                            IDE_TEST( pushJoinPredInView( sNewPred,
+                                                          aQuerySet->SFWGH->hints->pushPredHint,
+                                                          sBaseGraphCnt,
+                                                          QMS_NO_JOIN, // aIsPushPredInnerJoin
+                                                          sBaseGraph,
+                                                          & sIsPush )
+                                      != IDE_SUCCESS );
+                        }
+                        else
+                        {
+                            // Nothing To Do
+                        }
+
+                        if ( sIsPush == ID_TRUE )
+                        {
+                            // Nothing To Do
+                        }
+                        else
+                        {
+                            //---------------------------------------------
+                            // constantPredicate, oneTablePredicate이 아니고,
+                            // PUSH_PRED hint도 없는 경우 이를
+                            // sCNF->joinPredicate에 연결
+                            //---------------------------------------------
+
+                            sNewPred->flag &= ~QMO_PRED_JOIN_PRED_MASK;
+                            sNewPred->flag  |= QMO_PRED_JOIN_PRED_TRUE;
+
+                            sNewPred->next = sCNF->joinPredicate;
+                            sCNF->joinPredicate = sNewPred;
+
+                        }
                     }
                 }
             }
@@ -1169,7 +1194,8 @@ qmoCnfMgr::classifyPred4OnCondition( qcStatement     * aStatement,
 
 IDE_RC
 qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
-                                   qmoCNF        * aCNF )
+                                   qmoCNF        * aCNF,
+                                   qcDepInfo     * aDepInfo )
 {
 /***********************************************************************
  *
@@ -1205,7 +1231,7 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
     //------------------------------------------
 
     sCNF              = aCNF;
-    sFromDependencies = & sCNF->depInfo;
+    sFromDependencies = aDepInfo;
 
     // Predicate 분류 대상 Node
     if ( sCNF->normalCNF != NULL )
@@ -1333,7 +1359,8 @@ qmoCnfMgr::classifyPred4StartWith( qcStatement   * aStatement ,
 
 IDE_RC
 qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
-                                   qmoCNF          * aCNF )
+                                   qmoCNF          * aCNF,
+                                   qcDepInfo       * aDepInfo )
 {
 /***********************************************************************
  *
@@ -1383,7 +1410,7 @@ qmoCnfMgr::classifyPred4ConnectBy( qcStatement     * aStatement,
         sNode = NULL;
     }
 
-    sFromDependencies = & sCNF->depInfo;
+    sFromDependencies = aDepInfo;
 
     while( sNode != NULL )
     {
@@ -1554,7 +1581,9 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
     sQuerySet      = aQuerySet;
     sHierarchy     = sQuerySet->SFWGH->hierarchy;
 
-    if ( sHierarchy != NULL )
+    if ( ( sHierarchy != NULL ) &&
+         ( sQuerySet->SFWGH->from->next == NULL ) &&
+         ( sQuerySet->SFWGH->from->joinType == QMS_NO_JOIN ) )
     {
         //------------------------------------------
         // Hierarchy Graph 초기화
@@ -1562,6 +1591,7 @@ qmoCnfMgr::initBaseGraph( qcStatement * aStatement,
 
         IDE_TEST( qmgHierarchy::init( aStatement,
                                       sQuerySet,
+                                      NULL,
                                       aFrom,
                                       sHierarchy,
                                       aBaseGraph )
@@ -6138,3 +6168,186 @@ IDE_RC qmoCnfMgr::validateLateralViewJoin( qcStatement   * aStatement,
 
     return IDE_FAILURE;
 }
+
+IDE_RC qmoCnfMgr::classifyPred4WhereHierachyJoin( qcStatement * aStatement,
+                                                  qmoCrtPath  * aCrtPath,
+                                                  qmgGraph    * aGraph )
+{
+    qmoCNF         * sCNF               = NULL;
+    qtcNode        * sNode              = NULL;
+    qmoPredicate   * sNewPred           = NULL;
+    qcDepInfo      * sFromDependencies  = NULL;
+    qcDepInfo      * sGraphDependencies = NULL;
+    qmgGraph      ** sBaseGraph         = NULL;
+
+    idBool           sIsRownum       = ID_FALSE;
+    idBool           sIsConstant     = ID_FALSE;
+    idBool           sIsOneTable     = ID_FALSE;    // TASK-3876 Code Sonar
+    UInt             sBaseGraphCnt   = 0;
+    UInt             i               = 0;
+
+    //------------------------------------------
+    // 기본 초기화
+    //------------------------------------------
+
+    sCNF              = aCrtPath->crtCNF;
+    sFromDependencies = &sCNF->depInfo;
+    sBaseGraphCnt     = sCNF->graphCnt4BaseTable;
+    sBaseGraph        = sCNF->baseGraph;
+
+    // Predicate 분류 대상 Node
+    if ( sCNF->normalCNF != NULL )
+    {
+        sNode = (qtcNode *)sCNF->normalCNF->node.arguments;
+    }
+    else
+    {
+        sNode = NULL;
+    }
+
+    while ( sNode != NULL )
+    {
+        // qmoPredicate 생성
+        IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
+                                            sNode,
+                                            &sNewPred )
+                  != IDE_SUCCESS );
+
+        //-------------------------------------------------
+        // Rownum Predicate 검사
+        //-------------------------------------------------
+
+        IDE_TEST( qmoPred::isRownumPredicate( sNewPred,
+                                              &sIsRownum )
+                  != IDE_SUCCESS );
+
+        if ( sIsRownum == ID_TRUE )
+        {
+            sNewPred->next = aCrtPath->rownumPredicate;
+            aCrtPath->rownumPredicate = sNewPred;
+        }
+        else
+        {
+            //-------------------------------------------------
+            // Constant Predicate 검사
+            //-------------------------------------------------
+
+            IDE_TEST( qmoPred::isConstantPredicate( sNewPred,
+                                                    sFromDependencies,
+                                                    & sIsConstant )
+                      != IDE_SUCCESS );
+
+            if ( sIsConstant == ID_TRUE )
+            {
+                sNewPred->flag &= ~QMO_PRED_CONSTANT_FILTER_MASK;
+                sNewPred->flag |= QMO_PRED_CONSTANT_FILTER_TRUE;
+
+                //-------------------------------------------------
+                // Constant Predicate 분류
+                //   Hierarhcy 존재 유무에 따라 constant predicate,
+                //   level predicate, prior predicat을 분류하여 해당 위치에 추가
+                //-------------------------------------------------
+                /* Level, isLeaf, Predicate의 처리 */
+                if ( ( (sNewPred->node->lflag & QTC_NODE_LEVEL_MASK )
+                     == QTC_NODE_LEVEL_EXIST) ||
+                     ( (sNewPred->node->lflag & QTC_NODE_ISLEAF_MASK )
+                     == QTC_NODE_ISLEAF_EXIST) )
+                {
+                    sNewPred->next = aGraph->myPredicate;
+                    aGraph->myPredicate = sNewPred;
+                }
+                else
+                {
+                    // Prior Predicate 처리
+                    if ( ( sNewPred->node->lflag & QTC_NODE_PRIOR_MASK )
+                         == QTC_NODE_PRIOR_EXIST )
+                    {
+                        sNewPred->next = aGraph->myPredicate;
+                        aGraph->myPredicate = sNewPred;
+                    }
+                    else
+                    {
+                        // Constant Predicate 처리
+                        sNewPred->next = aGraph->constantPredicate;
+                        aGraph->constantPredicate = sNewPred;
+                    }
+                }
+            }
+            else
+            {
+                for ( i = 0 ; i < sBaseGraphCnt; i++ )
+                {
+                    sGraphDependencies = & sBaseGraph[i]->myFrom->depInfo;
+                    IDE_TEST( qmoPred::isOneTablePredicate( sNewPred,
+                                                            sFromDependencies,
+                                                            sGraphDependencies,
+                                                            & sIsOneTable )
+                              != IDE_SUCCESS );
+
+                    if ( sIsOneTable == ID_TRUE )
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        // nothing to do
+                    }
+                }
+
+                if ( sIsOneTable == ID_TRUE )
+                {
+                    //---------------------------------------------
+                    // One Table Predicate 분류
+                    //    oneTablePredicate을 해당 graph의 myPredicate에 연결
+                    //    rid predicate 이면 해당 graph의 ridPredicate에 연결
+                    //---------------------------------------------
+                    if ( ( sNewPred->node->lflag & QTC_NODE_COLUMN_RID_MASK ) ==
+                            QTC_NODE_COLUMN_RID_EXIST )
+                    {
+                        sNewPred->next = aGraph->ridPredicate;
+                        aGraph->ridPredicate = sNewPred;
+                    }
+                    else
+                    {
+                        sNewPred->next = aGraph->myPredicate;
+                        aGraph->myPredicate = sNewPred;
+                    }
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+        }
+        sNode = (qtcNode*)sNode->node.next;
+    }
+
+    //---------------------------------------------------------------------
+    // BUG-34295 Join ordering ANSI style query
+    //     Where 절의 predicate 중 outerJoinGraph 와 연관된
+    //     one table predicate 을 찾아 이동시킨다.
+    //     outerJoinGraph 의 one table predicate 은 baseGraph 와
+    //     dependency 가 겹치지 않아서 predicate 분류 과정에서
+    //     constant predicate 으로 잘못 분류된다.
+    //     이를 바로잡기 위해 sCNF->constantPredicate 의 predicate 들에서
+    //     outerJoinGraph 에 관련된 one table predicate 들을 찾아내어
+    //     outerJoinGraph 로 이동시킨다.
+    //---------------------------------------------------------------------
+    if ( sCNF->outerJoinGraph != NULL )
+    {
+        IDE_TEST( qmoAnsiJoinOrder::fixOuterJoinGraphPredicate( aStatement,
+                                                                sCNF )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

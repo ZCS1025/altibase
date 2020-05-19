@@ -53,6 +53,14 @@ typedef void (*ulsdModuleOnCmErrorFunc)(ulnFnContext     *aFnContext,
                                         ulnErrorMgr      *aErrorMgr);
 typedef ACI_RC (*ulsdModuleUpdateNodeListFunc)(ulnFnContext  *aFnContext,
                                                ulnDbc        *aDbc);
+typedef acp_bool_t (*ulsdModuleHasNoDataFunc)( ulnStmt * aStmt );
+
+typedef ACI_RC (*ulsdModuleNofityFailOverFunc)( ulnDbc       *aNodeDbc );
+
+typedef void (*ulsdModuleAlignDataNodeConnectionFunc)( ulnFnContext * aFnContext,
+                                                       ulnDbc       * aNodeDbc );
+
+typedef void (*ulsdModuleErrorCheckAndAlignDataNodeFunc)( ulnFnContext * aFnContext );
 
 struct ulsdModule
 {
@@ -69,6 +77,10 @@ struct ulsdModule
     ulsdModuleGetPreparedStmtFunc               ulsdModuleGetPreparedStmt;
     ulsdModuleOnCmErrorFunc                     ulsdModuleOnCmError;
     ulsdModuleUpdateNodeListFunc                ulsdModuleUpdateNodeList;
+    ulsdModuleNofityFailOverFunc                ulsdModuleNotifyFailOver;
+    ulsdModuleAlignDataNodeConnectionFunc       ulsdModuleAlignDataNodeConnection;
+    ulsdModuleErrorCheckAndAlignDataNodeFunc    ulsdModuleErrorCheckAndAlignDataNode;
+    ulsdModuleHasNoDataFunc                     ulsdModuleHasNoData;
 };
 
 /* Module */
@@ -105,6 +117,15 @@ void ulsdModuleOnCmError(ulnFnContext     *aFnContext,
                          ulnErrorMgr      *aErrorMgr);
 ACI_RC ulsdModuleUpdateNodeList(ulnFnContext  *aFnContext,
                                 ulnDbc        *aDbc);
+
+acp_bool_t ulsdModuleHasNoData( ulnStmt * aStmt );
+
+ACI_RC ulsdModuleNotifyFailOver( ulnDbc       *aDbc );
+
+void ulsdModuleAlignDataNodeConnection( ulnFnContext * aFnContext,
+                                        ulnDbc       * aNodeDbc );
+
+void ulsdModuleErrorCheckAndAlignDataNode( ulnFnContext * aFnContext );
 
 ACP_INLINE void ulsdSetEnvShardModule(ulnEnv *aEnv, ulsdModule *aModule)
 {

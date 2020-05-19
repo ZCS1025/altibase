@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoTwoNonPlan.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoTwoNonPlan.cpp 84968 2019-03-06 05:01:56Z donovan.seo $
  *
  * Description :
  *     Plan Generator
@@ -1836,7 +1836,7 @@ qmoTwoNonPlan::checkSimpleJOIN( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::checkSimpleJOIN::__FT__" );
 
-    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
+    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement, NULL ) == ID_FALSE,
                    NORMAL_EXIT );
 
     sIsSimple = ID_TRUE;

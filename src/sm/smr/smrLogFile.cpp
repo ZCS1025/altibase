@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrLogFile.cpp 82136 2018-01-26 04:20:33Z emlee $
+ * $Id: smrLogFile.cpp 84032 2018-09-19 05:32:05Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -57,9 +57,10 @@ smrLogFile::~smrLogFile()
 
 IDE_RC smrLogFile::initializeStatic( UInt aLogFileSize )
 {
-    // In case of the direct I/O, starting address of the log buffer 
-    // should be aligned to the Direct I/O page size.
-    // Log buffer allocation also is increased according to this size.
+    // 만약 Direct I/O를 한다면 Log Buffer의 시작 주소 또한
+    // Direct I/O Page크기에 맞게 Align을 해주어야 한다.
+    // 이에 대비하여 로그 버퍼 할당시 Direct I/O Page 크기만큼
+    // 더 할당한다.
     if ( smuProperty::getLogIOType() == 1 )
     {
         aLogFileSize += iduProperty::getDirectIOPageSize();
@@ -76,11 +77,12 @@ IDE_RC smrLogFile::initializeStatic( UInt aLogFileSize )
                                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                  ID_FALSE,							/* ForcePooling */
                                  ID_TRUE,							/* GarbageCollection */
-                                 ID_TRUE)							/* HWCacheLine */
-              != IDE_SUCCESS);
+                                 ID_TRUE,                           /* HWCacheLine */
+                                 IDU_MEMPOOL_TYPE_LEGACY            /* mempool type */) 
+              != IDE_SUCCESS);			
 
     /* BUG-35392 
-     * Following members should be at the same positions regardless of compressed or uncompressed logging. */
+     * 압축/비압축 로그에서 아래 멤버는 같은 위치에 있어야 한다. */
     IDE_ASSERT( SMR_LOG_FLAG_OFFSET    == SMR_COMP_LOG_FLAG_OFFSET );
     IDE_ASSERT( SMR_LOG_LOGSIZE_OFFSET == SMR_COMP_LOG_SIZE_OFFSET );
     IDE_ASSERT( SMR_LOG_LSN_OFFSET     == SMR_COMP_LOG_LSN_OFFSET );
@@ -156,7 +158,7 @@ IDE_RC smrLogFile::initialize()
 
 IDE_RC smrLogFile::destroy()
 {
-    /* If there are opened file desciptors */
+    /* 현재 Open되어 있는 FD의 개수가 0이 아니면 */
     if ( mFile.getCurFDCnt() != 0 )
     {
         IDE_TEST(close() != IDE_SUCCESS);
@@ -219,8 +221,8 @@ IDE_RC smrLogFile::create( SChar   * aStrFilename,
               != IDE_SUCCESS );
     sState = 1;
 
-    /* BUG-15962: Log file creation should not use direct I/O 
-     * when LOG_IO_TYPE is not direct I/O. */
+    /* BUG-15962: LOG_IO_TYPE이 DirectIO가 아닐때 logfille생성시
+     * direct io를 사용하고 있습니다. */
     if ( smuProperty::getLogIOType() == 1 )
     {
         sUseDirectIO = ID_TRUE;
@@ -245,11 +247,12 @@ IDE_RC smrLogFile::create( SChar   * aStrFilename,
         {
         case 2:
 
-            /* For BUG-13353 [LFG] Making the probability of reading invalid log to near 0 when SYNC_CREATE is 0
+            /* For BUG-13353 [LFG] SYNC_CREATE_=0일때
+             *                     invalid log읽을 확률을 0에 가깝게 낮추어야 함
              *
-             * Same with SYNC_CREATE=1, but filling log file with random values.
-             * It can simulate the realibility of SYNC_CREATE=0 in the systems 
-             * where OS automatically do memset. */
+             * SYNC_CREATE=1 과 동일하지만, 로그파일을 random값으로 채운다.
+             * SYNC_CREATE=0 으로 실행했을때 OS가 memset을 해서 올려주는 시스템
+             * 에서는 이를 이용하여 SYNC_CREATE=0이 안전한지 시뮬레이션 할 수 있다. */
             {
                 idlOS::srand( idlOS::getpid() );
 
@@ -263,7 +266,7 @@ IDE_RC smrLogFile::create( SChar   * aStrFilename,
                 }
             }
         case 1:
-            /* Initializing entire log file with aInitBuffer. */
+            /* 로그파일 전체를 aInitBuffer 의 내용으로 초기화한다. */
             {
                 sFilePos = 0;
 
@@ -287,15 +290,24 @@ IDE_RC smrLogFile::create( SChar   * aStrFilename,
 
         case 0 :
             {
-                /* Setting only the last byte of the log file
-                 * instead of initializing whole log file.
+                /* 로그파일을 통채로 초기화하지 않고
+                 * 맨 끝 한바이트만 초기화 하여 파일을 생성한다.
                  *
-                 * Because of the following reasons. This method can be risky. 
-                 * Firstly, most OSs extend the file but there are few OSs 
-                 * who don't extend but modifing only the file meta.
-                 * Secondly, without initialization, the garbage values of the log file can be same 
-                 * with the predefined log header or log tail values.
-                 * It can cause log recovery manfunction.
+                 * BMT와 같이 일시적으로 성능을 높여야 하는 경우에만
+                 * SyncCreate프로퍼티가 0으로 설정되어 여기로 들어오도록 한다.
+                 * 즉, SyncCreate 프로퍼티가 고객에게 나가서는 안된다.
+                 *
+                 * 이유 1 :  이렇게 하면 대부분의 OS에서는 sSize만큼 File이 extend된다.
+                 *           그러나, 어떤 OS는 File의 메타정보만 변경하고
+                 *           extend를 안하는 경우도 있다.
+                 *
+                 * 이유 2 :  로그파일이 초기화가 되지 않아서,
+                 *           파일상에 쓰레기 값이 존재하게 되는데,
+                 *           그 값이, 운좋게도 로그 헤더의 로그타입과 로그 테일이
+                 *           같은 값으로 기록된것처럼 되어서
+                 *           리커버리 매니저가 로그레코드가 아닌데도
+                 *           로그레코드로 인식할 수가 있다.
+                 *           이 경우 리커버리 매니저의 정상 동작을 보장할 수 없다.
                  */
 
                 IDE_TEST( write( aSize - iduProperty::getDirectIOPageSize(),
@@ -362,8 +374,8 @@ IDE_RC smrLogFile::backup( SChar*   aBackupFullFilePath )
     IDE_TEST( sDestFile.createUntilSuccess( smLayerCallback::setEmergency )
               != IDE_SUCCESS );
 
-    /* BUG-15962: Log file creation should not use direct I/O 
-     * when LOG_IO_TYPE is not direct I/O. */
+    /* BUG-15962: LOG_IO_TYPE이 DirectIO가 아닐때 logfille생성시 direct io를
+     * 사용하고 있습니다. */
     if ( smuProperty::getLogIOType() == 1 )
     {
         sUseDirectIO = ID_TRUE;
@@ -435,13 +447,13 @@ IDE_RC smrLogFile::mmap( UInt aSize, idBool aWrite )
 }
 
 /*
- * log file open
- * aFileNo             [IN] - log file no.
- *                            error when it is not same with the recorded value in the log file header
- * aStrFilename        [IN] - log file name
- * aIsMultiplexLogFile [IN] - whether it is opened for log file multiplication
- * aSize               [IN] - log file size
- * aWrite              [IN] - whether it is opened for writing
+ * 로그파일을 open한다.
+ * aFileNo             [IN] - 로그파일 번호
+ *                            로그파일 헤더에 기록된 값과 일치하지 않으면 에러.
+ * aStrFilename        [IN] - 로그파일 이름
+ * aIsMultiplexLogFile [IN] - 다중화로그파일로 사용하기위해 open하는것인지 여부
+ * aSize               [IN] - 로그파일 크기
+ * aWrite              [IN] - 쓰기모드인지 여부
  */
 IDE_RC smrLogFile::open( UInt       aFileNo,
                          SChar    * aStrFilename,

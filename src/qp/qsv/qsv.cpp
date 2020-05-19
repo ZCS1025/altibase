@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsv.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qsv.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -56,6 +56,9 @@ extern mtfModule qsfMFirstModule;
 extern mtfModule qsfMLastModule;
 extern mtfModule qsfMNextModule;
 extern mtfModule qsfMPriorModule;
+
+extern qcNamePosition gSysName;
+qcNamePosition gDBMSStandardName = {(SChar*)"DBMS_STANDARD", 0, 13};
 
 IDE_RC qsv::parseCreateProc(qcStatement * aStatement)
 {
@@ -876,6 +879,7 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
     // BUG-37820
     qsPkgSubprogramType   sSubprogramType;
     qsProcParseTree     * sCrtParseTree;
+    UInt                  sOrgFlag;
 
     IDE_DASSERT( QC_SHARED_TMPLATE(aStatement) != NULL );
     IDE_DASSERT( QC_SHARED_TMPLATE(aStatement)->stmt != NULL );
@@ -980,6 +984,73 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
             else
             {
                 // Nothing to do.
+            }
+
+            // BUG-46074 PSM Trigger with multiple triggering events
+            // DBMS_STANDARD package의 subprogram을 동작하기 위한 코드
+            // INSERTING으로 호출해도 DBMS_STANDARD.INSERTING을 호출한다.
+            if( (sExist == ID_FALSE) &&
+                (QC_IS_NULL_NAME(sParseTree->callSpecNode->tableName) == ID_TRUE) )
+            {
+                if ( qcmSynonym::resolvePkg(
+                         aStatement,
+                         gSysName,
+                         gDBMSStandardName,
+                         &(sParseTree->procOID),
+                         &(sParseTree->userID),
+                         &sExist,
+                         &sSynonymInfo)
+                     == IDE_SUCCESS )
+                {
+                    if ( sExist == ID_TRUE )
+                    {
+                        sUserName = &gSysName;
+                        sPkgName  = &gDBMSStandardName;
+                        sProcName = &(sParseTree->callSpecNode->columnName);
+
+                        IDE_TEST( qsxPkg::getPkgInfo( sParseTree->procOID,
+                                                      &sPkgInfo )
+                                  != IDE_SUCCESS );
+
+                        sOrgFlag = aStatement->spvEnv->flag;
+                        aStatement->spvEnv->flag &= ~QSV_ENV_ESTIMATE_ARGU_MASK;
+                        aStatement->spvEnv->flag |= QSV_ENV_ESTIMATE_ARGU_TRUE;
+
+                        if ( (sPkgInfo != NULL) && 
+                             (qsvPkgStmts::getPkgSubprogramID( aStatement,
+                                                               sParseTree->callSpecNode,
+                                                              *sUserName,
+                                                              *sPkgName,
+                                                              *sProcName,
+                                                               sPkgInfo,
+                                                              &sSubprogramID )
+                              == IDE_SUCCESS) )
+                        {
+                            if ( sSubprogramID == QS_PSM_SUBPROGRAM_ID )
+                            {
+                                IDE_CLEAR();
+                                sUserName = NULL;
+                                sPkgName  = NULL;
+                                sProcName = NULL;
+                                sExist = ID_FALSE;
+                            }
+                            else
+                            {
+                                sIsPkg = ID_TRUE;
+                            }
+                        }
+                        else
+                        {
+                            IDE_CLEAR();
+                            sUserName = NULL;
+                            sPkgName  = NULL;
+                            sProcName = NULL;
+                            sExist = ID_FALSE;
+                        }
+
+                        aStatement->spvEnv->flag = sOrgFlag;
+                    }
+                }
             }
 
             if( sExist == ID_FALSE )
@@ -1090,7 +1161,8 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                 sStmtText     = sProcPlanTree->stmtText; 
 
                 // PROJ-2646 shard analyzer enhancement
-                if ( qcg::isShardCoordinator( aStatement ) == ID_TRUE )
+                if ( ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) ||
+                     ( sdi::isRebuildCoordinator( aStatement ) == ID_TRUE ) )
                 {
                     IDE_TEST( sdi::getProcedureInfo(
                                   aStatement,
@@ -3317,16 +3389,15 @@ IDE_RC qsv::checkNoSubquery(
 // 이는 qtc::estimateInternal에서
 // 펑션의 argument들에 대해서 recursive하게
 // qtc::estimateInternal 을 호출할때 쓰인다.
-
 IDE_RC qsv::createExecParseTreeOnCallSpecNode(
     qtcNode     * aCallSpecNode,
     mtcCallBack * aCallBack )
 
 {
-    qtcCallBackInfo     * sCallBackInfo = NULL;
-    qcStatement         * sStatement = NULL;
+    qtcCallBackInfo     * sCallBackInfo; /* BUG-45994 - 컴파일러 최적화 회피 */
+    qcStatement         * sStatement;    /* BUG-45994 */
     qsExecParseTree     * sParseTree = NULL;
-    UInt                  sStage = 0;
+    volatile UInt         sStage;
     qcNamePosition        sPosition;
     qcuSqlSourceInfo      sqlInfo;
 
@@ -3335,6 +3406,7 @@ IDE_RC qsv::createExecParseTreeOnCallSpecNode(
     IDU_FIT_POINT_FATAL( "qsv::createExecParseTreeOnCallSpecNode::__FT__" );
 
     sCallBackInfo = (qtcCallBackInfo*)((mtcCallBack*)aCallBack)->info;
+    sStage        = 0; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     if( sCallBackInfo->statement == NULL )
     {
@@ -3390,6 +3462,9 @@ IDE_RC qsv::createExecParseTreeOnCallSpecNode(
         sStatement->spvEnv = sCallBackInfo->statement->spvEnv;
         sStatement->myPlan->sBindParam = sCallBackInfo->statement->myPlan->sBindParam;
         sStage = 1;
+
+        /* BUG-45994 */
+        IDU_FIT_POINT_FATAL( "qsv::createExecParseTreeOnCallSpecNode::__FT__::STAGE1" );
 
         // for accessing procOID
         aCallSpecNode->subquery = sStatement;
@@ -4865,6 +4940,9 @@ IDE_RC qsv::parseExecPkgAssign ( qcStatement * aQcStmt )
 
     sParseTree = (qsExecParseTree*)aQcStmt->myPlan->parseTree;
 
+    /* BUG-45994 */
+    IDU_FIT_POINT_FATAL( "qsv::parseExecPkgAssign::__FT__::STAGE1" );
+
     IDE_TEST( qcmSynonym::resolvePkg(
                   aQcStmt,
                   sParseTree->leftNode->userName,
@@ -5764,3 +5842,58 @@ IDE_RC qsv::setObjectNameInfo( qcStatement        * aStatement,
 
     return IDE_FAILURE;
 }
+
+IDE_RC qsv::parseAB(qcStatement * /*aStatement*/ )
+{
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qsv::validateAB(qcStatement * aStatement )
+{
+    qsProcParseTree    * sParseTree;
+
+    sParseTree = (qsProcParseTree *)(aStatement->myPlan->parseTree);
+
+    aStatement->spvEnv->createProc = sParseTree;
+
+    sParseTree->userID = QCG_GET_SESSION_USER_ID( aStatement );
+
+    IDE_TEST( setObjectNameInfo( aStatement,
+                                 sParseTree->objType,
+                                 sParseTree->userID,
+                                 sParseTree->procNamePos,
+                                 &sParseTree->objectNameInfo )
+              != IDE_SUCCESS );
+
+    sParseTree->stmtText    = aStatement->myPlan->stmtText;
+    sParseTree->stmtTextLen = aStatement->myPlan->stmtTextLen;
+
+    if ( sParseTree->block->common.parentLabels != NULL )
+    {
+        sParseTree->block->common.parentLabels->id = qsvEnv::getNextId(aStatement->spvEnv);
+    }
+
+    // parsing body
+    IDE_TEST( sParseTree->block->common.parse(
+                  aStatement, (qsProcStmts *)(sParseTree->block))
+              != IDE_SUCCESS);
+
+    // validation body
+    IDE_TEST( sParseTree->block->common.
+              validate( aStatement,
+                        (qsProcStmts *)(sParseTree->block),
+                        NULL,
+                        QS_PURPOSE_PSM )
+              != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

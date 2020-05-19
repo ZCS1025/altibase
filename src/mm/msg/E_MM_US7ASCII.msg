@@ -23,7 +23,7 @@
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
 
-# Last Number = 249
+# Last Number = 252
 
 SECTION = 4
 
@@ -810,6 +810,18 @@ SECTION = 4
 # *Cause: The queue(enqueue/dequeue) is not supported in IPCDA.
 # *Action: Set another communication protocols. Altibase supports the following communication besides IPCDA ; TCP/IP, Unix Domain Socket, IPC using Shared Memory, SSL/TLS.
 
+250,mmERR_ABORT_SESSION_WITH_INVALID_SMN = The shard meta number(SMN) is invalid.: [ Session SMN=<0%lu>, Data Node SMN=<1%lu>, Disconnect=<2%s>, Protocol=<3%s> ]
+# *Cause: The shard meta number(SMN) of the data node is greater than the SMN of the session.
+# *Action: Reconnect to the meta node.
+
+251,mmERR_ABORT_PLAN_CACHE_INVALID_SQL_TEXT_ID = SQLTextID must be a number of at least five digits. (SQLTextID = <0%s>)
+# *Cause: SQLTextID does not match the format that you can enter.
+# *Action: SQLTextID must be a number of at least five digits.
+
+252,mmERR_ABORT_PLAN_CACHE_NOT_FOUND_SQL_TEXT_ID = SQLTextID not found. (SQLTextID = <0%s>)
+# *Cause: The SQLTextID does not exist.
+# *Action: Check whether SQLTextID exists in V$SQL_PLAN_CACHE_SQLTEXT.
+
 INTERNAL_TRACE_MESSAGE_BEGIN
 
 MM_TRC_SAMPLE = "\n signed int = <%d>\n unsigned int = <%u>\n"
@@ -1081,5 +1093,12 @@ MM_TRC_SYSDBA_SESSION_CLOSED = "SYSDBA session [<%u>] being killed by SYS sessio
 MM_MSG_SESSION_CLOSED = "<%d> session(s) closed.\n";
 
 MM_MSG_RLIMIT_HEADER = "Resource Limits   : Soft, Hard\n------------------------------\n";
+
+MM_TRC_DDL_SYNC_TIMEOUT = "[Notify : DDL Sync Timeout] "
+                          "DDL Query Canceled by Server : Session ID = <%u>\n"
+                          "    CLIENT_INFO           => <%s>(PID : <%lu>)\n"
+                          "    Time Limit            => <%u>\n"
+                          "    Running Time          => <%u>\n"
+                          "    Caused by DDL Query   => <%s>\n";
 
 INTERNAL_TRACE_MESSAGE_END

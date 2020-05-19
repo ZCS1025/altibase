@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qrc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qrc.h 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #ifndef  _O_QRC_H_
@@ -60,6 +60,9 @@ public:
     /* PROJ-1969 Replicated Transaction Group */
     static IDE_RC validateAlterSetGrouping(qcStatement * aStatement);
 
+    /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    static IDE_RC validateAlterSetDDLReplicate( qcStatement * aStatement );
+
     static IDE_RC executeCreate(qcStatement * aStatement);
     static IDE_RC executeAlterAddTbl(qcStatement * aStatement);
     static IDE_RC executeAlterDropTbl(qcStatement * aStatement);
@@ -87,7 +90,18 @@ public:
     /* PROJ-1969 Replicated Transaction Group */
     static IDE_RC executeAlterSetGrouping(qcStatement * aStatement);
 
+    /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    static IDE_RC executeAlterSetDDLReplicate( qcStatement * aStatement );
+
     static idBool isValidIPFormat(SChar * aIP);
+    
+    /* PROJ-2677 DDL synchronization */
+    static void   setDDLReplInfo( qcStatement * aQcStatement,
+                                  smOID         aTableOID,
+                                  smOID         aSrcPartOID1,
+                                  smOID         aSrcPartOID2 );
+    
+    static idBool isDDLSync( qcStatement * aQcStatement );
 };
 
 #endif  // _O_QRC_H_

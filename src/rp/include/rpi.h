@@ -16,20 +16,15 @@
  
 
 /***********************************************************************
- * $Id: rpi.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpi.h 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPI_H_
 #define _O_RPI_H_ 1
 
-#include <cm.h>
 #include <rp.h>
+#include <qci.h>
 #include <rpuProperty.h>
-#include <rpcManager.h>
-#include <rpdMeta.h>
-#include <rpcValidate.h>
-#include <rpcExecute.h>
-#include <rpdCatalog.h>
 
 // PROJ-1726 performance view definition
 // rp/rpi/rpi.cpp 와 qp/qcm/qcmPerformanceView.cpp 두 군데에서
@@ -44,12 +39,12 @@
     (SChar*)"CREATE VIEW V$REPGAP "\
                 "( REP_NAME, "\
                 "START_FLAG, "\
-                "REP_LAST_SN, REP_SN, REP_GAP, "\
+                "REP_LAST_SN, REP_SN, REP_GAP, REP_GAP_SIZE, "\
                 "READ_LFG_ID, READ_FILE_NO, READ_OFFSET ) "\
             "AS SELECT "\
                 "REP_NAME, "\
                 "CAST(DECODE(CURRENT_TYPE, 0, 0, 1, 1, 2, 2, 3, 3, 4, 6, 5, 7, 6, 8, -1) AS BIGINT) START_FLAG, "\
-                "REP_LAST_SN, REP_SN, REP_GAP, "\
+                "REP_LAST_SN, REP_SN, REP_GAP, REP_GAP_SIZE, "\
                 "READ_LFG_ID, READ_FILE_NO, READ_OFFSET "\
             "FROM X$REPGAP "\
             "WHERE PARALLEL_ID = 0",\
@@ -161,12 +156,12 @@
     (SChar*)"CREATE VIEW V$REPGAP_PARALLEL "\
                 "( REP_NAME, "\
                 "CURRENT_TYPE, "\
-                "REP_LAST_SN, REP_SN, REP_GAP, "\
+                "REP_LAST_SN, REP_SN, REP_GAP, REP_GAP_SIZE, "\
                 "READ_LFG_ID, READ_FILE_NO, READ_OFFSET, PARALLEL_ID ) "\
             "AS SELECT "\
                 "REP_NAME, "\
                 "DECODE(CURRENT_TYPE, 0, 'NORMAL', 1, 'QUICK', 2, 'SYNC', 3, 'SYNC_ONLY', 4, 'RECOVERY', 5, 'OFFLINE', 6, 'PARALLEL', 'UNKNOWN') CURRENT_TYPE, "\
-                "REP_LAST_SN, REP_SN, REP_GAP, "\
+                "REP_LAST_SN, REP_SN, REP_GAP, REP_GAP_SIZE, "\
                 "READ_LFG_ID, READ_FILE_NO, READ_OFFSET, PARALLEL_ID "\
             "FROM X$REPGAP",\
 \
@@ -296,9 +291,10 @@ public:
                                        SInt            aParallelFactor,
                                        idvSQL        * aStatistics);
 
-    static IDE_RC   stopSenderThread(smiStatement * aSmiStmt,
-                                     SChar        * aReplName,
-                                     idvSQL       * aStatistics);
+    static IDE_RC   stopSenderThread( smiStatement * aSmiStmt,
+                                      SChar        * aReplName,
+                                      idvSQL       * aStatistics,
+                                      idBool         aIsImmediate );
     static IDE_RC   resetReplication(smiStatement * aSmiStmt,
                                      SChar        * aReplName,
                                      idvSQL       * aStatistics);
@@ -313,6 +309,8 @@ public:
     static IDE_RC alterReplicationSetGapless( void * aQcStatement );
     static IDE_RC alterReplicationSetParallel( void * aQcStatement );
     static IDE_RC alterReplicationSetGrouping( void * aQcStatement );
+
+    static IDE_RC alterReplicationSetDDLReplicate( void * aQcStatement );
 
     // PROJ-1442 Replication Online 중 DDL 허용
     static IDE_RC   stopReceiverThreads(smiStatement * aSmiStmt,
@@ -344,6 +342,24 @@ public:
 
     static qciManageReplicationCallback getReplicationManageCallback( );
 
+    static IDE_RC ddlSyncBegin( qciStatement  * aQciStatement, 
+                                smiStatement  * aSmiStatement );
+
+    static IDE_RC ddlSyncEnd( qciStatement * aQciStatement, 
+                              smiStatement * aSmiStatement );
+
+    static void   ddlSyncException( qciStatement * aQciStatement,
+                                    smiStatement * aSmiStatement ); 
+
+    static void setReplicationDDLSync( UInt aValue )
+    {
+        rpuProperty::setReplicationDDLSync( aValue );
+    }
+
+    static void setReplicationDDLSyncTimeout( UInt aValue )
+    {    
+        rpuProperty::setReplicationDDLSyncTimeout( aValue );
+    }
 };
 
 #endif /* _O_RPI_H_ */

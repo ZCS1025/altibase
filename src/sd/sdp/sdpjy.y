@@ -89,7 +89,7 @@ void * alloca(unsigned int);
 
 extern int      sdpjlex(YYSTYPE * lvalp, void * param );
 
-static void     sdpjerror(char *);
+static void     sdpjerror( const char * );
 %}
 
 
@@ -213,7 +213,7 @@ json_string
 
 #include "sdpjl.h"
 
-void sdpjerror(char* /*msg*/)
+void sdpjerror( const char* /*msg*/ )
 {
     IDE_SET(ideSetErrorCode(sdERR_ABORT_SDPJ_SYNTAX));
 }

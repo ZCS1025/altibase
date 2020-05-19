@@ -62,7 +62,7 @@ IDE_RC ideEnableFaultMgr(idBool aIsThreadEnable)
 
     sFaultMgr->mIsThreadEnable = aIsThreadEnable;
 
-    ideClearFTCallStack();
+    ideClearFTCallStack(0);
 
     IDE_FT_TRACE("%s", (aIsThreadEnable == ID_TRUE) ?
                        "ENABLED" : "DISABLED");
@@ -83,17 +83,41 @@ idBool ideIsEnabledFaultMgr()
     return sFaultMgr->mIsThreadEnable;
 }
 
-void ideClearFTCallStack()
+void ideClearFTCallStack( SInt aRootCnt )
 {
     ideFaultMgr *sFaultMgr = ideGetFaultMgr();
 
-    sFaultMgr->mCallStackNext         = 0;
-    sFaultMgr->mIsCallStackException  = ID_FALSE;
-    sFaultMgr->mIsTransientDisable    = ID_FALSE;
-    sFaultMgr->mIsExceptionDisable    = ID_FALSE;
-    sFaultMgr->mDisabledEntryFuncName = NULL;
-    sFaultMgr->mDisabledCallCount     = 0;
-    sFaultMgr->mDummyFlag             = 0;
+    if ( aRootCnt == 0 )
+    {
+        sFaultMgr->mIsCallStackException  = ID_FALSE;
+        sFaultMgr->mIsTransientDisable    = ID_FALSE;
+        sFaultMgr->mIsExceptionDisable    = ID_FALSE;
+        sFaultMgr->mDisabledEntryFuncName = NULL;
+        sFaultMgr->mDisabledCallCount     = 0;
+        sFaultMgr->mDummyFlag             = 0;
+        sFaultMgr->mCallStackNext     = 0;
+        sFaultMgr->mRootBeginDepth    = 0;
+    }
+    else
+    {
+        sFaultMgr->mRootBeginDepth   += aRootCnt;
+
+        if ( sFaultMgr->mRootBeginDepth == 1 )
+        {
+            sFaultMgr->mIsCallStackException  = ID_FALSE;
+            sFaultMgr->mIsTransientDisable    = ID_FALSE;
+            sFaultMgr->mIsExceptionDisable    = ID_FALSE;
+            sFaultMgr->mDisabledEntryFuncName = NULL;
+            sFaultMgr->mDisabledCallCount     = 0;
+            sFaultMgr->mDummyFlag             = 0;
+            sFaultMgr->mCallStackNext         = 0;
+        }
+        else
+        {
+            /* mRootBeginDepth가 1보다 큰 경우, 
+             * 이미 상위에서 ROOT_BEGIN 을 한 것이므로 초기화 하지 않는다.  */
+        }
+    }
 }
 
 idBool ideCanFaultTolerate(SInt        aSigNum,
@@ -129,7 +153,7 @@ idBool ideCanFaultTolerate()
 {
     ideFaultMgr *sFaultMgr = ideGetFaultMgr();
     idBool       sIsFaultTolerate = ID_FALSE;
-
+    
     if ((iduProperty::getFaultToleranceEnable() == ID_TRUE) &&
         (sFaultMgr->mIsThreadEnable == ID_TRUE) &&
         (sFaultMgr->mCallStackNext > 0) &&

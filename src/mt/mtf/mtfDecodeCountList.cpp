@@ -92,6 +92,7 @@ static const mtcExecute mtfDecodeCountListExecute = {
     mtfDecodeCountListFinalize,
     mtfDecodeCountListCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

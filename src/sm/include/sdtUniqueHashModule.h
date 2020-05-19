@@ -181,7 +181,7 @@ IDE_RC sdtUniqueHashModule::checkNextRow( smiTempTableHeader  * aHeader,
                                               &sIsValidSlot )
               != IDE_SUCCESS );
     IDE_ERROR( sIsValidSlot == ID_TRUE );
-    IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_ERROR( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
 
     *aSrcRowPtr =(UChar*) sTRPHeader;
 
@@ -198,6 +198,7 @@ IDE_RC sdtUniqueHashModule::checkNextRow( smiTempTableHeader  * aHeader,
     {
         if( aFilter != NULL )
         {
+            SC_COPY_GRID( *aGRID, sTRPInfo.mTRPHGRID );
             IDE_TEST( sdtTempRow::fetch( aWASegment,
                                          SDT_WAGROUPID_SUB,
                                          (UChar*)sTRPHeader,

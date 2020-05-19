@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSign.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfSign.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -175,6 +175,7 @@ static const mtcExecute mtfSignExecuteInteger = {
     mtf::calculateNA,
     mtfSignCalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -272,6 +273,7 @@ static const mtcExecute mtfSignExecuteSmallint = {
     mtf::calculateNA,
     mtfSignCalculateSmallint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -369,6 +371,7 @@ static const mtcExecute mtfSignExecuteBigint = {
     mtf::calculateNA,
     mtfSignCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -466,6 +469,7 @@ static const mtcExecute mtfSignExecuteFloat = {
     mtf::calculateNA,
     mtfSignCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -558,6 +562,7 @@ static const mtcExecute mtfSignExecuteReal = {
     mtf::calculateNA,
     mtfSignCalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -657,6 +662,7 @@ static const mtcExecute mtfSignExecuteDouble = {
     mtf::calculateNA,
     mtfSignCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

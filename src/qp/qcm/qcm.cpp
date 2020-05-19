@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcm.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcm.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -1495,6 +1495,9 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
     // TABLE_ID
     sTableInfo->tableID = aTableID;
 
+    /* BUG-45646 */
+    sTableInfo->mPVType = QCM_PV_TYPE_NONE;
+
     if (gQcmTablesIndex[QCM_TABLES_TABLEID_IDX_ORDER] == NULL)
     {
         // on create db.
@@ -2008,7 +2011,8 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
     }
 
     // BUG-13725
-    (void)qcm::setOperatableFlag( sTableInfo );
+    qcm::setOperatableFlag( sTableInfo->tableType,
+                            &sTableInfo->operatableFlag );
 
     // table handle
     sTableInfo->tableHandle = (void*) smiGetTable( aTableOID );
@@ -2160,6 +2164,8 @@ IDE_RC qcm::makeAndSetQcmTableInfo( smiStatement * aSmiStmt,
     {
         /* Nothing to do */
     }
+
+    IDU_FIT_POINT("qcm::makeAndSetQcmTableInfo::_FT_");
 
     return IDE_SUCCESS;
 
@@ -4440,7 +4446,8 @@ IDE_RC qcm::finiMetaCaches(smiStatement * aSmiStmt)
 }
 
 // BUG-13725
-IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
+void qcm::setOperatableFlag( qcmTableType   aTableType,
+                             UInt         * aOperatableFlag )
 {
 /***********************************************************************
  *
@@ -4450,251 +4457,250 @@ IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
  *
  ***********************************************************************/
 
-    IDE_DASSERT( aTableInfo != NULL );
-
-    aTableInfo->operatableFlag = 0;
-    if( aTableInfo->tableType == QCM_USER_TABLE )
+    UInt sOperatableFlag = 0;   
+ 
+    if( aTableType == QCM_USER_TABLE )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_META_TABLE )
+    else if( aTableType == QCM_META_TABLE )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_VIEW )
+    else if( aTableType == QCM_VIEW )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( (aTableInfo->tableType == QCM_FIXED_TABLE) ||
-             (aTableInfo->tableType == QCM_DUMP_TABLE) || // BUG-16651
-             ( aTableInfo->tableType == QCM_PERFORMANCE_VIEW ) )
+    else if( (aTableType == QCM_FIXED_TABLE) ||
+             (aTableType == QCM_DUMP_TABLE) || // BUG-16651
+             (aTableType == QCM_PERFORMANCE_VIEW) )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_QUEUE_TABLE )
+    else if( aTableType == QCM_QUEUE_TABLE )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_MVIEW_TABLE )
+    else if( aTableType == QCM_MVIEW_TABLE )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_MVIEW_VIEW )
+    else if( aTableType == QCM_MVIEW_VIEW )
     {
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_INDEX_TABLE )
+    else if( aTableType == QCM_INDEX_TABLE )
     {
         // PROJ-1624 non-partitioned index
         // hidden table(index table)에는 모든 DDL, DML을 금지한다.
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_SEQUENCE_TABLE )
+    else if( aTableType == QCM_SEQUENCE_TABLE )
     {
         // PROJ-2365 sequence table
         // sequence table에는 select와 replication을 제외한 모든 DDL, DML을 금지한다.
         // test나 응급상황을 고려해 update도 추가 허용한다.
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
     /* PROJ-2441 flashback */
-    else if( aTableInfo->tableType == QCM_RECYCLEBIN_TABLE )
+    else if( aTableType == QCM_RECYCLEBIN_TABLE )
     {
         /*
          SELECT, PURGE, FLASHBACK 만 허용
         */
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
-    else if( aTableInfo->tableType == QCM_DICTIONARY_TABLE )
+    else if( aTableType == QCM_DICTIONARY_TABLE )
     {
         // BUG-45366
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
-        aTableInfo->operatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_REPL_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_LOCK_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_TRUNC_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_TABLE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_CREATE_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_ALTER_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DROP_VIEW_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_INSERT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_UPDATE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_DELETE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_MOVE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_SELECT_ENABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_COMMENT_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_PURGE_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FLASHBACK_DISABLE);
+       sOperatableFlag |= (QCM_OPERATABLE_QP_FT_TRANS_DISABLE);
     }
     else
     {
@@ -4703,7 +4709,7 @@ IDE_RC qcm::setOperatableFlag( qcmTableInfo * aTableInfo )
         IDE_DASSERT( 0 );
     }
 
-    return IDE_SUCCESS;
+    *aOperatableFlag = sOperatableFlag;
 }
 
 IDE_RC qcm::existObject(
@@ -7813,7 +7819,9 @@ IDE_RC qcm::getParentKey( qcStatement   * aStatement,
     // environment의 기록
     IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                           sTableRef->tableHandle,
-                                          sTableRef->tableSCN )
+                                          sTableRef->tableSCN,
+                                          sTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                                          sTableRef->tableInfo->name )        /* BUG-45893 */
               != IDE_SUCCESS );
 
     IDE_TEST( qcmCache::getIndexByID( sTableRef->tableInfo,
@@ -7848,7 +7856,9 @@ IDE_RC qcm::getParentKey( qcStatement   * aStatement,
             // environment의 기록
             IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                                   sIndexTableRef->tableHandle,
-                                                  sIndexTableRef->tableSCN )
+                                                  sIndexTableRef->tableSCN,
+                                                  sIndexTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                                                  sIndexTableRef->tableInfo->name )        /* BUG-45893 */
                       != IDE_SUCCESS );
 
             // key index를 찾는다.
@@ -8067,7 +8077,9 @@ IDE_RC qcm::getChildKeys( qcStatement      * aStatement,
             // environment의 기록
             IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                                   sChildTableRef->tableHandle,
-                                                  sChildTableRef->tableSCN )
+                                                  sChildTableRef->tableSCN,
+                                                  sChildTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                                                  sChildTableRef->tableInfo->name )        /* BUG-45893 */
                       != IDE_SUCCESS );
 
             sTableType = sChildTableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
@@ -9557,7 +9569,6 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
  ***********************************************************************/
 
     UShort                i;
-    qcPlanProperty      * sPlanProperty;
     qcParseSeqCaches    * sParseSeqCache;
     qcTemplate          * sTemplate;
     qcTableMap          * sTableMap;
@@ -9770,30 +9781,8 @@ IDE_RC qcm::validateAndLockAllObjects( qcStatement *aStatement )
         // Nothing to do.
     }
 
-    //------------------------------------------
-    // BUG-45402 shard meta 변경 검사
-    //------------------------------------------
-
-    if ( aStatement->myPlan->planEnv != NULL )
-    {
-        sPlanProperty = &(aStatement->myPlan->planEnv->planProperty);
-
-        IDE_TEST_RAISE( ( sPlanProperty->mShardLinkerChangeNumberRef == ID_TRUE ) &&
-                        ( sPlanProperty->mShardLinkerChangeNumber !=
-                          qcg::getShardLinkerChangeNumber(aStatement) ),
-                        ERR_REBUILD_QCI_EXEC );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_REBUILD_QCI_EXEC );
-    {
-        IDE_SET(ideSetErrorCode(qpERR_REBUILD_QCI_EXEC));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -10810,3 +10799,188 @@ IDE_RC qcm::checkMetaVersionAndDowngrade( smiStatement * aSmiStmt )
 
     return IDE_FAILURE;
 }
+
+IDE_RC qcm::getTableIDAndTypeByName( smiStatement     * aSmiStmt,
+                                     UInt               aUserID,
+                                     UChar            * aTableName,
+                                     SInt               aTableNameSize,
+                                     UInt             * aTableID,
+                                     qcmTableType     * aTableType )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    BUG-46284
+ *    IN USER ID, TABLE NAME, OUT TABLE ID, TABLE TYPE
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    UInt                  sStage = 0;
+    smiRange              sRange;
+    smiTableCursor        sCursor;
+    const void          * sRow                      = NULL;
+    mtcColumn           * sQcmTablesUserIDColumn    = NULL;
+    mtcColumn           * sQcmTablesTableNameColumn = NULL;
+    mtcColumn           * sQcmTablesTableTypeColumn = NULL;
+    mtcColumn           * sQcmTablesTableIDColumn   = NULL;
+    UChar               * sTableType                = NULL;
+    mtdCharType         * sTableTypeStr             = NULL;
+    qtcMetaRangeColumn    sFirstRangeColumn;
+    qtcMetaRangeColumn    sSecondRangeColumn;
+    qcNameCharBuffer      sTableValueBuffer;
+    scGRID                sRid; // Disk Table을 위한 Record IDentifier
+    smiCursorProperties   sCursorProperty;
+    mtdCharType         * sTableValue = ( mtdCharType * ) & sTableValueBuffer;
+    
+    IDE_TEST_RAISE( aTableNameSize > QC_MAX_OBJECT_NAME_LEN,
+                    ERR_NOT_EXIST_TABLE );
+        
+    sCursor.initialize();
+
+    // USER_ID
+    IDE_TEST( smiGetTableColumns( gQcmTables,
+                                  QCM_TABLES_USER_ID_COL_ORDER,
+                                  (const smiColumn**)&sQcmTablesUserIDColumn )
+              != IDE_SUCCESS );
+
+    // TABLE_NAME
+    IDE_TEST( smiGetTableColumns( gQcmTables,
+                                  QCM_TABLES_TABLE_NAME_COL_ORDER,
+                                  (const smiColumn**)&sQcmTablesTableNameColumn )
+              != IDE_SUCCESS );
+
+    // TABLE_ID
+    IDE_TEST( smiGetTableColumns( gQcmTables,
+                                  QCM_TABLES_TABLE_ID_COL_ORDER,
+                                  (const smiColumn**)&sQcmTablesTableIDColumn )
+              != IDE_SUCCESS );
+
+    // TABLE_TYPE
+    IDE_TEST( smiGetTableColumns( gQcmTables,
+                                  QCM_TABLES_TABLE_TYPE_COL_ORDER,
+                                  (const smiColumn**)&sQcmTablesTableTypeColumn )
+              != IDE_SUCCESS );
+    
+    // mtdModule 설정
+    IDE_TEST(mtd::moduleById( &(sQcmTablesUserIDColumn->module),
+                              sQcmTablesUserIDColumn->type.dataTypeId )
+             != IDE_SUCCESS);
+
+    // mtdModule 설정
+    IDE_TEST(mtd::moduleById( &(sQcmTablesTableNameColumn->module),
+                              sQcmTablesTableNameColumn->type.dataTypeId )
+             != IDE_SUCCESS);
+
+    qtc::setVarcharValue( sTableValue,
+                          NULL,
+                          (SChar*)aTableName,
+                          aTableNameSize );
+
+    makeMetaRangeDoubleColumn(
+        &sFirstRangeColumn,
+        &sSecondRangeColumn,
+        (const mtcColumn *) sQcmTablesTableNameColumn,
+        (const void *) sTableValue,
+        (const mtcColumn *) sQcmTablesUserIDColumn,
+        (const void *) &aUserID,
+        &sRange);
+
+    SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(&sCursorProperty, NULL);
+
+    IDE_TEST(sCursor.open(
+                 aSmiStmt,
+                 gQcmTables,
+                 gQcmTablesIndex[QCM_TABLES_TABLENAME_USERID_IDX_ORDER],
+                 smiGetRowSCN(gQcmTables),
+                 NULL,
+                 &sRange,
+                 smiGetDefaultKeyRange(),
+                 smiGetDefaultFilter(),
+                 QCM_META_CURSOR_FLAG,
+                 SMI_SELECT_CURSOR,
+                 &sCursorProperty) != IDE_SUCCESS);
+    sStage = 1;
+
+    IDE_TEST(sCursor.beforeFirst() != IDE_SUCCESS);
+
+    IDE_TEST(sCursor.readRow(&sRow, &sRid, SMI_FIND_NEXT) != IDE_SUCCESS);
+
+    IDE_TEST_RAISE(sRow == NULL, ERR_NOT_EXIST_TABLE);
+
+    // TABLE_ID
+    *aTableID = *(UInt *) ((UChar *) sRow +
+                          sQcmTablesTableIDColumn->column.offset);
+
+    // TABLE_TYPE     
+    sTableTypeStr = (mtdCharType*)
+        ((UChar*) sRow + sQcmTablesTableTypeColumn->column.offset);
+    sTableType = sTableTypeStr->value;
+    
+    if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "T", 1 ) == 0 )
+    {
+        *aTableType = QCM_USER_TABLE;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "D", 1 ) == 0 )
+    {
+        *aTableType = QCM_DICTIONARY_TABLE;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "Q", 1 ) == 0 )
+    {
+        *aTableType = QCM_QUEUE_TABLE;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "V", 1 ) == 0 )
+    {
+        *aTableType = QCM_VIEW;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "M", 1 ) == 0 )
+    {
+        *aTableType = QCM_MVIEW_TABLE;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "A", 1 ) == 0 )
+    {
+        *aTableType = QCM_MVIEW_VIEW;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "G", 1 ) == 0 )
+    {
+        *aTableType = QCM_INDEX_TABLE;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "E", 1 ) == 0 )
+    {
+        *aTableType = QCM_SEQUENCE_TABLE;
+    }
+    else if ( idlOS::strMatch( (SChar*)sTableType, sTableTypeStr->length, "R", 1 ) == 0 )
+    {
+        *aTableType = QCM_RECYCLEBIN_TABLE;
+    }
+    else
+    {
+        IDE_RAISE(ERR_META_CRASH);
+    }
+    
+    sStage = 0;
+    IDE_TEST(sCursor.close() != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_NOT_EXIST_TABLE);
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QCM_NOT_EXIST_TABLE));
+    }
+    IDE_EXCEPTION( ERR_META_CRASH );
+    {            
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qcm::getTableIDAndTypeByName",
+                                  "meta crash" ));
+    }        
+    IDE_EXCEPTION_END;
+
+    if ( sStage == 1 )
+    {
+        (void)sCursor.close();
+    }
+
+    return IDE_FAILURE;
+}
+

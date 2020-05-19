@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtcfTo_char.c 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtcfTo_char.c 84840 2019-01-30 09:43:29Z ahra.cho $
  **********************************************************************/
 
 #include <mtce.h>
@@ -2505,6 +2505,171 @@ static ACI_RC applyFMFormat( mtdDateType*     aDate,
     return ACI_SUCCESS;
 }
 
+/* BUG-46727 TO_CHAR()에 IYYY 추가 */
+static ACI_RC applyIYYYFormat( mtdDateType  * aDate,
+                               acp_char_t   * aBuffer,
+                               acp_sint32_t * aBufferCur,
+                               acp_sint32_t * aBufferFence,
+                               acp_char_t   * aString,
+                               acp_bool_t     aIsFillMode )
+{
+    acp_sint16_t    sYear     = mtdDateInterfaceYear( aDate );
+    acp_uint8_t     sMonth    = mtdDateInterfaceMonth( aDate );
+    acp_sint32_t    sDay      = mtdDateInterfaceDay( aDate );
+
+    acp_uint32_t    sValue    = mtcYearForStandard( sYear, sMonth, sDay );
+    acp_uint32_t    sValueLen = 0;
+
+    ACP_UNUSED(aString);
+
+    if ( aIsFillMode == ACP_FALSE )
+    {
+        ACI_TEST( (*aBufferFence) - (*aBufferCur) < 4 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 4 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        ACI_TEST( (acp_uint32_t)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+/* BUG-46727 TO_CHAR()에 IYY 추가 */
+static ACI_RC applyIYYFormat( mtdDateType  * aDate,
+                              acp_char_t   * aBuffer,
+                              acp_sint32_t * aBufferCur,
+                              acp_sint32_t * aBufferFence,
+                              acp_char_t   * aString,
+                              acp_bool_t     aIsFillMode )
+{
+    acp_sint16_t    sYear     = mtdDateInterfaceYear( aDate );
+    acp_uint8_t     sMonth    = mtdDateInterfaceMonth( aDate );
+    acp_sint32_t    sDay      = mtdDateInterfaceDay( aDate );
+
+    acp_uint32_t    sValue    = mtcYearForStandard( sYear, sMonth, sDay ) % 1000;
+    acp_uint32_t    sValueLen = 0;
+
+    ACP_UNUSED(aString);
+
+    if ( aIsFillMode == ACP_FALSE )
+    {
+        ACI_TEST( (*aBufferFence) - (*aBufferCur) < 3 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 3 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        ACI_TEST( (acp_uint32_t)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+/* BUG-46727 TO_CHAR()에 IY 추가 */
+static ACI_RC applyIYFormat( mtdDateType  * aDate,
+                             acp_char_t   * aBuffer,
+                             acp_sint32_t * aBufferCur,
+                             acp_sint32_t * aBufferFence,
+                             acp_char_t   * aString,
+                             acp_bool_t     aIsFillMode )
+{
+    acp_sint16_t    sYear     = mtdDateInterfaceYear( aDate );
+    acp_uint8_t     sMonth    = mtdDateInterfaceMonth( aDate );
+    acp_sint32_t    sDay      = mtdDateInterfaceDay( aDate );
+
+    acp_uint32_t    sValue    = mtcYearForStandard( sYear, sMonth, sDay ) % 100;
+    acp_uint32_t    sValueLen = 0;
+
+    ACP_UNUSED(aString);
+
+    if ( aIsFillMode == ACP_FALSE )
+    {
+        ACI_TEST( (*aBufferFence) - (*aBufferCur) < 2 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 2 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        ACI_TEST( (acp_uint32_t)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+/* BUG-46727 TO_CHAR()에 I 추가 */
+static ACI_RC applyIFormat( mtdDateType  * aDate,
+                            acp_char_t   * aBuffer,
+                            acp_sint32_t * aBufferCur,
+                            acp_sint32_t * aBufferFence,
+                            acp_char_t   * aString,
+                            acp_bool_t     aIsFillMode )
+{
+    acp_sint16_t    sYear     = mtdDateInterfaceYear( aDate );
+    acp_uint8_t     sMonth    = mtdDateInterfaceMonth( aDate );
+    acp_sint32_t    sDay      = mtdDateInterfaceDay( aDate );
+
+    acp_uint32_t    sValue    = mtcYearForStandard( sYear, sMonth, sDay ) % 10;
+    acp_uint32_t    sValueLen = 0;
+
+    ACP_UNUSED(aString);
+
+    if ( aIsFillMode == ACP_FALSE )
+    {
+        ACI_TEST( (*aBufferFence) - (*aBufferCur) < 1 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 1 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        ACI_TEST( (acp_uint32_t)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+
 /*
 static mtfFormatModuleFunc applySEPARATORFormat = &applyNONEFormat;
 static mtfFormatModuleFunc applyWHITESPACEFormat = &applyNONEFormat;
@@ -2530,7 +2695,8 @@ static mtfFormatModuleFunc gFormatFuncSet[MTC_TO_CHAR_MAX_PRECISION] = { NULL,
     &applyYYYFormat,          &applyYYFormat,           &applyYFormat,
     &applyDOUBLE_QUOTE_STRINGFormat, &applyFMFormat,    &applyNONEFormat,//applySEPARATORFormat,
     &applyIWFormat,           &applyWW2Format,          &applySYYYYFormat,
-    &applySCCFormat,          &applyNONEFormat,//applyWHITESPACEFormat,
+    &applySCCFormat,          &applyIYYYFormat,         &applyIYYFormat,
+    &applyIYFormat,           &applyIFormat,            &applyNONEFormat,//applyWHITESPACEFormat,
 };
 
 ACI_RC convertToRoman( acp_sint32_t   aIntNum,

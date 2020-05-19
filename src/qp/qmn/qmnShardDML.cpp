@@ -77,7 +77,7 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
-    sdi::closeDataNode( sClientInfo, sDataPlan->mDataInfo );
+    sdi::setDataNodePrepared( sClientInfo, sDataPlan->mDataInfo );
 
     //------------------------------------------------
     // 수행 함수 결정
@@ -142,6 +142,10 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
                                 sDataNodeArg.mBindParams )
                   != IDE_SUCCESS );
 
+        sDataNodeArg.mRemoteStmt = NULL;
+
+        sDataNodeArg.mSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
+
         IDE_TEST( sdi::initShardDataInfo( aTemplate,
                                           aCodePlan->shardAnalysis,
                                           sClientInfo,
@@ -162,18 +166,19 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
                                     aCodePlan,
                                     sBindParams )
                       != IDE_SUCCESS );
-
-            IDE_TEST( sdi::reuseShardDataInfo( aTemplate,
-                                               sClientInfo,
-                                               aDataPlan->mDataInfo,
-                                               sBindParams,
-                                               aCodePlan->shardParamCount )
-                      != IDE_SUCCESS );
         }
         else
         {
             // Nothing to do.
         }
+
+        IDE_TEST( sdi::reuseShardDataInfo( aTemplate,
+                                           sClientInfo,
+                                           aDataPlan->mDataInfo,
+                                           sBindParams,
+                                           aCodePlan->shardParamCount,
+                                           SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT )
+                  != IDE_SUCCESS );
     }
 
     *aDataPlan->flag &= ~QMND_SDEX_INIT_DONE_MASK;
@@ -230,6 +235,9 @@ IDE_RC qmnSDEX::setParamInfo( qcTemplate   * aTemplate,
         aBindParams[i].mDataSize  = sBindParam->dataSize;
         aBindParams[i].mPrecision = sBindParam->precision;
         aBindParams[i].mScale     = sBindParam->scale;
+
+        /* BUG-46623 padding 변수를 0으로 초기화 해야 한다. */
+        aBindParams[i].padding    = 0;
     }
 
     return IDE_SUCCESS;
@@ -352,7 +360,8 @@ IDE_RC qmnSDEX::printPlan( qcTemplate   * aTemplate,
     // 수행 정보의 상세 출력
     //----------------------------
 
-    if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) &&
+    if ( ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) ||
+           ( SDU_SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE == 1 ) ) &&
          ( sClientInfo != NULL ) )
     {
         //---------------------------------------------

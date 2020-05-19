@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdNibble.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtdNibble.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -31,7 +31,7 @@ extern mtdModule mtdNibble;
 #define MTD_NIBBLE_ALIGN             (ID_SIZEOF(UChar))
 
 // To Remove Warning
-static const mtdNibbleType mtdNibbleNull = { MTD_NIBBLE_NULL_LENGTH, {'\0',} };
+const mtdNibbleType mtdNibbleNull = { MTD_NIBBLE_NULL_LENGTH, {'\0',} }; /* PROJ-2632 */
 
 static IDE_RC mtdInitialize( UInt aNo );
 

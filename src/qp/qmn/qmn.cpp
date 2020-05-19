@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmn.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmn.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     여러 Plan Node가 공통적으로 사용하는 기능을 통합함.
@@ -716,10 +716,8 @@ qmn::makeFilter( qcTemplate         * aTemplate,
  *
  ***********************************************************************/
 
-#define IDE_FN "qmn::makeFilter"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
-
-    UInt      sFilterCnt;
+    UInt   sFilterCnt;
+    idBool sIsOnlyThirdFilter = ID_TRUE; /* PROJ-2632 */
 
     if ( (aFirstFilter == NULL) &&
          (aSecondFilter == NULL) &&
@@ -752,6 +750,8 @@ qmn::makeFilter( qcTemplate         * aTemplate,
                                  aTemplate,
                                  aPredicate->tupleRowID );
             sFilterCnt++;
+
+            sIsOnlyThirdFilter = ID_FALSE; /* PROJ-2632 */
         }
         else
         {
@@ -765,6 +765,8 @@ qmn::makeFilter( qcTemplate         * aTemplate,
                                  aTemplate,
                                  aPredicate->tupleRowID );
             sFilterCnt++;
+
+            sIsOnlyThirdFilter = ID_FALSE; /* PROJ-2632 */
         }
         else
         {
@@ -781,7 +783,7 @@ qmn::makeFilter( qcTemplate         * aTemplate,
         }
         else
         {
-            // Nothing to do.
+            sIsOnlyThirdFilter = ID_FALSE; /* PROJ-2632 */
         }
 
         // CallBack Data들을 연결한다.
@@ -832,11 +834,31 @@ qmn::makeFilter( qcTemplate         * aTemplate,
             aPredicate->filterCallBack->callback = qtc::smiCallBack;
             aPredicate->filterCallBack->data = aPredicate->callBackData;
         }
+
+        /* PROJ-2632 */
+        if ( sIsOnlyThirdFilter == ID_TRUE )
+        {
+            if ( mtx::generateSerialExecute( &( aTemplate->tmplate ),
+                                             aPredicate->mSerialFilterInfo,
+                                             aPredicate->mSerialExecuteData,
+                                             aPredicate->tupleRowID )
+                 == IDE_SUCCESS )
+            {
+                aPredicate->filterCallBack->callback = mtx::doSerialFilterExecute;
+                aPredicate->filterCallBack->data     = aPredicate->mSerialExecuteData;
+            }
+            else
+            {
+                aPredicate->mSerialExecuteData = NULL;
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     return IDE_SUCCESS;
-
-#undef IDE_FN
 }
 
 IDE_RC

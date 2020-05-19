@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smiTableCursor.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiTableCursor.cpp 84383 2018-11-20 04:18:42Z emlee $
  ******************************************************************************/
 
 #include <idl.h>
@@ -1191,6 +1191,18 @@ IDE_RC smiTableCursor::doCommonJobs4Open( smiStatement*        aStatement,
     IDE_TEST( mStatement->openCursor( this, &mIsSoloCursor )
               != IDE_SUCCESS );
 
+    /* PROJ-2694 Fetch Across Rollback 
+     * rollback시 cursor 재사용이 가능한지 여부를 판단하기 위해 
+     * holdable로 cursor open시 Infinite SCN을 저장해둔다. */
+    if( ( mTrans->mIsCursorHoldable ) == ID_TRUE )
+    {
+        SM_SET_SCN( &mTrans->mCursorOpenInfSCN, &mInfinite );
+
+        /* 다음 cursor open시 holdable이 아닐 경우에도 holdable로 판단하지 않도록
+         * mIsCursorHoldable 변수를 false로 세팅한다. */
+        mTrans->mIsCursorHoldable = ID_FALSE;
+    }
+
     return IDE_SUCCESS;
 
     /* 커서가 이미 오픈되어 있습니다. */
@@ -1736,11 +1748,10 @@ IDE_RC smiTableCursor::normalInsertRow(smiTableCursor  * aCursor,
          * when insert after row trigger on memory table is called,
          * can not reference new inserted values of INSERT SELECT statement.
          */
-        if( (sTableType == SMI_TABLE_MEMORY) ||
-            (sTableType == SMI_TABLE_META)   ||
-            (sTableType == SMI_TABLE_VOLATILE) )   
+        else if( (sTableType == SMI_TABLE_MEMORY) ||
+                 (sTableType == SMI_TABLE_META) )
         {
-            IDE_ERROR( sgmManager::getOIDPtr( sTable->mSpaceID,
+            IDE_ERROR( smmManager::getOIDPtr( sTable->mSpaceID,
                                               sTable->mNullOID, 
                                               (void**)&sNullPtr)
                        == IDE_SUCCESS );
@@ -1756,6 +1767,28 @@ IDE_RC smiTableCursor::normalInsertRow(smiTableCursor  * aCursor,
                                          sRecPtr, 
                                          SM_OID_ACT_AGING_INDEX )
                       != IDE_SUCCESS );
+        }
+        else 
+        {
+            IDE_ERROR( sTableType == SMI_TABLE_VOLATILE );
+            
+            IDE_ERROR( svmManager::getOIDPtr( sTable->mSpaceID,
+                                              sTable->mNullOID, 
+                                              (void**)&sNullPtr)
+                       == IDE_SUCCESS );
+
+            IDE_TEST( insertKeyIntoIndices( aCursor,
+                                            sRecPtr,
+                                            SC_NULL_GRID,
+                                            sNullPtr,
+                                            NULL )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( setAgingIndexFlag( aCursor, 
+                                         sRecPtr, 
+                                         SM_OID_ACT_AGING_INDEX )
+                      != IDE_SUCCESS );
+
         }
     }
 
@@ -1940,7 +1973,7 @@ IDE_RC smiTableCursor::insertRowWithIgnoreUniqueError( smiTableCursor  * aCursor
         {
             SC_MAKE_NULL_GRID( sRowGRID );
 
-            IDE_ERROR( sgmManager::getOIDPtr( aTableHeader->mSpaceID,
+            IDE_ERROR( smmManager::getOIDPtr( aTableHeader->mSpaceID,
                                               aTableHeader->mNullOID, 
                                               (void**)&sNullPtr)
                        == IDE_SUCCESS );

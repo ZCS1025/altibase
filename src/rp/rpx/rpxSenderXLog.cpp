@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderXLog.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSenderXLog.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -103,7 +103,9 @@ IDE_RC rpxSender::addXLogKeepAlive()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -156,7 +158,9 @@ IDE_RC rpxSender::addXLogHandshake()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -202,7 +206,9 @@ IDE_RC rpxSender::addXLogSyncPKBegin()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -247,7 +253,9 @@ IDE_RC rpxSender::addXLogSyncPKEnd()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -291,7 +299,9 @@ IDE_RC rpxSender::addXLogFailbackEnd()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -349,7 +359,9 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -360,7 +372,9 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -404,7 +418,9 @@ IDE_RC rpxSender::addXLogSyncCommit()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -448,7 +464,9 @@ IDE_RC rpxSender::addXLogSyncAbort()
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
                        (ideGetErrorCode() == cmERR_ABORT_SEND_ERROR) ||
-                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                       ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                       ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
@@ -841,20 +859,27 @@ void rpxSender::setNetworkErrorAndDeactivate( void )
     IDE_ERRLOG( IDE_RP_0 );
     IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
     
-    mNetworkError = ID_TRUE;
+    mRetryError = ID_TRUE;
     mSenderInfo->deActivate(); //isDisconnect()
 }
 
+void rpxSender::setRestartErrorAndDeactivate( void )
+{
+    mRetryError = ID_TRUE;
+    mSenderInfo->deActivate(); 
+}
 /*
  *
  */
 IDE_RC rpxSender::checkHBTFault( void )
 {
-    IDE_TEST( mNetworkError == ID_TRUE );
+    IDE_TEST( mRetryError == ID_TRUE );
 
     // PROJ-1537
     if ( ( mMeta.mReplication.mRole != RP_ROLE_ANALYSIS ) &&
-         ( mCurrentType != RP_OFFLINE ) ) //PROJ-1915
+         ( mMeta.mReplication.mRole != RP_ROLE_ANALYSIS_PROPAGATION ) &&
+         ( mCurrentType != RP_OFFLINE ) &&  //PROJ-1915
+         ( mSocketType != RP_SOCKET_TYPE_IB ) )
     {
         IDE_TEST_RAISE( rpcHBT::checkFault( mRsc ) == ID_TRUE, ERR_NETWORK );
     }
@@ -863,7 +888,10 @@ IDE_RC rpxSender::checkHBTFault( void )
 
     IDE_EXCEPTION( ERR_NETWORK );
     {
-        setNetworkErrorAndDeactivate();
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ) );
+
+        mRetryError = ID_TRUE;
+        mSenderInfo->deActivate(); //isDisconnect()
     }
     IDE_EXCEPTION_END;
 

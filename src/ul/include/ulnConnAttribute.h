@@ -38,7 +38,7 @@
 
 /* PROJ-2047 Strengthening LOB - LOBCACHE */
 #define ULN_LOB_CACHE_THRESHOLD_MIN        (0)
-#define ULN_LOB_CACHE_THRESHOLD_MAX        (1024 * 8)
+#define ULN_LOB_CACHE_THRESHOLD_MAX        (1024 * 512)  /* BUG-46411 */
 #define ULN_LOB_CACHE_THRESHOLD_DEFAULT    (1024 * 8)
 
 /* PROJ-1645 UL Failover   */
@@ -151,6 +151,7 @@ typedef enum ulnConnAttrID
 
     /* PROJ-1645 UL Failover */
     ULN_CONN_ATTR_ALTERNATE_SERVERS,
+    ULN_CONN_ATTR_LOAD_BALANCE,
     ULN_CONN_ATTR_CONNECTION_RETRY_COUNT,
     ULN_CONN_ATTR_CONNECTION_RETRY_DELAY,
     ULN_CONN_ATTR_SESSION_FAILOVER,
@@ -196,7 +197,27 @@ typedef enum ulnConnAttrID
     ULN_CONN_ATTR_SHARD_NODE_NAME,
     ULN_CONN_ATTR_SHARD_PIN,
 
+    /* BUG-46090 Meta Node SMN 전파 */
+    ULN_CONN_ATTR_SHARD_META_NUMBER,
+
     ULN_CONN_ATTR_PDO_DEFER_PROTOCOLS,  /* BUG-45286 */
+
+    /* PROJ-2681 */
+    ULN_CONN_ATTR_IB_LATENCY,
+    ULN_CONN_ATTR_IB_CONCHKSPIN,
+
+    ULN_CONN_ATTR_SHARD_CONNTYPE,
+
+    /* BUG-45707 */
+    ULN_CONN_ATTR_SHARD_CLIENT,
+    ULN_CONN_ATTR_SHARD_SESSION_TYPE,
+
+    /* BUG-46092
+     * ULN_CONN_ATTR_SHARD_CLIENT_CONNECTION_REPORT
+     * Only send property by shardcli.
+     * User can not set attibute value. */
+    /* BUG-46785 Deprecated */
+    ULN_CONN_ATTR_SHARD_CLIENT_CONNECTION_REPORT,
 
     ULN_CONN_ATTR_MAX
 } ulnConnAttrID;
@@ -248,6 +269,7 @@ extern const ulnMetricPrefixInt  gULN_MUL_TIME[];
 extern const ulnDiscreteInt      gULN_BOOL[];
 extern const ulnDiscreteInt      gULN_OPTIMIZER_MODE[];
 extern const ulnDiscreteInt      gULN_CONNTYPE[];
+extern const ulnDiscreteInt      gULN_SHARD_CONNTYPE[];
 extern const ulnDiscreteInt      gULN_POOL[];
 extern const ulnDiscreteInt      gULN_SQL_TXN[];
 extern const ulnDiscreteInt      gSQL_OV_ODBC[];

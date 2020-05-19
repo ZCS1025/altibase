@@ -34,70 +34,96 @@ import java.util.logging.Logger;
 import Altibase.jdbc.driver.cm.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.util.*;
+
+import static Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection.*;
 
 public final class AltibaseConnection implements Connection
 {
-    public static final byte         EXPLAIN_PLAN_OFF               = 0;
-    public static final byte         EXPLAIN_PLAN_ON                = 1;
-    public static final byte         EXPLAIN_PLAN_ONLY              = 2;
+    public static final byte              EXPLAIN_PLAN_OFF                          = 0;
+    public static final byte              EXPLAIN_PLAN_ON                           = 1;
+    public static final byte              EXPLAIN_PLAN_ONLY                         = 2;
 
-    private static final String      PROP_VALUE_PRIVILEGE_SYSDBA    = "sysdba";
-    private static final String      PROP_VALUE_PRIVILEGE_NORMAL    = "normal";
-    private static final String      PROP_VALUE_CLIENT_TYPE         = "NEW_JDBC";
-    private static final String      PROP_VALUE_NLS                 = "UTF16";
-    private static final int         PROP_VALUE_HEADER_DISPLAY_MODE = 1;
+    private static final String           PROP_VALUE_PRIVILEGE_SYSDBA               = "sysdba";
+    private static final String           PROP_VALUE_PRIVILEGE_NORMAL               = "normal";
+    private static final String           PROP_VALUE_CLIENT_TYPE                    = "NEW_JDBC";
+    private static final String           PROP_VALUE_NLS                            = "UTF16";
+    private static final int              PROP_VALUE_HEADER_DISPLAY_MODE            = 1;
 
-    private static final String      INTERNAL_SQL_ALTER_SESSION_SET_TXI_LEVEL = "ALTER SESSION SET TRANSACTION ISOLATION LEVEL "; /* BUG-39817 */
-    
-    private static final String      TX_LEVEL_SERIALIZABLE          = "serializable";
-    private static final String      TX_LEVEL_READ_COMMITTED        = "read committed";
-    private static final String      TX_LEVEL_REPEATABLE_READ       = "repeatable read";
+    private static final String           INTERNAL_SQL_ALTER_SESSION_SET_TXI_LEVEL  = "ALTER SESSION SET TRANSACTION ISOLATION LEVEL ";     /* BUG-39817 */
+
+    private static final String           TX_LEVEL_SERIALIZABLE                     = "serializable";
+    private static final String           TX_LEVEL_READ_COMMITTED                   = "read committed";
+    private static final String           TX_LEVEL_REPEATABLE_READ                  = "repeatable read";
 
     /* BUG-39817 */
-    private static final int         PROP_VALUE_SERVER_ISOLATION_LEVEL_UNKNOWN = -1;
-    private static final int         PROP_VALUE_SERVER_READ_COMMITTED          = 0;
-    private static final int         PROP_VALUE_SERVER_REPEATABLE_READ         = 1;
-    private static final int         PROP_VALUE_SERVER_SERIALIZABLE            = 2;
+    private static final int              PROP_VALUE_SERVER_ISOLATION_LEVEL_UNKNOWN = -1;
+    private static final int              PROP_VALUE_SERVER_READ_COMMITTED          = 0;
+    private static final int              PROP_VALUE_SERVER_REPEATABLE_READ         = 1;
+    private static final int              PROP_VALUE_SERVER_SERIALIZABLE            = 2;
 
-    private static final int         STMT_CID_SEQ_BIT               = 16;
-    private static final int         STMT_CID_SEQ_MAX               = (1 << STMT_CID_SEQ_BIT);
-    private static final int         STMT_CID_SEQ_MASK              = (STMT_CID_SEQ_MAX - 1);
+    private static final int              STMT_CID_SEQ_BIT                          = 16;
+    private static final int              STMT_CID_SEQ_MAX                          = (1 << STMT_CID_SEQ_BIT);
+    private static final int              STMT_CID_SEQ_MASK                         = (STMT_CID_SEQ_MAX - 1);
 
-    private static final Map         EMPTY_TYPEMAP                  = Collections.unmodifiableMap(new java.util.HashMap(0));
+    private static final Map              EMPTY_TYPEMAP                             = Collections.unmodifiableMap(new java.util.HashMap(0));
 
-    private CmChannel                mChannel;
-    private CmProtocolContextConnect mContext;
-    private SQLWarning               mWarning;
-    private boolean                  mIsClosed                      = true;
-    private LinkedList               mStatementList                 = new LinkedList();
-    private AutoCommitMode           mAutoCommit;   //PROJ-2190 client side autocommit 모드가 추가되었기 때문에 enum 형식으로 선언
-    private int                      mDefaultResultSetType          = ResultSet.TYPE_FORWARD_ONLY;
-    private int                      mDefaultResultSetConcurrency   = ResultSet.CONCUR_READ_ONLY;
-    private int                      mDefaultResultSetHoldability   = ResultSet.CLOSE_CURSORS_AT_COMMIT;
-    private AltibaseProperties       mProp;
-    private int                      mTxILevel                      = TRANSACTION_NONE; /* BUG-39817 */
-    private AltibaseStatement        mInternalStatement;
-    private int                      mCurrentCIDSeq                 = 0;
-    private Object                   mCurrentCIDSeqLock             = new Object();
-    private BitSet                   mUsedCIDSet                    = new BitSet(STMT_CID_SEQ_MAX);
-    private boolean                  mNliteralReplace;
-    private AltibaseDataSource       mDataSource;
-    private AltibaseDatabaseMetaData mMetaData;
-    private AltibaseFailoverContext  mFailoverContext;
-    private byte                     mExplainPlanMode;
-    private String                   mSessionTimeZone;
-    private String                   mDbTimeZone;
-    private String                   mDBPkgVerStr;
-    // PROJ-2583 
-    private transient Logger         mLogger;
+    private CmChannel                     mChannel;
+    private CmProtocolContextConnect      mContext;
+    private SQLWarning                    mWarning;
+    private boolean                       mIsClosed                                 = true;
+    private LinkedList                    mStatementList                            = new LinkedList();
+    private AutoCommitMode                mAutoCommit;    // PROJ-2190 client side autocommit 모드가 추가되었기 때문에 enum 형식으로 선언
+    private int                           mDefaultResultSetType                     = ResultSet.TYPE_FORWARD_ONLY;
+    private int                           mDefaultResultSetConcurrency              = ResultSet.CONCUR_READ_ONLY;
+    private int                           mDefaultResultSetHoldability              = ResultSet.CLOSE_CURSORS_AT_COMMIT;
+    private AltibaseProperties            mProp;
+    private int                           mTxILevel                                 = TRANSACTION_NONE;  /* BUG-39817 */
+    private AltibaseStatement             mInternalStatement;
+    private int                           mCurrentCIDSeq                            = 0;
+    private Object                        mCurrentCIDSeqLock                        = new Object();
+    private BitSet                        mUsedCIDSet                               = new BitSet(STMT_CID_SEQ_MAX);
+    private boolean                       mNliteralReplace;
+    private AltibaseDataSource            mDataSource;
+    private AltibaseDatabaseMetaData      mMetaData;
+    private AltibaseFailoverContext       mFailoverContext;
+    private byte                          mExplainPlanMode;
+    private String                        mSessionTimeZone;
+    private String                        mDbTimeZone;
+    private String                        mDBPkgVerStr;
+    // PROJ-2583
+    private transient Logger              mLogger;
 
     // PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning
-    private AltibaseStatement        mAsyncPrefetchStatement;
+    private AltibaseStatement             mAsyncPrefetchStatement;
+
+    // PROJ-2690 shard jdbc
+    private AltibaseShardingConnection    mMetaConnection;
+    private boolean                       mIsNodeConnection;
+
+    static
+    {
+        // BUG-46325 LobObjectFactory의 초기화를 AltibaseDriver대신 AltibaseConnection에서 수행한다.
+        LobObjectFactoryImpl.registerLobFactory();
+    }
+
+    public AltibaseConnection(Properties aProp, AltibaseDataSource aDataSource,
+                              AltibaseShardingConnection aShardConn) throws SQLException
+    {
+        createConnection(aProp, aDataSource, aShardConn);
+    }
 
     AltibaseConnection(Properties aProp, AltibaseDataSource aDataSource) throws SQLException
+    {
+        createConnection(aProp, aDataSource, null);
+    }
+
+    private void createConnection(Properties aProp, AltibaseDataSource aDataSource,
+                                  AltibaseShardingConnection aShardConn) throws SQLException
     {
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
         {
@@ -107,21 +133,48 @@ public final class AltibaseConnection implements Connection
         mChannel = new CmChannel();
         mContext = new CmProtocolContextConnect(mChannel);
         loadProperties(aProp);
+
+        String sServer;
+        int sPort;
+        if (mFailoverContext != null && mProp.useLoadBalance())
+        {
+            AltibaseFailoverServerInfo sServerInfo = mFailoverContext.getFailoverServerList().getRandom();
+            sServer = sServerInfo.getServer();
+            sPort   = sServerInfo.getPort();
+        }
+        else
+        {
+            sServer = mProp.getServer();
+            sPort   = mProp.getPort();
+        }
+
         try
         {
-            mChannel.open(mProp.getServer(),
+            mChannel.open(sServer,
                           mProp.getSockBindAddr(),
-                          mProp.getPort(),
+                          sPort,
                           mProp.getLoginTimeout(),
                           mProp.getResponseTimeout());
 
             handshake();
+
+            // PROJ-2690 meta connection 또는 node connection인 경우에는 shard hankshake를 수행한다.
+            if (isShardConnection(aShardConn))
+            {
+                shardHandshake();
+                if (aShardConn != null)
+                {
+                    aShardConn.setChannel(mChannel);
+                    mMetaConnection = aShardConn;
+                }
+            }
 
             connect(mProp);
         }
         catch (SQLException ex)
         {
             mChannel.quiteClose();
+            checkShardFailoverIsNotAvailable(ex);
             mWarning = AltibaseFailover.tryCTF(mFailoverContext, mWarning, ex);
         }
         mIsClosed = false;
@@ -130,20 +183,63 @@ public final class AltibaseConnection implements Connection
         mStatementList.add(mInternalStatement);
     }
 
+    /**
+     * node connection이고 failover가 셋팅되어 있지 않은 경우 통신에러일때 FailoverIsNotAvailableException
+     * 예외를 올린다.
+     * @param aException SQLException
+     * @throws ShardFailoverIsNotAvailableException Shard Failover Is Not Available Exception
+     */
+    private void checkShardFailoverIsNotAvailable(SQLException aException) throws ShardFailoverIsNotAvailableException
+    {
+        if (getNodeName() != null && ((mFailoverContext == null) ||
+                                      (mFailoverContext.getFailoverServerList().size() <= 0)) &&
+            AltibaseFailover.isNeedToFailover(aException))
+        {
+            CmOperation.throwShardFailoverIsNotAvailableException(getNodeName());
+        }
+    }
+
+    public String getNodeName()
+    {
+        return mProp.getProperty(AltibaseProperties.PROP_SHARD_NODE_NAME);
+    }
+
+    /**
+     * 메타커넥션이나 노드커넥션인지 여부를 체크한다.
+     * @param aShardConn 샤드메타커넥션 객체
+     * @return true 메타커넥션이나 노드커넥션 <br>
+     *         false 일반 커넥션
+     */
+    private boolean isShardConnection(AltibaseShardingConnection aShardConn)
+    {
+        return aShardConn != null || mProp.isSet(AltibaseProperties.PROP_SHARD_NODE_NAME);
+    }
+
     private void loadProperties(Properties aProp) throws SQLException
     {
         mProp = new AltibaseProperties(aProp);
 
         loadDataSourceProps();
         loadDefaultValues();
-        
-        // PROJ-2474 환경변수에 ALTIBASE___SSL_TEST가 enable되어 있을 땐 무조건 ssl 옵션을 추가한다.
-        if (AltibaseEnvironmentVariables.isSet(AltibaseEnvironmentVariables.ENV_ALTIBASE_SSL_TEST) &&
-                AltibaseEnvironmentVariables.getSslTest())
+
+        // PROJ-2474, PROJ-2681
+        // Regression test 를 위해 ALTIBASE_CONNTYPE_FORCE_FOR_TEST 환경변수가 설정되어 있다면,
+        // 'conntype' 프로퍼티를 이 환경변수 값으로 조정한다.
+        if (AltibaseEnvironmentVariables.isSet(AltibaseEnvironmentVariables.ENV_ALTIBASE_CONNTYPE_FORCE_FOR_TEST))
         {
-            mProp.setSslEnable(AltibaseEnvironmentVariables.getSslTest());
-            mProp.setProperty(SSLProperties.VERIFY_SERVER_CERTIFICATE, false);
-            mProp.setPort(AltibaseEnvironmentVariables.getSslPort());
+            if (AltibaseEnvironmentVariables.getConnTypeForceForTest().equals("SSL"))
+            {
+                mProp.setConnType(CmConnType.SSL.toString());
+                mProp.setProperty(SSLProperties.VERIFY_SERVER_CERTIFICATE, false);
+                mProp.setPort(AltibaseEnvironmentVariables.getSslPort());
+            }
+            else if (AltibaseEnvironmentVariables.getConnTypeForceForTest().equals("IB"))
+            {
+                mProp.setConnType(CmConnType.IB.toString());
+
+                if (AltibaseEnvironmentVariables.isSet(AltibaseEnvironmentVariables.ENV_ALTIBASE_HOST_FORCE_FOR_TEST))
+                    mProp.setServer(AltibaseEnvironmentVariables.getHostForceForTest());
+            }
         }
         
         // Determine whether connection type is IPv6 or IPv4
@@ -152,13 +248,11 @@ public final class AltibaseConnection implements Connection
         {
         	mChannel.setPreferredIPv6();
         }
-        
-        // PROJ-2474 ssl_enable이 활성화 되어 있는 경우 cmChannel에 셋팅해 준다.
-        if (mProp.isSslEnabled())
-        {
-            mChannel.setSslProps(mProp);
-        }
-        
+
+        // PROJ-2681
+        mChannel.setConnType(mProp.getConnType());
+        mChannel.setProps(mProp);
+
         // PROJ-2331
         if (mProp.isOnRedundantDataTransmission())
         {
@@ -189,13 +283,23 @@ public final class AltibaseConnection implements Connection
      */
     private void loadDefaultValues()
     {
+        /**
+         * PROJ-2681
+         * 프로퍼티 우선순위 적용 : 'ssl_enable=true' -> 'conntype=SSL'
+         */
+        mProp.sslEnabledToConnType();
+
         if (!mProp.isSet(AltibaseProperties.PROP_SERVER))
         {
             mProp.setServer(AltibaseProperties.DEFAULT_SERVER);
         }
         if (!mProp.isSet(AltibaseProperties.PROP_PORT))
         {
-            if (mProp.isSslEnabled())
+            if (CmConnType.IB.toString().equalsIgnoreCase(mProp.getConnType()))
+            {
+                mProp.setPort(AltibaseEnvironmentVariables.getIBPort(AltibaseProperties.DEFAULT_IB_PORT));   
+            }
+            else if (CmConnType.SSL.toString().equalsIgnoreCase(mProp.getConnType()))
             {
                 mProp.setPort(AltibaseEnvironmentVariables.getSslPort(AltibaseProperties.DEFAULT_SSL_PORT));   
             }
@@ -252,7 +356,7 @@ public final class AltibaseConnection implements Connection
             if (mProp.getFetchAsync().equalsIgnoreCase(AltibaseProperties.PROP_VALUE_FETCH_ASYNC_PREFERRED))
             {
                 String sOSName = System.getProperty("os.name");
-                if ("Linux".equals(sOSName))
+                if ("Linux".equalsIgnoreCase(sOSName))
                 {
                     mProp.setFetchAutoTuning(true);
                 }
@@ -299,7 +403,7 @@ public final class AltibaseConnection implements Connection
 
     AltibaseConnection cloneConnection() throws SQLException
     {
-        return new AltibaseConnection(mProp, mDataSource);
+        return new AltibaseConnection(mProp, mDataSource, mMetaConnection);
     }
 
     PrintWriter getLogWriter()
@@ -329,6 +433,16 @@ public final class AltibaseConnection implements Connection
         if (mContext.getError() != null)
         {
             mWarning = Error.processServerError(mWarning, mContext.getError());
+        }
+    }
+
+    private void shardHandshake() throws SQLException
+    {
+        CmProtocol.shardHandshake(mContext);
+        CmShardHandshakeResult sShardHandshakeResult = mContext.getShardHandshakeResult();
+        if (sShardHandshakeResult.getError() != null)
+        {
+            mWarning = Error.processServerError(mWarning, sShardHandshakeResult.getError());
         }
     }
 
@@ -460,7 +574,7 @@ public final class AltibaseConnection implements Connection
         sValue = aProp.getDateFormat();
         if (sValue != null)
         {
-            mContext.addProperty(AltibaseProperties.PROP_CODE_DATE_FORMAT, sValue);
+            mContext.addProperty(AltibaseProperties.PROP_CODE_DATE_FORMAT, sValue.toUpperCase());
         }
 
         mNliteralReplace = aProp.useNCharLiteralReplace();
@@ -503,6 +617,12 @@ public final class AltibaseConnection implements Connection
             mContext.addProperty(AltibaseProperties.PROP_CODE_FAILOVER_SOURCE, sValue);
         }
 
+        if (isShardConnection(mMetaConnection))
+        {
+            // Meta 커넥션이나 Node 커넥션일 경우에는 shard 속성을 보낸다.
+            setShardProperties(aProp);
+        }
+
         setOptionalIntProperty(AltibaseProperties.PROP_CODE_IDLE_TIMEOUT,
                                aProp.getProperty(AltibaseProperties.PROP_IDLE_TIMEOUT));
         setOptionalIntProperty(AltibaseProperties.PROP_CODE_QUERY_TIMEOUT,
@@ -520,6 +640,32 @@ public final class AltibaseConnection implements Connection
         /* BUG-39817 */
         setOptionalIsolationLevelProperty(AltibaseProperties.PROP_CODE_ISOLATION_LEVEL,
                                           aProp.getProperty(AltibaseProperties.PROP_TXI_LEVEL));
+    }
+
+    /**
+     * 샤딩과 관련된 속성을 보낸다.
+     * @param aProp AltibaseProperties 객체
+     * @throws SQLException 속성을 추가하는 도중 예외가 발생한 경우
+     */
+    private void setShardProperties(AltibaseProperties aProp) throws SQLException
+    {
+        String sNodeName = aProp.getShardNodeName();
+        if (!StringUtils.isEmpty(sNodeName))
+        {
+            mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_NODE_NAME, sNodeName.toUpperCase());
+            mIsNodeConnection = true;
+        }
+        long sShardPin = aProp.getShardPin();
+        if (sShardPin > 0)
+        {
+            mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_PIN, sShardPin);
+        }
+        long sShardMetaNumber = aProp.getLongProperty(AltibaseProperties.PROP_SHARD_META_NUMBER);
+        if (sShardMetaNumber != 0)
+        {
+            mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_META_NUMBER, sShardMetaNumber);
+        }
+        mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_CLIENT_TYPE, DEFAULT_SHARD_CLIENT_TYPE);
     }
 
     private boolean isServerSideAutoCommit()
@@ -879,6 +1025,23 @@ public final class AltibaseConnection implements Connection
         if (mContext.getError() != null)
         {
             mWarning = Error.processServerError(mWarning, mContext.getError());
+            setSMNInvalidErrorResults();
+        }
+    }
+
+    /**
+     * SMN Invalid 에러가 넘어온 경우 파싱한 SMN값과 needToDisconnect 값을 node connection 및
+     * meta connection에 저장한다.
+     */
+    private void setSMNInvalidErrorResults()
+    {
+        if (mContext.getError().isInvalidSMNError())
+        {
+            long sSMN = mContext.getError().getSMNOfDataNode();
+            getMetaConnection().setShardMetaNumberOfDataNode(sSMN);
+
+            boolean sIsNeedToDisconnect = mContext.getError().isNeedToDisconnect();
+            getMetaConnection().setNeedToDisconnect(sIsNeedToDisconnect);
         }
     }
 
@@ -1113,6 +1276,10 @@ public final class AltibaseConnection implements Connection
         throwErrorForTooManyStatements();
         
         AltibasePreparedStatement sStatement = new AltibasePreparedStatement(this, aSql, mDefaultResultSetType, mDefaultResultSetConcurrency, mDefaultResultSetHoldability);
+        synchronized (mStatementList)
+        {
+            mStatementList.add(sStatement);
+        }
         return sStatement;
     }
 
@@ -1149,6 +1316,7 @@ public final class AltibaseConnection implements Connection
         if (mContext.getError() != null)
         {
             mWarning = Error.processServerError(mWarning, mContext.getError());
+            setSMNInvalidErrorResults();
         }
     }
 
@@ -1215,6 +1383,23 @@ public final class AltibaseConnection implements Connection
     public void setCatalog(String aCatalog) throws SQLException
     {
         throwErrorForClosed();
+
+        // shard connection일 경우 catalog에 shardpin정보가 있으면 shardpin을 셋팅한다.
+        if (!StringUtils.isEmpty(aCatalog) && aCatalog.startsWith("shardpin:"))
+        {
+            int sIndex = aCatalog.indexOf("shardpin:");
+            String sShardPin = aCatalog.substring(sIndex+9, aCatalog.length());
+            mContext.clearProperties();
+            mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_PIN, sShardPin);
+            CmProtocol.sendProperties(mContext);
+            if (mContext.getError() != null)
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+            }
+
+            return;
+        }
+
         // 아무런 동작을 하지 않는다. dbname을 바꿀 수 없다.
         mWarning = Error.createWarning(mWarning, ErrorDef.CANNOT_RENAME_DB_NAME);
     }
@@ -1583,15 +1768,10 @@ public final class AltibaseConnection implements Connection
      */
     public String[] getCipherSuiteList()
     {
-        String[] sCipherSuiteList = null;
-        if (mProp.isSslEnabled())
-        {
-            sCipherSuiteList = mChannel.getCipherSuitList();
-        }
-        return sCipherSuiteList;
+        return mChannel.getCipherSuitList();
     }
     
-    AltibaseFailoverContext failoverContext()
+    public AltibaseFailoverContext failoverContext()
     {
         return mFailoverContext;
     }
@@ -1762,6 +1942,55 @@ public final class AltibaseConnection implements Connection
         synchronized (mStatementList)
         {
             return mAsyncPrefetchStatement;
+        }
+    }
+
+    public boolean isNodeConnection()
+    {
+        return mIsNodeConnection;
+    }
+
+    public AltibaseShardingConnection getMetaConnection()
+    {
+        return mMetaConnection;
+    }
+
+    public String getServerCharacterSet() throws SQLException
+    {
+        return mContext.getCharsetName();
+    }
+
+    public AltibaseProperties getProp()
+    {
+        return mProp;
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuilder sSb = new StringBuilder("AltibaseConnection{");
+        sSb.append("mIsClosed=").append(mIsClosed);
+        sSb.append(", mAutoCommit=").append(mAutoCommit);
+        sSb.append(", mID=").append(getSessionId());
+        sSb.append(", mIsNodeConnection=").append(mIsNodeConnection);
+        sSb.append('}');
+        return sSb.toString();
+    }
+
+    public void setMetaConnection(AltibaseShardingConnection aShardingConnection)
+    {
+        mMetaConnection = aShardingConnection;
+    }
+
+    public void sendSMNProperty(long aNewSMN) throws SQLException
+    {
+        mContext.clearProperties();
+        mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_META_NUMBER, aNewSMN);
+        CmProtocol.sendProperties(mContext);
+
+        if (mContext.getError() != null)
+        {
+            mWarning = Error.processServerError(mWarning, mContext.getError());
         }
     }
 }

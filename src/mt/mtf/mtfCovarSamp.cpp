@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCovarSamp.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfCovarSamp.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -203,6 +203,7 @@ static const mtcExecute mtfCovarSampExecuteDouble = {
     mtfCovarSampFinalizeDouble,
     mtfCovarSampCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

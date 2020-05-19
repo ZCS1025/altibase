@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCompiler.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLCompiler.h 85096 2019-03-28 04:04:46Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLCOMPILER_H_
@@ -60,8 +60,6 @@ public:
     /* BUG-37166 isql does not consider double quotation when it parses
      * stored procedure's arguments */
     IDE_RC ParsingExecProc( SChar   *a_Buf,
-                            SChar   *a_ArgList,
-                            idBool   a_IsFunc,
                             SInt     a_bufSize);
     IDE_RC ParsingPrepareSQL( SChar * a_Buf,
                               SInt    a_bufSize );

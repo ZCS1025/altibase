@@ -2244,7 +2244,7 @@ IDE_RC iduMemMgr::tlsf_realloc(iduMemoryClientIndex  aIndex,
     return IDE_FAILURE;
 }
 
-IDE_RC iduMemMgr::tlsf_free(void *aMemPtr)
+IDE_RC iduMemMgr::tlsf_free(void                *aMemPtr)
 {
     ULong*          sAllocSize;
 
@@ -2264,6 +2264,16 @@ IDE_RC iduMemMgr::tlsf_free(void *aMemPtr)
 
     IDE_EXCEPTION_END;
     return IDE_FAILURE;
+}
+
+IDE_RC iduMemMgr::tlsf_free4malign(void                *aMemPtr,
+                                   iduMemoryClientIndex aIndex,
+                                   ULong                aSize)
+{
+    PDL_UNUSED_ARG(aIndex);
+    PDL_UNUSED_ARG(aSize);
+
+    return tlsf_free(aMemPtr);
 }
 
 IDE_RC iduMemMgr::tlsf_shrink(void)

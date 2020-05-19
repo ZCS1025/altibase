@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbAlter.cpp 82209 2018-02-07 07:33:37Z returns $
+ * $Id: qdbAlter.cpp 84544 2018-12-07 00:41:25Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -506,6 +506,11 @@ IDE_RC qdbAlter::validateAddCol(qcStatement * aStatement)
             IDE_TEST_RAISE(sCurrConstr->constrType == QD_FOREIGN,
                            ERR_FOREIGN_KEY_ON_REPLICATED_TABLE);
         }
+    
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
     }
 
     // key size limit 검사
@@ -902,6 +907,18 @@ IDE_RC qdbAlter::validateDropCol(qcStatement * aStatement)
         // Nothing to do.
     }
 
+    if ( sTableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_CANNOT_DDL_WITH_RECOVERY)
@@ -1273,6 +1290,18 @@ IDE_RC qdbAlter::validateSetDefault(qcStatement * aStatement)
         /* Nothing to do */
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_CANNOT_SET_TIMESTAMP_DEFAULT);
@@ -1361,6 +1390,18 @@ IDE_RC qdbAlter::validateDropDefault(qcStatement * aStatement)
     else
     {
         /* Nothing to do */
+    }
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return IDE_SUCCESS;
@@ -1480,6 +1521,18 @@ IDE_RC qdbAlter::validateNotNull(qcStatement * aStatement)
                                        NULL )
              != IDE_SUCCESS);
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_EXIST_NOT_NULL);
@@ -1591,6 +1644,18 @@ IDE_RC qdbAlter::validateNullable(qcStatement * aStatement)
                   != IDE_SUCCESS );
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_NOT_EXIST_NOT_NULL);
@@ -1698,6 +1763,18 @@ IDE_RC qdbAlter::validateCompactTable( qcStatement * aStatement )
     /* 4. Memory 매체가 없으면 Compact를 사용할 수 없다. */
     IDE_TEST_RAISE( ( sCountMemType + sCountVolType ) == 0,
                     ERR_NO_MEMORY_OR_VOLATILE_TABLE );
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
 
     return IDE_SUCCESS;
 
@@ -2454,24 +2531,20 @@ IDE_RC qdbAlter::validateSplitPartition( qcStatement * aStatement )
 
     sPartitionInfo = sParseTree->partTable->partInfoList->partitionInfo;
 
-    if ( ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == ID_TRUE ) &&
-         ( QCG_GET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == sTableInfo->tableID ) )
+    if ( sPartitionInfo->replicationCount > 0 )
     {
-        if ( sPartitionInfo->replicationCount > 0 )
-        {
-            IDE_TEST( qci::mValidateReplicationCallback.mValidateAlterPartition( aStatement,
-                                                                                 sPartitionInfo )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+        IDE_TEST( qci::mValidateReplicationCallback.mValidateAlterPartition( aStatement,
+                                                                             sPartitionInfo )
+                  != IDE_SUCCESS );
+
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             sPartitionInfo->tableOID,
+                             SM_OID_NULL );
     }
     else
     {
-        IDE_TEST_RAISE( sPartitionInfo->replicationCount > 0 ,
-                        ERR_DDL_WITH_REPLICATED_PARTITION );
+        // Nothing to do
     }
 
     // ------------------------------------------------------
@@ -2617,7 +2690,8 @@ IDE_RC qdbAlter::validateSplitPartition( qcStatement * aStatement )
     // ------------------------------------------------------
     // 5. 범위 파티션드 테이블일 경우, 분할 기준 값 체크
     // ------------------------------------------------------
-    if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+         ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         sSplitCount = 0;
 
@@ -2939,10 +3013,6 @@ IDE_RC qdbAlter::validateSplitPartition( qcStatement * aStatement )
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
-    }
     IDE_EXCEPTION(ERR_ALTER_TABLE_PARTITION_ON_NONE_PART_TABLE)
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_CANNOT_ALTER_TABLE_PARTITION_ON_NONE_PART_TABLE));
@@ -3469,10 +3539,8 @@ IDE_RC qdbAlter::validateMergePartition(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     sSrcPartInfo2 = sParseTree->partTable->partInfoList->next->partitionInfo;
-    
-    
-    if ( ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == ID_TRUE ) &&
-         ( QCG_GET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == sTableInfo->tableID ) )
+ 
+    if ( ( sSrcPartInfo1->replicationCount > 0 ) || ( sSrcPartInfo2->replicationCount > 0 ) )
     {
         if ( sSrcPartInfo1->replicationCount > 0 )
         {
@@ -3495,11 +3563,15 @@ IDE_RC qdbAlter::validateMergePartition(qcStatement * aStatement)
         {
             /* Nothing to do */
         }
+
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             sSrcPartInfo1->tableOID,
+                             sSrcPartInfo2->tableOID );
     }
     else
     {
-        IDE_TEST_RAISE( ( sSrcPartInfo1->replicationCount > 0 ) || ( sSrcPartInfo2->replicationCount > 0 ),
-                        ERR_DDL_WITH_REPLICATED_PARTITION );
+        // Nothing to do
     }
 
     // ------------------------------------------------------
@@ -3543,6 +3615,17 @@ IDE_RC qdbAlter::validateMergePartition(qcStatement * aStatement)
         IDE_TEST( qdbAlter::checkAdjPartition( aStatement,
                                                sTableInfo )
                   != IDE_SUCCESS );
+    }
+    else if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+    {
+        /* BUG-46065 support range using hash */
+        IDE_TEST( qdbAlter::checkAdjRangeUsingHashPartition( aStatement,
+                                                             sTableInfo )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     // ------------------------------------------------------
@@ -3799,10 +3882,6 @@ IDE_RC qdbAlter::validateMergePartition(qcStatement * aStatement)
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
-    }
     IDE_EXCEPTION(ERR_ALTER_TABLE_PARTITION_ON_NONE_PART_TABLE)
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_CANNOT_ALTER_TABLE_PARTITION_ON_NONE_PART_TABLE));
@@ -3988,7 +4067,8 @@ IDE_RC qdbAlter::validateDropPartition( qcStatement * aStatement )
     // 범위 파티션드 테이블이면 오른쪽 파티션으로 인접한 파티션 찾기
     // (오른쪽 파티션의 PARTITION_MIN_VALUE 값도 변경되야 함)
     // ------------------------------------------------
-    if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+         ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         // 삭제할 파티션의 max_value를 qmsPartCondValList로 만든다.
         IDE_TEST( qcmPartition::getPartCondVal(
@@ -4054,16 +4134,33 @@ IDE_RC qdbAlter::validateDropPartition( qcStatement * aStatement )
                 sFindPartCondMinVal->partCondValType = QMS_PARTCONDVAL_NORMAL;
             }
 
-            if ( qmoPartition::compareRangePartition( sTableInfo->partKeyColumns,
-                                                      sPartCondMaxVal,
-                                                      sFindPartCondMinVal ) == 0 )
+            if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
             {
-                sIsFound = ID_TRUE;
-                break;
+                if ( qmoPartition::compareRangePartition( sTableInfo->partKeyColumns,
+                                                          sPartCondMaxVal,
+                                                          sFindPartCondMinVal ) == 0 )
+                {
+                    sIsFound = ID_TRUE;
+                    break;
+                }
+                else
+                {
+                    // Nothing to do
+                }
             }
             else
             {
-                // Nothing to do
+                /* BUG-46065 support range using hash */
+                if ( qmoPartition::compareRangeUsingHashPartition( sPartCondMaxVal,
+                                                                   sFindPartCondMinVal ) == 0 )
+                {
+                    sIsFound = ID_TRUE;
+                    break;
+                }
+                else
+                {
+                    // Nothing to do
+                }
             }
         }
 
@@ -4079,25 +4176,21 @@ IDE_RC qdbAlter::validateDropPartition( qcStatement * aStatement )
         // Nothing to do
     }
 
-    // check replcation 
-    if ( ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == ID_TRUE ) &&
-         ( QCG_GET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == sTableInfo->tableID ) )
+    if ( sPartitionInfo->replicationCount > 0 )
     {
-        if ( sPartitionInfo->replicationCount > 0 )
-        {
-            IDE_TEST( qci::mValidateReplicationCallback.mValidateAlterPartition( aStatement,
-                                                                                 sPartitionInfo )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+        IDE_TEST( qci::mValidateReplicationCallback.mValidateAlterPartition( aStatement,
+                                                                             sPartitionInfo )
+                  != IDE_SUCCESS );
+       
+        /* BUG-46457 Drop Partition DDL asynchronization support */ 
+        qrc::setDDLReplInfo( aStatement,
+                             sTableInfo->tableOID,
+                             sPartitionInfo->tableOID,
+                             SM_OID_NULL );
     }
     else
     {
-        IDE_TEST_RAISE( sPartitionInfo->replicationCount > 0 ,
-                        ERR_DDL_WITH_REPLICATED_PARTITION );
+        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
@@ -4117,10 +4210,6 @@ IDE_RC qdbAlter::validateDropPartition( qcStatement * aStatement )
     IDE_EXCEPTION(ERR_DROP_THE_DEFAULT_PARTITION)
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_CANNOT_DROP_THE_DEFAULT_PARTITION));
-    }
-    IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
     }
 
     IDE_EXCEPTION_END;
@@ -4325,6 +4414,15 @@ IDE_RC qdbAlter::validateTruncatePartition( qcStatement * aStatement )
     {
         IDE_TEST_RAISE(sTableInfo->replicationRecoveryCount > 0,
                        ERR_CANNOT_DDL_WITH_RECOVERY);
+        
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             sPartInfo->tableOID,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return IDE_SUCCESS;
@@ -4877,6 +4975,7 @@ IDE_RC qdbAlter::validateAccessPartition( qcStatement * aStatement )
 
     qdTableParseTree        * sParseTree;
     qcmTableInfo            * sTableInfo;
+    qcmTableInfo            * sPartInfo;
     qdPartitionAttribute    * sPartAttr;
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
@@ -4923,6 +5022,19 @@ IDE_RC qdbAlter::validateAccessPartition( qcStatement * aStatement )
     else
     {
         /* Nothing to do */
+    }
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        sPartInfo = sParseTree->partTable->partInfoList->partitionInfo;
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             sPartInfo->tableOID,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return IDE_SUCCESS;
@@ -5000,7 +5112,21 @@ IDE_RC qdbAlter::validateAlterCommon( qcStatement * aStatement,
                & QC_SESSION_ALTER_META_MASK )
              == QC_SESSION_ALTER_META_DISABLE )
         {
-            IDE_RAISE(ERR_NOT_ALTER_META);
+            /* PROJ-2677 DDL synchronization */
+            if ( ( aStatement->session->mQPSpecific.mFlag
+                   & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+                 != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+            {
+                IDE_RAISE(ERR_NOT_ALTER_META);
+            }
+            else
+            {
+                // Nothing to do
+            }
+        }
+        else
+        {
+            // Nothing to do
         }
     }
 
@@ -13239,15 +13365,6 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
     sSrcPartHandle = sParseTree->partTable->partInfoList->partHandle;
     sSrcPartInfo   = sParseTree->partTable->partInfoList->partitionInfo;
 
-    if ( sSrcPartInfo->replicationCount > 0 )
-    {
-        sIsReplicated = ID_TRUE;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
     // PROJ-1624 non-partitioned index
     if ( sParseTree->oldIndexTables != NULL )
     {
@@ -13270,14 +13387,32 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
     /*
      * check replication count on partition
      */
-    if ( sIsReplicated == ID_TRUE )
+    if ( sSrcPartInfo->replicationCount > 0 )
     {
-        IDE_TEST_RAISE( ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) != ID_TRUE ) ||
-                        ( QCG_GET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) != sTableInfo->tableID ),
-                        ERR_DDL_WITH_REPLICATED_PARTITION );
+        sIsReplicated = ID_TRUE;
 
-        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, 
+        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 1, 
                                                                                  sTableInfo )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( QC_SMI_STMT( aStatement )->getTrans()->getReplicationMode()
+                        == SMI_TRANSACTION_REPL_NONE,
+                        ERR_CANNOT_WRITE_REPL_INFO );
+
+        /* BUG-20514 (PROJ-1442) Partition에 대한 Truncate를 지원해야 합니다.
+         * 관련 Receiver Thread 중지
+         */
+        IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
+                                                                   &sSrcPartInfo->tableOID,
+                                                                   1 )
+                  != IDE_SUCCESS );
+
+        //BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지 않아야 합니다.
+        // mStatistics 통계 정보를 전달 합니다.
+        IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT(aStatement),
+                                                                        aStatement->mStatistics,
+                                                                        &sSrcPartInfo->tableOID,
+                                                                        1 )
                   != IDE_SUCCESS );
     }
     else
@@ -13301,7 +13436,8 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
                 // 1-1. 파티션 키 조건 값을 구한다.
                 //-----------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // DstPart2의 PARTITION_MIN_VALUE는 파티션 분할 기준 값이다.
                     IDE_TEST( qdbCommon::getPartCondValueFromParseTree(
@@ -13434,7 +13570,8 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
                 // 범위 파티션드 테이블의 경우
                 // SrcPart의 PARTITION_MAX_VALUE를 분할 기준 값으로 수정한다.
                 // SrcPart의 max_value는 DstPart2의 min_value이다.
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     IDE_TEST( qdbCommon::updatePartMaxValueOfTablePartMeta (
                                   aStatement,
@@ -13554,7 +13691,8 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
                 // 1-1. 파티션 키 조건 값을 구한다.
                 //-----------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // 가장 왼쪽의 파티션이면 DstPart1의 min_value는 NULL이다.
                     if( idlOS::strlen( sSrcPartMinVal ) == 0 )
@@ -13685,7 +13823,8 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
                 // ------------------------------------------------
                 // SrcPart의 메타 정보 수정
                 // ------------------------------------------------
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // SrcPart의 PARTITION_MIN_VALUE를 분할 기준 값으로 수정
                     // DstPart2의 max_value가 SrcPart의 min_value이다.
@@ -13804,7 +13943,8 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
                 // 1-1. 파티션 키 조건 값을 구한다.
                 //-----------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // 가장 왼쪽의 파티션이면 DstPart1의 min_value는 NULL이다.
                     if( idlOS::strlen( sSrcPartMinVal ) == 0 )
@@ -14235,6 +14375,68 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
         {
             /* Nothing to do */
         }
+
+        /* BUG-45943 Partition Merge / Split DDL synchronization support */
+        switch ( sSrcPartAttr->alterPart->splitMergeType )
+        {
+            case QD_ALTER_PARTITION_LEFT_INPLACE_TYPE:
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo->tableOID,
+                                                                              sSrcPartInfo->tableOID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              SM_OID_NULL,
+                                                                              sDstPartInfo2->tableOID )
+                          != IDE_SUCCESS );
+                break;
+            case QD_ALTER_PARTITION_RIGHT_INPLACE_TYPE:
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              SM_OID_NULL,
+                                                                              sDstPartInfo1->tableOID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo->tableOID,
+                                                                              sSrcPartInfo->tableOID )
+                          != IDE_SUCCESS );
+
+                break;
+            case QD_ALTER_PARTITION_OUTPLACE_TYPE:
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              SM_OID_NULL,
+                                                                              sDstPartInfo1->tableOID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              SM_OID_NULL,
+                                                                              sDstPartInfo2->tableOID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo->tableOID,
+                                                                              SM_OID_NULL )
+                          != IDE_SUCCESS );
+                break;
+            default:
+                IDE_DASSERT(0);
+                break;
+        }
+        
+        /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+        if ( ( aStatement->session->mQPSpecific.mFlag
+               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        {
+            IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
+                                                    sTableInfo->tableOwnerID,
+                                                    sTableInfo->name )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do
+        }
     }
     else
     {
@@ -14299,15 +14501,15 @@ IDE_RC qdbAlter::executeSplitPartition( qcStatement * aStatement )
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
-    }
     IDE_EXCEPTION( ERR_UNEXPECTED )
     {
         IDE_SET( ideSetErrorCode( mtERR_ABORT_UNEXPECTED_ERROR,
                                   "executeSplitPartition",
                                   "invalid split type" ) );
+    }
+    IDE_EXCEPTION( ERR_CANNOT_WRITE_REPL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_WRITE_REPL_INFO ) );
     }
     IDE_EXCEPTION_END;
 
@@ -14450,13 +14652,57 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
     {
         IDE_TEST_RAISE( ( sSrcPartInfo1->replicationCount == 0 ) || ( sSrcPartInfo2->replicationCount == 0 ),
                         ERR_DDL_WITH_REPLICATED_PARTITION );
-        IDE_TEST_RAISE( ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) != ID_TRUE ) ||
-                        ( QCG_GET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) != sTableInfo->tableID ),
-                        ERR_DDL_WITH_REPLICATED_PARTITION );
 
-        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, 
+        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 1, 
                                                                                  sTableInfo ) 
                   != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( QC_SMI_STMT( aStatement )->getTrans()->getReplicationMode()
+                        == SMI_TRANSACTION_REPL_NONE,
+                        ERR_CANNOT_WRITE_REPL_INFO );
+
+        /* BUG-20514 (PROJ-1442) Partition에 대한 Truncate를 지원해야 합니다.
+         * 관련 Receiver Thread 중지
+         */
+        if ( sSrcPartInfo1->replicationCount > 0 )
+        {
+            IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
+                                                                       &sSrcPartInfo1->tableOID,
+                                                                       1 )
+                      != IDE_SUCCESS );
+
+            //BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지 않아야 합니다.
+            // mStatistics 통계 정보를 전달 합니다.
+            IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT(aStatement),
+                                                                            aStatement->mStatistics,
+                                                                            &sSrcPartInfo1->tableOID,
+                                                                            1 )
+                      != IDE_SUCCESS );
+
+        }
+        else
+        {
+            // Nothing to do
+        }
+
+        if ( sSrcPartInfo2->replicationCount > 0 )
+        {
+            IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
+                                                                       &sSrcPartInfo2->tableOID,
+                                                                       1 )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT(aStatement),
+                                                                            aStatement->mStatistics,
+                                                                            &sSrcPartInfo2->tableOID,
+                                                                            1 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do
+        }
+
     }
     else
     {
@@ -14496,7 +14742,8 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
                 // DstPart의 PARTITION_MIN_VALUE, PARTITION_MAX_VALUE를 구한다.
                 // ------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // SrcPart1이 SrcPart2보다 작은 파티션 조건 값을 갖는 경우
                     if( sIsLeftPartIsLess == ID_TRUE )
@@ -14564,7 +14811,8 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
                 // SrcPart의 메타 정보 수정
                 // ------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // SrcPart1이 SrcPart2보다 작은 파티션 조건 값을 갖는 경우
                     if( sIsLeftPartIsLess == ID_TRUE )
@@ -14665,7 +14913,8 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
                 // DstPart의 PARTITION_MIN_VALUE, PARTITION_MAX_VALUE를 구한다.
                 // ------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // SrcPart1이 SrcPart2보다 작은 파티션 조건 값을 갖는 경우
                     if( sIsLeftPartIsLess == ID_TRUE )
@@ -14733,7 +14982,8 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
                 // SrcPart의 메타 정보 수정
                 // ------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // SrcPart1이 SrcPart2보다 작은 파티션 조건 값을 갖는 경우
                     if( sIsLeftPartIsLess == ID_TRUE )
@@ -14821,7 +15071,8 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
                 // DstPart의 PARTITION_MIN_VALUE, PARTITION_MAX_VALUE를 구한다.
                 // ------------------------------------------------
                 // 범위 파티션드 테이블
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+                     ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // SrcPart1이 SrcPart2보다 작은 파티션 조건 값을 갖는 경우
                     if( sIsLeftPartIsLess == ID_TRUE )
@@ -15199,6 +15450,69 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
         {
             /* Nothing to do */
         }
+
+        /* BUG-45943 Partition Merge / Split DDL synchronization support */
+        switch ( sSrcPartAttr1->alterPart->splitMergeType )
+        {
+            case QD_ALTER_PARTITION_LEFT_INPLACE_TYPE:
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo1->tableOID,
+                                                                              sSrcPartInfo1->tableOID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo2->tableOID,
+                                                                              SM_OID_NULL )
+                          != IDE_SUCCESS );
+                break;
+            case QD_ALTER_PARTITION_RIGHT_INPLACE_TYPE:
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo1->tableOID,
+                                                                              SM_OID_NULL )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo2->tableOID,
+                                                                              sSrcPartInfo2->tableOID )
+                          != IDE_SUCCESS );
+
+                break;
+            case QD_ALTER_PARTITION_OUTPLACE_TYPE:
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              SM_OID_NULL,
+                                                                              sDstPartInfo->tableOID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo1->tableOID,
+                                                                              SM_OID_NULL )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                              sSrcPartInfo2->tableOID,
+                                                                              SM_OID_NULL )
+                          != IDE_SUCCESS );
+
+                break;
+            default:
+                IDE_DASSERT(0);
+                break;
+        }
+        
+        /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+        if ( ( aStatement->session->mQPSpecific.mFlag
+               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        {
+            IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
+                                                    sTableInfo->tableOwnerID,
+                                                    sTableInfo->name )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do
+        }
     }
     else
     {
@@ -15266,6 +15580,10 @@ IDE_RC qdbAlter::executeMergePartition(qcStatement * aStatement)
     IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
+    }
+    IDE_EXCEPTION( ERR_CANNOT_WRITE_REPL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_WRITE_REPL_INFO ) );
     }
     IDE_EXCEPTION_END;
 
@@ -15360,12 +15678,28 @@ IDE_RC qdbAlter::executeDropPartition( qcStatement * aStatement )
      */
     if ( sIsReplicated == ID_TRUE )
     {
-        IDE_TEST_RAISE( ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) != ID_TRUE ) ||
-                        ( QCG_GET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) != sTableInfo->tableID ),
-                        ERR_DDL_WITH_REPLICATED_PARTITION );
-
-        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, 
+        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 1, 
                                                                                  sTableInfo ) 
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( QC_SMI_STMT( aStatement )->getTrans()->getReplicationMode()
+                        == SMI_TRANSACTION_REPL_NONE,
+                        ERR_CANNOT_WRITE_REPL_INFO );
+
+        /* BUG-20514 (PROJ-1442) Partition에 대한 Truncate를 지원해야 합니다.
+         * 관련 Receiver Thread 중지
+         */
+        IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
+                                                                   &sDropPartInfo->tableOID,
+                                                                   1 )
+                  != IDE_SUCCESS );
+
+        //BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지 않아야 합니다.
+        // mStatistics 통계 정보를 전달 합니다.
+        IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT(aStatement),
+                                                                        aStatement->mStatistics,
+                                                                        &sDropPartInfo->tableOID,
+                                                                        1 )
                   != IDE_SUCCESS );
     }
     else
@@ -15376,7 +15710,8 @@ IDE_RC qdbAlter::executeDropPartition( qcStatement * aStatement )
     // ------------------------------------------------
     // 범위 파티션드 테이블이면 오른쪽 파티션의 PARTITION_MIN_VALUE 수정
     // ------------------------------------------------
-    if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+         ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         sRightPartInfo =
             sParseTree->partTable->partInfoList->next->partitionInfo;
@@ -15459,6 +15794,42 @@ IDE_RC qdbAlter::executeDropPartition( qcStatement * aStatement )
         sTableInfo = sNewTableInfo;
 
         // table Partition 은 삭제될 metaCache 이므로 새로 생성하지 않는다.
+
+        /* BUG-46457 Drop Partition DDL asynchronization support */
+        IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                      sDropPartInfo->tableOID,
+                                                                      SM_OID_NULL )
+                  != IDE_SUCCESS );
+
+        if ( ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+             ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
+        {
+            sRightPartInfo = sParseTree->partTable->partInfoList->next->partitionInfo;
+
+            IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,
+                                                                          sRightPartInfo->tableOID,
+                                                                          sRightPartInfo->tableOID ) 
+                      != IDE_SUCCESS );
+
+        }
+        else
+        {
+            // Nothing to do
+        }
+
+        if ( ( aStatement->session->mQPSpecific.mFlag
+               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        {
+            IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
+                                                    sTableInfo->tableOwnerID,
+                                                    sTableInfo->name )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do
+        }
     }
     else
     {
@@ -15505,9 +15876,9 @@ IDE_RC qdbAlter::executeDropPartition( qcStatement * aStatement )
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
+    IDE_EXCEPTION( ERR_CANNOT_WRITE_REPL_INFO )
     {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_WRITE_REPL_INFO ) );
     }
     IDE_EXCEPTION_END;
 
@@ -18060,6 +18431,101 @@ IDE_RC qdbAlter::checkAdjPartition(
     return IDE_FAILURE;
 }
 
+/* BUG-46065 support range using hash */
+IDE_RC qdbAlter::checkAdjRangeUsingHashPartition( qcStatement  * aStatement,
+                                                  qcmTableInfo * aTableInfo )
+{
+    qmsPartCondValList   * sPartCondMinVal;
+    qmsPartCondValList   * sPartCondMaxVal;
+    mtdCharType          * sPartKeyCondMinValueStr;
+    mtdCharType          * sPartKeyCondMaxValueStr;
+
+    qmsPartCondValList   * sPartCondMinVal2;
+    qmsPartCondValList   * sPartCondMaxVal2;
+    mtdCharType          * sPartKeyCondMinValueStr2;
+    mtdCharType          * sPartKeyCondMaxValueStr2;
+
+    qdTableParseTree     * sParseTree;
+    idBool                 sIsLeftPartIsLess = ID_FALSE;
+    qdPartitionAttribute * sSrcPartAttr1;
+    qdPartitionAttribute * sSrcPartAttr2;
+
+    sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
+
+    sSrcPartAttr1 = sParseTree->partTable->partAttr;
+    sSrcPartAttr2 = sParseTree->partTable->partAttr->next;
+
+    // 파스트리에서 가져온다.
+    sPartCondMinVal         = sSrcPartAttr1->alterPart->partCondMinVal;
+    sPartCondMaxVal         = sSrcPartAttr1->alterPart->partCondMaxVal;
+    sPartKeyCondMinValueStr = sSrcPartAttr1->alterPart->partKeyCondMinValStr;
+    sPartKeyCondMaxValueStr = sSrcPartAttr1->alterPart->partKeyCondMaxValStr;
+
+    sPartCondMinVal2         = sSrcPartAttr2->alterPart->partCondMinVal;
+    sPartCondMaxVal2         = sSrcPartAttr2->alterPart->partCondMaxVal;
+    sPartKeyCondMinValueStr2 = sSrcPartAttr2->alterPart->partKeyCondMinValStr;
+    sPartKeyCondMaxValueStr2 = sSrcPartAttr2->alterPart->partKeyCondMaxValStr;
+
+    // ---------------------------------------------------
+    // SrcPart1의 max value와 SrcPart2의 min value가 같거나
+    // SrcPart2의 max value와 SrcPart1의 max value가 같으면
+    // 서로 인접한 파티션이다.
+    // ---------------------------------------------------
+    if ( (sPartKeyCondMinValueStr->length == 0) ||
+         (sPartKeyCondMaxValueStr2->length == 0) )
+    {
+        sIsLeftPartIsLess = ID_TRUE;
+
+        IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                            sPartCondMaxVal,
+                            sPartCondMinVal2 ) != 0,
+                        ERR_MERGE_NOT_ADJACENT_PARTITIONS_IN_RANGE_PART_TABLE );
+    }
+    else if ( (sPartKeyCondMaxValueStr->length == 0) ||
+              (sPartKeyCondMinValueStr2->length == 0) )
+    {
+        sIsLeftPartIsLess = ID_FALSE;
+
+        IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                            sPartCondMinVal,
+                            sPartCondMaxVal2 ) != 0,
+                        ERR_MERGE_NOT_ADJACENT_PARTITIONS_IN_RANGE_PART_TABLE );
+    }
+    else
+    {
+        if ( qmoPartition::compareRangeUsingHashPartition(
+                sPartCondMaxVal,
+                sPartCondMinVal2 ) == 0 )
+        {
+            sIsLeftPartIsLess = ID_TRUE;
+        }
+        else if ( qmoPartition::compareRangeUsingHashPartition(
+                sPartCondMaxVal2,
+                sPartCondMinVal ) == 0 )
+        {
+            sIsLeftPartIsLess = ID_FALSE;
+        }
+        else
+        {
+            IDE_RAISE( ERR_MERGE_NOT_ADJACENT_PARTITIONS_IN_RANGE_PART_TABLE );
+        }
+    }
+
+    // SrcPart1과 SrcPart2의 순서를 파스트리에 저장해 놓는다.
+    sParseTree->partTable->partAttr->alterPart->isLeftPartIsLess = sIsLeftPartIsLess;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_MERGE_NOT_ADJACENT_PARTITIONS_IN_RANGE_PART_TABLE)
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_CANNOT_MERGE_NOT_ADJ_PARTITIONS_IN_RANGE_PART_TABLE));
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 /*
     Table의 Flag를 변경하는 Alter구문에 대한 Validation
 
@@ -20102,6 +20568,18 @@ IDE_RC qdbAlter::validateModifyCol( qcStatement * aStatement )
 
         sParseColumn = sParseColumn->next;
         sModifyColumn = sModifyColumn->next;
+    }
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return IDE_SUCCESS;
@@ -28405,6 +28883,18 @@ IDE_RC qdbAlter::validateAccessTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_ACCESS_NOT_SUPPORT_MVIEW );
@@ -29712,6 +30202,18 @@ IDE_RC qdbAlter::validateAlterPartition( qcStatement * aStatement )
         /* Nothing to do */
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             sPartitionInfo->tableOID,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_ALTER_TABLE_PARTITION_ON_NONE_PART_TABLE )
@@ -30194,6 +30696,10 @@ IDE_RC qdbAlter::validateAlterTablespace( qcStatement * aStatement )
      */
     if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
+        IDE_TEST_RAISE( ( qrc::isDDLSync( aStatement ) == ID_TRUE ) &&
+                        ( sTableInfo->replicationCount > 0 ), 
+                        ERR_DDL_WITH_REPLICATED_PARTITION );
+
         /* 파티션 리스트를 파스트리에 달아놓는다. */
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
                                                           sTableInfo->tableID,
@@ -30381,6 +30887,18 @@ IDE_RC qdbAlter::validateAlterTablespace( qcStatement * aStatement )
                   != IDE_SUCCESS );
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NOT_SUPPORTED_TABLESPACE_TYPE )
@@ -30390,6 +30908,10 @@ IDE_RC qdbAlter::validateAlterTablespace( qcStatement * aStatement )
     IDE_EXCEPTION( ERR_REORGANIZE_REPL_TABLE );
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_ALTER_REORGANIZE_COMPRESSION_COL_WITH_REPLICATED_TBL ) );
+    }
+    IDE_EXCEPTION( ERR_DDL_WITH_REPLICATED_PARTITION )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART ) );
     }
 #ifdef ALTI_CFG_EDITION_DISK
     IDE_EXCEPTION( ERR_NOT_SUPPORT_MEMORY_VOLATILE_TABLESPACE_IN_DISK_EDITION );

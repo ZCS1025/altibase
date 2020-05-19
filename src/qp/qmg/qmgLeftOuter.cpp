@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgLeftOuter.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgLeftOuter.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
  *
  * Description :
  *     LeftOuter Graph를 위한 수행 함수
@@ -1157,7 +1157,7 @@ qmgLeftOuter::makeHashJoin( qcStatement    * aStatement,
     //-----------------------
     // init right HASH
     //-----------------------
-
+    qmc::disableSealTrueFlag( aMyGraph->graph.myPlan->resultDesc );
     IDE_TEST( qmoOneMtrPlan::initHASH(
                   aStatement ,
                   aMyGraph->graph.myQuerySet ,
@@ -1180,7 +1180,6 @@ qmgLeftOuter::makeHashJoin( qcStatement    * aStatement,
         //-----------------------
         // init left HASH
         //-----------------------
-
         IDE_TEST( qmoOneMtrPlan::initHASH(
                       aStatement,
                       aMyGraph->graph.myQuerySet,
@@ -1207,7 +1206,6 @@ qmgLeftOuter::makeHashJoin( qcStatement    * aStatement,
     //-----------------------
     // 하위 plan 생성
     //-----------------------
-
     IDE_TEST( makeChildPlan( aStatement,
                              aMyGraph,
                              sLeftHASH,

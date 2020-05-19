@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmCreate.cpp 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: qcmCreate.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -1885,6 +1885,7 @@ IDE_RC qcmCreate::createTableInfoForCreateDB( qcmTableInfo  * aTableInfo,
     aTableInfo->checkCount       = 0;       /* PROJ-1107 Check Constraint 지원 */
     aTableInfo->checks           = NULL;    /* PROJ-1107 Check Constraint 지원 */
     aTableInfo->tableType        = QCM_META_TABLE;
+    aTableInfo->mPVType          = QCM_PV_TYPE_NONE;    /* BUG-45646 */
     aTableInfo->maxrows          = 0;
     aTableInfo->TBSID            = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC;
     aTableInfo->TBSType          = SMI_MEMORY_SYSTEM_DICTIONARY;
@@ -1930,7 +1931,8 @@ IDE_RC qcmCreate::createTableInfoForCreateDB( qcmTableInfo  * aTableInfo,
     aTableInfo->viewReadOnly    = QCM_VIEW_NON_READ_ONLY;
 
     // BUG-13725
-    (void)qcm::setOperatableFlag( aTableInfo );
+    qcm::setOperatableFlag( aTableInfo->tableType,
+                            &aTableInfo->operatableFlag );
 
     for (i = 0; i < aColCount; i++)
     {
@@ -3333,13 +3335,16 @@ GIVE_UP_XSN                 BIGINT, \
 PARALLEL_APPLIER_COUNT      INTEGER,\
 APPLIER_INIT_BUFFER_SIZE    BIGINT, \
 REMOTE_XSN                  BIGINT, \
-PEER_REPLICATION_NAME       VARCHAR("QCM_META_NAME_LEN") FIXED )"
+PEER_REPLICATION_NAME       VARCHAR("QCM_META_NAME_LEN") FIXED, \
+REMOTE_LAST_DDL_XSN         BIGINT )"
         ,
         (SChar*) "CREATE TABLE SYS_REPL_HOSTS_( \
 HOST_NO INTEGER, \
 REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
 HOST_IP VARCHAR(64) FIXED, \
-PORT_NO INTEGER )"
+PORT_NO INTEGER, \
+CONN_TYPE VARCHAR(20) FIXED, \
+IB_LATENCY VARCHAR(10) FIXED )"
         ,
         (SChar*) "CREATE TABLE SYS_REPL_ITEMS_ ( \
 REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
@@ -3362,7 +3367,15 @@ TABLE_OID BIGINT, \
 USER_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
 TABLE_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
 PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
-PRIMARY_KEY_INDEX_ID INTEGER )"
+PRIMARY_KEY_INDEX_ID INTEGER, \
+REMOTE_USER_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+REMOTE_TABLE_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+REMOTE_PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+PARTITION_ORDER       INTEGER, \
+PARTITION_MIN_VALUE   VARCHAR(4000) VARIABLE, \
+PARTITION_MAX_VALUE   VARCHAR(4000) VARIABLE, \
+INVALID_MAX_SN BIGINT ) "
+
         ,
         (SChar*) "CREATE TABLE SYS_REPL_OLD_COLUMNS_ ( \
 REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
@@ -5760,6 +5773,91 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
             ,
         NULL };
 
+    SChar         * sUpgradeVer5ToVer6[] = {
+        (SChar*) "DROP TABLE SYS_DATABASE_"
+        ,
+        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
+                 "DB_NAME VARCHAR(40) FIXED, "                          
+                 "OWNER_DN VARCHAR(2048) FIXED, "                       
+                 "META_MAJOR_VER INTEGER, "                             
+                 "META_MINOR_VER INTEGER, "                             
+                 "META_PATCH_VER INTEGER, "
+                 "PREV_META_MAJOR_VER INTEGER, "                             
+                 "PREV_META_MINOR_VER INTEGER, "                             
+                 "PREV_META_PATCH_VER INTEGER )"
+        ,
+        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
+                 "'%s',"                                                
+                 QCM_META_MAJOR_STR_VER", " 
+                 QCM_META_MINOR_STR_VER", "
+                 QCM_META_PATCH_STR_VER", "
+                 QCM_META_MAJOR_STR_VER", " 
+                 "%"ID_INT32_FMT", "
+                 QCM_META_PATCH_STR_VER" )"
+        ,
+        (SChar*) "ALTER TABLE SYS_REPL_HOSTS_ ADD COLUMN "            
+            "( CONN_TYPE VARCHAR(20) FIXED DEFAULT 'TCP', IB_LATENCY VARCHAR(10) FIXED DEFAULT 'N/A' )"
+        ,
+        (SChar*) "UPDATE SYS_REPL_HOSTS_ SET CONN_TYPE = 'UNIX_DOMAIN' WHERE HOST_IP = 'UNIX_DOMAIN'"
+        ,
+
+        NULL };
+
+    SChar         * sUpgradeVer6ToVer7[] = {
+        (SChar*) "DROP TABLE SYS_DATABASE_"
+            ,
+        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "
+            "DB_NAME VARCHAR(40) FIXED, "
+            "OWNER_DN VARCHAR(2048) FIXED, "
+            "META_MAJOR_VER INTEGER, "
+            "META_MINOR_VER INTEGER, "
+            "META_PATCH_VER INTEGER,"
+            "PREV_META_MAJOR_VER INTEGER, "
+            "PREV_META_MINOR_VER INTEGER, "
+            "PREV_META_PATCH_VER INTEGER )"
+            ,
+        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s','%s', "
+            QCM_META_MAJOR_STR_VER", "
+            QCM_META_MINOR_STR_VER", "
+            QCM_META_PATCH_STR_VER", "
+            QCM_META_MAJOR_STR_VER", "
+            "%"ID_INT32_FMT", "
+            QCM_META_PATCH_STR_VER" )"
+            ,
+        (SChar*) "ALTER TABLE SYS_REPL_OLD_ITEMS_ ADD COLUMN ( "
+            "REMOTE_USER_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED DEFAULT NULL, "
+            "REMOTE_TABLE_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED DEFAULT NULL, "
+            "REMOTE_PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED DEFAULT NULL, "
+            "PARTITION_ORDER       INTEGER DEFAULT 0, "
+            "PARTITION_MIN_VALUE   VARCHAR(4000) VARIABLE DEFAULT NULL, "
+            "PARTITION_MAX_VALUE   VARCHAR(4000) VARIABLE DEFAULT NULL, "
+            "INVALID_MAX_SN BIGINT DEFAULT -1 )"
+            ,
+        (SChar*) "ALTER TABLE SYS_REPLICATIONS_ "
+            "ADD COLUMN ( REMOTE_LAST_DDL_XSN BIGINT DEFAULT -1 )"
+            ,
+        (SChar*) "UPDATE SYSTEM_.SYS_REPL_OLD_ITEMS_ SET "
+            "( REMOTE_USER_NAME, REMOTE_TABLE_NAME, REMOTE_PARTITION_NAME, INVALID_MAX_SN ) = "
+            "( SELECT REMOTE_USER_NAME, REMOTE_TABLE_NAME, REMOTE_PARTITION_NAME, INVALID_MAX_SN "
+            "FROM SYSTEM_.SYS_REPL_ITEMS_ WHERE "
+            "SYSTEM_.SYS_REPL_ITEMS_.REPLICATION_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.REPLICATION_NAME AND "
+            "SYSTEM_.SYS_REPL_ITEMS_.LOCAL_USER_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.USER_NAME AND "
+            "SYSTEM_.SYS_REPL_ITEMS_.LOCAL_TABLE_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.TABLE_NAME AND "
+            "( SYSTEM_.SYS_REPL_ITEMS_.LOCAL_PARTITION_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.PARTITION_NAME OR "
+            "( SYSTEM_.SYS_REPL_ITEMS_.LOCAL_PARTITION_NAME is NULL AND "
+            "SYSTEM_.SYS_REPL_OLD_ITEMS_.PARTITION_NAME is NULL ) ) )"
+            ,
+        (SChar*) "UPDATE SYSTEM_.SYS_REPL_OLD_ITEMS_ SET "
+            "( PARTITION_ORDER, PARTITION_MIN_VALUE, PARTITION_MAX_VALUE ) = "
+            "( SELECT PARTITION_ORDER, PARTITION_MIN_VALUE, PARTITION_MAX_VALUE "
+            "FROM SYSTEM_.SYS_TABLE_PARTITIONS_, SYSTEM_.SYS_TABLES_, SYSTEM_.SYS_USERS_ WHERE "
+            "( SYSTEM_.SYS_REPL_OLD_ITEMS_.PARTITION_NAME = SYSTEM_.SYS_TABLE_PARTITIONS_.PARTITION_NAME ) AND "
+            "( SYSTEM_.SYS_TABLES_.TABLE_ID = SYSTEM_.SYS_TABLE_PARTITIONS_.TABLE_ID ) AND "
+            "( SYSTEM_.SYS_TABLES_.TABLE_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.TABLE_NAME ) AND"
+            "( SYSTEM_.SYS_TABLE_PARTITIONS_.USER_ID = SYSTEM_.SYS_USERS_.USER_ID ) AND "
+            "( SYSTEM_.SYS_REPL_OLD_ITEMS_.USER_NAME = SYSTEM_.SYS_USERS_.USER_NAME ) )"
+            ,
+        NULL    };
     //-----------------------------------------------------------------
     // 업그레이드시,
     //
@@ -6122,6 +6220,95 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
                              sUpgradeVer4ToVer5[i] );
             }
 
+            /* fall through */
+        case 5:
+            // upgrate from minor version 5 to minor version 6
+            // BUG-45984 IB support on Replication
+            for ( i = 0; sUpgradeVer5ToVer6[i] != NULL; i++ )
+            {
+                IDE_TEST( sSmiStmt.begin( aStatistics,
+                                          sDummySmiStmt,
+                                          sSmiStmtFlag )
+                          != IDE_SUCCESS );
+                sStage = 3;
+
+                if ( i == 2 )
+                {
+                    SChar sInsSql[4096] = { 0, };
+                    SChar sOwnerDN[4096] = { 0, };
+
+                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
+                                                          (SChar*)sOwnerDN,
+                                                          ID_SIZEOF(sOwnerDN) )
+                              != IDE_SUCCESS );
+
+                    idlOS::snprintf( sInsSql,
+                                     ID_SIZEOF(sInsSql),
+                                     sUpgradeVer5ToVer6[i],
+                                     smiGetDBName(), sOwnerDN, aMinorVer );
+
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sInsSql )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sUpgradeVer5ToVer6[i] )
+                              != IDE_SUCCESS );
+                }
+
+                sStage = 2;
+                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
+                             sUpgradeVer5ToVer6[i] );
+            }
+
+            /* fall through */
+        case 6:
+            // upgrate from minor version 6 to minor version 7
+            // BUG-46252 Partition Merge / Split / Replace DDL asynchronization support
+            for ( i = 0; sUpgradeVer6ToVer7[i] != NULL; i++ )
+            {
+                IDE_TEST( sSmiStmt.begin( aStatistics,
+                                          sDummySmiStmt,
+                                          sSmiStmtFlag )
+                          != IDE_SUCCESS );
+                sStage = 3;
+
+                if ( i == 2 )
+                {
+                    SChar sInsSql[4096] = { 0, };
+                    SChar sOwnerDN[4096] = { 0, };
+
+                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
+                                                          (SChar*)sOwnerDN,
+                                                          ID_SIZEOF(sOwnerDN) )
+                              != IDE_SUCCESS );
+
+                    idlOS::snprintf( sInsSql, 
+                                     ID_SIZEOF(sInsSql), 
+                                     sUpgradeVer6ToVer7[i], 
+                                     smiGetDBName(), sOwnerDN, aMinorVer );
+
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sInsSql )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sUpgradeVer6ToVer7[i] )
+                              != IDE_SUCCESS );
+                }
+
+                sStage = 2;
+                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
+                             sUpgradeVer6ToVer7[i] );
+            }
             /* fall through */
         default:
             break;
@@ -7215,6 +7402,53 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
 
     iduMemory       sProcBuildMem;
 
+    SChar         * sDowngradeVer7ToVer6[] = {
+        (SChar*) "DROP TABLE SYS_DATABASE_"
+            ,
+        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "
+            "DB_NAME VARCHAR(40) FIXED, "
+            "OWNER_DN VARCHAR(2048) FIXED, "
+            "META_MAJOR_VER INTEGER, "
+            "META_MINOR_VER INTEGER, "
+            "META_PATCH_VER INTEGER,"
+            "PREV_META_MAJOR_VER INTEGER, "
+            "PREV_META_MINOR_VER INTEGER, "
+            "PREV_META_PATCH_VER INTEGER )"
+            ,
+        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "
+            "'%s',"
+            QCM_META_MAJOR_STR_VER", "
+            "%"ID_INT32_FMT", "
+            QCM_META_PATCH_STR_VER","
+            QCM_META_MAJOR_STR_VER", "
+            "%"ID_INT32_FMT", "
+            QCM_META_PATCH_STR_VER" )"
+            ,
+        (SChar*) "UPDATE SYSTEM_.SYS_REPL_ITEMS_ SET "
+            "( INVALID_MAX_SN ) = "
+            "( SELECT INVALID_MAX_SN "
+            "FROM SYSTEM_.SYS_REPL_OLD_ITEMS_ WHERE "
+            "SYSTEM_.SYS_REPL_ITEMS_.REPLICATION_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.REPLICATION_NAME AND "
+            "SYSTEM_.SYS_REPL_ITEMS_.LOCAL_USER_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.USER_NAME AND "
+            "SYSTEM_.SYS_REPL_ITEMS_.LOCAL_TABLE_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.TABLE_NAME AND "
+            "( SYSTEM_.SYS_REPL_ITEMS_.LOCAL_PARTITION_NAME = SYSTEM_.SYS_REPL_OLD_ITEMS_.PARTITION_NAME OR "
+            "( SYSTEM_.SYS_REPL_ITEMS_.LOCAL_PARTITION_NAME is NULL AND "
+            "SYSTEM_.SYS_REPL_OLD_ITEMS_.PARTITION_NAME is NULL ) ) )"
+            ,
+        (SChar*) "ALTER TABLE SYS_REPL_OLD_ITEMS_ DROP COLUMN ( "
+            "REMOTE_USER_NAME, "
+            "REMOTE_TABLE_NAME, "
+            "REMOTE_PARTITION_NAME, "
+            "PARTITION_ORDER, "
+            "PARTITION_MIN_VALUE, "
+            "PARTITION_MAX_VALUE, "
+            "INVALID_MAX_SN )"
+            ,
+        (SChar*) "ALTER TABLE SYS_REPLICATIONS_ DROP COLUMN ( "
+            "REMOTE_LAST_DDL_XSN )"
+            ,
+        NULL    };
+
     SChar         * sDowngradeVer5ToVer4[] = {
         (SChar*) "DROP TABLE SYS_DATABASE_"
             ,
@@ -7232,6 +7466,28 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
             QCM_META_PATCH_STR_VER" )" 
             ,
         (SChar*) "DROP PROCEDURE SET_PREVMETAVER"
+            ,
+        NULL };
+
+    SChar         * sDowngradeVer6ToVer5[] = {
+        (SChar*) "DROP TABLE SYS_DATABASE_"
+            ,
+        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
+            "DB_NAME VARCHAR(40) FIXED, "                          
+            "OWNER_DN VARCHAR(2048) FIXED, "                       
+            "META_MAJOR_VER INTEGER, "                             
+            "META_MINOR_VER INTEGER, "                             
+            "META_PATCH_VER INTEGER )"
+            ,
+        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
+            "'%s',"                                                
+            QCM_META_MAJOR_STR_VER", " 
+            "%"ID_INT32_FMT", "
+            QCM_META_PATCH_STR_VER" )" 
+            ,
+        (SChar*) "ALTER TABLE SYS_REPL_HOSTS_ DROP COLUMN CONN_TYPE"
+            ,
+        (SChar*) "ALTER TABLE SYS_REPL_HOSTS_ DROP COLUMN IB_LATENCY"
             ,
         NULL };
 
@@ -7398,6 +7654,97 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
 
     switch ( QCM_META_MINOR_VER )
     {
+        case 7:
+            // downgrade from minor version 7 to minor version 6
+            // BUG-46252 Partition Merge / Split / Replace DDL asynchronization support 
+            for ( i = 0; sDowngradeVer7ToVer6[i] != NULL; i++ )
+            {
+                IDE_TEST( sSmiStmt.begin( aStatistics,
+                                          sDummySmiStmt,
+                                          sSmiStmtFlag )
+                          != IDE_SUCCESS );
+                sStage = 3;
+
+                if ( i == 2 )
+                {
+                    SChar sInsSql[4096] = { 0, };
+                    SChar sOwnerDN[4096] = { 0, };
+
+                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
+                                                          (SChar*)sOwnerDN,
+                                                          ID_SIZEOF(sOwnerDN) )
+                              != IDE_SUCCESS );
+
+                    idlOS::snprintf( sInsSql,
+                                     ID_SIZEOF(sInsSql),
+                                     sDowngradeVer7ToVer6[i],
+                                     smiGetDBName(), sOwnerDN, aPrevMinorVer );
+
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sInsSql )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sDowngradeVer7ToVer6[i] )
+                              != IDE_SUCCESS );
+                }
+
+                sStage = 2;
+                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                ideLog::log( IDE_QP_0, "[QCM_META_DOWNGRADE] DowngradeMeta %s\n",
+                             sDowngradeVer7ToVer6[i] );
+
+            }
+            IDE_TEST_CONT( aPrevMinorVer == 6, STOP_DOWNGRADE );
+            /* fall through */
+        case 6:
+            // downgrade from minor version 6 to minor version 5
+            for ( i = 0; sDowngradeVer6ToVer5[i] != NULL; i++ )
+            {
+                IDE_TEST( sSmiStmt.begin( aStatistics,
+                                          sDummySmiStmt,
+                                          sSmiStmtFlag )
+                          != IDE_SUCCESS );
+                sStage = 3;
+
+                if ( i == 2 )
+                {
+                    SChar sInsSql[4096] = { 0, };
+                    SChar sOwnerDN[4096] = { 0, };
+
+                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
+                                                          (SChar*)sOwnerDN,
+                                                          ID_SIZEOF(sOwnerDN) )
+                              != IDE_SUCCESS );
+
+                    idlOS::snprintf( sInsSql,
+                                     ID_SIZEOF(sInsSql),
+                                     sDowngradeVer6ToVer5[i],
+                                     smiGetDBName(), sOwnerDN, aPrevMinorVer );
+
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sInsSql )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sDowngradeVer6ToVer5[i] )
+                              != IDE_SUCCESS );
+                }
+
+                sStage = 2;
+                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                ideLog::log( IDE_QP_0, "[QCM_META_DOWNGRADE] DowngradeMeta %s\n",
+                             sDowngradeVer6ToVer5[i] );
+
+            }
+            IDE_TEST_CONT( aPrevMinorVer == 5, STOP_DOWNGRADE );
+            /* fall through */
         case 5:
             // downgrade from minor version 5 to minor version 4
             for ( i = 0; sDowngradeVer5ToVer4[i] != NULL; i++ )

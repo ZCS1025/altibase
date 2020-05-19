@@ -30,16 +30,12 @@ public class TimeColumn extends CommonDateTimeColumn
 {
     TimeColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.TIME);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.TIME;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.TIME };
     }
 
     public String getObjectClassName()

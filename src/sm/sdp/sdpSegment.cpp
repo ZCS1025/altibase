@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdpSegment.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpSegment.cpp 84383 2018-11-20 04:18:42Z emlee $
  **********************************************************************/
 # include <smErrorCode.h>
 # include <sdr.h>
@@ -279,11 +279,9 @@ IDE_RC sdpSegment::allocTableSeg4Entry( idvSQL               * aStatistics,
 {
     sdpSegHandle *sSegHandle;
 
-    IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                == ID_TRUE );
-
-    IDE_ASSERT( aPageEntry != NULL );
-    IDE_ASSERT( aTableOID  != SM_NULL_OID );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )  == ID_TRUE );
+    IDE_DASSERT( aPageEntry != NULL );
+    IDE_DASSERT( aTableOID  != SM_NULL_OID );
 
     if( aLogMode == SDR_MTX_LOGGING )
     {
@@ -381,8 +379,8 @@ IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
     ULong                sNTAData;
     sdpPageType          sMetaPageType;
 
-    IDE_ASSERT( (aLogMode == SDR_MTX_LOGGING && aTrans != NULL) ||
-                (aLogMode == SDR_MTX_NOLOGGING && aTrans == NULL) );
+    IDE_DASSERT( ((aLogMode == SDR_MTX_LOGGING) && aTrans != NULL) ||
+                 ((aLogMode == SDR_MTX_NOLOGGING) && aTrans == NULL) );
     IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
                  == ID_TRUE );
 
@@ -390,12 +388,12 @@ IDE_RC sdpSegment::allocIndexSeg4Entry( idvSQL             * aStatistics,
 
     // Index Segment Handle에 Segment Cache를 초기화한다.
     IDE_TEST( sdpSegDescMgr::initSegDesc(
-                  &sSegDesc,
-                  aTableSpaceID,
-                  SD_NULL_PID, // Segment 생성전
-                  SDP_SEG_TYPE_INDEX,
-                  aTableOID,
-                  aIndexID) != IDE_SUCCESS );
+                                  &sSegDesc,
+                                  aTableSpaceID,
+                                  SD_NULL_PID, // Segment 생성전
+                                  SDP_SEG_TYPE_INDEX,
+                                  aTableOID,
+                                  aIndexID) != IDE_SUCCESS );
 
     /*
      * INITRANS와 MAXTRANS를 설정한다.
@@ -1134,7 +1132,7 @@ IDE_RC sdpSegment::freeIndexSeg4Entry( idvSQL           *aStatistics,
     IDE_DASSERT( SC_GRID_IS_NULL(*sIndexSegGRID) == ID_FALSE );
     IDE_ASSERT( aSpaceID == SC_MAKE_SPACE(*sIndexSegGRID) );
     IDE_DASSERT( (sctTableSpaceMgr::isSystemMemTableSpace( aSpaceID ) == ID_FALSE) &&
-                 (aSpaceID != SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO) );
+                 (sctTableSpaceMgr::isUndoTableSpace( aSpaceID ) == ID_FALSE) );   
 
     sTmpPID = SC_MAKE_PID(*sIndexSegGRID);
 
@@ -1326,10 +1324,10 @@ IDE_RC sdpSegment::freeLobSeg( idvSQL          * aStatistics,
 
     sSpaceID = SC_MAKE_SPACE(aLobCol->colSeg);
 
-    IDE_DASSERT( (sSpaceID != SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC) &&
-                 (sSpaceID != SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO) );
+    IDE_DASSERT( (sctTableSpaceMgr::isSystemMemTableSpace( sSpaceID ) == ID_FALSE) &&
+                 (sctTableSpaceMgr::isUndoTableSpace( sSpaceID ) == ID_FALSE) );   
 
-    if (sLoggingMode == SDR_MTX_LOGGING)
+    if ( sLoggingMode == SDR_MTX_LOGGING )
     {
         sNTA    = smLayerCallback::getLstUndoNxtLSN( sTrans );
         SC_COPY_GRID( aLobCol->colSeg, sBeforeSegGRID );

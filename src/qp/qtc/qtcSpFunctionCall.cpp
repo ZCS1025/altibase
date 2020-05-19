@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtcSpFunctionCall.cpp 82152 2018-01-29 09:32:47Z khkwak $
+ * $Id: qtcSpFunctionCall.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -76,6 +76,7 @@ static const mtcExecute qtcExecute = {
     mtf::calculateNA,
     qtcCalculateStoredProcedure,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -184,33 +185,11 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
 
     sOriFlag = sStatement->spxEnv->mFlag;
 
-    if ( sStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT )
+    // BUG-45990
+    // 최상위 statement인 경우에만 statement flag를 설정한다.
+    if ( sStatement->spxEnv->mCallDepth == 0 )
     {
-        /*
-         * PROJ-1381 Fetch Across Commit
-         * select 도중 commit/rollback/dml 이 일어나는 경우
-         * 에러처리를 위하여 flag set
-         */
-        sStatement->spxEnv->mFlag |= QSX_ENV_DURING_SELECT;
-    }
-    else if (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE)
-    {
-        // BUG-41279
-        // Prevent parallel execution while executing 'select for update' clause.
-        sStatement->spxEnv->mFlag |= QSX_ENV_DURING_SELECT_FOR_UPDATE;
-    }
-    else if ( (sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DML )
-    {
-        // BUG-44294 PSM내에서 실행한 DML이 변경한 row 수를 반환하도록 합니다.
-        sStatement->spxEnv->mFlag |= QSX_ENV_DURING_DML;
-    }
-    else if ( (sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DDL )
-    {
-        sStatement->spxEnv->mFlag |= QSX_ENV_DURING_DDL;
-    }
-    else
-    {
-        // Nothing to do
+        QSX_ENV_SET_STMT_FLAG( sStatement );
     }
 
     sStage = 3;

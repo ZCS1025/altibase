@@ -146,6 +146,16 @@ typedef struct
     int       mTextLength;
     int       mQueryStartTime;
     int       mExecuteFlag;
+    char      mSqlCacheTextID[64+1];
+    long long mParseTime;
+    long long mSoftPrepareTime;
+    int       mLastQueryStartTime;
+    long long mExecuteTime;
+    long long mFetchTime;
+    int       mFetchStartTime;
+    long long mTotalTime;
+    long long mValidateTime;
+    long long mOptimizeTime;
 } ABISqlText;
 
 typedef struct

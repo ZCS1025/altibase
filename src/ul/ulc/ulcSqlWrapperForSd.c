@@ -22,6 +22,7 @@
 #include <ulsdnDescribeCol.h>
 #include <ulsdnTrans.h>
 #include <ulnConfigFile.h>
+#include <ulsdnFailover.h>
 
 #include <sqlcli.h>
 
@@ -161,6 +162,29 @@ SQLRETURN  SQL_API SQLEndTranAddCallback( SQLUINTEGER   aIndex,
                                    (ulsdFuncCallback**) aCallback );
 }
 
+SQLRETURN SQL_API SQLSetSavepoint( SQLHDBC          aConnectionHandle,
+                                   const SQLCHAR  * aSavepointName,
+                                   SQLINTEGER       aSavepointNameLength )
+{
+    return ulnSetSavepoint( (ulnDbc*)           aConnectionHandle,
+                            (const acp_char_t*) aSavepointName,
+                            (acp_uint32_t)      aSavepointNameLength );
+}
+
+SQLRETURN SQL_API SQLRollbackToSavepoint( SQLHDBC             aConnectionHandle,
+                                          const SQLCHAR     * aSavepointName,
+                                          const SQLINTEGER    aSavepointNameLength )
+{
+    return ulnRollbackToSavepoint( (ulnDbc*)           aConnectionHandle,
+                                   (const acp_char_t*) aSavepointName,
+                                   (acp_uint32_t)      aSavepointNameLength );
+}
+
+SQLRETURN SQL_API SQLShardStmtPartialRollback( SQLHDBC          aConnectionHandle )
+{
+    return ulsdnStmtShardStmtPartialRollback( aConnectionHandle );
+}
+
 void SQL_API SQLDoCallback( SQLPOINTER *aCallback )
 {
     ulsdDoCallback( (ulsdFuncCallback*)aCallback );
@@ -190,9 +214,9 @@ void SQL_API SQLGetDbcShardTargetDataNodeName(SQLHDBC     aConnectionHandle,
                  ulsdDbcGetShardTargetDataNodeName( (ulnDbc*)aConnectionHandle ) );
 }
 
-void SQL_API SQLGetStmtShardTargetDataNodeName(SQLHSTMT   aStatementHandle,
-                                               SQLCHAR    aOutBuff,
-                                               SQLINTEGER aOutBufLength)
+void SQL_API SQLGetStmtShardTargetDataNodeName(SQLHSTMT    aStatementHandle,
+                                               SQLCHAR    *aOutBuff,
+                                               SQLINTEGER  aOutBufLength)
 {
     acpSnprintf( (acp_char_t *)aOutBuff,
                  aOutBufLength,
@@ -268,4 +292,38 @@ SQLRETURN SQL_API SQLDisconnectLocal(SQLHDBC ConnectionHandle)
 void SQL_API SQLSetShardPin(SQLHDBC aConnectionHandle, ULONG aShardPin)
 {
     ulnDbcSetShardPin((ulnDbc*)aConnectionHandle, aShardPin);
+}
+
+void SQL_API SQLSetShardMetaNumber( SQLHDBC aConnectionHandle,
+                                    ULONG   aShardMetaNumber )
+{
+    ulnDbcSetShardMetaNumber( (ulnDbc *)aConnectionHandle, aShardMetaNumber );
+}
+
+ULONG SQL_API SQLGetSMNOfDataNode( SQLHDBC aConnectionHandle )
+{
+    return ulnDbcGetSMNOfDataNode( (ulnDbc *)aConnectionHandle );
+}
+
+SQLRETURN SQL_API SQLReconnect( SQLSMALLINT  HandleType,
+                                SQLHANDLE    InputHandle )
+{
+    ULN_TRACE( SQLReconnect );
+
+    return ulsdnReconnect( HandleType, InputHandle );
+}
+
+SQLRETURN SQL_API SQLGetNeedFailover( SQLSMALLINT  HandleType,
+                                      SQLHANDLE    InputHandle,
+                                      SQLINTEGER  *IsNeed)
+{
+    ULN_TRACE( SQLGetNeedFailover );
+
+    return ulsdnGetFailoverIsNeeded( HandleType, InputHandle, IsNeed );
+}
+
+
+SQLCHAR SQL_API SQLGetNeedToDisconnect( SQLHDBC aConnectionHandle )
+{
+    return (acp_uint8_t)ulnDbcGetNeedToDisconnect( (ulnDbc *)aConnectionHandle );
 }

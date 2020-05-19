@@ -293,10 +293,10 @@ IDE_RC rpdCatalog::isOtherReplUseTransWait( smiStatement  *aSmiStmt,
                              (const SChar *)sReplNameConverted,
                              sReplNameSelected->length ) != 0 )
         {
-            selectRepl( aSmiStmt,
-                        sReplNameConverted,
-                        &sReplications,
-                        ID_FALSE );
+            IDE_TEST( selectRepl( aSmiStmt,
+                                  sReplNameConverted,
+                                  &sReplications,
+                                  ID_FALSE ) != IDE_SUCCESS );
 
             if ( ( sReplications.mReplMode == RP_EAGER_MODE ) ||
                  ( ( sReplications.mOptions & RP_OPTION_GAPLESS_MASK )
@@ -627,7 +627,8 @@ rpdCatalog::insertRepl( smiStatement     * aSmiStmt,
                      "INTEGER'%"ID_INT32_FMT"', "
                      "BIGINT'%"ID_INT64_FMT"', "
                      "BIGINT'%"ID_INT64_FMT"', "
-                     "VARCHAR'%s' )",
+                     "VARCHAR'%s', "
+                     "BIGINT'%"ID_INT64_FMT"' )",
                      aReplications->mRepName,
                      aReplications->mLastUsedHostNo,
                      aReplications->mHostCount,
@@ -639,12 +640,12 @@ rpdCatalog::insertRepl( smiStatement     * aSmiStmt,
                      aReplications->mRole,
                      aReplications->mOptions,           //PROJ-1608
                      aReplications->mInvalidRecovery,   //PROJ-1608
-                     aReplications->mRemoteFaultDetectTime,
-                     RP_DEFAULT_DATE_FORMAT,
+                     aReplications->mRemoteFaultDetectTime, RP_DEFAULT_DATE_FORMAT,
                      aReplications->mParallelApplierCount,
                      aReplications->mApplierInitBufferSize,
                      aReplications->mRemoteXSN,
-                     aReplications->mPeerRepName ); /* BUG-45236 Local Replication 지원 */
+                     aReplications->mPeerRepName, /* BUG-45236 Local Replication 지원 */
+                     aReplications->mRemoteLastDDLXSN );
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
@@ -671,18 +672,41 @@ rpdCatalog::selectRepl( smiStatement      * aSmiStmt,
                         rpdReplications   * aReplications,
                         idBool              aForUpdateFlag)
 {
+    smiTableCursor     sCursor;
+
+    IDE_TEST( rpdCatalog::selectReplWithCursor( aSmiStmt, 
+                                                aReplName, 
+                                                aReplications, 
+                                                aForUpdateFlag, 
+                                               &sCursor )
+              != IDE_SUCCESS );
+
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::selectReplWithCursor( smiStatement      * aSmiStmt,
+                                  SChar             * aReplName,
+                                  rpdReplications   * aReplications,
+                                  idBool              aForUpdateFlag,
+                                  smiTableCursor    * aCursor )
+{
     smiRange            sRange;
     qriMetaRangeColumn  sMetaRange;
     qriNameCharBuffer   sReplNameBuffer;
     mtdCharType       * sReplName = ( mtdCharType * ) & sReplNameBuffer;
 
-    smiTableCursor      sCursor;
     SInt                sStage = 0;
     const void        * sRow;
     scGRID              sRid;
     smiCursorProperties sProperty;
 
-    sCursor.initialize();
+    aCursor->initialize();
 
     qciMisc::setVarcharValue( sReplName,
                           NULL,
@@ -699,52 +723,52 @@ rpdCatalog::selectRepl( smiStatement      * aSmiStmt,
     if(aForUpdateFlag == ID_TRUE)
     {
         //BUG-16851
-        IDE_TEST( sCursor.open( aSmiStmt,
-                                gQcmReplications,
-                                gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME],
-                                smiGetRowSCN( gQcmReplications ),
-                                NULL,
-                                & sRange,
-                                smiGetDefaultKeyRange(),
-                                smiGetDefaultFilter(),
-                                SMI_LOCK_REPEATABLE|SMI_TRAVERSE_FORWARD|SMI_PREVIOUS_DISABLE,
-                                SMI_SELECT_CURSOR,
-                                &sProperty ) != IDE_SUCCESS );
+        IDE_TEST( aCursor->open( aSmiStmt,
+                                 gQcmReplications,
+                                 gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME],
+                                 smiGetRowSCN( gQcmReplications ),
+                                 NULL,
+                                 & sRange,
+                                 smiGetDefaultKeyRange(),
+                                 smiGetDefaultFilter(),
+                                 SMI_LOCK_REPEATABLE|SMI_TRAVERSE_FORWARD|SMI_PREVIOUS_DISABLE,
+                                 SMI_SELECT_CURSOR,
+                                 &sProperty ) != IDE_SUCCESS );
     }
     else
     {
-        IDE_TEST( sCursor.open( aSmiStmt,
-                                gQcmReplications,
-                                gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME],
-                                smiGetRowSCN( gQcmReplications ),
-                                NULL,
-                                & sRange,
-                                smiGetDefaultKeyRange(),
-                                smiGetDefaultFilter(),
-                                QCM_META_CURSOR_FLAG,
-                                SMI_SELECT_CURSOR,
-                                &sProperty ) != IDE_SUCCESS );
+        IDE_TEST( aCursor->open( aSmiStmt,
+                                 gQcmReplications,
+                                 gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME],
+                                 smiGetRowSCN( gQcmReplications ),
+                                 NULL,
+                                 & sRange,
+                                 smiGetDefaultKeyRange(),
+                                 smiGetDefaultFilter(),
+                                 QCM_META_CURSOR_FLAG,
+                                 SMI_SELECT_CURSOR,
+                                 &sProperty ) != IDE_SUCCESS );
     }
     sStage = 1;
 
-    IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
-    IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+    IDE_TEST( aCursor->beforeFirst() != IDE_SUCCESS );
+    IDE_TEST( aCursor->readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( sRow == NULL, err_no_rows_found );
 
     IDE_TEST(setReplMember(aReplications, sRow) != IDE_SUCCESS);
 
-    IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+    IDE_TEST( aCursor->readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
     IDU_FIT_POINT_RAISE( "rpdCatalog::selectRepl::Erratic::rpERR_ABORT_RPD_INTERNAL_ARG",
                          err_too_many_rows );
     IDE_TEST_RAISE( sRow != NULL, err_too_many_rows );
 
     sStage = 0;
-    IDE_TEST( sCursor.close() != IDE_SUCCESS );
+    IDE_TEST( aCursor->close() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(err_no_rows_found);
+        IDE_EXCEPTION(err_no_rows_found);
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPD_REPL_NOT_FOUND));
     }
@@ -757,7 +781,7 @@ rpdCatalog::selectRepl( smiStatement      * aSmiStmt,
 
     if ( sStage == 1 )
     {
-        (void) sCursor.close();
+        (void) aCursor->close();
         sStage = 0;
     }
 
@@ -848,6 +872,60 @@ rpdCatalog::updateInvalidMaxSN( smiStatement * aSmiStmt,
                               sRowCnt);
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPD_INTERNAL_ARG,
                                 "[rpdCatalog::updateInvalidMaxSN] err_updated_count_is_0(status)"));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::updateOldInvalidMaxSN( smiStatement * aSmiStmt,
+                                   rpdReplItems * aReplItems,
+                                   smSN           aSN )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH];
+    vSLong  sRowCnt = 0;
+
+    if ( aReplItems->mLocalPartname[0] == '\0' )
+    {
+        idlOS::snprintf(sBuffer, ID_SIZEOF(sBuffer),
+                        "UPDATE SYS_REPL_OLD_ITEMS_ SET INVALID_MAX_SN='%"ID_INT64_FMT"' "
+                        "WHERE REPLICATION_NAME = '%s' "
+                        "AND USER_NAME = '%s' "
+                        "AND TABLE_NAME = '%s' ",
+                        aSN,
+                        aReplItems->mRepName,
+                        aReplItems->mLocalUsername,
+                        aReplItems->mLocalTablename);
+    }
+    else
+    {
+            idlOS::snprintf(sBuffer, ID_SIZEOF(sBuffer),
+                    "UPDATE SYS_REPL_OLD_ITEMS_ SET INVALID_MAX_SN='%"ID_INT64_FMT"' "
+                    "WHERE REPLICATION_NAME = '%s' "
+                    "AND USER_NAME = '%s' "
+                    "AND TABLE_NAME = '%s' "
+                    "AND PARTITION_NAME = '%s' ",
+                    aSN,
+                    aReplItems->mRepName,
+                    aReplItems->mLocalUsername,
+                    aReplItems->mLocalTablename,
+                    aReplItems->mLocalPartname);
+    }
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCnt <= 0, ERR_EXECUTE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_EXECUTE );
+    {
+        ideLog::log(IDE_RP_0, "[rpdCatalog::updateOldInvalidMaxSN] "
+                              "[UPDATE SYS_REPL_OLD_ITEMS_ = %ld]\n",
+                              sRowCnt);
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPD_INTERNAL_ARG,
+                                "[rpdCatalog::updateOldInvalidMaxSN] err_updated_count_is_0(status)"));
     }
     IDE_EXCEPTION_END;
 
@@ -994,6 +1072,89 @@ rpdCatalog::removeReplItems( smiStatement      * aSmiStmt,
 
     return IDE_FAILURE;
 }
+const SChar * rpdCatalog::ConnTypeEnumToString( RP_SOCKET_TYPE aConnType )
+{
+    const SChar * sConnStr = NULL;
+    switch ( aConnType )
+    {
+        case RP_SOCKET_TYPE_TCP:
+            sConnStr = RP_SOCKET_TCP_STR;
+            break;
+
+        case RP_SOCKET_TYPE_UNIX:
+            sConnStr = RP_SOCKET_UNIX_DOMAIN_STR;
+            break;
+
+        case RP_SOCKET_TYPE_IB:
+            sConnStr = RP_SOCKET_IB_STR;
+            break;
+
+        default:
+            IDE_DASSERT( 0 );
+    }
+    return sConnStr;
+}
+
+RP_SOCKET_TYPE rpdCatalog::ConnTypeStrToEnum( mtdCharType  * aConnStr )
+{
+    RP_SOCKET_TYPE sConnType = RP_SOCKET_TYPE_TCP;
+
+         if( idlOS::strncmp( RP_SOCKET_TCP_STR,
+                             (const SChar *)aConnStr->value,
+                             aConnStr->length) == 0)
+         {
+            sConnType = RP_SOCKET_TYPE_TCP;
+         }
+         else if ( idlOS::strncmp( RP_SOCKET_UNIX_DOMAIN_STR,
+                                   (const SChar *)aConnStr->value,
+                                   aConnStr->length) == 0)
+
+         {
+            sConnType = RP_SOCKET_TYPE_UNIX;
+         }
+         else if ( idlOS::strncmp( RP_SOCKET_IB_STR,
+                                   (const SChar *)aConnStr->value,
+                                   aConnStr->length) == 0)
+         {
+            sConnType = RP_SOCKET_TYPE_IB;
+         }
+         else
+         {
+             IDE_DASSERT( 0 );
+         }
+
+    return sConnType;
+}
+
+rpIBLatency rpdCatalog::IBLatencyStrToEnum( mtdCharType * aIBLatencyStr )
+{
+    rpIBLatency sIBLatency = RP_IB_LATENCY_NONE;
+
+    if( idlOS::strncmp( (const SChar *)"N/A",
+                        (const SChar *)aIBLatencyStr->value,
+                        aIBLatencyStr->length) == 0)
+    {
+        sIBLatency = RP_IB_LATENCY_NONE;
+    }
+    else if ( idlOS::strncmp( (const SChar *)"0",
+                              (const SChar *)aIBLatencyStr->value,
+                              aIBLatencyStr->length) == 0)
+    {
+        sIBLatency = RP_IB_LATENCY_0;
+    }
+    else if ( idlOS::strncmp( (const SChar *)"1",
+                              (const SChar *)aIBLatencyStr->value,
+                              aIBLatencyStr->length) == 0)
+    {
+        sIBLatency = RP_IB_LATENCY_1;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
+
+    return sIBLatency;
+}
 
 IDE_RC
 rpdCatalog::insertReplHost( smiStatement  * aSmiStmt,
@@ -1001,15 +1162,36 @@ rpdCatalog::insertReplHost( smiStatement  * aSmiStmt,
 {
     SChar   sBuffer[QD_MAX_SQL_LENGTH];
     vSLong  sRowCnt = 0;
+    const SChar  *sConnTypeStr;
+    const SChar  *sIBLatencyStr;
+
+    sConnTypeStr = ConnTypeEnumToString( aReplHosts->mConnType );
+
+    switch ( aReplHosts->mIBLatency )
+    {
+        case RP_IB_LATENCY_0:
+            sIBLatencyStr = "0";
+            break;
+        case RP_IB_LATENCY_1:
+            sIBLatencyStr = "1";
+            break;
+        case RP_IB_LATENCY_NONE:
+            sIBLatencyStr = "N/A";
+            break;
+        default:
+            IDE_DASSERT( 0 );
+    }
 
     idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
                      "INSERT INTO SYS_REPL_HOSTS_ VALUES ( "
                      "INTEGER'%"ID_INT32_FMT"',  CHAR'%s',"
-                     "TRIM('%s'), INTEGER'%"ID_INT32_FMT"')",
+                     "TRIM('%s'), INTEGER'%"ID_INT32_FMT"', CHAR'%s', CHAR'%s' )",
                      aReplHosts->mHostNo,
                      aReplHosts->mRepName,
                      aReplHosts->mHostIp,
-                     aReplHosts->mPortNo );
+                     aReplHosts->mPortNo, 
+                     sConnTypeStr, 
+                     sIBLatencyStr );
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
@@ -1976,6 +2158,8 @@ rpdCatalog::selectReplHostsWithSmiStatement( smiStatement   * aSmiStmt,
 
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
 
+    IDU_FIT_POINT_RAISE( "rpdCatalog::selectReplHostsWithSmiStatement::err_not_enough_repl_hosts",
+                         err_not_enough_repl_hosts ); 
     IDE_TEST_RAISE( sCount != aHostCount, err_not_enough_repl_hosts );
 
     return IDE_SUCCESS;
@@ -2003,7 +2187,26 @@ IDE_RC rpdCatalog::selectAllReplications( smiStatement    * aSmiStmt,
                                           rpdReplications * aReplicationsList,
                                           SInt            * aItemCount )
 {
-    smiTableCursor      sCursor;
+    smiTableCursor     sCursor;
+
+    IDE_TEST( rpdCatalog::selectAllReplicationsWithCursor( aSmiStmt, 
+                                                           aReplicationsList, 
+                                                           aItemCount, 
+                                                          &sCursor )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdCatalog::selectAllReplicationsWithCursor( smiStatement    * aSmiStmt,
+                                                    rpdReplications * aReplicationsList,
+                                                    SInt            * aItemCount,
+                                                    smiTableCursor  * aCursor )
+{
     SInt                sStage = 0;
     SInt                sCount = 0;
     const void        * sRow = NULL;
@@ -2011,28 +2214,29 @@ IDE_RC rpdCatalog::selectAllReplications( smiStatement    * aSmiStmt,
     scGRID              sRid;
     smiCursorProperties sProperty;
 
-    sCursor.initialize();
+
+    aCursor->initialize();
 
     SMI_CURSOR_PROP_INIT( &sProperty, NULL, gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME] );
 
-    IDE_TEST( sCursor.open( aSmiStmt,
-                            gQcmReplications,
-                            gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME],
-                            smiGetRowSCN( gQcmReplications ),
-                            NULL,
-                            smiGetDefaultKeyRange(),
-                            smiGetDefaultKeyRange(),
-                            smiGetDefaultFilter(),
-                            QCM_META_CURSOR_FLAG,
-                            SMI_SELECT_CURSOR,
-                            &sProperty ) != IDE_SUCCESS );
+    IDE_TEST( aCursor->open( aSmiStmt,
+                             gQcmReplications,
+                             gQcmReplicationsIndex[QCM_REPL_INDEX_REPL_NAME],
+                             smiGetRowSCN( gQcmReplications ),
+                             NULL,
+                             smiGetDefaultKeyRange(),
+                             smiGetDefaultKeyRange(),
+                             smiGetDefaultFilter(),
+                             QCM_META_CURSOR_FLAG,
+                             SMI_SELECT_CURSOR,
+                             &sProperty ) != IDE_SUCCESS );
     sStage = 1;
 
     IDU_FIT_POINT( "rpdCatalog::selectAllReplications::sCursor::beforeFirst",
                    rpERR_ABORT_RP_INTERNAL_ARG,
                    "sCursor.beforeFirst()" );
-    IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
-    IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+    IDE_TEST( aCursor->beforeFirst() != IDE_SUCCESS );
+    IDE_TEST( aCursor->readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
 
     while ( sRow != NULL )
     {
@@ -2042,12 +2246,12 @@ IDE_RC rpdCatalog::selectAllReplications( smiStatement    * aSmiStmt,
 
         sCount++;
 
-        IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+        IDE_TEST( aCursor->readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
     }
 
     sStage = 0;
 
-    IDE_TEST( sCursor.close() != IDE_SUCCESS );
+    IDE_TEST( aCursor->close() != IDE_SUCCESS );
 
     *aItemCount = sCount;
 
@@ -2058,7 +2262,7 @@ IDE_RC rpdCatalog::selectAllReplications( smiStatement    * aSmiStmt,
     switch ( sStage )
     {
         case 1:
-            (void) sCursor.close();
+            (void) aCursor->close();
         default:
             break;
     }
@@ -2072,13 +2276,35 @@ rpdCatalog::selectReplItems( smiStatement   * aSmiStmt,
                              rpdMetaItem    * aMetaItems,
                              SInt             aItemCount )
 {
+    smiTableCursor    sCursor;
+
+    IDE_TEST( rpdCatalog::selectReplItemsWithCursor( aSmiStmt, 
+                                                     aReplName, 
+                                                     aMetaItems, 
+                                                     aItemCount, 
+                                                    &sCursor )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::selectReplItemsWithCursor( smiStatement   * aSmiStmt,
+                                       SChar          * aReplName,
+                                       rpdMetaItem    * aMetaItems,
+                                       SInt             aItemCount,
+                                       smiTableCursor * aCursor )
+{
     smiRange            sRange;
     qriMetaRangeColumn  sFirstMetaRange;
 
     qriNameCharBuffer   sReplNameBuffer;
     mtdCharType       * sReplName = ( mtdCharType * ) & sReplNameBuffer;
 
-    smiTableCursor      sCursor;
     SInt                sStage = 0;
     SInt                sCount = 0;
     const void        * sRow;
@@ -2086,7 +2312,7 @@ rpdCatalog::selectReplItems( smiStatement   * aSmiStmt,
     scGRID               sRid;
     smiCursorProperties sProperty;
 
-    sCursor.initialize();
+    aCursor->initialize();
 
     qciMisc::setVarcharValue( sReplName,
                           NULL,
@@ -2100,21 +2326,21 @@ rpdCatalog::selectReplItems( smiStatement   * aSmiStmt,
 
     SMI_CURSOR_PROP_INIT( &sProperty, NULL, gQcmReplItemsIndex[QCM_REPLITEM_INDEX_NAME_N_OID] );
 
-    IDE_TEST( sCursor.open( aSmiStmt,
-                            gQcmReplItems,
-                            gQcmReplItemsIndex[QCM_REPLITEM_INDEX_NAME_N_OID],
-                            smiGetRowSCN( gQcmReplItems ),
-                            NULL,
-                            & sRange,
-                            smiGetDefaultKeyRange(),
-                            smiGetDefaultFilter(),
-                            QCM_META_CURSOR_FLAG,
-                            SMI_SELECT_CURSOR,
-                            &sProperty ) != IDE_SUCCESS );
+    IDE_TEST( aCursor->open( aSmiStmt,
+                             gQcmReplItems,
+                             gQcmReplItemsIndex[QCM_REPLITEM_INDEX_NAME_N_OID],
+                             smiGetRowSCN( gQcmReplItems ),
+                             NULL,
+                             & sRange,
+                             smiGetDefaultKeyRange(),
+                             smiGetDefaultFilter(),
+                             QCM_META_CURSOR_FLAG,
+                             SMI_SELECT_CURSOR,
+                             &sProperty ) != IDE_SUCCESS );
     sStage = 1;
 
-    IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
-    IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+    IDE_TEST( aCursor->beforeFirst() != IDE_SUCCESS );
+    IDE_TEST( aCursor->readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
 
     while ( sRow != NULL )
     {
@@ -2126,13 +2352,14 @@ rpdCatalog::selectReplItems( smiStatement   * aSmiStmt,
 
         sCount++;
 
-        IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+        IDE_TEST( aCursor->readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
     }
 
     sStage = 0;
 
-    IDE_TEST( sCursor.close() != IDE_SUCCESS );
+    IDE_TEST( aCursor->close() != IDE_SUCCESS );
 
+    IDU_FIT_POINT_RAISE( "rpdCatalog::selectReplItems::err_not_enough_repl_items", err_not_enough_repl_items );
     IDE_TEST_RAISE( sCount != aItemCount, err_not_enough_repl_items );
 
     return IDE_SUCCESS;
@@ -2149,7 +2376,7 @@ rpdCatalog::selectReplItems( smiStatement   * aSmiStmt,
 
     if ( sStage == 1 )
     {
-        (void) sCursor.close();
+        (void) aCursor->close();
         sStage = 0;
     }
 
@@ -2409,6 +2636,38 @@ IDE_RC rpdCatalog::updateRemoteXSN( smiStatement * aSmiStmt,
     IDE_EXCEPTION( ERR_EXECUTE );
     {
         ideLog::log( IDE_RP_0, "[rpdCatalog::updateRemoteXSN] [%s]",
+                     sBuffer );
+        IDE_SET( ideSetErrorCode( rpERR_FATAL_RPD_REPL_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdCatalog::updateRemoteLastDDLXSN( smiStatement * aSmiStmt,
+                                           SChar        * aReplName,
+                                           smSN           aSN )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH] = { 0, };
+    vSLong  sRowCnt = 0;
+
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "UPDATE SYS_REPLICATIONS_ "
+                     "SET REMOTE_LAST_DDL_XSN = BIGINT'%"ID_INT64_FMT"' "
+                     "WHERE REPLICATION_NAME = CHAR'%s'",
+                     aSN,
+                     aReplName );
+
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCnt != 1, ERR_EXECUTE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_EXECUTE );
+    {
+        ideLog::log( IDE_RP_0, "[rpdCatalog::updateRemoteLastDDLXSN] [%s]",
                      sBuffer );
         IDE_SET( ideSetErrorCode( rpERR_FATAL_RPD_REPL_META_CRASH ) );
     }
@@ -3021,6 +3280,7 @@ rpdCatalog::setReplMember( rpdReplications * aRepl,
     // APPIER_INIT_BUFFER_SIZE  BIGINT
     // REMOTE_XSN               BIGINT
     // PEER_REPLICATION_NAME    VARCHAR(40)
+    // REMOTE_LAST_DDL_XSN      BIGINT
     // --------------------------------
 
     mtdCharType    *sCharData;
@@ -3172,6 +3432,14 @@ rpdCatalog::setReplMember( rpdReplications * aRepl,
                    sCharData->length );
     aRepl->mPeerRepName[sCharData->length] = '\0';
 
+    //-------------------------------------------
+    // set by SYS_REPLICATIONS_.REMOTE_LAST_DDL_XSN
+    //-------------------------------------------
+    sBigIntData = *(mtdBigintType*)
+        ((UChar*) aRow + ((mtcColumn*)rpdGetTableColumns(gQcmReplications,
+            QCM_REPLICATION_REMOTE_LAST_DDL_XSN))->column.offset);
+    aRepl->mRemoteLastDDLXSN = (smSN) sBigIntData;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3188,10 +3456,14 @@ rpdCatalog::setReplHostMember( rpdReplHosts * aReplHost,
     // REPLICATION_NAME   CHAR(40)
     // HOST_IP            VARCHAR(40)
     // PORT_NO            INTEGER
+    // CONN_TYPE          VARCHAR(20)
+    // IB_LATENCY         VARCHAR(10)
     //---------------------------
 
     mtdCharType  * sCharData;
     mtdIntegerType sIntData;
+    RP_SOCKET_TYPE sConnType;
+    rpIBLatency    sIBLatency;
 
     //-------------------------------------------
     // set by SYS_REPL_HOSTS_.HOST_NO
@@ -3230,6 +3502,27 @@ rpdCatalog::setReplHostMember( rpdReplHosts * aReplHost,
     sIntData = *(mtdIntegerType*)
         ((UChar*) aRow + ((mtcColumn*)rpdGetTableColumns(gQcmReplHosts,QCM_REPLHOST_PORT_NO))->column.offset );
     aReplHost->mPortNo = (SInt) sIntData;
+
+    //-------------------------------------------
+    // set by SYS_REPL_HOSTS_.CONN_TYPE
+    //-------------------------------------------
+
+    sCharData = (mtdCharType*)
+        ((UChar*) aRow + ((mtcColumn*)rpdGetTableColumns(gQcmReplHosts,QCM_REPLHOST_CONN_TYPE))->column.offset);
+    sConnType = ConnTypeStrToEnum( sCharData );
+    aReplHost->mConnType = sConnType;
+
+
+    //-------------------------------------------
+    // set by SYS_REPL_HOSTS_.IB_LATENCY
+    //-------------------------------------------
+
+    sCharData = (mtdCharType*)
+        ((UChar*) aRow + ((mtcColumn*)rpdGetTableColumns(gQcmReplHosts,QCM_REPLHOST_IB_LATENCY))->column.offset);
+    sIBLatency = IBLatencyStrToEnum( sCharData );
+    aReplHost->mIBLatency = sIBLatency;
+
+
 }
 
 /* PROJ-1915 */
@@ -4156,6 +4449,7 @@ rpdCatalog::getIndexByAddr( SInt          aLastUsedIP,
         }
     }
 
+    IDU_FIT_POINT_RAISE( "rpdCatalog::getIndexByAddr::ERR_HOST_NOT_FOUND", ERR_HOST_NOT_FOUND );
     // BUG-24102
     IDE_TEST_RAISE(i >= aHostNumber, ERR_HOST_NOT_FOUND);
 
@@ -4173,22 +4467,36 @@ rpdCatalog::getIndexByAddr( SInt          aLastUsedIP,
 /* SYS_REPL_OLD_ITEMS_ */
 IDE_RC rpdCatalog::insertReplOldItem(smiStatement * aSmiStmt,
                                      SChar        * aReplName,
-                                     smiTableMeta * aItem)
+                                     rpdOldItem   * aItem)
 {
     SChar  sBuffer[QD_MAX_SQL_LENGTH];
     vSLong sRowCnt = 0;
 
-    idlOS::snprintf(sBuffer, ID_SIZEOF(sBuffer),
-                    "INSERT INTO SYS_REPL_OLD_ITEMS_ VALUES ( "
-                    "CHAR'%s', BIGINT'%"ID_INT64_FMT"', "
-                    "CHAR'%s', CHAR'%s', CHAR'%s', "
-                    "INTEGER'%"ID_INT32_FMT"' )",
-                    aReplName,
-                    (SLong)aItem->mTableOID,
-                    aItem->mUserName,
-                    aItem->mTableName,
-                    aItem->mPartName,
-                    (SInt)aItem->mPKIndexID);
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "INSERT INTO SYS_REPL_OLD_ITEMS_ VALUES ( "
+                     "CHAR'%s', BIGINT'%"ID_INT64_FMT"', "
+                     "CHAR'%s', CHAR'%s', CHAR'%s', "
+                     "INTEGER'%"ID_INT32_FMT"', "
+                     "CHAR'%s', "
+                     "CHAR'%s', "
+                     "CHAR'%s', "
+                     "INTEGER'%"ID_INT32_FMT"', "
+                     "VARCHAR'%s', "
+                     "VARCHAR'%s', "
+                     "BIGINT'%"ID_INT64_FMT"' )",
+                     aReplName,
+                     (SLong)aItem->mTableOID,
+                     aItem->mUserName,
+                     aItem->mTableName,
+                     aItem->mPartName,
+                     (SInt)aItem->mPKIndexID,
+                     aItem->mRemoteUserName,
+                     aItem->mRemoteTableName,
+                     aItem->mRemotePartName,
+                     aItem->mPartitionOrder,
+                     aItem->mPartCondMinValues,
+                     aItem->mPartCondMaxValues,
+                     aItem->mInvalidMaxSN );
 
     IDE_TEST(qciMisc::runDMLforDDL(aSmiStmt, sBuffer, &sRowCnt)
              != IDE_SUCCESS);
@@ -4291,7 +4599,7 @@ IDE_RC rpdCatalog::getReplOldItemsCount(smiStatement * aSmiStmt,
 }
 IDE_RC rpdCatalog::selectReplOldItems(smiStatement * aSmiStmt,
                                       SChar        * aReplName,
-                                      smiTableMeta * aItemArr,
+                                      rpdOldItem   * aItemArr,
                                       vSLong         aItemCount)
 {
     smiRange              sRange;
@@ -4379,8 +4687,8 @@ IDE_RC rpdCatalog::selectReplOldItems(smiStatement * aSmiStmt,
 
     return IDE_FAILURE;
 }
-void rpdCatalog::setReplOldItemMember(smiTableMeta * aReplOldItem,
-                                      const void   * aRow)
+void rpdCatalog::setReplOldItemMember(rpdOldItem * aReplOldItem,
+                                      const void * aRow)
 {
     //----- SYS_REPL_OLD_ITEMS_ -----
     // REPLICATION_NAME         CHAR(40)
@@ -4389,11 +4697,22 @@ void rpdCatalog::setReplOldItemMember(smiTableMeta * aReplOldItem,
     // TABLE_NAME               CHAR(40)
     // PARTITION_NAME           CHAR(40)
     // PRIMARY_KEY_INDEX_ID     INTEGER
+    // REMOTE_USER_NAME         CHAR(128)
+    // REMOTE_TABLE_NAME        CHAR(128)
+    // REMOTE_PARTITION_NAME    CHAR(128)
+    // PARTITION_ORDER          INT
+    // PARTITION_MIN_VALUE      VARCHAR(4000)
+    // PARTITION_MAX_VALUE      VARCHAR(4000)
+    // INVALID_MAX_SN           BIGINT
     //-------------------------------
 
     mtdCharType    * sCharData;
     mtdBigintType    sBigIntData;
     mtdIntegerType   sIntData;
+    mtcColumn      * sPartMinValueMtcColumn;
+    mtcColumn      * sPartMaxValueMtcColumn;
+    const mtdCharType * sPartCondMinVal;
+    const mtdCharType * sPartCondMaxVal;
 
     //-------------------------------------------
     // set by SYS_REPL_OLD_ITEMS_.TABLE_OID
@@ -4453,6 +4772,99 @@ void rpdCatalog::setReplOldItemMember(smiTableMeta * aReplOldItem,
                         gQcmReplOldItems,
                         QCM_REPLOLDITEMS_PRIMARY_KEY_INDEX_ID))->column.offset);
     aReplOldItem->mPKIndexID = (UInt)sIntData;
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.REMOTE_USER_NAME
+    //-------------------------------------------
+    sCharData = (mtdCharType*)
+                ((UChar*)aRow +
+                 ((mtcColumn*)rpdGetTableColumns(
+                        gQcmReplOldItems,
+                        QCM_REPLOLDITEMS_REMOTE_USER_NAME))->column.offset);
+    idlOS::memcpy(aReplOldItem->mRemoteUserName,
+                  sCharData->value,
+                  sCharData->length);
+    aReplOldItem->mRemoteUserName[sCharData->length] = '\0';
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.REMOTE_TABLE_NAME
+    //-------------------------------------------
+    sCharData = (mtdCharType*)
+                ((UChar*)aRow +
+                 ((mtcColumn*)rpdGetTableColumns(
+                        gQcmReplOldItems,
+                        QCM_REPLOLDITEMS_REMOTE_TABLE_NAME))->column.offset);
+    idlOS::memcpy(aReplOldItem->mRemoteTableName,
+                  sCharData->value,
+                  sCharData->length);
+    aReplOldItem->mRemoteTableName[sCharData->length] = '\0';
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.REMOTE_PARTITION_NAME
+    //-------------------------------------------
+    sCharData = (mtdCharType*)
+                ((UChar*)aRow +
+                 ((mtcColumn*)rpdGetTableColumns(
+                        gQcmReplOldItems,
+                        QCM_REPLOLDITEMS_REMOTE_PARTITION_NAME))->column.offset);
+    idlOS::memcpy(aReplOldItem->mRemotePartName,
+                  sCharData->value,
+                  sCharData->length);
+    aReplOldItem->mRemotePartName[sCharData->length] = '\0';
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.PARTITION_ORDER
+    //-------------------------------------------
+    sIntData = *(mtdIntegerType*)
+               ((UChar*)aRow +
+                ((mtcColumn*)rpdGetTableColumns(
+                        gQcmReplOldItems,
+                        QCM_REPLOLDITEMS_PARTITION_ORDER))->column.offset);
+    aReplOldItem->mPartitionOrder = (UInt)sIntData;
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.PARTITION_MIN_VALUE
+    //-------------------------------------------
+    sPartMinValueMtcColumn = ((mtcColumn*)rpdGetTableColumns(
+            gQcmReplOldItems,
+            QCM_REPLOLDITEMS_PARTITION_MIN_VALUE) );
+
+    sPartCondMinVal = (const mtdCharType *)mtc::value( sPartMinValueMtcColumn,
+                                                       aRow,
+                                                       MTD_OFFSET_USE );
+    if( sPartCondMinVal->length > 0 )
+    {
+        idlOS::memcpy( aReplOldItem->mPartCondMinValues,
+                       sPartCondMinVal->value,
+                       sPartCondMinVal->length );        
+        aReplOldItem->mPartCondMinValues[sPartCondMinVal->length] = '\0';
+    }
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.PARTITION_MAX_VALUE
+    //-------------------------------------------
+    sPartMaxValueMtcColumn = ((mtcColumn*)rpdGetTableColumns(
+            gQcmReplOldItems,
+            QCM_REPLOLDITEMS_PARTITION_MAX_VALUE) );
+
+    sPartCondMaxVal = (const mtdCharType *)mtc::value( sPartMaxValueMtcColumn,
+                                                       aRow,
+                                                       MTD_OFFSET_USE );
+    if( sPartCondMaxVal->length > 0 )
+    {
+        idlOS::memcpy( aReplOldItem->mPartCondMaxValues,
+                       sPartCondMaxVal->value,
+                       sPartCondMaxVal->length );
+        aReplOldItem->mPartCondMaxValues[sPartCondMaxVal->length] = '\0';
+    }
+
+    //-------------------------------------------
+    // set by SYS_REPL_OLD_ITEMS_.INVALID_MAX_SN
+    //-------------------------------------------
+    sBigIntData = *(mtdBigintType*)
+        ((UChar*) aRow + ((mtcColumn*)rpdGetTableColumns(gQcmReplOldItems,QCM_REPLOLDITEMS_INVALID_MAX_SN))->column.offset);
+    aReplOldItem->mInvalidMaxSN = (vULong) sBigIntData;
+
 }
 
 IDE_RC rpdCatalog::getStrForMeta( SChar        * aSrcStr,
@@ -6775,6 +7187,41 @@ IDE_RC rpdCatalog::updateReplItemsTableOID(smiStatement * aSmiStmt,
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPD_INTERNAL_ARG,
                                 "[rpdCatalog::updateReplItemsTableOID] "
                                 "err_updated_count_is_not_1(status)"));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdCatalog::updateRemoteDataInit( smiStatement * aSmiStmt,
+                                         SChar        * aReplName )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH] = { 0, };
+    vSLong  sRowCnt = 0;
+
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "UPDATE SYS_REPLICATIONS_ "
+                     "SET REMOTE_XSN = BIGINT'%"ID_INT64_FMT"', "
+                     "REMOTE_LAST_DDL_XSN = BIGINT'%"ID_INT64_FMT"' "
+                     "WHERE REPLICATION_NAME = CHAR'%s'",
+                     SM_SN_NULL,
+                     SM_SN_NULL,
+                     aReplName );
+
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCnt > 1, ERR_EXECUTE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_EXECUTE );
+    {
+        ideLog::log( IDE_RP_0, "[rpdCatalog::updateRemoteDataInit] [%s]",
+                     sBuffer );
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPD_INTERNAL_ARG,
+                                "[rpdCatalog::updateRemoteDataInit] "
+                                "err_updated_count_is_not_0_OR_1(status)"));
     }
     IDE_EXCEPTION_END;
 

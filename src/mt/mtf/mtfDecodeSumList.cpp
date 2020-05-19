@@ -99,6 +99,7 @@ static const mtcExecute mtfDecodeSumListExecuteFloat = {
     mtfDecodeSumListFinalizeFloat,
     mtfDecodeSumListCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -140,6 +141,7 @@ static const mtcExecute mtfDecodeSumListExecuteDouble = {
     mtfDecodeSumListFinalizeDouble,
     mtfDecodeSumListCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -181,6 +183,7 @@ static const mtcExecute mtfDecodeSumListExecuteBigint = {
     mtfDecodeSumListFinalizeBigint,
     mtfDecodeSumListCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

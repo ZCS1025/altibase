@@ -34,7 +34,7 @@ IDE_RC qmsLimitI::getStartValue(qcTemplate* aTemplate,
 
     sLimitValue = aLimit->start;
 
-    if ( sLimitValue.constant == QMS_LIMIT_UNKNOWN )
+    if ( sLimitValue.hostBindNode != NULL )
     {
         IDE_TEST(getPrimitiveValue(aTemplate, sLimitValue, &sValue)
                  != IDE_SUCCESS);
@@ -71,7 +71,7 @@ IDE_RC qmsLimitI::getCountValue(qcTemplate* aTemplate,
 
     sLimitValue = aLimit->count;
 
-    if ( sLimitValue.constant == QMS_LIMIT_UNKNOWN )
+    if ( sLimitValue.hostBindNode != NULL )
     {
         IDE_TEST(getPrimitiveValue(aTemplate, sLimitValue, &sValue)
                  != IDE_SUCCESS);

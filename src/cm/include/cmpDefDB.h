@@ -159,6 +159,15 @@ enum
     CMP_OP_DB_ShardPrepareResult             = 98,
     CMP_OP_DB_ShardEndPendingTx              = 99,
     CMP_OP_DB_ShardEndPendingTxResult        = 100,
+    /* BUG-46785 Shard statement partial rollback */
+    CMP_OP_DB_SetSavepoint                   = 101,
+    CMP_OP_DB_SetSavepointResult             = 102,
+    CMP_OP_DB_RollbackToSavepoint            = 103,
+    CMP_OP_DB_RollbackToSavepointResult      = 104,
+    CMP_OP_DB_ShardStmtPartialRollback       = 105,
+    CMP_OP_DB_ShardStmtPartialRollbackResult = 106,
+    CMP_OP_DB_ShardNodeReport                = 107,
+    CMP_OP_DB_ShardNodeReportResult          = 108,
     CMP_OP_DB_MAX_A7
 };
 
@@ -229,6 +238,10 @@ enum
     CMP_DB_PROPERTY_SHARD_NODE_NAME                = 32,
     CMP_DB_PROPERTY_SHARD_PIN                      = 33,
     CMP_DB_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL= 34,
+    CMP_DB_PROPERTY_SHARD_META_NUMBER              = 35,
+    CMP_DB_PROPERTY_SHARD_CLIENT                   = 36, /* BUG-45707 */
+    CMP_DB_PROPERTY_SHARD_SESSION_TYPE             = 37, /* BUG-45707 */
+    CMP_DB_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT = 38, /* BUG-46092 */
     CMP_DB_PROPERTY_MAX
 };
 
@@ -271,6 +284,10 @@ static inline const SChar* cmpGetDbPropertyName( UShort aPropertyId )
         case CMP_DB_PROPERTY_SHARD_NODE_NAME              : return "SHARD_NODE_NAME";
         case CMP_DB_PROPERTY_SHARD_PIN                    : return "SHARD_PIN";
         case CMP_DB_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL: return "DBLINK_GLOBAL_TRANSACTION_LEVEL";
+        case CMP_DB_PROPERTY_SHARD_META_NUMBER            : return "SHARD_META_NUMBER";
+        case CMP_DB_PROPERTY_SHARD_CLIENT                 : return "SHARD_CLIENT";
+        case CMP_DB_PROPERTY_SHARD_SESSION_TYPE           : return "SHARD_SESSION_TYPE";
+        case CMP_DB_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT: return "SHARD_CLIENT_CONNECTION_REPORT";
         default:
             IDE_ASSERT(0);
             break;
@@ -284,6 +301,16 @@ static inline const SChar* cmpGetDbPropertyName( UShort aPropertyId )
  */
 #define CMP_DB_TRANSACTION_COMMIT   1
 #define CMP_DB_TRANSACTION_ROLLBACK 2
+
+/*
+ * BUG-46785
+ * Shard Node Report type
+ */
+enum
+{
+    CMP_DB_SHARD_NODE_CONNECTION_REPORT = 1,
+    CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT = 2
+};
 
 /*
  * Parameter type. SQL_PARAM_INPUT/OUTPUT/INPUT_OUTPUT 과 상수 일치시킴.

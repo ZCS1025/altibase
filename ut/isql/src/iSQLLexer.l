@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLLexer.l 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iSQLLexer.l 84945 2019-02-28 04:10:58Z bethy $
  **********************************************************************/
 
 /* ======================================================
@@ -294,6 +294,11 @@ INOUTPUT                    { return ISQL_T_INOUTPUT; }
 "CREATE"[ \t\n]+"OR"[ \t\n]+"REPLACE"[ \t\n]+("NO"|"FORCE"|"VIEW")(.|\n)* {
                                        return ISQL_T_CRT_OBJ; }
 
+("<<"|(("BEGIN"|"DECLARE")[ \t\n]+))(.|\n)* {
+                                       /* BUG-46823 Need to support LABEL statement in anonymous block */
+                                       /* BUG-46733 Need to support Anomymous Block */
+                                       return ISQL_T_ANONYM_BLOCK; }
+
 <NEG_TRAIL>("EXECUTE"|"EXEC")[ \t\n]+(([_A-Z]|({NEG_TRAIL_CH}))([_A-Z0-9]|({NEG_TRAIL_CH}))*|"\""[^"]+"\"")(.|\n)* {
                                        return ISQL_T_EXEC_PROC; }
 <POS_TRAIL>("EXECUTE"|"EXEC")[ \t\n]+(([_A-Z]|({POS_TRAIL_CH}))([_A-Z0-9]|({POS_TRAIL_CH}))*|"\""[^"]+"\"")(.|\n)* {
@@ -325,6 +330,8 @@ INOUTPUT                    { return ISQL_T_INOUTPUT; }
                                        return ISQL_T_DTABLES; }
 "SELECT"[ \t\n]+[*][ \t\n]+"FROM"[ \t\n]+"V$TAB"[ \t\n]*;(.|\n)* {
                                        return ISQL_T_VTABLES; }
+"SELECT"[ \t\n]+[*][ \t\n]+"FROM"[ \t\n]+"S$TAB"[ \t\n]*;(.|\n)* { /* BUG-45646 */
+                                       return ISQL_T_STABLES; }
 
 "SELECT"[ \t\n]+[*][ \t\n]+"FROM"[ \t\n]+"SEQ"[ \t\n]*;(.|\n)* {
                                        return ISQL_T_SEQUENCE; }

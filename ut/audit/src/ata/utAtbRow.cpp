@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbRow.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utAtbRow.cpp 82706 2018-04-05 01:32:59Z bethy $
  ******************************************************************************/
 
 #include <utAtb.h>
@@ -63,6 +63,20 @@ IDE_RC utAtbRow::initialize()
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/*
+ * BUG-45909 Improve LOB Processing
+ */
+IDE_RC utAtbRow::reset()
+{
+    int    i;
+
+    for( i = 0; i < mCount; i++ )
+    {
+        mField[i]->finiLob();
+    }
+    return Row::reset();
 }
 
 /* TASK-4212: audit툴의 대용량 처리시 개선 */

@@ -19,18 +19,23 @@ package Altibase.jdbc.driver;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Altibase.jdbc.driver.cm.CmChannel;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.ex.ShardFailOverSuccessException;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.cm.CmShardProtocol;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 import Altibase.jdbc.driver.util.StringUtils;
 
-final class AltibaseFailover
+public final class AltibaseFailover
 {
     enum CallbackState
     {
@@ -111,6 +116,16 @@ final class AltibaseFailover
         boolean sSTFSuccess = AltibaseFailover.doSTF(aContext);
         if (sSTFSuccess)
         {
+            AltibaseConnection sConn = aContext.getConnection();
+            // node connection인 경우에는 ShardFailOverSuccessException을 던진다.
+            if (sConn.isNodeConnection())
+            {
+                ShardFailOverSuccessException sFOSException =
+                        new ShardFailOverSuccessException(aException.getMessage(),
+                                                          ErrorDef.FAILOVER_SUCCESS,
+                                                          sConn.getNodeName());
+                throw sFOSException;
+            }
             Error.throwSQLExceptionForFailover(aException);
         }
         else 
@@ -145,6 +160,10 @@ final class AltibaseFailover
         final int sConnectionRetryDelay = sProp.getConnectionRetryDelay() * 1000; // millisecond
 
         ArrayList<AltibaseFailoverServerInfo> sTryList = new ArrayList<AltibaseFailoverServerInfo>(aContext.getFailoverServerList());
+        if (sProp.useLoadBalance())
+        {
+            Collections.shuffle(sTryList);
+        }
         if (sTryList.get(0) != sOldServerInfo)
         {
             sTryList.remove(sOldServerInfo);
@@ -172,11 +191,11 @@ final class AltibaseFailover
                     }
                     return true;
                 }
-                catch (Exception sEx)
+                catch (Exception aEx)
                 {
                     if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
                     {
-                        mLogger.log(Level.INFO, "Failure to connect to (" + sNewServerInfo + ")", sEx);
+                        mLogger.log(Level.INFO, "Failure to connect to (" + sNewServerInfo + ")", aEx);
                         mLogger.log(Level.INFO, "Sleep "+ sConnectionRetryDelay);
                     }
                     try
@@ -263,6 +282,9 @@ final class AltibaseFailover
                 sFailoverIntention = sFailoverCallback.failoverCallback(aContext.getConnection(), aContext.getAppContext(), sFailoverEvent);
                 aContext.setCallbackState(CallbackState.STOPPED);
 
+                // PROJ-2690 meta connection에서 STF가 발생한 경우에는 shard node list를 갱신한다.
+                updateShardNodeList(aContext.getConnection());
+
                 if ((sFailoverEvent == AltibaseFailoverCallback.Event.ABORT) ||
                     (sFailoverIntention == AltibaseFailoverCallback.Result.QUIT))
                 {
@@ -279,6 +301,22 @@ final class AltibaseFailover
         }
         return sFOSuccess;
 
+    }
+
+    private static void updateShardNodeList(AltibaseConnection aConn) throws SQLException
+    {
+        AltibaseShardingConnection sShardCon = aConn.getMetaConnection();
+        if (sShardCon != null)
+        {
+            CmShardProtocol sShardProtocol = sShardCon.getShardProtocol();
+            AltibaseProperties sProps = sShardCon.getProps();
+            sShardProtocol.updateNodeList();
+            CmProtocolContextShardConnect sShardConnectContext = sShardCon.getShardContextConnect();
+            if (sShardConnectContext.getError() == null)
+            {
+                sShardConnectContext.createDataSources(sProps);
+            }
+        }
     }
 
     /* BUG-31390 Failover info for v$session */
@@ -364,7 +402,7 @@ final class AltibaseFailover
      * @param aException Failover가 필요한지 볼 예외
      * @return Failover가 필요하면 true, 아니면 false
      */
-    private static boolean isNeedToFailover(SQLException aException)
+    public static boolean isNeedToFailover(SQLException aException)
     {
         switch (aException.getErrorCode())
         {

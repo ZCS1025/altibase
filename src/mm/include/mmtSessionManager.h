@@ -29,7 +29,7 @@ class mmcTask;
 class mmcSession;
 class mmcStatement;
 class mmtLoadBalancer;
-
+struct mmcTransObj;
 
 typedef struct mmtTimeoutInfo
 {
@@ -59,6 +59,7 @@ typedef struct mmtSessionManagerInfo
     UInt  mUTransTimeoutCount;
     UInt  mTerminatedCount;
     ULong mUpdateMaxLogSize;
+    UInt  mDdlSyncTimeoutCount;
 } mmtSessionManagerInfo;
 
 
@@ -137,10 +138,6 @@ public:
     static IDE_RC setCancelEvent(mmcStmtID aStmtID);
     static IDE_RC findSession(mmcSession **aSession, mmcSessID aSessionID);
 
-    /* PROJ-2660 hybrid sharding */
-    static void findSessionByShardPIN( mmcSession **aSession,
-                                       mmcSessID    aSessionID,
-                                       ULong        aShardPIN );
     static idBool existSessionByXID( ID_XID *aXID );
 
     /* PROJ-2451 Concurrent Execute Package */
@@ -165,12 +162,13 @@ public:
     static UInt            getBaseTime();
     static PDL_Time_Value *getCurrentTime();
 
-private:
-
     static void lock();     /* r/w */
     static void lockRead(); /* r   */
     static void unlock();
+    /* PROJ-2701 online data rebuild for shard share transaction : use of mmcTrans */
+    static void findShareTransLockNeeded( mmcSession  *aSession , mmcTransObj ** aShareTrans );
 
+private:
     static void changeTaskCount(SInt aValue);
     static void changeSessionCount(SInt aValue);
 

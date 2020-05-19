@@ -71,6 +71,12 @@ JDBC_SRC =      $(DRIVER_DIR)/datatype/ColumnConst.java                 \
                 $(DRIVER_DIR)/cm/CmGetColumnInfoResult.java             \
                 $(DRIVER_DIR)/cm/CmGetBindParamInfoResult.java          \
                 $(DRIVER_DIR)/cm/CmChannel.java                         \
+                $(DRIVER_DIR)/cm/CmConnType.java                        \
+                $(DRIVER_DIR)/cm/CmSocket.java                          \
+                $(DRIVER_DIR)/cm/CmTcpSocket.java                       \
+                $(DRIVER_DIR)/cm/CmSecureSocket.java                    \
+                $(DRIVER_DIR)/cm/CmRdmaSocket.java                      \
+                $(DRIVER_DIR)/cm/RdmaSocketDef.java                     \
                 $(DRIVER_DIR)/cm/CmProtocolContextDirExec.java          \
                 $(DRIVER_DIR)/cm/StatementIdOwner.java                  \
                 $(DRIVER_DIR)/cm/CmBlobGetResult.java                   \
@@ -178,12 +184,12 @@ JDBC_SRC =      $(DRIVER_DIR)/datatype/ColumnConst.java                 \
                 $(DRIVER_DIR)/logging/TraceFlag.java                    \
                 $(DRIVER_DIR)/SemiAsyncPrefetch.java                    \
                 $(DRIVER_DIR)/SemiAsyncPrefetchAutoTuner.java           \
-                $(DRIVER_DIR)/JniLoader.java                            \
                 $(DRIVER_DIR)/JniExt.java                               \
+                $(DRIVER_DIR)/JniExtLoader.java                         \
+                $(DRIVER_DIR)/JniExtRdmaSocket.java                     \
                 $(DRIVER_DIR)/util/SocketUtils.java                     \
                 $(DRIVER_DIR)/AltibaseMessageCallback.java              \
                 $(DRIVER_DIR)/AltibaseConsoleMessageCallback.java
-
 
 JDBC_SRC4WAS =  $(DRIVER_DIR4WAS)/datatype/ColumnConst.java                 \
                 $(DRIVER_DIR4WAS)/datatype/BinaryColumn.java                \
@@ -255,7 +261,13 @@ JDBC_SRC4WAS =  $(DRIVER_DIR4WAS)/datatype/ColumnConst.java                 \
                 $(DRIVER_DIR4WAS)/cm/CmXAResult.java                        \
                 $(DRIVER_DIR4WAS)/cm/CmGetColumnInfoResult.java             \
                 $(DRIVER_DIR4WAS)/cm/CmGetBindParamInfoResult.java          \
+                $(DRIVER_DIR4WAS)/cm/CmConnType.java                        \
                 $(DRIVER_DIR4WAS)/cm/CmChannel.java                         \
+                $(DRIVER_DIR4WAS)/cm/CmSocket.java                          \
+                $(DRIVER_DIR4WAS)/cm/CmTcpSocket.java                       \
+                $(DRIVER_DIR4WAS)/cm/CmSecureSocket.java                    \
+                $(DRIVER_DIR4WAS)/cm/CmRdmaSocket.java                      \
+                $(DRIVER_DIR4WAS)/cm/RdmaSocketDef.java                     \
                 $(DRIVER_DIR4WAS)/cm/CmProtocolContextDirExec.java          \
                 $(DRIVER_DIR4WAS)/cm/StatementIdOwner.java                  \
                 $(DRIVER_DIR4WAS)/cm/CmBlobGetResult.java                   \
@@ -354,8 +366,9 @@ JDBC_SRC4WAS =  $(DRIVER_DIR4WAS)/datatype/ColumnConst.java                 \
                 $(DRIVER_DIR4WAS)/logging/TraceFlag.java                    \
                 $(DRIVER_DIR4WAS)/SemiAsyncPrefetch.java                    \
                 $(DRIVER_DIR4WAS)/SemiAsyncPrefetchAutoTuner.java           \
-                $(DRIVER_DIR4WAS)/JniLoader.java                            \
                 $(DRIVER_DIR4WAS)/JniExt.java                               \
+                $(DRIVER_DIR4WAS)/JniExtLoader.java                         \
+                $(DRIVER_DIR4WAS)/JniExtRdmaSocket.java                     \
                 $(DRIVER_DIR4WAS)/logging/MultipleFileHandler.java          \
                 $(DRIVER_DIR4WAS)/logging/DumpByteUtil.java                 \
                 $(DRIVER_DIR4WAS)/logging/CallableStmtLoggingProxy.java     \
@@ -370,8 +383,9 @@ JDBC_SRC4WAS =  $(DRIVER_DIR4WAS)/datatype/ColumnConst.java                 \
                 $(DRIVER_DIR4WAS)/AltibaseMessageCallback.java              \
                 $(DRIVER_DIR4WAS)/AltibaseConsoleMessageCallback.java
 
-
-EXT_SRCS = $(EXT_DIR)/Altibase_jdbc_driver_JniExt.c
+EXT_SRCS = $(EXT_DIR)/Altibase_jdbc_driver_JniExt.c                         \
+           $(EXT_DIR)/Altibase_jdbc_driver_JniExtRdmaSocket.c               \
+           $(CM_DIR)/cmn/cmnIB.c
 
 EXT_OBJS = $(EXT_SRCS:$(DEV_DIR)/%.c=$(TARGET_DIR)/%_shobj.$(OBJEXT))
 

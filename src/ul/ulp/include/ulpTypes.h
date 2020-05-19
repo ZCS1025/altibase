@@ -82,7 +82,8 @@ typedef enum
     H_FAILOVERCB,
     H_NCHAR,
     H_NVARCHAR,
-    H_SQLDA
+    H_SQLDA,
+    H_BINARY2
 } ulpHostType;
 
 typedef enum

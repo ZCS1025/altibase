@@ -211,19 +211,20 @@ void* idtContainer::staticRunner(void* aParam)
             sThread->run();
             sThread->finalizeThread();
 
-            if( sThread->mIsJoin == ID_TRUE )
-            {
-                sContainer->wakeupStatus( IDT_JOIN_WAIT );
-                sContainer->waitStatus( IDT_JOINING );
-            }
-            else
-            {
-                /* Do nothing */
-            }
         }
         else
         {
-            /* Fall through */ 
+            /* do nothing */
+        }
+
+        if( sThread->mIsJoin == ID_TRUE )
+        {
+            sContainer->wakeupStatus( IDT_JOIN_WAIT );
+            sContainer->waitStatus( IDT_JOINING );
+        }
+        else
+        {
+            /* Do nothing */
         }
 
         sContainer->mThread = NULL;
@@ -541,6 +542,7 @@ IDE_RC idtContainer::createThread( void )
      * to get the nearst memory area from CPU
      */
     mThread = NULL;
+    mThreadNo   = 0;
 
     mSmallAlloc = NULL;
     mTlsfAlloc  = NULL;
@@ -687,12 +689,39 @@ IDE_RC idtContainer::startServer( void* aThread )
                            "%"ID_XPOINTER_FMT,
                            mThread );
 
-
     waitStatus( IDT_IDLE );
     wakeupStatus( IDT_START );
     waitStatus( IDT_RUNNING );
 
-    return mStartRC;
+    IDE_TEST_RAISE( mStartRC != IDE_SUCCESS, ERR_START_FAIL );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_START_FAIL )
+    {
+        IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerErrorWithString, 
+                                  "Thread Start Fail" ) );
+
+    }
+    IDE_EXCEPTION_END;
+
+    if ( mThread != NULL )
+    {
+        if ( mThread->mIsJoin == ID_TRUE )
+        {
+            wakeupStatus( IDT_JOINING );
+        }
+        else
+        {
+            /* do nothing */
+        }
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    return IDE_FAILURE;
 }
 
 IDE_RC idtContainer::join(void)

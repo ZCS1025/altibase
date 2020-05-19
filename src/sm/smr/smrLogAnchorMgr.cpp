@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrLogAnchorMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrLogAnchorMgr.cpp 84887 2019-02-14 10:13:01Z emlee $
  *
  * Description :
  *
@@ -2446,27 +2446,20 @@ IDE_RC smrLogAnchorMgr::updateStableNoOfAllMemTBSAndFlush()
                                             (void**)&sNextSpaceNode );
 
         // disk tablespace는 skip 한다.
-        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID )
-             == ID_TRUE )
+        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
         {
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
-        else
-        {
-            /* nothing to do */
-        }
-
         // volatile tablespace는 skip 한다.
-        if ( sctTableSpaceMgr::isVolatileTableSpace( sCurrSpaceNode->mID )
-             == ID_TRUE )
+        else if ( sctTableSpaceMgr::isVolatileTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
         {
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
         else
         {
-            /* nothing to do */
+            IDE_ERROR ( sctTableSpaceMgr::isMemTableSpace(sCurrSpaceNode->mID ) == ID_TRUE );
         }
 
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( sCurrSpaceNode )
@@ -2608,8 +2601,7 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
             continue;
         }
 
-        if( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID )
-            == ID_TRUE )
+        if( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
         {
             /* read from disk manager */
             sddTableSpace::getTableSpaceAttr(
@@ -2949,6 +2941,8 @@ IDE_RC smrLogAnchorMgr::getTBSAttrAndAnchorOffset( scSpaceID          aSpaceID,
     IDE_ASSERT( sSpaceNode != NULL );
 
 
+    IDU_FIT_POINT("BUG-46450@smrLogAnchorMgr::getTBSAttrAndAnchorOffset::getTBSLocation");
+
     switch ( sctTableSpaceMgr::getTBSLocation( sSpaceNode->mID ) )
     {
         case SMI_TBS_DISK:
@@ -2973,11 +2967,19 @@ IDE_RC smrLogAnchorMgr::getTBSAttrAndAnchorOffset( scSpaceID          aSpaceID,
             break;
 
         default:
-            IDE_ASSERT( 0 );
+            IDE_ASSERT_MSG( 0,
+                            "Tablespace Type not found ( ID : %"ID_UINT32_FMT", Name : %s ) \n",
+                            sSpaceNode->mID,
+                            sSpaceNode->mName );
             break;
     }
 
-   return IDE_SUCCESS;
+    return IDE_SUCCESS;
+
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+#endif
 }
 
 /***********************************************************************
@@ -3699,6 +3701,8 @@ idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
+    IDU_FIT_POINT("BUG-46450@smrLogAnchorMgr::cmpTableSpaceAttr::getTBSLocation");
+
     switch ( sctTableSpaceMgr::getTBSLocation( aSpaceAttrByAnchor->mID ) )
     {
         case SMI_TBS_DISK:
@@ -3723,9 +3727,16 @@ idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
             break;
 
         default:
-            IDE_ASSERT( 0 );
+            IDE_ASSERT_MSG( 0,
+                            "Tablespace Type not found ( ID : %"ID_UINT32_FMT", Name : %s ) \n",
+                            aSpaceAttrByAnchor->mID,
+                            aSpaceAttrByAnchor->mName );
             break;
     }
+
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION_END;
+#endif
 
     return sIsValid;
 }
@@ -4206,10 +4217,10 @@ idBool smrLogAnchorMgr::cmpChkptImageAttr( smmChkptImageAttr*   aImageAttrByNode
     {
         ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
                      SM_TRC_ANCHOR_CHECK_CRT_LSN_IN_CHKPT_IMG_ATTR,
-                     aImageAttrByNode->mSpaceID, 0,
+                     aImageAttrByNode->mSpaceID,
                      aImageAttrByNode->mMemCreateLSN.mFileNo,
                      aImageAttrByNode->mMemCreateLSN.mOffset,
-                     aImageAttrByAnchor->mSpaceID, 0,
+                     aImageAttrByAnchor->mSpaceID,
                      aImageAttrByAnchor->mMemCreateLSN.mFileNo,
                      aImageAttrByAnchor->mMemCreateLSN.mOffset );
 

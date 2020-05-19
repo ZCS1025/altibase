@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderXLSN.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSenderXLSN.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -167,6 +167,11 @@ IDE_RC rpxSender::updateInvalidMaxSN(smiStatement * aSmiStmt,
             IDU_FIT_POINT( "rpxSender::updateInvalidMaxSN::Erratic::rpERR_ABORT_RP_SENDER_UPDATE_INVALID_MAX_SN" ); 
             IDE_TEST(rpcManager::updateInvalidMaxSN(aSmiStmt, aReplItems, aSN)
                      != IDE_SUCCESS);
+
+            IDE_TEST( rpcManager::updateOldInvalidMaxSN( aSmiStmt,
+                                                         aReplItems,
+                                                         aSN )
+                      != IDE_SUCCESS );
         }
 
         aReplItems->mInvalidMaxSN = (ULong)aSN;
@@ -198,7 +203,8 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
                           SMI_TRANSACTION_REPL_NONE | SMX_COMMIT_WRITE_NOWAIT;
 
     sCurrentSN = SM_SN_NULL;
-
+    updateOldMaxXSN();
+    
     switch ( mCurrentType )
     {
         case RP_NORMAL:
@@ -418,3 +424,16 @@ rpxSender::setRestartSN(smSN aSN)
         mSenderInfo->setRestartSN(aSN);
     }
 } 
+
+void 
+rpxSender::updateOldMaxXSN()
+{
+    if ( ( mXSN > mOldMaxXSN ) && ( mXSN != SM_SN_NULL ) ) 
+    {
+        mOldMaxXSN = mXSN;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}

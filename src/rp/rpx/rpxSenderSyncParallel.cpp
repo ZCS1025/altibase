@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderSyncParallel.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSenderSyncParallel.cpp 83835 2018-08-29 04:13:39Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -43,6 +43,10 @@ rpxSender::syncParallel()
 
     rpxPJMgr         * sSyncer            = NULL;
 
+    SChar            * sIPAddress         = NULL;
+    SInt               sPortNo            = 0;
+    rpIBLatency        sIBLatency         = RP_IB_LATENCY_NONE;
+
     sPDL_Time_Value.initialize(1, 0);
 
     IDE_TEST( allocSCN( &sParallelStmts, &sSyncParallelTrans ) != IDE_SUCCESS );
@@ -60,9 +64,26 @@ rpxSender::syncParallel()
 
     new ( sSyncer ) rpxPJMgr();
 
+    if ( mSocketType == RP_SOCKET_TYPE_TCP )
+    {
+        getRemoteAddress( &sIPAddress, &sPortNo );
+    }
+    else if ( mSocketType == RP_SOCKET_TYPE_IB )
+    {
+        getRemoteAddressForIB( &sIPAddress, &sPortNo, &sIBLatency );
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
+
     IDE_TEST( sSyncer->initialize( mRepName,
                                    &mPJStmt,
                                    &mMeta,
+                                   mSocketType,
+                                   sIPAddress,
+                                   sPortNo,
+                                   sIBLatency,
                                    &mExitFlag,
                                    mParallelFactor,
                                    sParallelStmts )
@@ -456,6 +477,7 @@ IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
     SChar * sUsername = NULL;
     SChar * sTablename = NULL;
     SChar * sPartname  = NULL;
+    SChar   sMsgBuffer[256];
 
     if ( RPU_REPLICATION_SYNC_LOCK_TIMEOUT != 0 )
     {
@@ -513,7 +535,29 @@ IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
 
     IDE_EXCEPTION_END;
 
-    IDE_WARNING( IDE_RP_0, RP_TRC_SSP_ERR_ALLOC_SCN_LOCK_TABLE );
+    if ( sPartname == NULL )
+    {
+        idlOS::snprintf( sMsgBuffer, ID_SIZEOF(sMsgBuffer),
+                         "[SenderSyncParallel] Failed to lock table for replication synchronization. (User:%s, Table:%s)",
+                         sUsername, sTablename );
+    }
+    else
+    {
+        if ( sPartname[0] == '\0' )
+        {
+            idlOS::snprintf( sMsgBuffer, ID_SIZEOF(sMsgBuffer),
+                             "[SenderSyncParallel] Failed to lock table for replication synchronization. (User:%s, Table:%s)",
+                             sUsername, sTablename );
+        }
+        else
+        {
+            idlOS::snprintf( sMsgBuffer, ID_SIZEOF(sMsgBuffer),
+                             "[SenderSyncParallel] Failed to lock table for replication synchronization. (User:%s, Table:%s, Partition:%s)",
+                             sUsername, sTablename, sPartname );
+        }
+    }
+    ideLog::log( IDE_RP_0, "%s", sMsgBuffer );
+
 
     return IDE_FAILURE;
 }

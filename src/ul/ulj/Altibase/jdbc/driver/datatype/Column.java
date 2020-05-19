@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Set;
 
 import Altibase.jdbc.driver.cm.CmBufferWriter;
 import Altibase.jdbc.driver.cm.CmChannel;
@@ -36,7 +37,7 @@ public interface Column
 {
     int getDBColumnType();
 
-    int[] getMappedJDBCTypes();
+    Set<Integer> getMappedJDBCTypes();
 
     boolean isMappedJDBCType(int aSqlType);
 

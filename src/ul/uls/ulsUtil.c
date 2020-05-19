@@ -791,17 +791,10 @@ ulsGetMultiLineStringSizeFromWKB( ulsHandle    * aHandle,
 
         sWkbOffset -= WKB_GEOHEAD_SIZE;
 
-        switch( sWkbType )
-        {
-            case WKB_LINESTRING_TYPE :
-                ACI_TEST( ulsGetLineStringSizeFromWKB( aHandle,
-                                                       (acp_uint8_t**)&sBLine,
-                                                       aFence,
-                                                       &sTempSize) != ACS_SUCCESS );
-                break;
-            default :
-                ACI_RAISE( ACI_EXCEPTION_END_LABEL );
-        } /* switch*/
+        ACI_TEST( ulsGetLineStringSizeFromWKB( aHandle,
+                                               (acp_uint8_t**)&sBLine,
+                                               aFence,
+                                               &sTempSize) != ACS_SUCCESS );
 
         sTotalSize += sTempSize;
     } /* while*/
@@ -886,17 +879,10 @@ ulsGetMultiPolygonSizeFromWKB( ulsHandle    * aHandle,
         ACI_TEST_RAISE( sWkbType != WKB_POLYGON_TYPE, ERR_PARSING );
         sWkbOffset -= WKB_GEOHEAD_SIZE;
 
-        switch( sWkbType )
-        {
-            case WKB_POLYGON_TYPE :
-                ACI_TEST( ulsGetPolygonSizeFromWKB( aHandle,
-                                                    (acp_uint8_t**)&sBPolygon,
-                                                    aFence,
-                                                    &sTempSize) != ACS_SUCCESS );
-                break;
-            default :
-                ACI_RAISE( ACI_EXCEPTION_END_LABEL );
-        } /* switch*/
+        ACI_TEST( ulsGetPolygonSizeFromWKB( aHandle,
+                                            (acp_uint8_t**)&sBPolygon,
+                                            aFence,
+                                            &sTempSize) != ACS_SUCCESS );
 
         sTotalSize += sTempSize;
 

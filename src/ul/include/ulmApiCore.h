@@ -228,6 +228,18 @@ typedef struct
     SQLLEN        mSqlTextLength;    /* BUG-41825 */
     acp_sint32_t  mQueryStartTime;
     acp_sint32_t  mExecuteFlag;
+    acp_char_t    mSqlCacheTextID[64+1];  /* BUG-45924 */
+    SQLLEN        mLengthOrInd[1];
+    /* BUG-46436 */
+    acp_sint64_t  mParseTime;
+    acp_sint64_t  mSoftPrepareTime;
+    acp_sint32_t  mLastQueryStartTime;
+    acp_sint64_t  mExecuteTime;
+    acp_sint64_t  mFetchTime;
+    acp_sint32_t  mFetchStartTime;
+    acp_sint64_t  mTotalTime;
+    acp_sint64_t  mValidateTime;
+    acp_sint64_t  mOptimizeTime;
 } ulmSqlText;
 
 typedef struct

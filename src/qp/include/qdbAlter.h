@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbAlter.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdbAlter.h 83334 2018-06-22 07:50:32Z donovan.seo $
  **********************************************************************/
 #ifndef _O_QDB_ALTER_H_
 #define  _O_QDB_ALTER_H_  1
@@ -245,6 +245,10 @@ public:
     static IDE_RC checkAdjPartition(
         qcStatement    * aStatement,
         qcmTableInfo   * aTableInfo );
+
+    /* BUG-46065 support range using hash */
+    static IDE_RC checkAdjRangeUsingHashPartition( qcStatement    * aStatement,
+                                                   qcmTableInfo   * aTableInfo );
 
     // TASK-2398 Log Compression
     // Table의 Flag를 변경하는 Alter구문에 대한 Validation

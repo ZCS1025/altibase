@@ -23,6 +23,7 @@ public class StringPropertyColumn extends CommonCharVarcharColumn
     StringPropertyColumn()
     {
         super(LENGTH_SIZE_INT32);
+        addMappedJdbcTypeSet(AltibaseTypes.OTHER);
     }
 
     protected boolean isNationalCharset()
@@ -33,11 +34,6 @@ public class StringPropertyColumn extends CommonCharVarcharColumn
     public int getDBColumnType()
     {
         return ColumnTypes.NONE;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.OTHER };
     }
 
     public String getDBColumnTypeName()

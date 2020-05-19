@@ -50,13 +50,14 @@ public class ErrorDef
     public static final int       FETCH_OUT_OF_SEQUENCE                             = 0x410D2;
     public static final int       FAILURE_TO_FIND_STATEMENT                         = 0x41098;
     public static final int       INVALID_LOB_RANGE                                 = 0x4109E;
+    public static final int       SHARD_META_NUMBER_INVALID                         = 0x410FA;
     // BUG-38496 Notify users when their password expiry date is approaching.
     public static final int       PASSWORD_GRACE_PERIOD                             = 0x420E1;
 
-    /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
+    /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC
      * Server에서 지원하지 않는 Property에 대한 요청이 왔을 경우 Server는 해당 에러를 리턴한다. */
     public static final int       UNSUPPORTED_PROPERTY                              = 0x420DB;
-    
+
     // #endregion
 
     // #region JDBC 전용 에러 코드
@@ -172,7 +173,7 @@ public class ErrorDef
     public static final int       COLUMN_READER_INITIALIZATION_SKIPPED              = 0x51A77;
     public static final int       VALUE_LENGTH_EXCEEDS                              = 0x51A78;
     public static final int       PASSWORD_EXPIRATION_DATE_IS_COMING                = 0x51A79;
-    
+
     /* PROJ-2474 SSL 관련 에러코드 */
     public static final int       UNSUPPORTED_KEYSTORE_ALGORITHM                    = 0x51A7A;
     public static final int       CAN_NOT_CREATE_KEYSTORE_INSTANCE                  = 0x51A7B;
@@ -182,14 +183,33 @@ public class ErrorDef
     public static final int       CAN_NOT_RETREIVE_KEY_FROM_KEYSTORE                = 0x51A7F;
     public static final int       CAN_NOT_OPEN_KEYSTORE                             = 0x51A80;
     public static final int       DEFAULT_ALGORITHM_DEFINITION_INVALID              = 0x51A81;
-    
-    /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
+
+    /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC
       * 반드시 필요한 Property를 Server에서 지원하지 못할 경우 해당 에러를 리턴한다. 또한 접속도 해제한다. */
     public static final int       NOT_SUPPORTED_MANDATORY_PROPERTY                  = 0x51A82;
 
     public static final int       OPENED_CONNECTION                                 = 0x51A83;
 
-    private static final int      LAST_ERROR_CODE                                   = 0x51A83;
+    // PROJ-2681
+    public static final int       UNKNOWN_CONNTYPE                                  = 0x51A84;
+
+    /* PROJ-2690 sharding과련 에러코드 */
+    public static final int       SHARD_INVALID_TEST_MARK                           = 0x51A85;
+    public static final int       SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE              = 0x51A86;
+    public static final int       SHARD_NODE_NOT_FOUNDED                            = 0x51A87;
+    public static final int       SHARD_SINGLE_NODE_TOUCH_ERROR                     = 0x51A88;
+    public static final int       SHARD_BIND_PARAMETER_MISSING                      = 0x51A89;
+    public static final int       SHARD_MULTINODE_TRANSACTION_REQUIRED              = 0x51A8A;
+    public static final int       SHARD_INVALID_NODE_TOUCH                          = 0x51A8B;
+    public static final int       SHARD_SERVERSIDE_NODE_TOUCH_ERROR                 = 0x51A8C;
+    public static final int       SHARD_JDBC_METHOD_INVOKE_ERROR                    = 0x51A8D;
+    public static final int       SHARD_NODE_EXECUTE_ERROR                          = 0x51A8E;
+    public static final int       SHARD_SPLIT_METHOD_NOT_SUPPORTED                  = 0x51A8F;
+    public static final int       SHARD_RANGE_NOT_FOUNDED                           = 0x51A9A;
+    public static final int       SHARD_NO_NODES                                    = 0x51A9B;
+    public static final int       SHARD_OPERATION_FAILED                            = 0x51A9C;
+    public static final int       SHARD_PIN_CHANGED                                 = 0x51A9D;
+    private static final int      LAST_ERROR_CODE                                   = 0x51A9D;
 
     // #endregion
 
@@ -254,6 +274,7 @@ public class ErrorDef
         register(FAILOVER_SUCCESS                                  , "08F01" , "Failover success (%s: %s)" );
         register(INVALID_FORMAT_OF_ALTERNATE_SERVERS               , "08F02" , "Invalid value format for alternateservers propery: %s" );
         register(UNKNOWN_HOST                                      , "08H01" , "Unknown host: %s" );
+        register(UNKNOWN_CONNTYPE                                  , "08H02" , "Unknown conntype: %s");
         register(CLIENT_UNABLE_ESTABLISH_CONNECTION                , "08001" , "Communication link failure: Cannot establish connection to server" );
         register(THREAD_INTERRUPTED						   	   	   , "JID04" , "Connection thread interrupted." );
         register(EXCEED_PRIMITIVE_DATA_SIZE						   , "JID05" , "The maximum buffer length was exceeded." );
@@ -305,6 +326,21 @@ public class ErrorDef
         register(CAN_NOT_OPEN_KEYSTORE                             , "08000" , "Cannot open keystore from given url");
         register(DEFAULT_ALGORITHM_DEFINITION_INVALID              , "08000" , "Invalid default algorithm definitions for TrustManager and/or KeyManager");
         register(NOT_SUPPORTED_MANDATORY_PROPERTY                  , "08M01" , "Mandatory properties that are supported for the client version are not supported for the server version." );
+        register(SHARD_INVALID_TEST_MARK                           , "HY000" , "Invalid test mark" );
+        register(SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE              , "HY000" , "Failover is not available." );
+        register(SHARD_NODE_NOT_FOUNDED                            , "HY000" , "No shard node founded by shard key value." );
+        register(SHARD_SINGLE_NODE_TOUCH_ERROR                     , "HY000" , "Server-side query can not be performed in single-node transaction" );
+        register(SHARD_BIND_PARAMETER_MISSING                      , "HY000" , "bind parameter is missing." );
+        register(SHARD_MULTINODE_TRANSACTION_REQUIRED              , "HY000" , "Multi-node transaction required." );
+        register(SHARD_INVALID_NODE_TOUCH                          , "HY000" , "Invalid node touch." );
+        register(SHARD_SERVERSIDE_NODE_TOUCH_ERROR                 , "HY000" , "Server-side query can not be performed in single-node transaction" );
+        register(SHARD_JDBC_METHOD_INVOKE_ERROR                    , "HY000" , "shard jdbc method invoke error : %s" );
+        register(SHARD_NODE_EXECUTE_ERROR                          , "HY000" , "shard node execution error : %s" );
+        register(SHARD_SPLIT_METHOD_NOT_SUPPORTED                  , "HY000" , "shard split method type %s not supported." );
+        register(SHARD_RANGE_NOT_FOUNDED                           , "HY000" , "No shard range was founded" );
+        register(SHARD_NO_NODES                                    , "HY000" , "No shard nodes" );
+        register(SHARD_OPERATION_FAILED                            , "HY000" , "%s of client-side sharding failed. : %s" );
+        register(SHARD_PIN_CHANGED                                 , "HY000" , "Shard pin was changed." );
     }
 
     private static void register(int aErrorCode, String aSQLState, String aMessageForm)

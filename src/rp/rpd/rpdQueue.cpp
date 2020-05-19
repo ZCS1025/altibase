@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: rpdQueue.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpdQueue.cpp 82898 2018-04-25 01:14:15Z returns $
  **********************************************************************/
 
 #include <rpdQueue.h>
@@ -68,16 +68,47 @@ IDE_RC rpdQueue::initialize(SChar *aRepName)
     return IDE_FAILURE;
 }
 
-void rpdQueue::finalize()
+void rpdQueue::setExitFlag()
 {
     IDE_ASSERT(lock() == IDE_SUCCESS);
 
     mFinalFlag = ID_TRUE;
-    IDE_ASSERT(mXLogQueueCV.signal() == IDE_SUCCESS);
+
+    if ( mWaitFlag == ID_TRUE )
+    {
+        IDE_ASSERT(mXLogQueueCV.signal() == IDE_SUCCESS);
+    }
+    else
+    {
+        /* do nothing */
+    }
 
     IDE_ASSERT(unlock() == IDE_SUCCESS);
 
     return;
+}
+
+void rpdQueue::destroy( void )
+{
+    IDE_DASSERT( mXLogCnt == 0 );
+
+    if ( mMutex.destroy() != IDE_SUCCESS )
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    if ( mXLogQueueCV.destroy() != IDE_SUCCESS )
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    else
+    {
+        /* do nothing */
+    }
 }
 
 void rpdQueue::write(rpdXLog *aXLogPtr)
@@ -109,7 +140,6 @@ void rpdQueue::write(rpdXLog *aXLogPtr)
     return;
 }
 
-//call by destroy
 void rpdQueue::read(rpdXLog **aXLogPtr)
 {
     IDE_ASSERT(lock() == IDE_SUCCESS);
@@ -132,20 +162,31 @@ void rpdQueue::read(rpdXLog **aXLogPtr)
 
     return;
 }
-/****************************************************
-* call by rpxReceiverApply recvXLog
-* final되는 경우에 *aXLogPtr는 NULL로 set된다. 
-****************************************************/
-void rpdQueue::read(rpdXLog **aXLogPtr, smSN *aTailLogSN)
+
+IDE_RC rpdQueue::read(rpdXLog **aXLogPtr, UInt  aTimeoutSec )
 {
+    PDL_Time_Value    sCheckTime;
+    PDL_Time_Value    sSleepTime;
+    idBool            sIsLock = ID_FALSE;
+
     IDE_ASSERT(lock() == IDE_SUCCESS);
+    sIsLock = ID_TRUE;
 
     //Queue가 빈 경우 대기
-    while((mXLogCnt == 0) && (mFinalFlag != ID_TRUE))
+    while( mXLogCnt == 0 )
     {
+        sCheckTime.initialize();
+        sSleepTime.initialize();
+
+        sSleepTime.set( aTimeoutSec );
+
+        sCheckTime = idlOS::gettimeofday() + sSleepTime;
+        
         mWaitFlag = ID_TRUE;
-        (void)mXLogQueueCV.wait(&mMutex);
+        (void)mXLogQueueCV.timedwait( &mMutex, &sCheckTime, IDU_IGNORE_TIMEDOUT );
         mWaitFlag = ID_FALSE;
+
+        IDE_TEST_RAISE( mFinalFlag == ID_TRUE, ERR_EXIT );
     }
 
     /* Get First Entry */
@@ -162,21 +203,32 @@ void rpdQueue::read(rpdXLog **aXLogPtr, smSN *aTailLogSN)
         mTailPtr = NULL;
     }
 
-    if(aTailLogSN != NULL)
-    {
-        if(mTailPtr != NULL)
-        {
-            *aTailLogSN = mTailPtr->mSN;
-        }
-        else
-        {
-            *aTailLogSN = SM_SN_NULL;
-        }
-    }
-
+    sIsLock = ID_FALSE;
     IDE_ASSERT(unlock() == IDE_SUCCESS);
 
-    return;
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_EXIT );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_IGNORE_EXIT_FLAG_SET ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsLock == ID_TRUE )
+    {
+        sIsLock = ID_FALSE;
+        IDE_ASSERT( unlock() == IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
 }
 
 IDE_RC rpdQueue::allocXLog(rpdXLog **aXLogPtr, iduMemAllocator * aAllocator )
@@ -238,6 +290,8 @@ IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
 {
     idBool sIsMemInit = ID_FALSE;
     idBool sIsAllocLob = ID_FALSE;
+
+    idlOS::memset( aXLogPtr, 0x00, ID_SIZEOF( rpdXLog ) );
 
     /* rpsSmExecutor에서 사용하는 필수적인 부분 */
     aXLogPtr->mLobPtr = NULL;

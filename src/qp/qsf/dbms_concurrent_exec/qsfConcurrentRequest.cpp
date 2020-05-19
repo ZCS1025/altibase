@@ -64,6 +64,7 @@ static const mtcExecute qsfRequest = {
     mtf::calculateNA,
     qsfCalculate_SpConcRequest,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

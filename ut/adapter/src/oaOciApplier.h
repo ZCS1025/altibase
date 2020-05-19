@@ -26,6 +26,9 @@
 #include <oci.h>
 #include <oaLogRecord.h>
 
+#define DEFAULT_ERROR_CODE (0)
+#define OCI_ERROR_STR_LEN 5 + 1
+
 typedef struct preparedStatement
 {
 
@@ -64,6 +67,7 @@ struct oaOciApplierHandle
     acp_bool_t mSkipUpdate;
     acp_bool_t mSkipDelete;
     acp_uint32_t mSkipError;
+    acp_list_t   mSkipErrorList;
 
     acp_bool_t mIsDirectPathInsert;
 
@@ -77,6 +81,8 @@ struct oaOciApplierHandle
 
     acp_bool_t mSetUserToTable;
     
+    acp_bool_t mIsSkipErrorList;
+
     /*
      * prepared statements for each table
      */
@@ -114,5 +120,10 @@ extern ace_rc_t oaOciApplierApplyLogRecordList( oaContext          * aContext,
 ace_rc_t oaOciApplierApplyLogRecord( oaContext          * aContext,
                                      oaOciApplierHandle * aHandle,
                                      oaLogRecord        * aLogRecord );
+
+ace_rc_t oaOciInitializeSkipErrorList( oaContext          *aContext,
+                                       oaOciApplierHandle *aHandle );
+
+void oaOciFinalizeSkipErrorList( oaOciApplierHandle *aOciApplierHandle );
 
 #endif /* __OA_OCI_APPLIER_H__ */

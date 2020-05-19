@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDatabaseFile.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmDatabaseFile.cpp 85250 2019-04-16 07:15:32Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -327,7 +327,6 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
 
     if ( mFile.exist() == ID_TRUE )
     {
-        IDE_TEST( mFile.open( sIsDirectIO ) != IDE_SUCCESS );
         // BUG-29607 create checkpoint image 도중 동일 파일이 있으면
         //           재사용 하지 말고 지우고 다시 생성한다.
         // checkpoint image 생성은 checkpoint시 자동으로 발생하므로
@@ -359,8 +358,10 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
     /* FileHeader에 Checkpont Image Header를 기록한다 */
     IDE_TEST( setDBFileHeader( aChkptImageHdr ) != IDE_SUCCESS );
 
+    IDU_FIT_POINT("BUG-46574@smmDatabaseFile::createDbFile::writeUntilSuccess");
+
     /* File의 크기를 정한다. */
-    if( aSize > SD_PAGE_SIZE + 1 )
+    if( aSize > (SM_DBFILE_METAHDR_PAGE_SIZE + 1) )
     {
         idlOS::memset( sDummyPage, 0, SM_DBFILE_METAHDR_PAGE_SIZE );
 
@@ -888,76 +889,74 @@ IDE_RC smmDatabaseFile::copyDataForDirectWrite( void * aAlignedDst,
     return IDE_SUCCESS;
 }
 
-
-/**
-   Direct I/O를 위해 Disk Sector Size로 Align된 Buffer를 통해 File Write수행
-
-   [IN] aWhere  - write할 File의 Offset
-   [IN] aBuffer - write된 데이터가 복사될 Buffer
-   [IN] aSize   - write할 크기
- */
-IDE_RC
-smmDatabaseFile::writeDIO( PDL_OFF_T aWhere,
-                           void*     aBuffer,
-                           size_t    aSize )
-{
-    IDE_ASSERT( aBuffer != NULL );
-    IDE_ASSERT( aSize <= SM_PAGE_SIZE );
-    IDE_ASSERT( mAlignedPageBuffer != NULL );
-
-    UInt   sSizeToWrite;
-    UInt   sStage = 0;
-    idBool sCanDirectIO;
-    UChar *sWriteBuffer;
-
-    sCanDirectIO = mFile.canDirectIO( aWhere,
-                                      aBuffer,
-                                      aSize );
-
-    IDE_TEST( mPageBufferMutex.lock(NULL /* idvSQL* */) != IDE_SUCCESS );
-    sStage = 1;
-
-    if( sCanDirectIO == ID_FALSE)
-    {
-        sWriteBuffer = mAlignedPageBuffer;
-        IDE_TEST( copyDataForDirectWrite( mAlignedPageBuffer,
-                                          aBuffer,
-                                          aSize,
-                                          & sSizeToWrite )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        sWriteBuffer = (UChar*)aBuffer;
-        sSizeToWrite = aSize;
-    }
-
-    IDE_TEST( mFile.write( NULL, aWhere, sWriteBuffer, sSizeToWrite )
-              != IDE_SUCCESS );
-
-    sStage = 0;
-    IDE_TEST( mPageBufferMutex.unlock() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-
-    switch( sStage )
-    {
-        case 1:
-            IDE_ASSERT( mPageBufferMutex.unlock() == IDE_SUCCESS );
-            break;
-        default :
-            break;
-    }
-
-    IDE_POP();
-
-    return IDE_FAILURE;
-}
-
+///**
+//   Direct I/O를 위해 Disk Sector Size로 Align된 Buffer를 통해 File Write수행
+//
+//   [IN] aWhere  - write할 File의 Offset
+//   [IN] aBuffer - write된 데이터가 복사될 Buffer
+//   [IN] aSize   - write할 크기
+// */
+//IDE_RC
+//smmDatabaseFile::writeDIO( PDL_OFF_T aWhere,
+//                           void*     aBuffer,
+//                           size_t    aSize )
+//{
+//    IDE_ASSERT( aBuffer != NULL );
+//    IDE_ASSERT( aSize <= SM_PAGE_SIZE );
+//    IDE_ASSERT( mAlignedPageBuffer != NULL );
+//
+//    UInt   sSizeToWrite;
+//    UInt   sStage = 0;
+//    idBool sCanDirectIO;
+//    UChar *sWriteBuffer;
+//
+//    sCanDirectIO = mFile.canDirectIO( aWhere,
+//                                      aBuffer,
+//                                      aSize );
+//
+//    IDE_TEST( mPageBufferMutex.lock(NULL /* idvSQL* */) != IDE_SUCCESS );
+//    sStage = 1;
+//
+//    if( sCanDirectIO == ID_FALSE)
+//    {
+//        sWriteBuffer = mAlignedPageBuffer;
+//        IDE_TEST( copyDataForDirectWrite( mAlignedPageBuffer,
+//                                          aBuffer,
+//                                          aSize,
+//                                          & sSizeToWrite )
+//                  != IDE_SUCCESS );
+//    }
+//    else
+//    {
+//        sWriteBuffer = (UChar*)aBuffer;
+//        sSizeToWrite = aSize;
+//    }
+//
+//    IDE_TEST( mFile.write( NULL, aWhere, sWriteBuffer, sSizeToWrite )
+//              != IDE_SUCCESS );
+//
+//    sStage = 0;
+//    IDE_TEST( mPageBufferMutex.unlock() != IDE_SUCCESS );
+//
+//    return IDE_SUCCESS;
+//
+//    IDE_EXCEPTION_END;
+//
+//    IDE_PUSH();
+//
+//    switch( sStage )
+//    {
+//        case 1:
+//            IDE_ASSERT( mPageBufferMutex.unlock() == IDE_SUCCESS );
+//            break;
+//        default :
+//            break;
+//    }
+//
+//    IDE_POP();
+//
+//    return IDE_FAILURE;
+//}
 
 /**
    Direct I/O를 위해 Disk Sector Size로 Align된 Buffer를 통해 File Write수행

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcSequence.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcSequence.cpp 82891 2018-04-24 07:30:34Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -1007,6 +1007,58 @@ IDE_RC smcSequence::alterSequence( void                * aTrans,
 
     return IDE_FAILURE;
     
+}
+
+IDE_RC smcSequence::resetSequence( void                * aTrans,
+                                   smcTableHeader      * aTableHeader )
+{
+    smcSequenceInfo * sCurSequence;
+    smcSequenceInfo   sAfterSequence;
+    UInt              sState  = 0;
+    scPageID          sPageID = 0;
+
+    IDE_TEST( smcTable::validateTable( aTrans,
+                                       aTableHeader,
+                                       SCT_VAL_DDL_DML, // 테이블스페이스 Validation 옵션
+                                       SMC_LOCK_MUTEX )
+              != IDE_SUCCESS );
+
+    sCurSequence   = &(aTableHeader->mSequence);
+    sAfterSequence = *sCurSequence;
+
+    sAfterSequence.mCurSequence     = SMC_INIT_SEQUENCE;
+    sAfterSequence.mLstSyncSequence = sCurSequence->mStartSequence;
+
+    sPageID = SM_MAKE_PID( aTableHeader->mSelfOID );
+    sState = 1;
+
+    IDE_TEST( smrUpdate::updateSequenceAtTableHead( NULL, /* idvSQL* */
+                                                    aTrans,
+                                                    aTableHeader->mSelfOID,
+                                                    SM_MAKE_OFFSET(aTableHeader->mSelfOID)
+                                                    + SMP_SLOT_HEADER_SIZE,
+                                                    sCurSequence,
+                                                    &sAfterSequence,
+                                                    ID_SIZEOF(smcSequenceInfo))
+              != IDE_SUCCESS );
+
+    aTableHeader->mSequence = sAfterSequence;
+
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
+                                             sPageID ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sState == 1 )
+    {
+        IDE_PUSH();
+        (void)smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, sPageID );
+        IDE_POP();
+    }
+
+    return IDE_FAILURE;
 }
 
 IDE_RC smcSequence::refineSequence( smcTableHeader * aTableHeader )

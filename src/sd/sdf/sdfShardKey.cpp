@@ -45,6 +45,7 @@ static const mtcExecute sdfShardKeyExecute = {
     mtf::calculateNA,
     sdfShardKeyCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

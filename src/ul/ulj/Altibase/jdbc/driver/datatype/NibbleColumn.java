@@ -33,6 +33,7 @@ public class NibbleColumn extends AbstractBinaryColumn
     NibbleColumn()
     {
         super(LENGTH_SIZE_INT8);
+        addMappedJdbcTypeSet(AltibaseTypes.NIBBLE);
     }
 
     NibbleColumn(int aPrecision)
@@ -53,11 +54,6 @@ public class NibbleColumn extends AbstractBinaryColumn
     public int getDBColumnType()
     {
         return ColumnTypes.NIBBLE;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.NIBBLE };
     }
 
     public String getDBColumnTypeName()

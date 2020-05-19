@@ -64,6 +64,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfHashCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

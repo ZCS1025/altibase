@@ -98,6 +98,7 @@ ACI_RC ulnSFID_83(ulnFnContext *aFnContext)
             case ALTIBASE_XA_RMID:
             case SQL_ATTR_PACKET_SIZE:  /* [5] : HY011 */
             case SQL_ATTR_CURRENT_CATALOG:
+            case ALTIBASE_LOAD_BALANCE:
                 ACI_RAISE(LABEL_ABORT_SET);
                 break;
 
@@ -168,6 +169,7 @@ ACI_RC ulnSFID_84(ulnFnContext *aFnContext)
             case SQL_ATTR_PACKET_SIZE: /* [5] or [7] : HY011 */
             case ALTIBASE_PREFER_IPV6: /* proj-1538 ipv6     */
             case SQL_ATTR_CURRENT_CATALOG:
+            case ALTIBASE_LOAD_BALANCE:
                 ACI_RAISE(LABEL_INVALID_TIME);
                 break;
 
@@ -200,7 +202,8 @@ static ACI_RC ulnSetTxnIsolation(ulnFnContext *aFnContext, void *aValuePtr)
     ulnDbc       *sDbc;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACE_ASSERT( sDbc != NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     switch (sValue)
     {
@@ -253,6 +256,11 @@ static ACI_RC ulnSetTxnIsolation(ulnFnContext *aFnContext, void *aValuePtr)
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_ATTR_VALUE);
     {
         ulnError(aFnContext, ulERR_ABORT_INVALID_ATTRIBUTE_VALUE);
@@ -333,9 +341,15 @@ static ACI_RC ulnSetConnAttrConnType(ulnFnContext *aFnContext, ulnConnType aConn
                                LABEL_NOT_SUPPORTED_LINK);
                 break;
 
+            /* PROJ-2474 SSL/TLS */
             case ULN_CONNTYPE_SSL:
-                /* PROJ-2474 SSL/TLS */
                 ACI_TEST_RAISE(ulnDbcSetCmiLinkImpl(sDbc, CMI_LINK_IMPL_SSL) != ACI_SUCCESS, 
+                               LABEL_NOT_SUPPORTED_LINK);
+                break;
+
+            /* PROJ-2681 */
+            case ULN_CONNTYPE_IB:
+                ACI_TEST_RAISE(ulnDbcSetCmiLinkImpl(sDbc, CMI_LINK_IMPL_IB) != ACI_SUCCESS, 
                                LABEL_NOT_SUPPORTED_LINK);
                 break;
 
@@ -578,6 +592,9 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
         case ULN_CONN_ATTR_ALTERNATE_SERVERS:
             ACI_TEST_RAISE(ulnDbcSetAlternateServers(sDbc, (acp_char_t *)aValuePtr, aLength) != ACI_SUCCESS,
                            LABEL_NOT_ENOUGH_MEMORY);
+            break;
+        case ULN_CONN_ATTR_LOAD_BALANCE:
+            ulnDbcSetLoadBalance(sDbc,(acp_bool_t)sValue);
             break;
         case ULN_CONN_ATTR_CONNECTION_RETRY_COUNT:
             ulnDbcSetConnectionRetryCount(sDbc,(acp_uint32_t)sValue);
@@ -1039,6 +1056,12 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             /* Do Nothing. */
             break;
 
+        /* BUG-46090 Meta Node SMN 전파 */
+        case ULN_CONN_ATTR_SHARD_META_NUMBER:
+            /* For Sharding. */
+            /* Do Nothing. */
+            break;
+
         /* PROJ-2638 shard native linker */
         case ULN_CONN_ATTR_SHARD_NODE_NAME:
             ACI_TEST_RAISE( aLength > ULSD_MAX_NODE_NAME_LEN, LABEL_NOT_ENOUGH_MEMORY );
@@ -1046,6 +1069,37 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
                        (acp_char_t *) aValuePtr,
                        aLength );
             sDbc->mShardDbcCxt.mShardTargetDataNodeName[aLength] = '\0';
+            break;
+
+        case ULN_CONN_ATTR_SHARD_CONNTYPE:
+            if ( ulnDbcGetShardConnType( sDbc ) == ULN_CONNTYPE_INVALID )
+            {
+                ACI_TEST( ulnDbcSetShardConnType( sDbc, (ulnConnType)sValue )
+                          != ACI_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+            break;
+
+        /* PROJ-2681 */
+        case ULN_CONN_ATTR_IB_LATENCY:
+            ulnDbcSetIBLatency(sDbc, (acp_sint32_t)sValue);
+            break;
+
+        case ULN_CONN_ATTR_IB_CONCHKSPIN:
+            ulnDbcSetIBConChkSpin(sDbc, (acp_sint32_t)sValue);
+            break;
+
+        /* BUG-45707 */
+        case ULN_CONN_ATTR_SHARD_CLIENT:
+            /* For Sharding. */
+            /* Do Nothing. */
+            break;
+
+        case ULN_CONN_ATTR_SHARD_SESSION_TYPE:
+            sDbc->mShardDbcCxt.mShardSessionType = (acp_uint8_t)sValue;
             break;
 
         default:
@@ -1859,13 +1913,30 @@ ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
         /* PROJ-2638 shard native linker */
         case ULN_PROPERTY_SHARD_PIN:
             sConnAttrID = ULN_CONN_ATTR_SHARD_PIN;
-            aDbc->mShardDbcCxt.mShardPin = 0;
+            aDbc->mShardDbcCxt.mShardPin = ULSD_SHARD_PIN_INVALID;
+            break;
+
+        /* BUG-46090 Meta Node SMN 전파 */
+        case ULN_PROPERTY_SHARD_META_NUMBER:
+            sConnAttrID = ULN_CONN_ATTR_SHARD_META_NUMBER;
+            aDbc->mShardDbcCxt.mShardMetaNumber = 0;
             break;
 
         /* PROJ-2638 shard native linker */
         case ULN_PROPERTY_SHARD_NODE_NAME:
             sConnAttrID = ULN_CONN_ATTR_SHARD_NODE_NAME;
             aDbc->mShardDbcCxt.mShardTargetDataNodeName[0] = '\0';
+            break;
+
+        /* BUG-45707 */
+        case ULN_PROPERTY_SHARD_CLIENT:
+            sConnAttrID = ULN_CONN_ATTR_SHARD_CLIENT;
+            aDbc->mShardDbcCxt.mShardClient = ULSD_SHARD_CLIENT_FALSE;
+            break;
+
+        case ULN_PROPERTY_SHARD_SESSION_TYPE:
+            sConnAttrID = ULN_CONN_ATTR_SHARD_SESSION_TYPE;
+            aDbc->mShardDbcCxt.mShardSessionType = ULSD_SESSION_TYPE_EXTERNAL;
             break;
 
         /*
@@ -1876,6 +1947,12 @@ ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
             ACI_RAISE(LABEL_ABORT_INCOMPATIBLE_PROPERTY);
             break;
          */
+
+        /* BUG-46092 */
+        case ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT:
+            sConnAttrID = ULN_CONN_ATTR_SHARD_CLIENT_CONNECTION_REPORT;
+            ACI_RAISE( LABEL_ABORT_INCOMPATIBLE_PROPERTY );
+            break;
 
         default:
             ACI_RAISE(LABEL_ABORT_INCOMPATIBLE_PROPERTY);

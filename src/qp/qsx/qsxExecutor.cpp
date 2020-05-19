@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxExecutor.cpp 82152 2018-01-29 09:32:47Z khkwak $
+ * $Id: qsxExecutor.cpp 83637 2018-08-07 05:40:38Z khkwak $
  **********************************************************************/
 
 #include <qcg.h>
@@ -1398,10 +1398,31 @@ IDE_RC qsxExecutor::initVariableItems(
                     }
                 }
                 break;
-            case QS_TRIGGER_VARIABLE:
-                // PROJ-1359 Trigger
-                // 이미 특정값으로 초기화되어 있음.
-                // Nothing To Do
+            case QS_TRIGGER_NEW_VARIABLE:
+                // BUG-46074
+                // Delete trigger의 new row는 NULL이다.
+                if ( aQcStmt->spxEnv->mTriggerEventType == QCM_TRIGGER_EVENT_DELETE )
+                {
+                    sVariable = ( qsVariables * ) aVarItems;
+
+                    IDE_TEST( qsxUtil::assignNull( sVariable->variableTypeNode,
+                                                   QC_PRIVATE_TMPLATE(aQcStmt) )
+                              != IDE_SUCCESS );
+                }
+
+                break;
+            case QS_TRIGGER_OLD_VARIABLE:
+                // BUG-46074
+                // Insert trigger의 old row는 NULL이다.
+                if ( aQcStmt->spxEnv->mTriggerEventType == QCM_TRIGGER_EVENT_INSERT )
+                {
+                    sVariable = ( qsVariables * ) aVarItems;
+
+                    IDE_TEST( qsxUtil::assignNull( sVariable->variableTypeNode,
+                                                   QC_PRIVATE_TMPLATE(aQcStmt) )
+                              != IDE_SUCCESS );
+                }
+
                 break;
             case QS_CURSOR :
                 sCursor     = ( qsCursors * ) aVarItems;
@@ -1577,7 +1598,8 @@ IDE_RC qsxExecutor::finiVariableItems(
                     // Nothing to do.
                 }
                 break;
-            case QS_TRIGGER_VARIABLE :
+            case QS_TRIGGER_NEW_VARIABLE :
+            case QS_TRIGGER_OLD_VARIABLE :
             case QS_EXCEPTION :
             case QS_TYPE :
             case QS_PRAGMA_AUTONOMOUS_TRANS :
@@ -2168,6 +2190,12 @@ IDE_RC qsxExecutor::execSelect (
 
     if( sProcSql->intoVariables->bulkCollect == ID_TRUE )
     {
+        // BUG-46032
+        IDE_TEST( qsxUtil::preCalculateArray (
+                aQcStmt,
+                sProcSql->intoVariables->intoNodes )
+            != IDE_SUCCESS );
+
         IDE_TEST( qsxUtil::truncateArray(
                     aQcStmt,
                     sProcSql->intoVariables->intoNodes )
@@ -4220,6 +4248,12 @@ IDE_RC qsxExecutor::execExecImm (
     {
         if( sExecImm->intoVariableNodes->bulkCollect == ID_TRUE )
         {
+            // BUG-46032
+            IDE_TEST( qsxUtil::preCalculateArray (
+                    aQcStmt,
+                    sExecImm->intoVariableNodes->intoNodes )
+                != IDE_SUCCESS );
+
             IDE_TEST( qsxUtil::truncateArray(
                     aQcStmt,
                     sExecImm->intoVariableNodes->intoNodes )

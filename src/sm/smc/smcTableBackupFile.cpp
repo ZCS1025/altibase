@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcTableBackupFile.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcTableBackupFile.cpp 83725 2018-08-19 23:15:49Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -276,7 +276,7 @@ IDE_RC smcTableBackupFile::read(ULong  aWhere,
                           File Buffer    |-------|
                           Read Pos        |-----------------|
                         */
-                        if(aWhere >= mBeginPos &&  aWhere <= mEndPos)
+                        if( (aWhere >= mBeginPos) &&  (aWhere <= mEndPos) )
                         {
                             IDE_TEST(mFile.read(NULL, /* idvSQL* */
                                                 mEndPos,
@@ -499,7 +499,7 @@ IDE_RC smcTableBackupFile::write(ULong  aWhere,
                           File Buffer    |-------|
                           Write Pos        |-----------------|
                         */
-                        if(aWhere >= mBeginPos && aWhere <= mEndPos)
+                        if( (aWhere >= mBeginPos) && (aWhere <= mEndPos) )
                         {
                             IDE_TEST( mFile.writeUntilSuccess( NULL, /* idvSQL* */
                                                                mEndPos,

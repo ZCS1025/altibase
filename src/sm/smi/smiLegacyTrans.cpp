@@ -45,6 +45,7 @@ IDE_RC smiLegacyTrans::makeLegacyStmt( void          * aLegacyTrans,
     smiStatement  * sBackupNext     = NULL;
     smiStatement  * sBackupAllPrev  = NULL;
     UInt            sState          = 0;
+    UInt            sDumpCnt        = 0;
 
     IDE_ASSERT( aOrgStmtListHead != NULL );
 
@@ -87,7 +88,57 @@ IDE_RC smiLegacyTrans::makeLegacyStmt( void          * aLegacyTrans,
 
     while( sChildStmt != sNewStmtListHead )
     {
-        IDE_ASSERT( sChildStmt->mParent == aOrgStmtListHead );
+        if( sChildStmt->mParent != aOrgStmtListHead )
+        {
+            ideLog::log( IDE_SM_0, "Statement Link is Corrupted.\n"
+                                   "Tx StmtListHead     : 0x%"ID_XPOINTER_FMT"\n"
+                                   "Tx ChildStmt Cnt    : %"ID_UINT32_FMT"\n"
+                                   "Corrupted ChildStmt : 0x%"ID_XPOINTER_FMT"\n"
+                                   "sChildStmt Parent   : 0x%"ID_XPOINTER_FMT,
+                                   aOrgStmtListHead,
+                                   aOrgStmtListHead->mChildStmtCnt,
+                                   sChildStmt,
+                                   sChildStmt->mParent );
+
+            sChildStmt = sNewStmtListHead->mNext;
+
+            while( ( sChildStmt != NULL ) && 
+                   ( sChildStmt != sNewStmtListHead ) &&
+                   ( sDumpCnt <= aOrgStmtListHead->mChildStmtCnt ) )
+            {
+                ideLog::log( IDE_SM_0,"sChildStmt                : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mTrans        : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mTransID      : %"ID_UINT32_FMT"\n"
+                                      "sChildStmt->mParent       : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mPrev         : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mNext         : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mAllPrev      : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mAllNext      : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mUpdate       : 0x%"ID_XPOINTER_FMT"\n"
+                                      "sChildStmt->mChildStmtCnt : %"ID_UINT32_FMT"\n"
+                                      "sChildStmt->mFlag         : %"ID_UINT32_FMT"\n"
+                                      "sChildStmt->mSCN          : %"ID_XINT64_FMT"\n"
+                                      "sChildStmt->mInfiniteSCN  : %"ID_XINT64_FMT,
+                                      sChildStmt,
+                                      sChildStmt->mTrans,
+                                      sChildStmt->mTransID,
+                                      sChildStmt->mParent,
+                                      sChildStmt->mPrev,
+                                      sChildStmt->mNext,
+                                      sChildStmt->mAllPrev,
+                                      sChildStmt->mAllNext,
+                                      sChildStmt->mUpdate,
+                                      sChildStmt->mChildStmtCnt,
+                                      sChildStmt->mFlag,
+                                      sChildStmt->mSCN,
+                                      sChildStmt->mInfiniteSCN );
+
+                sChildStmt = sChildStmt->mNext;
+                sDumpCnt++;
+            }
+
+            IDE_ASSERT(0);
+        }
 
         sChildStmt->mParent = sNewStmtListHead;
         sChildStmt          = sChildStmt->mNext;

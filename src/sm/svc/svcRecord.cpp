@@ -190,12 +190,7 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
                 sCurLobDesc = (smcLobDesc *)(sNewFixRowPtr + sCurColumn->offset);
 
                 /* prepare에서 기존 LobDesc를 old version으로 인식하기 때문에 초기화 */
-                sCurLobDesc->flag        = SM_VCDESC_MODE_IN;
-                sCurLobDesc->length      = 0;
-                sCurLobDesc->fstPieceOID = SM_NULL_OID;
-                sCurLobDesc->mLPCHCount  = 0;
-                sCurLobDesc->mLobVersion = 0;
-                sCurLobDesc->mFirstLPCH  = NULL;
+                SMC_LOB_DESC_INIT( sCurLobDesc );
 
                 if( sCurValue->length > 0 )
                 {
@@ -2696,6 +2691,7 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
     smpSlotHeader * sSlotHeader;
     idBool          sIsError = ID_FALSE;
     void          * sLogSlotPtr;
+    smxTrans      * sTrans = (smxTrans*)aTrans;
 
     sSlotHeader = (smpSlotHeader *)aRowPtr;
     SMX_GET_SCN_AND_TID( sSlotHeader->mCreateSCN, sRowSCN, sRowTID );
@@ -2733,6 +2729,17 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
                 sIsError = ID_TRUE;
                 ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                             "[##WARNING ##WARNING!!] The Row is invalid target row\n");
+            }
+            else
+            {
+                /* PROJ-2694 Fetch Across Rollback
+                 * holdable cursor open 이전 자신이 생성한 row에 접근했을 경우
+                 * 해당 Tx를 rollback시 cursor를 재활용할 수 없다. */
+                if ( ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
+                     ( SM_SCN_IS_LT( &sRowSCN, &( sTrans->mCursorOpenInfSCN ) ) == ID_TRUE ) )
+                {
+                    sTrans->mIsReusableRollback = ID_FALSE;
+                }
             }
         }
         else

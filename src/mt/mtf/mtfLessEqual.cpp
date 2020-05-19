@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfLessEqual.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfLessEqual.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -33,6 +33,9 @@ extern mtfModule mtfGreaterThan;
 extern mtfModule mtfLessEqual;
 
 extern mtdModule mtdList;
+
+/* PROJ-2632 */
+extern mtxModule mtxLessEqual;
 
 static mtcName mtfLessEqualFunctionName[1] = {
     { NULL, 2, (void*)"<=" }
@@ -82,6 +85,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfLessEqualCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefault,
     mtfLessEqualExtractRange
 };
@@ -94,6 +98,7 @@ static const mtcExecute mtfExecuteList = {
     mtf::calculateNA,
     mtfLessEqualCalculateList,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -185,6 +190,10 @@ IDE_RC mtfLessEqualEstimate( mtcNode*     aNode,
                     != IDE_SUCCESS );
 
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
+
+            /* PROJ-2632 */
+            aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+                = mtxLessEqual.mGetExecute( sModules[0]->id, sModules[1]->id );
         }
         else
         {

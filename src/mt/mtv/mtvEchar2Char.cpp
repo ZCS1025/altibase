@@ -59,6 +59,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Echar2Char,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

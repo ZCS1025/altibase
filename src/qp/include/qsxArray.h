@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxArray.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxArray.h 82974 2018-05-04 01:41:02Z sbjang $
  *
  * Description :
  *     PROJ-1075 associative array info.
@@ -30,6 +30,21 @@
 #include <iduMemListOld.h>
 #include <qsParseTree.h>
 #include <qsxAvl.h>
+
+// BUG-45701
+// NOTE : APRE definition is located at ulpLibStmtCur.h
+typedef struct qsxArrayBindingHeader
+{
+    UInt  version;           // protocol version (1)
+    SInt  sqlType;           // SQL type (smallint, int, bigint, real, double)
+    UInt  elemCount;         // array count (from client to server)
+    UInt  returnElemCount;   // array count (from server to client)
+    UInt  hasNull;           // has null value (0, 1)
+    UChar padding[20];       // padding & reserved
+    SChar data[1];           // array start
+} qsxArrayBindingHeader;
+
+#define QSX_ARRAY_BINDING_VERSION 808377001
 
 class qsxArray
 {

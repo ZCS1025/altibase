@@ -29,7 +29,9 @@
 
 IDE_RC rpnComm::sendVersionA5( void               * /*aHBTResource*/,
                                cmiProtocolContext * aProtocolContext,
-                               rpdVersion         * aReplVersion )
+                               idBool             * /*aExitFlag*/,
+                               rpdVersion         * aReplVersion,
+                               UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocolContext   sProtocolContext;
     cmiProtocol          sProtocol;
@@ -96,6 +98,7 @@ IDE_RC rpnComm::sendVersionA5( void               * /*aHBTResource*/,
  *
  */ 
 IDE_RC rpnComm::recvVersionA5( cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
                                rpdVersion         * aReplVersion,
                                ULong                aTimeoutSec )
 {
@@ -105,7 +108,7 @@ IDE_RC rpnComm::recvVersionA5( cmiProtocolContext * aProtocolContext,
     
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeoutSec )
               != IDE_SUCCESS );
@@ -146,7 +149,9 @@ IDE_RC rpnComm::recvVersionA5( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplA5( void               * /*aHBTResource*/,
                                 cmiProtocolContext * aProtocolContext,
-                                rpdReplications    * aRepl )
+                                idBool             * /*aExitFlag*/,
+                                rpdReplications    * aRepl,
+                                UInt                /*aTimeoutSec*/ )
 {
     cmiProtocolContext   sProtocolContext;
     cmiProtocol          sProtocol;
@@ -273,6 +278,7 @@ IDE_RC rpnComm::sendMetaReplA5( void               * /*aHBTResource*/,
  *
  */ 
 IDE_RC rpnComm::recvMetaReplA5( cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
                                 rpdReplications    * aRepl,
                                 ULong                aTimeoutSec )
 {
@@ -283,7 +289,7 @@ IDE_RC rpnComm::recvMetaReplA5( cmiProtocolContext * aProtocolContext,
     
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeoutSec )
               != IDE_SUCCESS );
@@ -391,7 +397,9 @@ IDE_RC rpnComm::recvMetaReplA5( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplTblA5( void               * /*aHBTResource*/,
                                    cmiProtocolContext * aProtocolContext,
-                                   rpdMetaItem        * aItem )
+                                   idBool             * /*aExitFlag*/,
+                                   rpdMetaItem        * aItem,
+                                   UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocolContext    sProtocolContext;
     cmiProtocol           sProtocol;
@@ -537,6 +545,7 @@ IDE_RC rpnComm::sendMetaReplTblA5( void               * /*aHBTResource*/,
  *
  */  
 IDE_RC rpnComm::recvMetaReplTblA5( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    rpdMetaItem        * aItem,
                                    ULong                aTimeoutSec )
 {
@@ -548,7 +557,7 @@ IDE_RC rpnComm::recvMetaReplTblA5( cmiProtocolContext * aProtocolContext,
     
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeoutSec )
               != IDE_SUCCESS );
@@ -624,6 +633,8 @@ IDE_RC rpnComm::recvMetaReplTblA5( cmiProtocolContext * aProtocolContext,
     /* PROJ-2563 remove to check constraints */
     aItem->mCheckCount = 0;
 
+    aItem->mPartitionCount = 0;
+
     /* Finalize Protocol */
     sStage = 0;
     IDE_TEST( cmiFinalizeProtocol( &sProtocol ) != IDE_SUCCESS );
@@ -655,7 +666,9 @@ IDE_RC rpnComm::recvMetaReplTblA5( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplColA5( void               * /*aHBTResource*/,
                                    cmiProtocolContext * aProtocolContext,
-                                   rpdColumn          * aColumn )
+                                   idBool             * aExitFlag,
+                                   rpdColumn          * aColumn,
+                                   UInt                 aTimeoutSec )
 {
     cmiProtocolContext    sProtocolContext;
     cmiProtocol           sProtocol;
@@ -739,7 +752,9 @@ IDE_RC rpnComm::sendMetaReplColA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -776,6 +791,7 @@ IDE_RC rpnComm::sendMetaReplColA5( void               * /*aHBTResource*/,
  *
  */  
 IDE_RC rpnComm::recvMetaReplColA5( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    rpdColumn          * aColumn,
                                    ULong                aTimeoutSec )
 {
@@ -787,7 +803,7 @@ IDE_RC rpnComm::recvMetaReplColA5( cmiProtocolContext * aProtocolContext,
     
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeoutSec )
               != IDE_SUCCESS );
@@ -871,7 +887,9 @@ IDE_RC rpnComm::recvMetaReplColA5( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplIdxA5( void               * /*aHBTResource*/,
                                    cmiProtocolContext * aProtocolContext,
-                                   qcmIndex           * aIndex )
+                                   idBool             * aExitFlag,
+                                   qcmIndex           * aIndex,
+                                   UInt                 aTimeoutSec )
 {
     cmiProtocolContext    sProtocolContext;
     cmiProtocol           sProtocol;
@@ -921,7 +939,9 @@ IDE_RC rpnComm::sendMetaReplIdxA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -959,6 +979,7 @@ IDE_RC rpnComm::sendMetaReplIdxA5( void               * /*aHBTResource*/,
  *
  */  
 IDE_RC rpnComm::recvMetaReplIdxA5( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    qcmIndex           * aIndex,
                                    ULong                aTimeoutSec )
 {
@@ -969,7 +990,7 @@ IDE_RC rpnComm::recvMetaReplIdxA5( cmiProtocolContext * aProtocolContext,
     
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeoutSec )
               != IDE_SUCCESS );
@@ -1027,8 +1048,10 @@ IDE_RC rpnComm::recvMetaReplIdxA5( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplIdxColA5( void                * /*aHBTResource*/,
                                       cmiProtocolContext  * aProtocolContext,
+                                      idBool              * aExitFlag,
                                       UInt                  aColumnID,
-                                      UInt                  aKeyColumnFlag )
+                                      UInt                  aKeyColumnFlag,
+                                      UInt                  aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -1064,7 +1087,9 @@ IDE_RC rpnComm::sendMetaReplIdxColA5( void                * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -1101,6 +1126,7 @@ IDE_RC rpnComm::sendMetaReplIdxColA5( void                * /*aHBTResource*/,
  *
  */  
 IDE_RC rpnComm::recvMetaReplIdxColA5( cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
                                       UInt               * aColumnID,
                                       UInt               * aKeyColumnFlag,
                                       ULong                aTimeoutSec )
@@ -1111,7 +1137,7 @@ IDE_RC rpnComm::recvMetaReplIdxColA5( cmiProtocolContext * aProtocolContext,
     
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeoutSec )
               != IDE_SUCCESS );
@@ -1160,7 +1186,9 @@ IDE_RC rpnComm::recvMetaReplIdxColA5( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplCheckA5( void                 * /*aHBTResource*/,
                                      cmiProtocolContext   * /*aProtocolContext*/,
-                                     qcmCheck             * /*aCheck*/ )
+                                     idBool               * /*aExitFlag*/,
+                                     qcmCheck             * /*aCheck*/,
+                                     UInt                   /*aTimeoutSec*/ )
 {
     IDE_DASSERT( 0 );
 
@@ -1171,10 +1199,12 @@ IDE_RC rpnComm::sendMetaReplCheckA5( void                 * /*aHBTResource*/,
  *
  */  
 IDE_RC rpnComm::sendHandshakeAckA5( cmiProtocolContext  * aProtocolContext,
+                                    idBool              * aExitFlag,
                                     UInt                  aResult,
                                     SInt                  aFailbackStatus,
                                     ULong                 aXSN,
-                                    SChar               * aMsg )
+                                    SChar               * aMsg,
+                                    UInt                  aTimeoutSec )
 {
     cmiProtocolContext sProtocolContext;
     cmiLink * sLink = NULL;
@@ -1214,7 +1244,9 @@ IDE_RC rpnComm::sendHandshakeAckA5( cmiProtocolContext  * aProtocolContext,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     sStage = 1;
@@ -1245,7 +1277,7 @@ IDE_RC rpnComm::sendHandshakeAckA5( cmiProtocolContext  * aProtocolContext,
 }
 
 IDE_RC rpnComm::recvHandshakeAckA5( cmiProtocolContext * aProtocolContext,
-                                    idBool             * /*aExitFlag*/,
+                                    idBool             * aExitFlag,
                                     UInt               * aResult,
                                     SInt               * aFailbackStatus,
                                     ULong              * aXSN,
@@ -1262,7 +1294,7 @@ IDE_RC rpnComm::recvHandshakeAckA5( cmiProtocolContext * aProtocolContext,
 
     IDE_TEST( readCmProtocol( aProtocolContext,
                               &sProtocol,
-                              NULL,
+                              aExitFlag,
                               NULL,
                               aTimeOut )
               != IDE_SUCCESS );
@@ -1430,14 +1462,12 @@ IDE_RC rpnComm::recvXLogA5( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, LobCursorClose ):
         {
-            IDE_TEST( recvLobCursorCloseA5( &sProtocol, aXLog )
-                      != IDE_SUCCESS);
+            IDE_TEST( recvLobCursorCloseA5( &sProtocol, aXLog ) != IDE_SUCCESS);
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, LobPrepare4Write ):
         {
-            IDE_TEST( recvLobPrepare4WriteA5( &sProtocol, aXLog )
-                      != IDE_SUCCESS );
+            IDE_TEST( recvLobPrepare4WriteA5( &sProtocol, aXLog ) != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, LobPartialWrite ):
@@ -1450,20 +1480,17 @@ IDE_RC rpnComm::recvXLogA5( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, LobFinish2Write ):
         {
-            IDE_TEST( recvLobFinish2WriteA5( &sProtocol, aXLog )
-                      != IDE_SUCCESS );
+            IDE_TEST( recvLobFinish2WriteA5( &sProtocol, aXLog ) != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, Handshake ): // BUG-23195
         {
-            IDE_TEST( recvHandshakeA5( &sProtocol, aXLog )
-                      != IDE_SUCCESS );
+            IDE_TEST( recvHandshakeA5( &sProtocol, aXLog ) != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, SyncPKBegin ):
         {
-            IDE_TEST( recvSyncPKBeginA5( &sProtocol, aXLog )
-                      != IDE_SUCCESS );
+            IDE_TEST( recvSyncPKBeginA5( &sProtocol, aXLog ) != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, SyncPK ):
@@ -1483,8 +1510,7 @@ IDE_RC rpnComm::recvXLogA5( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION(RP, FailbackEnd):
         {
-            IDE_TEST( recvFailbackEndA5( &sProtocol, aXLog )
-                     != IDE_SUCCESS);
+            IDE_TEST( recvFailbackEndA5( &sProtocol, aXLog ) != IDE_SUCCESS);
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, SyncStart ):
@@ -1526,10 +1552,12 @@ IDE_RC rpnComm::recvXLogA5( iduMemAllocator    * aAllocator,
 
 
 IDE_RC rpnComm::sendTrBeginA5( void                * /*aHBTResource*/,
-                             cmiProtocolContext  * aProtocolContext,
-                             smTID                 aTID,
-                             smSN                  aSN,
-                             smSN                  aSyncSN )
+                               cmiProtocolContext  * aProtocolContext,
+                               idBool              * aExitFlag,
+                               smTID                 aTID,
+                               smSN                  aSN,
+                               smSN                  aSyncSN,
+                               UInt                  aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -1567,7 +1595,9 @@ IDE_RC rpnComm::sendTrBeginA5( void                * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -1619,10 +1649,12 @@ IDE_RC rpnComm::recvTrBeginA5( cmiProtocol         * aProtocol,
 
 IDE_RC rpnComm::sendTrCommitA5( void               * /*aHBTResource*/,
                                 cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
                                 smTID                aTID,
                                 smSN                 aSN,
                                 smSN                 aSyncSN,
-                                idBool               /*aForceFlush*/ )
+                                idBool               /*aForceFlush*/,
+                                UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -1660,7 +1692,9 @@ IDE_RC rpnComm::sendTrCommitA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -1711,10 +1745,12 @@ IDE_RC rpnComm::recvTrCommitA5( cmiProtocol        * aProtocol,
 }
 
 IDE_RC rpnComm::sendTrAbortA5( void               * /*aHBTResource*/,
-                             cmiProtocolContext * aProtocolContext,
-                             smTID                aTID,
-                             smSN                 aSN,
-                             smSN                 aSyncSN )
+                               cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
+                               smTID                aTID,
+                               smSN                 aSN,
+                               smSN                 aSyncSN,
+                               UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -1752,7 +1788,9 @@ IDE_RC rpnComm::sendTrAbortA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -1804,11 +1842,13 @@ IDE_RC rpnComm::recvTrAbortA5( cmiProtocol         * aProtocol,
 
 IDE_RC rpnComm::sendSPSetA5( void               * /*aHBTResource*/,
                              cmiProtocolContext * aProtocolContext,
+                             idBool             * aExitFlag,
                              smTID                aTID,
                              smSN                 aSN,
                              smSN                 aSyncSN,
                              UInt                 aSPNameLen,
-                             SChar              * aSPName )
+                             SChar              * aSPName,
+                             UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -1857,7 +1897,9 @@ IDE_RC rpnComm::sendSPSetA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -1933,11 +1975,13 @@ IDE_RC rpnComm::recvSPSetA5( cmiProtocol         * aProtocol,
 
 IDE_RC rpnComm::sendSPAbortA5( void               * /*aHBTResource*/,
                                cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
                                smTID                aTID,
                                smSN                 aSN,
                                smSN                 aSyncSN,
                                UInt                 aSPNameLen,
-                               SChar              * aSPName )
+                               SChar              * aSPName,
+                               UInt                 aTimeoutSec )
 {
      cmiProtocolContext       sProtocolContext;
      cmiProtocol              sProtocol;
@@ -1986,7 +2030,9 @@ IDE_RC rpnComm::sendSPAbortA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL, /* aHBTResource */
                              &sProtocolContext,
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
      /* Finalize Protocol */
@@ -2062,6 +2108,7 @@ IDE_RC rpnComm::recvSPAbortA5( cmiProtocol         * aProtocol,
 
 IDE_RC rpnComm::sendInsertA5( void               * /*aHBTResource*/,
                               cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
                               smTID                aTID,
                               smSN                 aSN,
                               smSN                 aSyncSN,
@@ -2069,7 +2116,8 @@ IDE_RC rpnComm::sendInsertA5( void               * /*aHBTResource*/,
                               ULong                aTableOID,
                               UInt                 aColCnt,
                               smiValue           * aACols,
-                              rpValueLen         * aALen )
+                              rpValueLen         * aALen,
+                              UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -2122,8 +2170,10 @@ IDE_RC rpnComm::sendInsertA5( void               * /*aHBTResource*/,
     {
         IDE_TEST( sendValueForA5( NULL,
                                   &sProtocolContext,
+                                  aExitFlag,
                                   &aACols[i],
-                             aALen[i] )
+                                  aALen[i],
+                                  aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -2310,6 +2360,7 @@ IDE_RC rpnComm::recvInsertA5( iduMemAllocator    * aAllocator,
 
 IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
                               cmiProtocolContext  * aProtocolContext,
+                              idBool              * aExitFlag,
                               smTID                 aTID,
                               smSN                  aSN,
                               smSN                  aSyncSN,
@@ -2325,7 +2376,8 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
                               smiValue            * aACols,
                               rpValueLen          * aPKLen,
                               rpValueLen          * aALen,
-                              rpValueLen          * aBMtdValueLen )
+                              rpValueLen          * aBMtdValueLen,
+                              UInt                  aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -2384,8 +2436,10 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
     {
         IDE_TEST( sendPKValueForA5( NULL,
                                     &sProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -2394,7 +2448,9 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
     {
         IDE_TEST( sendCIDForA5( NULL,
                                 &sProtocolContext,
-                                aCIDs[i] )
+                                aExitFlag,
+                                aCIDs[i],
+                                aTimeoutSec )
                   != IDE_SUCCESS );
 
         // PROJ-1705
@@ -2406,8 +2462,10 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
         {
             IDE_TEST( sendValueForA5( NULL,
                                       &sProtocolContext,
+                                      aExitFlag,
                                       &aBCols[aCIDs[i]],
-                                      aBMtdValueLen[aCIDs[i]] )
+                                      aBMtdValueLen[aCIDs[i]],
+                                      aTimeoutSec )
                       != IDE_SUCCESS );
         }
         // 디스크 테이블에 발생한 update의 분석 결과는 BChainedCols에 들어있다.
@@ -2415,15 +2473,19 @@ IDE_RC rpnComm::sendUpdateA5( void                * /*aHBTResource*/,
         {
             IDE_TEST( sendChainedValueForA5( NULL,
                                              &sProtocolContext,
+                                             aExitFlag,
                                              sChainedValue,
-                                             aBMtdValueLen[aCIDs[i]] )
+                                             aBMtdValueLen[aCIDs[i]],
+                                             aTimeoutSec )
                       != IDE_SUCCESS );
         }
 
         IDE_TEST(sendValueForA5(NULL,
                                 &sProtocolContext,
+                                aExitFlag,
                                 &aACols[aCIDs[i]],
-                                aALen[aCIDs[i]] )
+                                aALen[aCIDs[i]],
+                                aTimeoutSec )
                  != IDE_SUCCESS );
     }
 
@@ -2614,6 +2676,7 @@ IDE_RC rpnComm::recvUpdateA5( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendDeleteA5( void              * /*aHBTResource*/,
                               cmiProtocolContext* aProtocolContext,
+                              idBool            * aExitFlag,
                               smTID               aTID,
                               smSN                aSN,
                               smSN                aSyncSN,
@@ -2627,7 +2690,8 @@ IDE_RC rpnComm::sendDeleteA5( void              * /*aHBTResource*/,
                               smiValue          * /*aBCols*/,
                               smiChainedValue   * /*aBChainedCols*/, // PROJ-1705
                               rpValueLen        * /*aBMtdValueLen*/,
-                              UInt              * /*aBChainedColsTotalLen*/ )
+                              UInt              * /*aBChainedColsTotalLen*/,
+                              UInt                aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -2680,8 +2744,10 @@ IDE_RC rpnComm::sendDeleteA5( void              * /*aHBTResource*/,
     {
         IDE_TEST( sendPKValueForA5( NULL,
                                     &sProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -2779,7 +2845,9 @@ IDE_RC rpnComm::recvDeleteA5( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendCIDForA5( void               * /*aHBTResource*/,
                               cmiProtocolContext * aProtocolContext,
-                              UInt                 aCID )
+                              idBool             * /*aExitFlag*/,
+                              UInt                 aCID,
+                              UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocol      sProtocol;
     cmpArgRPUIntID * sArgUIntID  = NULL;
@@ -2884,8 +2952,10 @@ IDE_RC rpnComm::recvCIDA5( idBool             * aExitFlag,
  *
  */ 
 IDE_RC rpnComm::sendTxAckA5( cmiProtocolContext * aProtocolContext,
+                             idBool             * /*aExitFlag*/,
                              smTID                aTID,
-                             smSN                 aSN )
+                             smSN                 aSN,
+                             UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocol sProtocol;
     cmpArgRPTxAck * sArg = NULL;
@@ -2986,8 +3056,10 @@ IDE_RC rpnComm::recvTxAckForA5( idBool             * aExitFlag,
 
 IDE_RC rpnComm::sendValueForA5( void               * /*aHBTResource*/,
                                 cmiProtocolContext * aProtocolContext,
+                                idBool             * /*aExitFlag*/,
                                 smiValue           * aValue,
-                                rpValueLen           aValueLen )
+                                rpValueLen           aValueLen,
+                                UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocol     sProtocol;
     cmpArgRPValue * sArgValue = NULL;
@@ -3071,8 +3143,10 @@ IDE_RC rpnComm::sendValueForA5( void               * /*aHBTResource*/,
 
 IDE_RC rpnComm::sendPKValueForA5( void                * /*aHBTHostResource*/,
                                   cmiProtocolContext  * aProtocolContext,
+                                  idBool              * /*aExitFlag*/,
                                   smiValue            * aValue,
-                                  rpValueLen            aPKLen )
+                                  rpValueLen            aPKLen,
+                                  UInt                  /*aTimeoutSec*/ )
 {
     cmiProtocol     sProtocol;
     cmpArgRPValue * sArgValue = NULL;
@@ -3166,8 +3240,10 @@ IDE_RC rpnComm::sendPKValueForA5( void                * /*aHBTHostResource*/,
 
 IDE_RC rpnComm::sendChainedValueForA5( void               * /*aHBTHostResource*/,
                                        cmiProtocolContext * aProtocolContext,
+                                       idBool             * /*aExitFlag*/,
                                        smiChainedValue    * aChainedValue,
-                                       rpValueLen           aBMtdValueLen )
+                                       rpValueLen           aBMtdValueLen,
+                                       UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocol       sProtocol;
     cmpArgRPValue   * sArgValue  = NULL;
@@ -3414,10 +3490,12 @@ IDE_RC rpnComm::recvValueA5( iduMemAllocator    * aAllocator,
 
 IDE_RC rpnComm::sendStopA5( void               * /*aHBTResource*/,
                             cmiProtocolContext * aProtocolContext,
+                            idBool             * aExitFlag,
                             smTID                aTID,
                             smSN                 aSN,
                             smSN                 aSyncSN,
-                            smSN                 aRestartSN )
+                            smSN                 aRestartSN,
+                            UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -3458,7 +3536,9 @@ IDE_RC rpnComm::sendStopA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE)
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -3513,10 +3593,12 @@ IDE_RC rpnComm::recvStopA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendKeepAliveA5( void               * /*aHBTResource*/,
                                  cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
                                  smTID                aTID,
                                  smSN                 aSN,
                                  smSN                 aSyncSN,
-                                 smSN                 aRestartSN )
+                                 smSN                 aRestartSN,
+                                 UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -3560,7 +3642,9 @@ IDE_RC rpnComm::sendKeepAliveA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE)
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -3616,10 +3700,12 @@ IDE_RC rpnComm::recvKeepAliveA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendFlushA5( void               * /*aHBTResource*/,
                              cmiProtocolContext * aProtocolContext,
+                             idBool             * aExitFlag,
                              smTID                aTID,
                              smSN                 aSN,
                              smSN                 aSyncSN,
-                             UInt                 aFlushOption)
+                             UInt                 aFlushOption,
+                             UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -3660,7 +3746,9 @@ IDE_RC rpnComm::sendFlushA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE)
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -3717,7 +3805,9 @@ IDE_RC rpnComm::recvFlushA5( cmiProtocol         * aProtocol,
  *
  */
 IDE_RC rpnComm::sendAckA5( cmiProtocolContext * aProtocolContext,
-                           rpXLogAck            aAck )
+                           idBool             * aExitFlag,
+                           rpXLogAck          * aAck,
+                           UInt                 aTimeoutSec )
 {
     cmiProtocolContext sProtocolContext;
     cmiLink * sLink = NULL;
@@ -3743,14 +3833,14 @@ IDE_RC rpnComm::sendAckA5( cmiProtocolContext * aProtocolContext,
     sStage = 2;
 
     /* Replication XLog Header Set */
-    sAck->mXLogType         = aAck.mAckType;
-    sAck->mAbortTxCount     = aAck.mAbortTxCount;
-    sAck->mClearTxCount     = aAck.mClearTxCount;
-    sAck->mRestartSN        = aAck.mRestartSN;
-    sAck->mLastCommitSN     = aAck.mLastCommitSN;
-    sAck->mLastArrivedSN    = aAck.mLastArrivedSN;
-    sAck->mLastProcessedSN  = aAck.mLastProcessedSN; 
-    sAck->mFlushSN          = aAck.mFlushSN;
+    sAck->mXLogType         = aAck->mAckType;
+    sAck->mAbortTxCount     = aAck->mAbortTxCount;
+    sAck->mClearTxCount     = aAck->mClearTxCount;
+    sAck->mRestartSN        = aAck->mRestartSN;
+    sAck->mLastCommitSN     = aAck->mLastCommitSN;
+    sAck->mLastArrivedSN    = aAck->mLastArrivedSN;
+    sAck->mLastProcessedSN  = aAck->mLastProcessedSN; 
+    sAck->mFlushSN          = aAck->mFlushSN;
 
     /* Send Protocol */
     IDE_TEST( writeProtocol( NULL,
@@ -3758,25 +3848,31 @@ IDE_RC rpnComm::sendAckA5( cmiProtocolContext * aProtocolContext,
                              &sProtocol )
               != IDE_SUCCESS );
 
-    for ( i = 0; i < aAck.mAbortTxCount; i++ )
+    for ( i = 0; i < aAck->mAbortTxCount; i++ )
     {
         IDE_TEST( sendTxAckA5( &sProtocolContext,
-                               aAck.mAbortTxList[i].mTID,
-                               aAck.mAbortTxList[i].mSN )
+                               aExitFlag,
+                               aAck->mAbortTxList[i].mTID,
+                               aAck->mAbortTxList[i].mSN,
+                               aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
-    for ( i = 0; i < aAck.mClearTxCount; i++ )
+    for ( i = 0; i < aAck->mClearTxCount; i++ )
     {
         IDE_TEST( sendTxAckA5( &sProtocolContext,
-                               aAck.mClearTxList[i].mTID,
-                               aAck.mClearTxList[i].mSN )
+                               aExitFlag,
+                               aAck->mClearTxList[i].mTID,
+                               aAck->mClearTxList[i].mSN,
+                               aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext, 
-                             ID_TRUE )
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -3905,6 +4001,7 @@ IDE_RC rpnComm::recvAckA5( iduMemAllocator    * /*aAllocator*/,
 
 IDE_RC rpnComm::sendLobCursorOpenA5( void               * /*aHBTResource*/,
                                      cmiProtocolContext * aProtocolContext,
+                                     idBool             * aExitFlag,
                                      smTID                aTID,
                                      smSN                 aSN,
                                      smSN                 aSyncSN,
@@ -3913,7 +4010,8 @@ IDE_RC rpnComm::sendLobCursorOpenA5( void               * /*aHBTResource*/,
                                      UInt                 aLobColumnID,
                                      UInt                 aPKColCnt,
                                      smiValue           * aPKCols,
-                                     rpValueLen         * aPKLen )
+                                     rpValueLen         * aPKLen,
+                                     UInt                 aTimeoutSec )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -3967,8 +4065,10 @@ IDE_RC rpnComm::sendLobCursorOpenA5( void               * /*aHBTResource*/,
     {
         IDE_TEST( sendPKValueForA5( NULL,
                                     &sProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -4081,10 +4181,12 @@ IDE_RC rpnComm::recvLobCursorOpenA5( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendLobCursorCloseA5( void                * /*aHBTResource*/,
                                       cmiProtocolContext  * aProtocolContext,
+                                      idBool              * /*aExitFlag*/,
                                       smTID                 aTID,
                                       smSN                  aSN,
                                       smSN                  aSyncSN,
-                                      ULong                 aLobLocator )
+                                      ULong                 aLobLocator,
+                                      UInt                  /*aTimeoutSec*/ )
 {
     cmiProtocolContext       sProtocolContext;
     cmiProtocol              sProtocol;
@@ -4176,13 +4278,15 @@ IDE_RC rpnComm::recvLobCursorCloseA5( cmiProtocol         * aProtocol,
 
 IDE_RC rpnComm::sendLobPrepare4WriteA5( void               * /*aHBTResource*/,
                                         cmiProtocolContext * aProtocolContext,
+                                        idBool             * /*aExitFlag*/,
                                         smTID                aTID,
                                         smSN                 aSN,
                                         smSN                 aSyncSN,
                                         ULong                aLobLocator,
                                         UInt                 aLobOffset,
                                         UInt                 aLobOldSize,
-                                        UInt                 aLobNewSize )
+                                        UInt                 aLobNewSize,
+                                        UInt                 /*aTimeoutSec*/)
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4281,11 +4385,13 @@ IDE_RC rpnComm::recvLobPrepare4WriteA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendLobTrimA5( void               * /*aHBTResource*/,
                                cmiProtocolContext * /*aProtocolContext*/,
+                               idBool             * /*aExitFlag*/,
                                smTID                /*aTID*/,
                                smSN                 /*aSN*/,
                                smSN                 /*aSyncSN*/,
                                ULong                /*aLobLocator*/,
-                               UInt                 /*aLobOffset*/ )
+                               UInt                 /*aLobOffset*/,
+                               UInt                 /*aTimeoutSec*/ )
 {
     IDE_ASSERT( 0 );
     return IDE_FAILURE;
@@ -4293,13 +4399,15 @@ IDE_RC rpnComm::sendLobTrimA5( void               * /*aHBTResource*/,
 
 IDE_RC rpnComm::sendLobPartialWriteA5( void               * /*aHBTResource*/,
                                        cmiProtocolContext * aProtocolContext,
+                                       idBool             * /*aExitFlag*/,
                                        smTID                aTID,
                                        smSN                 aSN,
                                        smSN                 aSyncSN,
                                        ULong                aLobLocator,
                                        UInt                 aLobOffset,
                                        UInt                 aLobPieceLen,
-                                       SChar              * aLobPiece )
+                                       SChar              * aLobPiece,
+                                       UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4435,10 +4543,12 @@ IDE_RC rpnComm::recvLobPartialWriteA5( iduMemAllocator    * aAllocator,
 
 IDE_RC rpnComm::sendLobFinish2WriteA5( void               * /*aHBTResource*/,
                                        cmiProtocolContext * aProtocolContext,
+                                       idBool             * /* aExitFlag */,
                                        smTID                aTID,
                                        smSN                 aSN,
                                        smSN                 aSyncSN,
-                                       ULong                aLobLocator )
+                                       ULong                aLobLocator,
+                                       UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4530,9 +4640,11 @@ IDE_RC rpnComm::recvLobFinish2WriteA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendHandshakeA5( void               * /*aHBTResource*/,
                                  cmiProtocolContext * aProtocolContext,
+                                 idBool             * /* aExitFlag */,
                                  smTID                aTID,
                                  smSN                 aSN,
-                                 smSN                 aSyncSN )
+                                 smSN                 aSyncSN,
+                                 UInt                 /*aTimeoutSec*/ )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4618,9 +4730,11 @@ IDE_RC rpnComm::recvHandshakeA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendSyncPKBeginA5( void               * /*aHBTResource*/,
                                    cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    smTID                aTID,
                                    smSN                 aSN,
-                                   smSN                 aSyncSN )
+                                   smSN                 aSyncSN,
+                                   UInt                 aTimeoutSec )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4658,7 +4772,9 @@ IDE_RC rpnComm::sendSyncPKBeginA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE)
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -4711,13 +4827,15 @@ IDE_RC rpnComm::recvSyncPKBeginA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendSyncPKA5( void               * /*aHBTResource*/,
                               cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
                               smTID                aTID,
                               smSN                 aSN,
                               smSN                 aSyncSN,
                               ULong                aTableOID,
                               UInt                 aPKColCnt,
                               smiValue           * aPKCols,
-                              rpValueLen         * aPKLen )
+                              rpValueLen         * aPKLen,
+                              UInt                 aTimeoutSec )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4764,8 +4882,10 @@ IDE_RC rpnComm::sendSyncPKA5( void               * /*aHBTResource*/,
     {
         IDE_TEST( sendPKValueForA5( NULL,
                                     &sProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i])
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS);
     }
 
@@ -4859,9 +4979,11 @@ IDE_RC rpnComm::recvSyncPKA5( idBool             * aExitFlag,
 
 IDE_RC rpnComm::sendSyncPKEndA5( void               * /*aHBTResource*/,
                                  cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
                                  smTID                aTID,
                                  smSN                 aSN,
-                                 smSN                 aSyncSN )
+                                 smSN                 aSyncSN,
+                                 UInt                 aTimeoutSec )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4899,7 +5021,9 @@ IDE_RC rpnComm::sendSyncPKEndA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE)
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */
@@ -4952,9 +5076,11 @@ IDE_RC rpnComm::recvSyncPKEndA5( cmiProtocol        * aProtocol,
 
 IDE_RC rpnComm::sendFailbackEndA5( void               * /*aHBTResource*/,
                                    cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    smTID                aTID,
                                    smSN                 aSN,
-                                   smSN                 aSyncSN )
+                                   smSN                 aSyncSN,
+                                   UInt                 aTimeoutSec )
 {
     cmiProtocolContext         sProtocolContext;
     cmiProtocol                sProtocol;
@@ -4992,7 +5118,9 @@ IDE_RC rpnComm::sendFailbackEndA5( void               * /*aHBTResource*/,
 
     IDE_TEST( flushProtocol( NULL,
                              &sProtocolContext,
-                             ID_TRUE)
+                             aExitFlag,
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Finalize Protocol */

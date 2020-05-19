@@ -113,14 +113,29 @@ cmpOpMap gCmpOpDBMap[] =
     {"CMP_OP_DB_ExecuteV2"                  },
     {"CMP_OP_DB_ExecuteV2Result"            },
     /* PROJ-2598 altibase sharding */
-    {"CMP_OP_DB_ShardPrepare"               },
-    {"CMP_OP_DB_ShardPrepareResult"         },
+    {"CMP_OP_DB_ShardAnalyze"               },
+    {"CMP_OP_DB_ShardAnalyzeResult"         },
     {"CMP_OP_DB_ShardNodeUpdateList"        },
     {"CMP_OP_DB_ShardNodeUpdateListResult"  },
     {"CMP_OP_DB_ShardNodeGetList"           },
     {"CMP_OP_DB_ShardNodeGetListResult"     },
     {"CMP_OP_DB_ShardHandshake"             },
     {"CMP_OP_DB_ShardHandshakeResult"       },
+    {"CMP_OP_DB_ShardTransaction"           },
+    {"CMP_OP_DB_ShardTransactionResult"     },
+    {"CMP_OP_DB_ShardPrepare"               },
+    {"CMP_OP_DB_ShardPrepareResult"         },
+    {"CMP_OP_DB_ShardEndPendingTx"          },
+    {"CMP_OP_DB_ShardEndPendingTxResult"    },
+    /* BUG-46785 Shard statement partial rollback */
+    {"CMP_OP_DB_SetSavepoint"               },
+    {"CMP_OP_DB_SetSavepointResult"         },
+    {"CMP_OP_DB_RollbackToSavepoint"        },
+    {"CMP_OP_DB_RollbackToSavepointResult"  },
+    {"CMP_OP_DB_ShardStmtPartialRollback"   },
+    {"CMP_OP_DB_ShardStmtPartialRollbackResult"},
+    {"CMP_OP_DB_ShardNodeReport"            },
+    {"CMP_OP_DB_ShardNodeReportResult"      },
     {"CMP_OP_DB_MAX"                        }
 };
 

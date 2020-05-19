@@ -25,5 +25,7 @@
 
 ACI_RC ulnInitializeShardDBProtocolCallbackFunctions(void);
 
+ACI_RC ulsdShardNodeReport( ulnFnContext      * aFnContext,
+                            ulsdNodeReport    * aReport );
 
 #endif /* SRC_UL_INCLUDE_ULSDCOMMUNICATION_H_ */

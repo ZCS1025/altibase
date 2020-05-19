@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idvHandlerTimer.cpp 68602 2015-01-23 00:13:11Z sbjang $
+ * $Id: idvHandlerTimer.cpp 82316 2018-02-21 22:33:24Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -70,7 +70,8 @@ void idvTimerThread::run()
         sCurTime = idlOS::gettimeofday();
 
         // set micro-second
-        *mClockArea  = sCurTime.usec() + sCurTime.sec() * 1000000;
+        (void)acpAtomicSet64(mClockArea,
+                             sCurTime.usec() + (sCurTime.sec() * 1000000) );
         *mSecondArea = sCurTime.sec();
     }
 }
@@ -89,7 +90,7 @@ void    idvTimerThread::changeTimerResolution(UInt aTime)
 
 void    idvTimerThread::waitServiceAvail()
 {
-    while( *mClockArea == 0 ) 
+    while( acpAtomicGet64(mClockArea) == 0 ) 
     {
         idlOS::sleep(1); 
     }

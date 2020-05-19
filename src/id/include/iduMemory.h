@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemory.h 72967 2015-10-08 02:35:06Z djin $
+ * $Id: iduMemory.h 84407 2018-11-22 00:39:41Z kclee $
  **********************************************************************/
 
 /***********************************************************************
@@ -96,7 +96,7 @@ private:
     IDE_RC header();
     IDE_RC extend( ULong aChunkSize);
     IDE_RC release( iduMemoryHeader* Clue );
-    IDE_RC checkMemoryMaximumLimit(ULong = 0);
+    IDE_RC checkMemoryMaximumLimit(ULong);
     IDE_RC malloc(size_t aSize, void** aPointer);
     IDE_RC free(void* aPointer);
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdTransTbl.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpdTransTbl.h 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_RPD_TRANSTBL_H_
@@ -70,6 +70,12 @@ typedef struct rpdItemMetaEntry
     iduListNode   mNode;
 } rpdItemMetaEntry;
 
+typedef struct rpdDDLStmtMetaLog
+{
+    smiDDLStmtMeta   mDDLStmtMeta;
+    void           * mLogBody;
+} rpdDDLStmtMetaLog;
+
 typedef struct rpdSavepointEntry
 {
     smSN            mSN;
@@ -101,6 +107,7 @@ typedef struct rpdTransTblNode
     idBool             mIsDDLTrans;
     iduList            mItemMetaList;
 
+    rpdDDLStmtMetaLog *mDDLStmtMetaLog;
     // BUG-28206 불필요한 Transaction Begin을 방지
     iduList            mSvpList;
     rpdSavepointEntry *mPSMSvp;
@@ -198,7 +205,16 @@ public:
     void             getFirstItemMetaEntry(smTID               aTID,
                                            rpdItemMetaEntry ** aItemMetaEntry);
     void             removeFirstItemMetaEntry(smTID aTID);
+    iduList        * getItemMetaList( smTID aTID );
     idBool           existItemMeta(smTID aTID);
+
+    idBool           existDDLStmtMetaLog( smTID aTID );
+    IDE_RC           setDDLStmtMetaLog( smTID            aTID,
+                                        smiDDLStmtMeta * aDDLStmtMeta,
+                                        const void     * aDDLStmtMetaLogBody,
+                                        UInt             aDDLStmtMetaLogBodySize );
+    void             getDDLStmtMetaLog( smTID aTID, rpdDDLStmtMetaLog ** aDDLStmtMetaLog );
+    void             removeDDLStmtMetaLog( smTID aTID );
 
     // BUG-28206 불필요한 Transaction Begin을 방지
     IDE_RC           addLastSvpEntry(smTID            aTID,

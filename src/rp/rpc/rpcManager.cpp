@@ -17,7 +17,7 @@
 
 /***********************************************************************
 
-* $Id: rpcManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+* $Id: rpcManager.cpp 85321 2019-04-25 04:58:40Z donghyun1 $
 
 ***********************************************************************/
 
@@ -35,7 +35,8 @@
 #include <rpcManager.h>
 #include <rpdMeta.h>
 #include <rpdCatalog.h>
-
+#include <rpcDDLSyncManager.h>
+#include <rpcResourceManager.h>
 
 extern void rpcMakeUniqueDBString(SChar *aUnique);
 
@@ -46,6 +47,7 @@ PDL_Time_Value    rpcManager::mTimeOut;
 iduMutex          rpcManager::mPort0Mutex;
 idBool            rpcManager::mPort0Flag   = ID_FALSE;
 SChar             rpcManager::mImplSPNameArr[SMI_STATEMENT_DEPTH_MAX][RP_SAVEPOINT_NAME_LEN + 1];
+idBool            rpcManager::mIsInitRepl  = ID_FALSE;
 
 qciManageReplicationCallback rpcManager::mCallback =
 {
@@ -149,11 +151,12 @@ IDE_RC rpcManager::initREPLICATION()
     ULong             sSleepTimeForFailbackDetection = 0;
 
     (void)IDE_CALLBACK_SEND_SYM_NOLOG("  [RP] Initialization : ");
+    mIsInitRepl = ID_TRUE;
 
     IDE_TEST(rpuProperty::load() != IDE_SUCCESS);
     (void)rpnComm::initialize();
 
-    if((RPU_REPLICATION_PORT_NO != 0) && (smiIsReplicationLogging() == ID_TRUE))
+    if( (isEnableRP() == ID_TRUE) && (smiIsReplicationLogging() == ID_TRUE))
     {
         IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
         sStage = 1;
@@ -257,8 +260,7 @@ IDE_RC rpcManager::initREPLICATION()
 
         new (sManager) rpcManager;
         
-        IDE_TEST_RAISE( sManager->initialize( RPU_REPLICATION_PORT_NO,
-                                              RPU_REPLICATION_MAX_COUNT,
+        IDE_TEST_RAISE( sManager->initialize( RPU_REPLICATION_MAX_COUNT,
                                               sReplications,
                                               sMaxReplication )
                         != IDE_SUCCESS, repl_init_error );
@@ -430,7 +432,8 @@ IDE_RC rpcManager::initREPLICATION()
             {
                 if(sRecoveryRequestList[i] != NULL)
                 {
-                    if ( recoveryRequest( sRecoveryRequestList[i],
+                    if ( recoveryRequest( &(mMyself->mExitFlag),
+                                          sRecoveryRequestList[i],
                                           &sRequestError,
                                           &sRequestResult )
                          != IDE_SUCCESS )
@@ -589,6 +592,7 @@ IDE_RC rpcManager::initREPLICATION()
             if((sReplications[sNumRepl].mIsStarted != 0) &&
                (RPU_REPLICATION_SENDER_AUTO_START != 0))
             {
+                IDU_FIT_POINT( "rpcManager::initREPLICATION::startSenderThread" );
                 IDE_TEST_RAISE(startSenderThread(&sSmiStmt,
                                                  sReplications[sNumRepl].mRepName,
                                                  RP_NORMAL,
@@ -619,7 +623,8 @@ IDE_RC rpcManager::initREPLICATION()
             ideLog::log(IDE_SERVER_0, "[SUCCESS]");
 
             // to wakeup PEER sender
-            if ( wakeupPeer( &sReplications[sNumRepl] ) != IDE_SUCCESS )
+            if ( wakeupPeer( &(mMyself->mExitFlag),
+                             &sReplications[sNumRepl] ) != IDE_SUCCESS )
             {
                 IDE_ERRLOG( IDE_RP_0 );
             }
@@ -701,7 +706,7 @@ IDE_RC rpcManager::initREPLICATION()
     }
 
     // for stop and drop replication even if port is 0
-    if(RPU_REPLICATION_PORT_NO == 0)
+    if( isEnableRP() == ID_FALSE )
     {
         IDE_TEST_RAISE(mPort0Mutex.initialize((SChar *)"REPL_PORT0_MUTEX",
                                               IDU_MUTEX_KIND_POSIX,
@@ -734,7 +739,7 @@ IDE_RC rpcManager::initREPLICATION()
     /* 이후 예외가 없어야 한다. */
     
     /* recreate OfflineStatusList */
-    if ( ( RPU_REPLICATION_PORT_NO != 0 ) 
+    if ( ( isEnableRP() == ID_TRUE ) 
          && ( smiIsReplicationLogging() == ID_TRUE ) )
     {
         for ( sNumRepl = 0; sNumRepl < sMaxReplication; sNumRepl++ )
@@ -763,6 +768,7 @@ IDE_RC rpcManager::initREPLICATION()
         (void)iduMemMgr::free(sReplications);
         sReplications = NULL;
     }
+    mIsInitRepl = ID_FALSE;
     (void)IDE_CALLBACK_SEND_MSG_NOLOG("[PASS]");
 
     return IDE_SUCCESS;
@@ -922,6 +928,7 @@ IDE_RC rpcManager::initREPLICATION()
         (void)iduMemMgr::free( sRecoveryList );
     }
 
+    mIsInitRepl = ID_FALSE;
     (void)IDE_CALLBACK_SEND_MSG_NOLOG("FAIL");
 
     IDE_POP();
@@ -945,7 +952,7 @@ IDE_RC rpcManager::finalREPLICATION()
     (void)smiCheckPoint(NULL,
                         ID_TRUE); /* Turn Off 된 Flusher들을 깨운다  */
 
-    if(RPU_REPLICATION_PORT_NO != 0 && smiIsReplicationLogging() == ID_TRUE)
+    if( (isEnableRP() == ID_TRUE) && (smiIsReplicationLogging() == ID_TRUE) )
     {
         /* Manager thread shutdown */
         ideLog::log(IDE_SERVER_0, "[REPL-SHUTDOWN] Replication Manager Shutdown");
@@ -1014,20 +1021,17 @@ rpcManager::rpcManager() : idtBaseThread()
 {
 }
 
-IDE_RC rpcManager::initialize( UShort            aPort,
-                                SInt              aMax,
+IDE_RC rpcManager::initialize(  SInt              aMax,
                                 rpdReplications * aReplications,
                                 UInt              aReplCount )
 {
-    cmiListenArg    sListenArg;
     PDL_Time_Value  sTimeout;
     rpdSenderInfo  *sSenderInfo = NULL;
     rpdSenderInfo  *sTmpSenderInfoList = NULL;
     UInt            sNumSender  = 0;
     UInt            sStage      = 0;
 
-    idBool          sIsAllocLink       = ID_FALSE;
-    idBool          sIsAllocDispatcher = ID_FALSE;
+    idBool          sInitDDLSyncManager = ID_FALSE;
     /* PROJ-1915 */
     SInt            i;
     UInt            sSndrInfoIdx;
@@ -1036,7 +1040,9 @@ IDE_RC rpcManager::initialize( UShort            aPort,
 
     SChar         * sRepName = NULL;
 
-    mPort                 = aPort;
+    UInt            sImpl;
+    idBool          sIsAllocDispatcher = ID_FALSE;
+
     mMaxReplSenderCount   = aMax;
     mMaxReplReceiverCount = aMax * RPU_REPLICATION_MAX_EAGER_PARALLEL_FACTOR;
     mMaxRecoveryItemCount = aMax * RPU_REPLICATION_MAX_EAGER_PARALLEL_FACTOR;
@@ -1052,6 +1058,17 @@ IDE_RC rpcManager::initialize( UShort            aPort,
     mOfflineStatusList    = NULL;
 
     mReplSeq              = 0;
+
+    mTCPPort              = 0;
+    mIBPort               = 0;
+        
+    mDispatcher           = NULL;
+
+    for ( sImpl = RP_LINK_IMPL_BASE ; sImpl < RP_LINK_IMPL_MAX; sImpl++ )
+    {
+        mListenLink[sImpl] = NULL;
+    }
+
 
     // Server ID는 Server가 살아있는 동안만 유효하다.
     idlOS::memset(mServerID, 0x00, IDU_SYSTEM_INFO_LENGTH + 1);
@@ -1164,6 +1181,9 @@ IDE_RC rpcManager::initialize( UShort            aPort,
         }
     }
 
+    IDE_TEST( mDDLSyncManager.initialize() != IDE_SUCCESS );
+    sInitDDLSyncManager = ID_TRUE;
+
     /* PROJ-1915 mRemoteMetaArray 초기화 mMaxReplReceiverCount 만큼 만든다.*/
     IDU_FIT_POINT_RAISE( "rpcManager::initialize::calloc::OfflineMetaArray",
                           ERR_MEMORY_ALLOC_OFFLINE_META_ARRAY );
@@ -1196,28 +1216,38 @@ IDE_RC rpcManager::initialize( UShort            aPort,
         mOfflineStatusList[i].mCompleteFlag = ID_FALSE;
     }
 
-    IDU_FIT_POINT_RAISE( "rpcManager::initialize::Erratic::rpERR_ABORT_ALLOC_LINK",
-                         ERR_ALLOC_LINK );
-    IDE_TEST_RAISE(cmiAllocLink(&mListenLink,
-                                CMI_LINK_TYPE_LISTEN,
-                                CMI_LINK_IMPL_TCP)
-                   != IDE_SUCCESS, ERR_ALLOC_LINK);
-    sIsAllocLink = ID_TRUE;
+    if ( (RPU_IB_ENABLE == ID_TRUE) && (RPU_REPLICATION_IB_PORT_NO != 0) ) 
+    {
+        IDE_TEST( cmiAllocDispatcher( &mDispatcher, 
+                                      CMI_DISPATCHER_IMPL_IB, 
+                                      5 )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( cmiAllocDispatcher(&mDispatcher, CMI_DISPATCHER_IMPL_TCP, 5)
-              != IDE_SUCCESS );
-    sIsAllocDispatcher = ID_TRUE;
+        sIsAllocDispatcher = ID_TRUE;       
 
-    sListenArg.mTCP.mPort      = aPort;
-    sListenArg.mTCP.mMaxListen = RPU_REPLICATION_MAX_LISTEN;
-    sListenArg.mTCP.mIPv6      = iduProperty::getRpNetConnIpStack();
+        IDE_TEST( addReplListener( RP_LINK_IMPL_IB ) != IDE_SUCCESS );
+        mIBPort = RPU_REPLICATION_IB_PORT_NO;
+    }
+    else
+    {
+        IDE_TEST( cmiAllocDispatcher( &mDispatcher, 
+                                      CMI_DISPATCHER_IMPL_TCP, 
+                                      5 )
+                  != IDE_SUCCESS );
 
-    IDE_TEST_RAISE(cmiListenLink(mListenLink, &sListenArg)
-             != IDE_SUCCESS, ERR_LISTEN_LINK);
+        sIsAllocDispatcher = ID_TRUE;       
+    }
 
-    IDE_TEST( cmiAddLinkToDispatcher(mDispatcher, mListenLink)
-              != IDE_SUCCESS );
-
+    if( RPU_REPLICATION_PORT_NO != 0 )
+    {
+        IDE_TEST( addReplListener( RP_LINK_IMPL_TCP ) != IDE_SUCCESS );
+        mTCPPort = RPU_REPLICATION_PORT_NO;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+   
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_LATCH_INIT);
@@ -1285,32 +1315,17 @@ IDE_RC rpcManager::initialize( UShort            aPort,
                                 "rpcManager::initialize",
                                 "mOfflineStatusList"));
     }
-    IDE_EXCEPTION(ERR_ALLOC_LINK);
-    {
-        IDE_ERRLOG(IDE_RP_0);
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_ALLOC_LINK));
-    }
-    IDE_EXCEPTION(ERR_LISTEN_LINK);
-    {
-        IDE_ERRLOG(IDE_RP_0);
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_LISTEN, aPort));
-    }
+
     IDE_EXCEPTION_END;
     IDE_PUSH();
 
-    //bug-17181
-    if(sIsAllocDispatcher == ID_TRUE)
+    if( sIsAllocDispatcher == ID_TRUE )
     {
-        sIsAllocLink = ID_FALSE;
-        (void)cmiFreeDispatcher(mDispatcher);
+        sIsAllocDispatcher = ID_FALSE;
+        (void)cmiFreeDispatcher( mDispatcher );
+        mDispatcher = NULL;
     }
-
-    if(sIsAllocLink == ID_TRUE)
-    {
-        sIsAllocLink = ID_FALSE;
-        (void)cmiFreeLink(mListenLink);
-    }
-
+    
     if(mSenderList != NULL)
     {
         (void)iduMemMgr::free(mSenderList);
@@ -1322,6 +1337,16 @@ IDE_RC rpcManager::initialize( UShort            aPort,
         (void)iduMemMgr::free(mReceiverList);
         mReceiverList = NULL;
     }
+
+    if ( sInitDDLSyncManager == ID_TRUE )
+    {
+        mDDLSyncManager.finalize();
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
     //---------------------------------------------------
     // sender info array list 정리 시작
     //---------------------------------------------------
@@ -1389,12 +1414,14 @@ void rpcManager::destroy()
     UInt sNumSender;
     SInt i;
     UInt sTmpIdx;
+    UInt sImpl;
 
     IDE_ASSERT(mMyself == NULL);
 
     /* Dispatcher를 free할때 등록된 Link에 대한 연결을 끊어주도록
      * 되어 있다. 따라서, 반드시 free dispatcher를 먼저 수행하고,
      * 그 후에 free link를 하도록 해야만 한다. */
+    
     if(cmiFreeDispatcher(mDispatcher) != IDE_SUCCESS)
     {
         IDE_ERRLOG(IDE_RP_0);
@@ -1402,11 +1429,22 @@ void rpcManager::destroy()
         IDE_ERRLOG(IDE_RP_0);
     }
 
-    if(cmiFreeLink(mListenLink) != IDE_SUCCESS)
+    for ( sImpl = RP_LINK_IMPL_BASE ; sImpl < RP_LINK_IMPL_MAX; sImpl++ )
     {
-        IDE_ERRLOG(IDE_RP_0);
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_FREE_LINK));
-        IDE_ERRLOG(IDE_RP_0);
+        if ( mListenLink[sImpl] != NULL )
+        {
+            if( cmiFreeLink( mListenLink[sImpl] ) != IDE_SUCCESS )
+            {
+                IDE_ERRLOG(IDE_RP_0);
+                IDE_SET(ideSetErrorCode(rpERR_ABORT_FREE_LINK));
+                IDE_ERRLOG(IDE_RP_0);
+            }
+            mListenLink[sImpl] = NULL;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     if ( mSenderLatch.destroy() != IDE_SUCCESS )
@@ -1432,6 +1470,8 @@ void rpcManager::destroy()
     {
         IDE_ERRLOG( IDE_RP_0 );
     }
+
+    mDDLSyncManager.finalize();
 
     if(mSenderList != NULL)
     {
@@ -1492,7 +1532,139 @@ void rpcManager::destroy()
 
     return;
 }
+/*----------------------------------------------------------------------------
+Name:
+    getCMLinkImplByRPLinkImpl() -- rpLinkImpl에 따른 cmiLinkImpl를 리턴한다.
+Argument:
+    rpLinkImpl
 
+Description:
+    인자로 받은 rpLinkImpl과 맵핑되는 cmiLinkImpl를 반환한다.
+*-----------------------------------------------------------------------------*/
+cmiLinkImpl rpcManager::getCMLinkImplByRPLinkImpl( rpLinkImpl aLinkImpl )
+{
+    cmiLinkImpl sCmLinkImpl = CMI_LINK_IMPL_INVALID; 
+
+    switch ( aLinkImpl )
+    {
+        case RP_LINK_IMPL_TCP:
+            sCmLinkImpl = CMI_LINK_IMPL_TCP;
+            break;
+
+        case RP_LINK_IMPL_IB:
+            sCmLinkImpl = CMI_LINK_IMPL_IB;
+            break;
+
+        default:
+            IDE_DASSERT( 0 );
+    }
+
+    return sCmLinkImpl;
+}
+
+/*----------------------------------------------------------------------------
+Name:
+    addReplListener() -- Replication listener를 추가한다.
+
+Argument:
+    rpLinkImpl
+
+Description:
+    인자로 들어온 link type에 맞는 listener를 생성하고 Displatcher에 추가한다.
+
+    처리되는 ERR -- rpERR_ABORT_ALLOC_LINK, rpERR_ABORT_LISTEN 
+*-----------------------------------------------------------------------------*/
+
+IDE_RC rpcManager::addReplListener( rpLinkImpl aImpl )
+{
+    cmiListenArg      sListenArg;
+    cmiLinkImpl       sCmLinkImpl;
+    SInt              sPort              = 0;
+    idBool            sIsAllocLink       = ID_FALSE;
+
+    sCmLinkImpl       = getCMLinkImplByRPLinkImpl( aImpl );
+
+    switch ( aImpl )
+    {
+        case RP_LINK_IMPL_TCP:
+            sPort                      = RPU_REPLICATION_PORT_NO;
+            sListenArg.mTCP.mPort      = sPort;
+            sListenArg.mTCP.mMaxListen = RPU_REPLICATION_MAX_LISTEN;
+            sListenArg.mTCP.mIPv6      = iduProperty::getRpNetConnIpStack();
+            break;
+
+        case RP_LINK_IMPL_IB:
+            sPort                      = RPU_REPLICATION_IB_PORT_NO;
+            sListenArg.mIB.mPort       = sPort;
+            sListenArg.mIB.mMaxListen  = RPU_REPLICATION_MAX_LISTEN;
+            sListenArg.mIB.mIPv6       = iduProperty::getRpNetConnIpStack();
+            sListenArg.mIB.mLatency    = RPU_REPLICATION_IB_LATENCY;       
+            sListenArg.mIB.mConChkSpin = 0;
+            break;
+
+        default:
+            IDE_ASSERT(0);
+            break;
+    }
+
+    IDU_FIT_POINT_RAISE( "rpcManager::initialize::Erratic::rpERR_ABORT_ALLOC_LINK",
+                         ERR_ALLOC_LINK );
+
+    IDE_TEST_RAISE( cmiAllocLink( &mListenLink[aImpl],
+                                  CMI_LINK_TYPE_LISTEN,
+                                  sCmLinkImpl )
+                    != IDE_SUCCESS, ERR_ALLOC_LINK);
+
+    sIsAllocLink = ID_TRUE;              
+
+    IDE_TEST_RAISE( cmiListenLink( mListenLink[aImpl], &sListenArg )
+                    != IDE_SUCCESS, ERR_LISTEN_LINK );
+
+    IDE_TEST( cmiAddLinkToDispatcher( mDispatcher, mListenLink[aImpl] )
+              != IDE_SUCCESS );
+
+    if ( aImpl == RP_LINK_IMPL_TCP )
+    {
+        ideLog::log( IDE_RP_0, "[RP] Listener started : TCP on port %"ID_UINT32_FMT, sPort );
+    }
+    else
+    {
+        ideLog::log( IDE_RP_0, "[RP] Listener started : IB on port %"ID_UINT32_FMT, sPort );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_ALLOC_LINK);
+    {
+        IDE_ERRLOG(IDE_RP_0);
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_ALLOC_LINK));
+    }
+    IDE_EXCEPTION(ERR_LISTEN_LINK);
+    {
+        IDE_ERRLOG(IDE_RP_0);
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_LISTEN, sPort));
+    }
+    IDE_EXCEPTION_END;
+
+    if( sIsAllocLink == ID_TRUE )
+    {
+        sIsAllocLink = ID_FALSE;
+        (void)cmiFreeLink( mListenLink[aImpl] );
+        mListenLink[aImpl] = NULL;
+    }
+
+    if ( aImpl == RP_LINK_IMPL_TCP )
+    {
+        ideLog::log( IDE_RP_0, "[RP] Listener failed : TCP on port %"ID_UINT32_FMT, sPort );
+    }
+    else
+    {
+        ideLog::log( IDE_RP_0, "[RP] Listener failed : IB on port %"ID_UINT32_FMT, sPort );
+    }
+
+    return IDE_FAILURE;
+
+}
 void rpcManager::final()
 {
     SInt                sCount;
@@ -1604,60 +1776,47 @@ IDE_RC rpcManager::wakeupManager()
     IDE_RC             sRC;
     cmiProtocolContext sProtocolContext;
     idBool sIsAllocCmBlock = ID_FALSE;
-    idBool sIsAllocCmLink = ID_FALSE;
+    idBool sIsAllocCmLink  = ID_FALSE;
 
     sConnWaitTime.initialize(RPU_REPLICATION_CONNECT_TIMEOUT, 0);
 
     //----------------------------------------------------------------//
     // Set communication information
     //----------------------------------------------------------------//
-    idlOS::memset(&sConnectArg, 0, ID_SIZEOF(cmiConnectArg));
-    sConnectArg.mTCP.mAddr = (SChar *)"127.0.0.1";
-    sConnectArg.mTCP.mPort = mPort;
-    sConnectArg.mTCP.mBindAddr = NULL;
-    
+        
     IDE_TEST( cmiMakeCmBlockNull( &sProtocolContext ) != IDE_SUCCESS );
-
-    IDU_FIT_POINT_RAISE( "rpcManager::wakeupManager::Erratic::rpERR_ABORT_ALLOC_LINK",
-                         ERR_ALLOC_LINK,
-                         cmERR_ABORT_UNSUPPORTED_LINK_IMPL,
-                         "rpcManager::wakeupManager",
-                         "Fault By FIT" );
-    IDE_TEST_RAISE(cmiAllocLink(&sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_TCP)
-                   != IDE_SUCCESS, ERR_ALLOC_LINK);
-    sIsAllocCmLink = ID_TRUE;
-
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    
+    idlOS::memset(&sConnectArg, 0, ID_SIZEOF(cmiConnectArg));
+    if ( mTCPPort != 0 )
     {
-        cmiLinkSetPacketTypeA5( sLink );
+        sConnectArg.mTCP.mAddr = (SChar *)"127.0.0.1";
+        sConnectArg.mTCP.mPort = mTCPPort;
+        sConnectArg.mTCP.mBindAddr = NULL;
+
+        IDU_FIT_POINT_RAISE( "rpcManager::wakeupManager::Erratic::rpERR_ABORT_ALLOC_LINK",
+                             ERR_ALLOC_LINK,
+                             cmERR_ABORT_UNSUPPORTED_LINK_IMPL,
+                             "rpcManager::wakeupManager",
+                             "Fault By FIT" );
+        IDE_TEST_RAISE(cmiAllocLink(&sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_TCP)
+                       != IDE_SUCCESS, ERR_ALLOC_LINK);
+        sIsAllocCmLink = ID_TRUE;
     }
     else
     {
-        /* do nothing */
+        IDE_DASSERT( 0 );
     }
 
     /* Initialize Protocol Context & Alloc CM Block */
     IDE_TEST( cmiMakeCmBlockNull( &sProtocolContext ) != IDE_SUCCESS );
 
-    if ( rpuProperty::isUseV6Protocol() != ID_TRUE )
-    {
-        IDU_FIT_POINT_RAISE( "rpcManager::wakeupManager::Erratic::rpERR_ABORT_ALLOC_CM_BLOCK",
-                             ERR_ALLOC_CM_BLOCK );
-        IDE_TEST_RAISE( cmiAllocCmBlock( &sProtocolContext,
-                                         CMI_PROTOCOL_MODULE( RP ),
-                                         (cmiLink *)sLink,
-                                         this )
-                        != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
-    }
-    else
-    {
-        IDE_TEST_RAISE( cmiAllocCmBlockForA5( &(sProtocolContext),
-                                              CMI_PROTOCOL_MODULE( RP ),
-                                              (cmiLink *)sLink,
-                                              this )
-                        != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
-    }
-
+    IDU_FIT_POINT_RAISE( "rpcManager::wakeupManager::Erratic::rpERR_ABORT_ALLOC_CM_BLOCK",
+                         ERR_ALLOC_CM_BLOCK );
+    IDE_TEST_RAISE( cmiAllocCmBlock( &sProtocolContext,
+                                     CMI_PROTOCOL_MODULE( RP ),
+                                     (cmiLink *)sLink,
+                                     this )
+                    != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
     sIsAllocCmBlock = ID_TRUE;
     //----------------------------------------------------------------//
     // connect to Executor
@@ -1785,8 +1944,6 @@ void rpcManager::run()
 
             sLink = (cmiLink *)sIterator->mObj;
 
-            IDE_ASSERT(sLink == mListenLink);
-
             // BUG-26366 cmiAcceptLink()가 실패한 후, PeerLink를 사용하면 안 됩니다
             sPeerLink = NULL;
 
@@ -1826,8 +1983,6 @@ void rpcManager::run()
             IDE_CLEAR();
 
             sLink = (cmiLink *)sIterator->mObj;
-
-            IDE_ASSERT(sLink == mListenLink);
 
             // BUG-26366 cmiAcceptLink()가 실패한 후, PeerLink를 사용하면 안 됩니다
             sPeerLink = NULL;
@@ -1922,6 +2077,8 @@ IDE_RC rpcManager::realize(RP_REPL_THR_MODE   aThrMode,
         } // for sCount
     } // if
 
+    IDE_TEST( mDDLSyncManager.realizeDDLExecutor( aStatistics ) != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -1959,11 +2116,11 @@ IDE_RC rpcManager::makeTableInfoIndex( void     *aQcStatement,
     {
         IDU_FIT_POINT( "rpcManager::createReplication::alloc::TableNameArray" );
         IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )
-                             ->alloc( ID_SIZEOF(SChar) * QCI_MAX_OBJECT_NAME_LEN,
+                             ->alloc( ID_SIZEOF(SChar) * ( QCI_MAX_OBJECT_NAME_LEN + 1 ),
                                       (void**)&sTableName[i] ) != IDE_SUCCESS );
 
         IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )
-                             ->alloc( ID_SIZEOF(SChar) * QCI_MAX_OBJECT_NAME_LEN,
+                             ->alloc( ID_SIZEOF(SChar) * ( QCI_MAX_OBJECT_NAME_LEN + 1 ),
                                       (void**)&sUserName[i] ) != IDE_SUCCESS );
         
         idlOS::memcpy( (void*)sTableName[i],
@@ -2128,6 +2285,8 @@ IDE_RC rpcManager::createReplication( void        * aQcStatement )
     sReplications.mConflictResolution = sParseTree->conflictResolution;
     sReplications.mRole               = sParseTree->role;
     sReplications.mOptions            = 0;
+    sReplications.mRemoteXSN          = SM_SN_NULL;
+    sReplications.mRemoteLastDDLXSN   = SM_SN_NULL;
 
     if ( ( RPU_REPLICATION_FORCE_RECIEVER_APPLIER_COUNT != 0 ) && 
          ( sReplications.mReplMode == RP_LAZY_MODE ) )
@@ -2843,21 +3002,6 @@ IDE_RC rpcManager::deleteOnePartitionForDDL( void                * aQcStatement,
         /* Nothing to do */
     }
 
-    if( aReplication->mXSN != SM_SN_NULL)
-    {
-        IDE_TEST( rpdMeta::deleteOldMetaItems( sSmiStmt,
-                                               aReplication->mRepName,
-                                               aReplItem->mLocalUsername,
-                                               aReplItem->mLocalTablename,
-                                               aReplItem->mLocalPartname,
-                                               RP_REPLICATION_PARTITION_UNIT ) // TODO : remove dependency qri...
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
     IDE_TEST( rpdCatalog::minusReplItemCount( sSmiStmt,
                                               aReplication,
                                               1 )
@@ -2877,9 +3021,6 @@ IDE_RC rpcManager::insertOnePartitionForDDL( void                * aQcStatement,
                                              qciTableInfo        * aPartInfo )
 {
     smiStatement    * sSmiStmt       = QCI_SMI_STMT( aQcStatement );
-    rpdMetaItem       sNewMetaItem;
-
-    idlOS::memset( &sNewMetaItem, 0, ID_SIZEOF(rpdMetaItem) );
 
     IDE_TEST( insertOneReplItem( aQcStatement,
                                  aReplication->mReplMode,
@@ -2903,34 +3044,6 @@ IDE_RC rpcManager::insertOnePartitionForDDL( void                * aQcStatement,
                                                           RP_REPL_ON,
                                                           SMI_TBSLV_DDL_DML )
               != IDE_SUCCESS ); 
-
-    if ( aReplication->mXSN != SM_SN_NULL )
-    {
-        // SYS_REPL_ITEMS_에서 얻을 수 있는 smiTableMeta의 멤버를 채운다.
-        idlOS::strncpy( sNewMetaItem.mItem.mRepName, aReplication->mRepName, QC_MAX_OBJECT_NAME_LEN + 1 );
-
-        sNewMetaItem.mItem.mTableOID = smiGetTableId(aPartInfo->tableHandle);
-
-        idlOS::strncpy( sNewMetaItem.mItem.mLocalUsername, aReplItem->mLocalUsername, QC_MAX_OBJECT_NAME_LEN + 1 );
-        idlOS::strncpy( sNewMetaItem.mItem.mLocalTablename, aReplItem->mLocalTablename, QC_MAX_OBJECT_NAME_LEN + 1 );
-
-        idlOS::strncpy( sNewMetaItem.mItem.mLocalPartname, aPartInfo->name, QC_MAX_OBJECT_NAME_LEN + 1);
-
-        // 최신 Meta를 구해서 보관한다.
-        IDE_TEST( rpdMeta::buildTableInfo( sSmiStmt, 
-                                           &sNewMetaItem, 
-                                           SMI_TBSLV_DDL_DML )
-                  != IDE_SUCCESS );
-
-        IDE_TEST( rpdMeta::insertOldMetaItem( sSmiStmt, &sNewMetaItem )
-                  != IDE_SUCCESS);
-
-        sNewMetaItem.freeMemory();
-    }
-    else
-    {
-        /* do nothing */
-    }
 
     IDE_TEST( rpdCatalog::addReplItemCount( sSmiStmt,
                                             aReplication,
@@ -3118,9 +3231,6 @@ IDE_RC rpcManager::dropPartitionForAllRepl( void         * aQcStatement,
 
         if ( sSrcReplItem != NULL )
         {
-            IDE_TEST( checkSenderAndRecieverExist( sReplications[i].mRepName )
-                      != IDE_SUCCESS );
-
             IDE_TEST_RAISE( ( sReplications[i].mOptions & RP_OPTION_RECOVERY_MASK ) 
                               == RP_OPTION_RECOVERY_SET, ERR_REPLICATION_HAS_RECOVERY_OPTION );
 
@@ -3177,8 +3287,8 @@ IDE_RC rpcManager::dropPartitionForAllRepl( void         * aQcStatement,
  
     if ( sIsRecoLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mRecoveryMutex.unlock() == IDE_SUCCESS );
         sIsRecoLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mRecoveryMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3187,8 +3297,8 @@ IDE_RC rpcManager::dropPartitionForAllRepl( void         * aQcStatement,
 
     if ( sIsSndLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
         sIsSndLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3197,8 +3307,8 @@ IDE_RC rpcManager::dropPartitionForAllRepl( void         * aQcStatement,
 
     if ( sIsRcvLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
         sIsRcvLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3295,9 +3405,6 @@ IDE_RC rpcManager::mergePartitionForAllRepl( void         * aQcStatement,
 
         if ( ( sSrcReplItem1 != NULL ) && ( sSrcReplItem2 != NULL ) )
         {
-            IDE_TEST( checkSenderAndRecieverExist( sReplications[i].mRepName )
-                      != IDE_SUCCESS );
-
             IDE_TEST_RAISE( ( sReplications[i].mOptions & RP_OPTION_RECOVERY_MASK ) 
                               == RP_OPTION_RECOVERY_SET, ERR_REPLICATION_HAS_RECOVERY_OPTION );
                             
@@ -3387,8 +3494,8 @@ IDE_RC rpcManager::mergePartitionForAllRepl( void         * aQcStatement,
  
     if ( sIsRecoLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mRecoveryMutex.unlock() == IDE_SUCCESS );
         sIsRecoLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mRecoveryMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3397,8 +3504,8 @@ IDE_RC rpcManager::mergePartitionForAllRepl( void         * aQcStatement,
 
     if ( sIsSndLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
         sIsSndLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3407,8 +3514,8 @@ IDE_RC rpcManager::mergePartitionForAllRepl( void         * aQcStatement,
 
     if ( sIsRcvLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
         sIsRcvLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3563,9 +3670,6 @@ IDE_RC rpcManager::splitPartitionForAllRepl( void         * aQcStatement,
         
         if ( sSrcReplItem != NULL )
         {
-            IDE_TEST( checkSenderAndRecieverExist( sReplications[i].mRepName )
-                      != IDE_SUCCESS );
-
             IDE_TEST_RAISE( ( sReplications[i].mOptions & RP_OPTION_RECOVERY_MASK ) 
                               == RP_OPTION_RECOVERY_SET, ERR_REPLICATION_HAS_RECOVERY_OPTION )
 
@@ -3632,8 +3736,8 @@ IDE_RC rpcManager::splitPartitionForAllRepl( void         * aQcStatement,
  
     if ( sIsRecoLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mRecoveryMutex.unlock() == IDE_SUCCESS );
         sIsRecoLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mRecoveryMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3642,8 +3746,8 @@ IDE_RC rpcManager::splitPartitionForAllRepl( void         * aQcStatement,
 
     if ( sIsSndLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
         sIsSndLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -3652,8 +3756,8 @@ IDE_RC rpcManager::splitPartitionForAllRepl( void         * aQcStatement,
 
     if ( sIsRcvLocked == ID_TRUE )
     {
-        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
         sIsRcvLocked = ID_FALSE;
+        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
@@ -4464,6 +4568,8 @@ IDE_RC rpcManager::waitUntilSenderFlush(SChar       *aRepName,
         sSndr = mMyself->getSender(aRepName);
         IDE_TEST_RAISE(sSndr == NULL, ERR_REP_STATE);
 
+        IDE_TEST_RAISE( sSndr->isExit() == ID_TRUE, ERR_REP_STATE );
+
         sSendXSN = SM_SN_NULL;
         sFlushCnt = 0;
 
@@ -4687,10 +4793,9 @@ IDE_RC rpcManager::alterReplicationSetHost( void        * aQcStatement )
 
             IDE_TEST( iduCheckSessionEvent( QCI_STATISTIC( aQcStatement ) ) != IDE_SUCCESS );
 
-            sSender->getNetworkAddress( &sMyIP, 
-                                        &sMyPort, 
-                                        &sPeerIP,
-                                        &sPeerPort );
+            sSender->getLocalAddress( &sMyIP, &sMyPort );
+            sSender->getRemoteAddress( &sPeerIP, &sPeerPort );
+
             if ( ( sPeerPort == sPortNo ) && 
                  ( idlOS::strncmp( sPeerIP, sHostIp, QCI_MAX_IP_LEN ) == 0 ) )
             {
@@ -5173,6 +5278,118 @@ IDE_RC rpcManager::alterReplicationSetGrouping( void * aQcStatement )
     {
         sOptions = (sMeta.mReplication.mOptions & ~RP_OPTION_GROUPING_MASK) |
                     RP_OPTION_GROUPING_UNSET;
+    }
+
+    IDE_TEST( rpdCatalog::updateOptions( sSmiStmt,
+                                         sRepName,
+                                         sOptions )
+              != IDE_SUCCESS );
+
+    sIsSndLock = ID_FALSE;
+    IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
+
+    sIsRcvLock = ID_FALSE;
+    IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SENDER_ALREADY_STARTED );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_ALREADY_STARTED ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION( ERR_RECEIVER_ALREADY_STARTED );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_ALREADY_STARTED_RECEIVER ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sIsSndLock == ID_TRUE )
+    {
+        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    if ( sIsRcvLock == ID_TRUE )
+    {
+        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    return IDE_FAILURE;
+
+}
+
+IDE_RC rpcManager::alterReplicationSetDDLReplicate( void * aQcStatement )
+{
+
+    smiStatement      * sSmiStmt = QCI_SMI_STMT( aQcStatement );
+    qriParseTree      * sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
+    SChar               sRepName[ QCI_MAX_NAME_LEN + 1 ] = {0, };
+
+    rpxSender         * sSender        = NULL;
+    rpxReceiver       * sReceiver      = NULL;
+
+    idBool              sIsSndLock    = ID_FALSE;
+    idBool              sIsRcvLock    = ID_FALSE;
+
+    rpdMeta             sMeta;
+    SInt                sOptions = 0;
+
+    IDE_TEST( isEnabled() != IDE_SUCCESS );
+
+    IDE_ASSERT( mMyself->mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+    sIsRcvLock = ID_TRUE;
+
+    IDE_ASSERT( mMyself->mSenderLatch.lockWrite( NULL /* idvSQL* */, NULL ) == IDE_SUCCESS );
+    sIsSndLock = ID_TRUE;
+    
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    sSender = mMyself->getSender( sRepName );
+    if ( sSender != NULL )
+    {
+        IDE_TEST_RAISE( sSender->isExit() != ID_TRUE, ERR_SENDER_ALREADY_STARTED );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    sReceiver = mMyself->getReceiver(sRepName);
+    if ( sReceiver != NULL )
+    {
+        IDE_TEST_RAISE( sReceiver->isExit() != ID_TRUE, ERR_RECEIVER_ALREADY_STARTED );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    sMeta.initialize();
+    IDE_TEST( sMeta.build( sSmiStmt,
+                           sRepName,
+                           ID_TRUE,
+                           RP_META_BUILD_LAST,
+                           SMI_TBSLV_DDL_DML )
+              != IDE_SUCCESS );
+
+    if ( sParseTree->replOptions->optionsFlag == RP_OPTION_DDL_REPLICATE_SET )
+    {
+        sOptions = (sMeta.mReplication.mOptions & ~RP_OPTION_DDL_REPLICATE_MASK) |
+                    RP_OPTION_DDL_REPLICATE_SET;
+    }
+    else
+    {
+        sOptions = (sMeta.mReplication.mOptions & ~RP_OPTION_DDL_REPLICATE_MASK) |
+                    RP_OPTION_DDL_REPLICATE_UNSET;
     }
 
     IDE_TEST( rpdCatalog::updateOptions( sSmiStmt,
@@ -5774,14 +5991,20 @@ IDE_RC rpcManager::dropReplication( void        * aQcStatement )
     else
     {
         IDE_TEST( isEnabled() != IDE_SUCCESS );
+
+        /* STOP IMMEDIATE 구문의 의하여 hang 이 발생할수 있기 때문에
+         * drop replication 시작하기전에 realize 을 수행한다.
+         */
+        IDE_ASSERT( mMyself->mSenderLatch.lockWrite( NULL /* idvSQL* */, NULL ) == IDE_SUCCESS );
+        sIsSenderLock = 1;
+
+        IDE_TEST( mMyself->realize( RP_SEND_THR, QCI_STATISTIC( aQcStatement ) ) != IDE_SUCCESS);
+
+        sIsSenderLock = 0;
+        IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
         
         IDE_ASSERT( mMyself->mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
         sIsReceiverLock = 1;
-        
-        IDE_TEST( mMyself->stopReceiverThread( sRepName,
-                                               ID_TRUE,
-                                               QCI_STATISTIC( aQcStatement ) )
-                  != IDE_SUCCESS);
     }
    
     IDE_TEST(sMeta.build(sSmiStmt,
@@ -5834,8 +6057,6 @@ IDE_RC rpcManager::dropReplication( void        * aQcStatement )
         IDE_ASSERT( mMyself->mSenderLatch.lockWrite( NULL /* idvSQL* */, NULL ) == IDE_SUCCESS );
         sIsSenderLock = 1;
 
-        IDE_TEST( mMyself->realize( RP_SEND_THR, QCI_STATISTIC( aQcStatement ) ) != IDE_SUCCESS);
-
         for( i = 0; i < mMyself->mMaxReplSenderCount; i++ )
         {
             if( mMyself->mSenderList[i] != NULL )
@@ -5844,6 +6065,11 @@ IDE_RC rpcManager::dropReplication( void        * aQcStatement )
                                 ERR_REPLICATION_ALREADY_STARTED )
             }
         }
+
+        IDE_TEST( mMyself->stopReceiverThread( sRepName,
+                                               ID_TRUE,
+                                               QCI_STATISTIC( aQcStatement ) )
+                  != IDE_SUCCESS);
 
         IDE_ASSERT( mMyself->mRecoveryMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
         sIsRecoLock = 1;
@@ -6614,7 +6840,7 @@ IDE_RC rpcManager::updateRemoteXSN( smiStatement * aSmiStmt,
 
     IDE_ASSERT( aSmiStmt->isDummy() == ID_TRUE );
 
-    IDE_TEST( sSmiStmt.begin( NULL,
+    IDE_TEST( sSmiStmt.begin( aSmiStmt->getTrans()->getStatistics(),
                               aSmiStmt,
                               SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
               != IDE_SUCCESS );
@@ -6755,6 +6981,64 @@ IDE_RC rpcManager::updateInvalidMaxSN(smiStatement * aSmiStmt,
     return IDE_FAILURE;
 }
 
+IDE_RC rpcManager::updateOldInvalidMaxSN( smiStatement * aSmiStmt,
+                                          rpdReplItems * aReplItems,
+                                          smSN           aSN )
+{
+    // Transaction already started.
+    SInt         sStage  = 1;
+    smiStatement sSmiStmt;
+
+    IDE_DASSERT( aSmiStmt->isDummy() == ID_TRUE );
+
+    // update retry
+    for(;;)
+    {
+        IDE_TEST( sSmiStmt.begin( NULL,
+                                  aSmiStmt,
+                                  SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR)
+                  != IDE_SUCCESS );
+
+        sStage = 2;
+
+        if ( rpdCatalog::updateOldInvalidMaxSN( &sSmiStmt, aReplItems, aSN )
+             != IDE_SUCCESS )
+        {
+            IDE_TEST( ideIsRetry() != IDE_SUCCESS );
+
+            IDE_CLEAR();
+
+            IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE )
+                      != IDE_SUCCESS );
+            sStage = 1;
+
+            // retry.
+            RP_DBG_PRINTLINE();
+            continue;
+        }
+
+        sStage = 1;
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+        break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch( sStage )
+    {
+        case 2:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        default:
+            break;
+    }
+    sStage = 1;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
                                       SChar         * aReplName,
                                       RP_SENDER_TYPE  aStartType,
@@ -6827,7 +7111,7 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_SENDER);
 
     sSenderState = 1;
-
+    
     if(aTryHandshakeOnce != ID_TRUE)
     {
         // for qci2::updateXSN()
@@ -6862,7 +7146,8 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
                                NULL,         //proj-1608 for recovery sender, no use normal sender
                                SM_SN_NULL,   //proj-1608 for recovery sender, no use normal sender
                                NULL,
-                               RP_DEFAULT_PARALLEL_ID)
+                               RP_DEFAULT_PARALLEL_ID,
+                               sSndrIdx )
              != IDE_SUCCESS);
     sSenderState = 2;
 
@@ -6877,9 +7162,10 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
         if(aStartType == RP_NORMAL)
         {
             // BUG-29115
-            if( ( ( sSndr->getRole() == RP_ROLE_ANALYSIS ) || 
-                  ( sSetRestartSN == 1 ) ) &&
-                ( aStartSN != SM_SN_NULL ) )
+            if ( ( ( sSndr->getRole() == RP_ROLE_ANALYSIS ) || 
+                   ( sSndr->getRole() == RP_ROLE_ANALYSIS_PROPAGATION ) || 
+                   ( sSetRestartSN == 1 ) ) &&
+                 ( aStartSN != SM_SN_NULL ) )
             {
                 IDE_ASSERT(smiGetLastValidGSN(&sCurrentSN) == IDE_SUCCESS);
 
@@ -6993,9 +7279,10 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
          * 삭제된 Log임 */
         if ( aStartType == RP_NORMAL )
         {
-            if( ( ( sSndr->getRole() == RP_ROLE_ANALYSIS ) ||
-                  ( sSetRestartSN == 1 ) ) &&
-                ( aStartSN != SM_SN_NULL ) )
+            if ( ( ( sSndr->getRole() == RP_ROLE_ANALYSIS ) ||
+                   ( sSndr->getRole() == RP_ROLE_ANALYSIS_PROPAGATION ) ||
+                   ( sSetRestartSN == 1 ) ) &&
+                 ( aStartSN != SM_SN_NULL ) )
             {
                 sLogMgrInitStatus = sSndr->getLogMgrInitStatus();
 
@@ -7101,6 +7388,7 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
      * 이 위치에서 해제한다.
      * 이 flag는 sender의 시작이 정상적으로 완료되기 위해서 sSndr을 접근할 수 있다는 flag이다.
      * 이 flag가 해제되면 다른세션에서 sSndr을 free할 수 있으므로 이 함수 이후에 sSndr을 접근하면 안된다.*/
+    IDL_MEM_BARRIER;
     sSndr->setCompleteCheckFlag(ID_FALSE);
 
     return IDE_SUCCESS;
@@ -7172,6 +7460,7 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
             sSndr->shutdown();
 
             //bug-14494 error 처리
+            IDL_MEM_BARRIER;
             sSndr->setCompleteCheckFlag(ID_FALSE);
         }
         else
@@ -7244,7 +7533,8 @@ IDE_RC rpcManager::startSenderThread( smiStatement  * aSmiStmt,
 IDE_RC rpcManager::stopSenderThread( smiStatement * aSmiStmt,
                                      SChar        * aReplName,
                                      idBool         aAlreadyLocked, // BUG-14898
-                                     idvSQL       * aStatistics)
+                                     idvSQL       * aStatistics,
+                                     idBool         aIsImmediate )
 {
     SInt          sCount;
     SInt          sIsLock      = 0;
@@ -7314,17 +7604,24 @@ IDE_RC rpcManager::stopSenderThread( smiStatement * aSmiStmt,
 
                     mMyself->mSenderList[sCount]->shutdown();
 
-                    // BUG-22703 thr_join Replace
-                    IDE_TEST(mMyself->mSenderList[sCount]->waitThreadJoin(aStatistics)
-                             != IDE_SUCCESS);
-                    //bug-14494
-                    IDE_TEST( mMyself->mSenderList[sCount]->waitComplete( aStatistics ) 
-                              != IDE_SUCCESS );
+                    if ( aIsImmediate == ID_FALSE )
+                    {
+                        // BUG-22703 thr_join Replace
+                        IDE_TEST(mMyself->mSenderList[sCount]->waitThreadJoin(aStatistics)
+                                 != IDE_SUCCESS);
+                        //bug-14494
+                        IDE_TEST( mMyself->mSenderList[sCount]->waitComplete( aStatistics ) 
+                                  != IDE_SUCCESS );
 
-                    mMyself->mSenderList[sCount]->destroy();
+                        mMyself->mSenderList[sCount]->destroy();
 
-                    (void)iduMemMgr::free(mMyself->mSenderList[sCount]);
-                    mMyself->mSenderList[sCount] = NULL;
+                        (void)iduMemMgr::free(mMyself->mSenderList[sCount]);
+                        mMyself->mSenderList[sCount] = NULL;
+                    }
+                    else
+                    {
+                        /* do nothing */
+                    }
 
                     break;
                 }
@@ -7528,9 +7825,28 @@ IDE_RC rpcManager::resetReplication(smiStatement * aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpcManager::processRPRequest(cmiLink * aLink,
-                                    idBool    aIsRecoveryPhase)
+IDE_RC rpcManager::recvOperationInfo( cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      UChar              * aOpCode )
+
 {
+    IDE_TEST(rpnComm::recvOperationInfo( aProtocolContext,
+                                         aExitFlag,
+                                         aOpCode,
+                                         RPU_REPLICATION_RECEIVE_TIMEOUT )
+             != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcManager::processRPRequest( cmiLink * aLink,
+                                     idBool    aIsRecoveryPhase )
+{
+    UChar                 sOpCode;
     SChar                 sRepName[QCI_MAX_NAME_LEN + 1] = {0,};
     SChar                 sBuffer[RP_ACK_MSG_LEN] = {0,};
     SInt                  sIsLock            = 0;
@@ -7547,6 +7863,8 @@ IDE_RC rpcManager::processRPRequest(cmiLink * aLink,
     idBool                sIsNeedFreeLink = ID_TRUE;
     cmiProtocolContext  * sProtocolContext = NULL;
     rpdVersion            sVersion = { 0 };
+    idBool                sMetaInitFlag = ID_FALSE;;
+    rpdMeta             * sRemoteMeta = NULL;
 
     sMeta.initialize();
 
@@ -7566,173 +7884,341 @@ IDE_RC rpcManager::processRPRequest(cmiLink * aLink,
 
     IDE_TEST( cmiMakeCmBlockNull( sProtocolContext ) != IDE_SUCCESS );
 
-    if ( rpuProperty::isUseV6Protocol() != ID_TRUE )
-    {
-        IDU_FIT_POINT_RAISE( "rpcManager::processRPRequest::Erratic::rpERR_ABORT_ALLOC_CM_BLOCK",
-                             ERR_ALLOC_CM_BLOCK );
-        IDE_TEST_RAISE( cmiAllocCmBlock( sProtocolContext,
-                                         CMI_PROTOCOL_MODULE( RP ),
-                                         (cmiLink *)aLink,
-                                         this )
-                        != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
-    }
-    else
-    {
-        IDE_TEST_RAISE( cmiAllocCmBlockForA5( sProtocolContext,
-                                              CMI_PROTOCOL_MODULE( RP ),
-                                              (cmiLink *)aLink,
-                                              this )
-                        != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
-    }
-
+    IDU_FIT_POINT_RAISE( "rpcManager::processRPRequest::Erratic::rpERR_ABORT_ALLOC_CM_BLOCK",
+                         ERR_ALLOC_CM_BLOCK );
+    IDE_TEST_RAISE( cmiAllocCmBlock( sProtocolContext,
+                                     CMI_PROTOCOL_MODULE( RP ),
+                                     (cmiLink *)aLink,
+                                     this )
+                    != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
     sIsAllocCmBlock = ID_TRUE;
 
     IDE_TEST_RAISE( rpxReceiver::checkProtocol( sProtocolContext, 
+                                                &mExitFlag,
                                                 &sStatus,
                                                 &sVersion )
                     != IDE_SUCCESS, ERR_CHECK_PROTOCOL );
 
 
-    IDE_TEST( sMeta.recvMeta( sProtocolContext, sVersion ) != IDE_SUCCESS );
-
-    /* 현재 상대방의 요청이 Wakeup Peer Sender인지를 확인 */
-    // wake up sender : do not new start Receiver Thread
-    if(rpdMeta::isRpWakeupPeerSender(&sMeta.mReplication) == ID_TRUE)
+    IDE_TEST( recvOperationInfo( sProtocolContext, 
+                                 &mExitFlag,
+                                 &sOpCode ) 
+              != IDE_SUCCESS );
+    if ( sOpCode == CMI_PROTOCOL_OPERATION( RP, MetaRepl ) )
     {
-        /* Network 연결을 끊는다. */
-        sIsAllocCmBlock = ID_FALSE;
-        IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
-                        != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
+        IDE_TEST( sMeta.recvMeta( sProtocolContext, 
+                                  &mExitFlag, 
+                                  sVersion,
+                                  RPU_REPLICATION_CONNECT_TIMEOUT,
+                                  &sMetaInitFlag )
+                  != IDE_SUCCESS );
 
-        (void)iduMemMgr::free( sProtocolContext );
-        sProtocolContext = NULL;
-
-        //fix BUG-21922
-        sIsNeedShutdownLink = ID_FALSE;
-        IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
-                       ERR_SHUTDOWN_LINK);
-
-        sIsNeedFreeLink = ID_FALSE;
-        IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
-
-        /* recovery중 들어온 요청이 Wakeup Peer Sender인 경우 메시지를 무시 한다.*/
-        if(aIsRecoveryPhase != ID_TRUE)
+        /* 현재 상대방의 요청이 Wakeup Peer Sender인지를 확인 */
+        // wake up sender : do not new start Receiver Thread
+        if(rpdMeta::isRpWakeupPeerSender(&sMeta.mReplication) == ID_TRUE)
         {
-            wakeupSender(sMeta.mReplication.mRepName);
-        }
-    }
-    else if(rpdMeta::isRpRecoveryRequest(&sMeta.mReplication) == ID_TRUE) //recovery sender 시작
-    {
-        idlOS::memcpy(sRepName,
-                      sMeta.mReplication.mRepName,
-                      QCI_MAX_NAME_LEN + 1);
+            /* Network 연결을 끊는다. */
+            sIsAllocCmBlock = ID_FALSE;
+            IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
+                            != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
 
-        IDE_ASSERT( mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
-        sReceiverLocked = ID_TRUE;
+            (void)iduMemMgr::free( sProtocolContext );
+            sProtocolContext = NULL;
 
-        IDE_ASSERT(mRecoveryMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-        sIsLock = 1;
+            //fix BUG-21922
+            sIsNeedShutdownLink = ID_FALSE;
+            IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
+                           ERR_SHUTDOWN_LINK);
 
-        IDE_TEST( realizeRecoveryItem( NULL ) != IDE_SUCCESS );
-        sRecoveryItem = getMergedRecoveryItem(sRepName, 
-                                              sMeta.mReplication.mRPRecoverySN);
+            sIsNeedFreeLink = ID_FALSE;
+            IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
 
-        if(sRecoveryItem != NULL)
-        {
-            if(sRecoveryItem->mStatus == RP_RECOVERY_SUPPORT_RECEIVER_RUN)
+            /* recovery중 들어온 요청이 Wakeup Peer Sender인 경우 메시지를 무시 한다.*/
+            if(aIsRecoveryPhase != ID_TRUE)
             {
-                /*
-                 * 1. RP_RECOVERY_SUPPORT_RECEIVER_RUN:
-                 * 이전에 돌던 Receiver가 아직 종료되지 않은 경우(rollback등이 오래걸릴 경우)
-                 * 기존에 돌고 있던 receiver를 정지시키고 ReceiverList에서 제거한다.
-                 */
-                IDE_TEST( stopReceiverThread( sRepName, ID_FALSE, NULL)
-                          != IDE_SUCCESS );
-
-                sRecoveryItem->mStatus = RP_RECOVERY_WAIT;
+                wakeupSender(sMeta.mReplication.mRepName);
             }
+        }
+        else if(rpdMeta::isRpRecoveryRequest(&sMeta.mReplication) == ID_TRUE) //recovery sender 시작
+        {
+            idlOS::memcpy(sRepName,
+                          sMeta.mReplication.mRepName,
+                          QCI_MAX_NAME_LEN + 1);
 
-            if(sRecoveryItem->mStatus == RP_RECOVERY_WAIT)
+            IDE_ASSERT( mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+            sReceiverLocked = ID_TRUE;
+
+            IDE_ASSERT(mRecoveryMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
+            sIsLock = 1;
+
+            IDE_TEST( realizeRecoveryItem( NULL ) != IDE_SUCCESS );
+            sRecoveryItem = getMergedRecoveryItem(sRepName, 
+                                                  sMeta.mReplication.mRPRecoverySN);
+
+            if(sRecoveryItem != NULL)
             {
-                sSNMapMgr = sRecoveryItem->mSNMapMgr;
-                IDE_ASSERT(sSNMapMgr != NULL);
-                //전송되어온 recovery sn과 검색된 sn map에서 어느쪽이 더 많은 정보를 갖고 있는지
-                //확인하여, 복구 여부를 전송한다.
-                sMaxMasterCommitSN = sSNMapMgr->getMaxMasterCommitSN();
-                if((sMaxMasterCommitSN != SM_SN_NULL) && 
-                   (sMeta.mReplication.mRPRecoverySN < sMaxMasterCommitSN))
+                if(sRecoveryItem->mStatus == RP_RECOVERY_SUPPORT_RECEIVER_RUN)
                 {
-                    //recovery 해야 함
+                    /*
+                     * 1. RP_RECOVERY_SUPPORT_RECEIVER_RUN:
+                     * 이전에 돌던 Receiver가 아직 종료되지 않은 경우(rollback등이 오래걸릴 경우)
+                     * 기존에 돌고 있던 receiver를 정지시키고 ReceiverList에서 제거한다.
+                     */
+                    IDE_TEST( stopReceiverThread( sRepName, ID_FALSE, NULL)
+                              != IDE_SUCCESS );
+
+                    sRecoveryItem->mStatus = RP_RECOVERY_WAIT;
+                }
+
+                if(sRecoveryItem->mStatus == RP_RECOVERY_WAIT)
+                {
+                    sSNMapMgr = sRecoveryItem->mSNMapMgr;
+                    IDE_ASSERT(sSNMapMgr != NULL);
+                    //전송되어온 recovery sn과 검색된 sn map에서 어느쪽이 더 많은 정보를 갖고 있는지
+                    //확인하여, 복구 여부를 전송한다.
+                    sMaxMasterCommitSN = sSNMapMgr->getMaxMasterCommitSN();
+                    if((sMaxMasterCommitSN != SM_SN_NULL) && 
+                       (sMeta.mReplication.mRPRecoverySN < sMaxMasterCommitSN))
+                    {
+                        //recovery 해야 함
+                        sMsgReturn = RP_MSG_RECOVERY_OK;
+                        idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
+                                         "Recovery sender start" );
+                    }
+                    else
+                    {
+                        //이미 다 반영되었거나, 정보가 없으므로, recovery 하지않음
+                        sMsgReturn = RP_MSG_RECOVERY_NOK;
+                        idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
+                                         "Replication do not need recovery" );
+                    }
+                }
+                else if(sRecoveryItem->mStatus == RP_RECOVERY_SENDER_RUN)
+                {
                     sMsgReturn = RP_MSG_RECOVERY_OK;
                     idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
-                                     "Recovery sender start" );
+                                     "Replication recovery already started" );
                 }
                 else
                 {
-                    //이미 다 반영되었거나, 정보가 없으므로, recovery 하지않음
-                    sMsgReturn = RP_MSG_RECOVERY_NOK;
-                    idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
-                                     "Replication do not need recovery" );
+                    IDE_ASSERT(0);
                 }
             }
-            else if(sRecoveryItem->mStatus == RP_RECOVERY_SENDER_RUN)
+            else
             {
-                sMsgReturn = RP_MSG_RECOVERY_OK;
+                //snMap이 없으므로 recovery 할 수 없음
+                sMsgReturn = RP_MSG_RECOVERY_NOK;
                 idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
-                                 "Replication recovery already started" );
+                                 "Replication can not recovery" );
+            }
+
+            IDU_FIT_POINT("rpcManager::processRPRequest::lock::sendHandshakeAck" );
+            IDE_TEST( rpnComm::sendHandshakeAck( sProtocolContext,
+                                                 &mExitFlag,
+                                                 (UInt)sMsgReturn,
+                                                 RP_FAILBACK_NONE,
+                                                 SM_SN_NULL,
+                                                 sBuffer,
+                                                 RPU_REPLICATION_SENDER_SEND_TIMEOUT )
+                      != IDE_SUCCESS);
+
+            if(sMsgReturn == RP_MSG_RECOVERY_OK)
+            {
+                // start recovery sender
+                if(sRecoveryItem->mRecoverySender == NULL)
+                {
+                    IDU_FIT_POINT( "rpcManager::processRPRequest::lock::startRecoverySenderThread",
+                                   rpERR_ABORT_MEMORY_ALLOC,
+                                   "rpcManager::startRecoverySenderThread",
+                                   "sSndr" );
+                    IDE_TEST(startRecoverySenderThread(sRepName,
+                                                       sRecoveryItem->mSNMapMgr,
+                                                       sMeta.mReplication.mRPRecoverySN,
+                                                       &sRecoverySender)
+                             != IDE_SUCCESS);
+
+                    sRecoveryItem->mStatus = RP_RECOVERY_SENDER_RUN;
+                    sRecoveryItem->mRecoverySender = sRecoverySender;
+                }
+                else
+                {
+                    IDE_DASSERT(sRecoveryItem->mStatus == RP_RECOVERY_SENDER_RUN);
+                }
+            }
+
+            sIsLock = 0;
+            IDE_ASSERT(mRecoveryMutex.unlock() == IDE_SUCCESS);
+
+            sReceiverLocked = ID_FALSE;
+            IDE_ASSERT( mReceiverMutex.unlock() == IDE_SUCCESS );
+
+            /* Network 연결을 끊는다. */
+            sIsAllocCmBlock = ID_FALSE;
+            IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
+                            != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
+
+            (void)iduMemMgr::free( sProtocolContext );
+            sProtocolContext = NULL;
+
+            //fix BUG-21922
+            sIsNeedShutdownLink = ID_FALSE;
+            IDU_FIT_POINT_RAISE( "rpcManager::processRPRequest::Erratic::rpERR_ABORT_SHUTDOWN_LINK",
+                                 ERR_SHUTDOWN_LINK );
+            IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
+                           ERR_SHUTDOWN_LINK);
+
+            sIsNeedFreeLink = ID_FALSE;
+            IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
+        }
+        else if(rpdMeta::isRpRecoverySender(&sMeta.mReplication) == ID_TRUE)
+        {
+            if(aIsRecoveryPhase != ID_TRUE) //service phase
+            {
+                /* Proj-1608 이미 recovery phase가 끝난 후
+                 * normal sender가 아닌 recovery sender의 접속은 거부한다.
+                 */
+                idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
+                                 "Server State is not recovery but service phase" );
+                //DENY를 설정하여 remote host의 recovery sender가 종료할 수 있도록 한다.
+
+                (void)rpnComm::sendHandshakeAck( sProtocolContext,
+                                                 &mExitFlag,
+                                                 RP_MSG_DENY,
+                                                 RP_FAILBACK_NONE,
+                                                 SM_SN_NULL,
+                                                 sBuffer,
+                                                 RPU_REPLICATION_SENDER_SEND_TIMEOUT );
+
+                /* Network 연결을 끊는다. */
+                sIsAllocCmBlock = ID_FALSE;
+                IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
+                                != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
+
+                (void)iduMemMgr::free( sProtocolContext );
+                sProtocolContext = NULL;
+
+                //fix BUG-21922
+                sIsNeedShutdownLink = ID_FALSE;
+                IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
+                               ERR_SHUTDOWN_LINK);
+
+                sIsNeedFreeLink = ID_FALSE;
+                IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
+
+            }
+            else //recovery phase에서는 reocvery receiver를 생성 함
+            {
+                //Recovery Receiver 생성
+                IDE_TEST( startRecoveryReceiverThread( sProtocolContext,
+                                                       &sMeta )
+                          != IDE_SUCCESS );
+            }
+        }
+        else // new receiver start
+        {
+            if(aIsRecoveryPhase == ID_TRUE) //recovery phase
+            {
+                /* Proj-1608 recovery phase중 접속한
+                 * normal sender의 접속은 거부한다.
+                 */
+                idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
+                                 "Server State is not service but recovery phase" );
+                //DENY를 설정하여 remote host의  sender가 종료할 수 있도록 한다.
+                (void)rpnComm::sendHandshakeAck( sProtocolContext,
+                                                 &mExitFlag,
+                                                 RP_MSG_DENY,
+                                                 RP_FAILBACK_NONE,
+                                                 SM_SN_NULL,
+                                                 sBuffer,
+                                                 RPU_REPLICATION_SENDER_SEND_TIMEOUT );
+
+                /* Network 연결을 끊는다. */
+                sIsAllocCmBlock = ID_FALSE;
+                IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
+                                != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
+
+                (void)iduMemMgr::free( sProtocolContext );
+                sProtocolContext = NULL;
+
+                //fix BUG-21922
+                sIsNeedShutdownLink = ID_FALSE;
+                IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
+                               ERR_SHUTDOWN_LINK);
+
+                sIsNeedFreeLink = ID_FALSE;
+                IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
             }
             else
             {
-                IDE_ASSERT(0);
+                //start receiver thread
+                // Replication Item의 개수가 0이면 FAILURE로 처리한다.
+                IDU_FIT_POINT_RAISE( "rpcManager::processRPRequest::Erratic::rpERR_ABORT_ITEM_NOT_EXIST",
+                                     ERR_ITEM_ABSENT );
+                IDE_TEST_RAISE(sMeta.mReplication.mItemCount == 0,
+                               ERR_ITEM_ABSENT);
+
+                if ( sMetaInitFlag == ID_TRUE )
+                {
+                    sRemoteMeta = findRemoteMeta( sMeta.mReplication.mRepName);
+
+                    if ( sRemoteMeta != NULL )
+                    {
+                        sRemoteMeta->freeMemory();
+                        sRemoteMeta->initialize();
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+
+                    IDE_TEST( initRemoteData( sMeta.mReplication.mRepName )
+                              != IDE_SUCCESS )
+                }
+
+                if(rpdMeta::isRpStartSyncApply(&sMeta.mReplication) == ID_TRUE)
+                {
+                    IDE_TEST( startSyncReceiverThread( sProtocolContext,
+                                                       &sMeta )
+                              != IDE_SUCCESS );
+
+                }
+                else if(rpdMeta::isRpOfflineSender(&sMeta.mReplication) == ID_TRUE)
+                {
+                    IDE_TEST( startOfflineReceiverThread( sProtocolContext,
+                                                          &sMeta )
+                              != IDE_SUCCESS );
+                }
+                else if(rpdMeta::isRpParallelSender(&sMeta.mReplication) == ID_TRUE)
+                {
+                    IDE_TEST( startParallelReceiverThread( sProtocolContext,
+                                                           &sMeta )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( startNormalReceiverThread( sProtocolContext,
+                                                         &sMeta )
+                              != IDE_SUCCESS );
+                }
             }
         }
-        else
-        {
-            //snMap이 없으므로 recovery 할 수 없음
-            sMsgReturn = RP_MSG_RECOVERY_NOK;
-            idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
-                             "Replication can not recovery" );
-        }
+    }
+    else if ( sOpCode == CMI_PROTOCOL_OPERATION( RP, DDLSyncInfo ) )
+    {
+        /* PROJ-2677 DDL Sync */
+        IDE_TEST( mDDLSyncManager.realizeDDLExecutor( NULL ) != IDE_SUCCESS );
 
-        IDU_FIT_POINT("rpcManager::processRPRequest::lock::sendHandshakeAck" );
-        IDE_TEST( rpnComm::sendHandshakeAck( sProtocolContext,
-                                             (UInt)sMsgReturn,
-                                             RP_FAILBACK_NONE,
-                                             SM_SN_NULL,
-                                             sBuffer )
-                  != IDE_SUCCESS);
+        IDE_TEST( mDDLSyncManager.recvDDLInfoAndCreateDDLExecutor( sProtocolContext, &sVersion )
+                  != IDE_SUCCESS );
 
-        if(sMsgReturn == RP_MSG_RECOVERY_OK)
-        {
-            // start recovery sender
-            if(sRecoveryItem->mRecoverySender == NULL)
-            {
-                IDU_FIT_POINT( "rpcManager::processRPRequest::lock::startRecoverySenderThread",
-                               rpERR_ABORT_MEMORY_ALLOC,
-                               "rpcManager::startRecoverySenderThread",
-                               "sSndr" );
-                IDE_TEST(startRecoverySenderThread(sRepName,
-                                                   sRecoveryItem->mSNMapMgr,
-                                                   sMeta.mReplication.mRPRecoverySN,
-                                                   &sRecoverySender)
-                         != IDE_SUCCESS);
+    }
+    else if ( sOpCode == CMI_PROTOCOL_OPERATION( RP, DDLSyncCancel ) )
+    {
+        IDE_TEST( mDDLSyncManager.realizeDDLExecutor( NULL ) != IDE_SUCCESS );
 
-                sRecoveryItem->mStatus = RP_RECOVERY_SENDER_RUN;
-                sRecoveryItem->mRecoverySender = sRecoverySender;
-            }
-            else
-            {
-                IDE_DASSERT(sRecoveryItem->mStatus == RP_RECOVERY_SENDER_RUN);
-            }
-        }
+        IDE_TEST( mDDLSyncManager.recvAndSetDDLSyncCancel( sProtocolContext, &mExitFlag )
+                  != IDE_SUCCESS );
 
-        sIsLock = 0;
-        IDE_ASSERT(mRecoveryMutex.unlock() == IDE_SUCCESS);
-
-        sReceiverLocked = ID_FALSE;
-        IDE_ASSERT( mReceiverMutex.unlock() == IDE_SUCCESS );
-
-        /* Network 연결을 끊는다. */
         sIsAllocCmBlock = ID_FALSE;
         IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
                         != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
@@ -7740,125 +8226,16 @@ IDE_RC rpcManager::processRPRequest(cmiLink * aLink,
         (void)iduMemMgr::free( sProtocolContext );
         sProtocolContext = NULL;
 
-        //fix BUG-21922
         sIsNeedShutdownLink = ID_FALSE;
-        IDU_FIT_POINT_RAISE( "rpcManager::processRPRequest::Erratic::rpERR_ABORT_SHUTDOWN_LINK",
-                             ERR_SHUTDOWN_LINK );
-        IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
-                       ERR_SHUTDOWN_LINK);
+        IDE_TEST_RAISE( cmiShutdownLink( aLink, CMI_DIRECTION_RDWR ) != IDE_SUCCESS,
+                        ERR_SHUTDOWN_LINK );
 
         sIsNeedFreeLink = ID_FALSE;
-        IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
+        IDE_TEST_RAISE( cmiFreeLink( aLink ) != IDE_SUCCESS, ERR_FREE_LINK );
     }
-    else if(rpdMeta::isRpRecoverySender(&sMeta.mReplication) == ID_TRUE)
+    else
     {
-        if(aIsRecoveryPhase != ID_TRUE) //service phase
-        {
-           /* Proj-1608 이미 recovery phase가 끝난 후
-            * normal sender가 아닌 recovery sender의 접속은 거부한다.
-            */
-            idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
-                             "Server State is not recovery but service phase" );
-            //DENY를 설정하여 remote host의 recovery sender가 종료할 수 있도록 한다.
-
-            (void)rpnComm::sendHandshakeAck( sProtocolContext,
-                                             RP_MSG_DENY,
-                                             RP_FAILBACK_NONE,
-                                             SM_SN_NULL,
-                                             sBuffer );
-
-            /* Network 연결을 끊는다. */
-            sIsAllocCmBlock = ID_FALSE;
-            IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
-                            != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
-
-            (void)iduMemMgr::free( sProtocolContext );
-            sProtocolContext = NULL;
-
-            //fix BUG-21922
-            sIsNeedShutdownLink = ID_FALSE;
-            IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
-                           ERR_SHUTDOWN_LINK);
-
-            sIsNeedFreeLink = ID_FALSE;
-            IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
-
-        }
-        else //recovery phase에서는 reocvery receiver를 생성 함
-        {
-            //Recovery Receiver 생성
-            IDE_TEST( startRecoveryReceiverThread( sProtocolContext,
-                                                   &sMeta )
-                      != IDE_SUCCESS );
-        }
-    }
-    else // new receiver start
-    {
-        if(aIsRecoveryPhase == ID_TRUE) //recovery phase
-        {
-           /* Proj-1608 recovery phase중 접속한
-            * normal sender의 접속은 거부한다.
-            */
-            idlOS::snprintf( sBuffer, RP_ACK_MSG_LEN, "%s",
-                             "Server State is not service but recovery phase" );
-            //DENY를 설정하여 remote host의  sender가 종료할 수 있도록 한다.
-            (void)rpnComm::sendHandshakeAck( sProtocolContext,
-                                             RP_MSG_DENY,
-                                             RP_FAILBACK_NONE,
-                                             SM_SN_NULL,
-                                             sBuffer );
-
-            /* Network 연결을 끊는다. */
-            sIsAllocCmBlock = ID_FALSE;
-            IDE_TEST_RAISE( cmiFreeCmBlock( sProtocolContext )
-                            != IDE_SUCCESS, ERR_FREE_CM_BLOCK );
-
-            (void)iduMemMgr::free( sProtocolContext );
-            sProtocolContext = NULL;
-
-            //fix BUG-21922
-            sIsNeedShutdownLink = ID_FALSE;
-            IDE_TEST_RAISE(cmiShutdownLink(aLink, CMI_DIRECTION_RDWR) != IDE_SUCCESS,
-                           ERR_SHUTDOWN_LINK);
-
-            sIsNeedFreeLink = ID_FALSE;
-            IDE_TEST_RAISE(cmiFreeLink(aLink) != IDE_SUCCESS, ERR_FREE_LINK);
-        }
-        else
-        {
-            //start receiver thread
-            // Replication Item의 개수가 0이면 FAILURE로 처리한다.
-            IDU_FIT_POINT_RAISE( "rpcManager::processRPRequest::Erratic::rpERR_ABORT_ITEM_NOT_EXIST",
-                                 ERR_ITEM_ABSENT );
-            IDE_TEST_RAISE(sMeta.mReplication.mItemCount == 0,
-                           ERR_ITEM_ABSENT);
-
-            if(rpdMeta::isRpStartSyncApply(&sMeta.mReplication) == ID_TRUE)
-            {
-                IDE_TEST( startSyncReceiverThread( sProtocolContext,
-                                                   &sMeta )
-                          != IDE_SUCCESS );
-
-            }
-            else if(rpdMeta::isRpOfflineSender(&sMeta.mReplication) == ID_TRUE)
-            {
-                IDE_TEST( startOfflineReceiverThread( sProtocolContext,
-                                                      &sMeta )
-                          != IDE_SUCCESS );
-            }
-            else if(rpdMeta::isRpParallelSender(&sMeta.mReplication) == ID_TRUE)
-            {
-                IDE_TEST( startParallelReceiverThread( sProtocolContext,
-                                                       &sMeta )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                IDE_TEST( startNormalReceiverThread( sProtocolContext,
-                                                     &sMeta )
-                          != IDE_SUCCESS );
-            }
-        }
+        IDE_RAISE( ERR_CHECK_OPERATION_TYPE );
     }
 
     sMeta.finalize();
@@ -7909,6 +8286,12 @@ IDE_RC rpcManager::processRPRequest(cmiLink * aLink,
         IDE_ERRLOG(IDE_RP_0);
         IDE_SET(ideSetErrorCode(rpERR_ABORT_ITEM_NOT_EXIST,
                                 sMeta.mReplication.mRepName));
+    }
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE,
+                                  sOpCode ) );
+        IDE_ERRLOG( IDE_RP_0 );
     }
     IDE_EXCEPTION_END;
 
@@ -8025,6 +8408,7 @@ IDE_RC rpcManager::stopReceiverThreads( smiStatement    * aSmiStmt,
     SInt              sRecvIndex;
     SInt              sItemIndex;
     idBool            sIsLock = ID_FALSE;
+    smTID             sTID = aSmiStmt->getTrans()->getTransID();
     PDL_Time_Value    sTvCpu;
 
     IDE_TEST_CONT(mMyself == NULL, NORMAL_EXIT);
@@ -8052,7 +8436,7 @@ IDE_RC rpcManager::stopReceiverThreads( smiStatement    * aSmiStmt,
             IDE_TEST( rpdCatalog::selectRepl( aSmiStmt,
                                               sReceiver->getRepName(),
                                               &sReplications,
-                                              ID_FALSE )
+                                              ID_TRUE )
                       != IDE_SUCCESS);
 
             IDU_FIT_POINT_RAISE( "rpcManager::stopReceiverThreads::calloc::ReplItems",
@@ -8080,13 +8464,18 @@ IDE_RC rpcManager::stopReceiverThreads( smiStatement    * aSmiStmt,
                                         aTableOIDCount )
                      == ID_TRUE )
                 {
-                    // Receiver를 정지한다.
-                    IDE_TEST( mMyself->stopReceiverThread(
-                                    sReceiver->getRepName(),
-                                    ID_TRUE,
-                                    aStatistics )
-                              != IDE_SUCCESS );
-                    break;
+                    if ( ( findDDLReplInfoByName( sReceiver->getRepName() ) == NULL ) &&
+                         ( sReceiver->isSelfExecuteDDLTrans( sTID ) != ID_TRUE ) )
+                    {
+                        // Receiver를 정지한다.
+                        IDE_TEST( mMyself->stopReceiverThread(
+                                sReceiver->getRepName(),
+                                ID_TRUE,
+                                aStatistics )
+                            != IDE_SUCCESS );
+
+                        break;
+                    }
                 }
             }
 
@@ -8129,9 +8518,9 @@ IDE_RC rpcManager::stopReceiverThreads( smiStatement    * aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
-                                      SChar           * aHostIp,
-                                      SInt              aPortNo )
+IDE_RC rpcManager::wakeupPeerByIndex( idBool             * aExitFlag,
+                                      rpdReplications    * aReplication,
+                                      SInt                 aIndex  )
 {
     cmiLink      * sLink = NULL;
     cmiConnectArg  sConnectArg;
@@ -8141,6 +8530,7 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
     idBool sIsAllocCmBlock = ID_FALSE;
     idBool sIsAllocCmLink = ID_FALSE;
     cmiProtocolContext sProtocolContext;
+    idBool         sIsConnected = ID_FALSE;
 
     sConnWaitTime.initialize(RPU_REPLICATION_CONNECT_TIMEOUT, 0);
 
@@ -8150,29 +8540,37 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
     //   set Communication information
     //----------------------------------------------------------------//
     idlOS::memset(&sConnectArg, 0, ID_SIZEOF(cmiConnectArg));
-    sConnectArg.mTCP.mAddr = aHostIp;
-    sConnectArg.mTCP.mPort = aPortNo;
-    sConnectArg.mTCP.mBindAddr = NULL;
-    
-    IDU_FIT_POINT_RAISE( "rpcManager::wakeupPeerByAddr::Erratic::rpERR_ABORT_ALLOC_LINK",
-                         ERR_ALLOC_LINK );
-    IDE_TEST_RAISE(cmiAllocLink(&sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_TCP)
-                   != IDE_SUCCESS, ERR_ALLOC_LINK);
-    sIsAllocCmLink = ID_TRUE;
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( aReplication->mReplHosts[aIndex].mConnType == RP_SOCKET_TYPE_TCP )
     {
-        cmiLinkSetPacketTypeA5( sLink );
+        sConnectArg.mTCP.mAddr = aReplication->mReplHosts[aIndex].mHostIp;
+        sConnectArg.mTCP.mPort = aReplication->mReplHosts[aIndex].mPortNo;
+        sConnectArg.mTCP.mBindAddr = NULL;
+
+        IDU_FIT_POINT_RAISE( "rpcManager::wakeupPeerByAddr::Erratic::rpERR_ABORT_ALLOC_LINK",
+                             ERR_ALLOC_LINK );
+        IDE_TEST_RAISE(cmiAllocLink(&sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_TCP)
+                       != IDE_SUCCESS, ERR_ALLOC_LINK);
+        sIsAllocCmLink = ID_TRUE;
     }
-    else
+    else if ( aReplication->mReplHosts[aIndex].mConnType == RP_SOCKET_TYPE_IB )
     {
-        /* do nothing */
+        sConnectArg.mIB.mAddr = aReplication->mReplHosts[aIndex].mHostIp;
+        sConnectArg.mIB.mPort = aReplication->mReplHosts[aIndex].mPortNo;
+        sConnectArg.mIB.mLatency = aReplication->mReplHosts[aIndex].mIBLatency;
+        sConnectArg.mIB.mBindAddr = NULL;
+
+        IDU_FIT_POINT_RAISE( "rpcManager::wakeupPeerByAddr::Erratic::rpERR_ABORT_ALLOC_LINK",
+                             ERR_ALLOC_LINK );
+        IDE_TEST_RAISE(cmiAllocLink(&sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_IB)
+                       != IDE_SUCCESS, ERR_ALLOC_LINK);
+        sIsAllocCmLink = ID_TRUE;
     }
 
     /* Initialize Protocol Context & Alloc CM Block */
     IDE_TEST( cmiMakeCmBlockNull( &sProtocolContext ) != IDE_SUCCESS );
 
-    if ( rpuProperty::isUseV6Protocol() != ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( aReplication ) != ID_TRUE )
     {
         IDU_FIT_POINT_RAISE( "rpcManager::wakeupPeerByAddr::Erratic::rpERR_ABORT_ALLOC_CM_BLOCK",
                          ERR_ALLOC_CM_BLOCK );
@@ -8184,6 +8582,8 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
     }
     else
     {
+        cmiLinkSetPacketTypeA5( sLink );
+
         IDE_TEST_RAISE( cmiAllocCmBlockForA5( &(sProtocolContext),
                                               CMI_PROTOCOL_MODULE( RP ),
                                               (cmiLink *)sLink,
@@ -8205,12 +8605,17 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
                                 &sConnWaitTime,
                                 SO_REUSEADDR )
                     != IDE_SUCCESS, NORMAL_EXIT );
+    sIsConnected = ID_TRUE;
 
     //----------------------------------------------------------------//
     // connect success
     //----------------------------------------------------------------//
 
-    IDE_TEST( checkRemoteReplVersion( &sProtocolContext, &sResult, sBuffer )
+    IDE_TEST( checkRemoteNormalReplVersion( &sProtocolContext, 
+                                            aExitFlag,
+                                            aReplication,
+                                            &sResult,
+                                            sBuffer )
               != IDE_SUCCESS );
 
     switch(sResult)
@@ -8227,7 +8632,11 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
             break;
 
         case RP_MSG_OK :
-            if ( rpnComm::sendMetaRepl( NULL, &sProtocolContext, aReplication )
+            if ( rpnComm::sendMetaRepl( NULL, 
+                                        &sProtocolContext, 
+                                        aExitFlag,
+                                        aReplication,
+                                        RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                  != IDE_SUCCESS )
             {
                 IDE_ERRLOG( IDE_RP_0 );
@@ -8253,19 +8662,21 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
     //----------------------------------------------------------------//
     // close Connection
     //----------------------------------------------------------------//
-    if ( rpnComm::isConnected( (cmiLink *)sLink ) == ID_TRUE )
+    if ( sIsConnected == ID_TRUE )
     {
         IDU_FIT_POINT_RAISE( "rpcManager::wakeupPeerByAddr::Erratic::rpERR_ABORT_SHUTDOWN_LINK",
                              ERR_SHUTDOWN_LINK );
         IDE_TEST_RAISE( cmiShutdownLink( sLink, CMI_DIRECTION_RDWR )
                         != IDE_SUCCESS, ERR_SHUTDOWN_LINK );
 
+        sIsConnected = ID_FALSE;
+        
         IDU_FIT_POINT_RAISE( "rpcManager::wakeupPeerByAddr::Erratic::rpERR_ABORT_CLOSE_LINK",
                              ERR_CLOSE_LINK );
         IDE_TEST_RAISE( cmiCloseLink( sLink )
                         != IDE_SUCCESS, ERR_CLOSE_LINK );
     }
-
+    
     sIsAllocCmLink = ID_FALSE;
     IDE_TEST_RAISE( cmiFreeLink( sLink ) != IDE_SUCCESS, ERR_FREE_LINK );
 
@@ -8311,7 +8722,7 @@ IDE_RC rpcManager::wakeupPeerByAddr( rpdReplications * aReplication,
         (void)cmiFreeCmBlock( &sProtocolContext );
     }
 
-    if ( rpnComm::isConnected( (cmiLink *)sLink ) == ID_TRUE )
+    if ( sIsConnected == ID_TRUE )
     {
         (void)cmiShutdownLink( sLink, CMI_DIRECTION_RDWR );
         (void)cmiCloseLink( sLink );
@@ -8784,6 +9195,7 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
     qcmPartitionInfoList * sTempPartInfoList = NULL;
     qcmTableInfo         * sPartInfo;
     rpdMetaItem            sMetaItem;
+    rpdReplItems           sReplItem;
 
     SChar   sPartName[QCI_MAX_OBJECT_NAME_LEN + 1] = {0, };
 
@@ -8812,6 +9224,12 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
             {
                 sPartInfo = sTempPartInfoList->partitionInfo;
 
+                fillRpdReplItems( sParseTree->replName,
+                                  aReplItem,
+                                  aTableInfo,
+                                  sPartInfo,
+                                  &sReplItem );
+
                 // SYS_REPL_ITEMS_에서 얻을 수 있는 smiTableMeta의 멤버를 채운다.
                 idlOS::memset(&sMetaItem, 0, ID_SIZEOF(rpdMetaItem));
 
@@ -8819,18 +9237,43 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
 
                 sMetaItem.mItem.mTableOID = smiGetTableId(sPartInfo->tableHandle);
 
-                QCI_STR_COPY( sMetaItem.mItem.mLocalUsername, aReplItem->localUserName );
+                idlOS::strncpy( sMetaItem.mItem.mLocalUsername, 
+                                sReplItem.mLocalUsername,
+                                QC_MAX_OBJECT_NAME_LEN );
+                sMetaItem.mItem.mLocalUsername[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
-                QCI_STR_COPY( sMetaItem.mItem.mLocalTablename, aReplItem->localTableName );
+                idlOS::strncpy( sMetaItem.mItem.mLocalTablename, 
+                                sReplItem.mLocalTablename,
+                                QC_MAX_OBJECT_NAME_LEN );
+                sMetaItem.mItem.mLocalTablename[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
-                idlOS::strncpy( sMetaItem.mItem.mLocalPartname, sPartInfo->name, QC_MAX_OBJECT_NAME_LEN + 1 );
+                idlOS::strncpy( sMetaItem.mItem.mLocalPartname, 
+                                sReplItem.mLocalPartname,
+                                QC_MAX_OBJECT_NAME_LEN );
                 sMetaItem.mItem.mLocalPartname[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+                idlOS::strncpy( sMetaItem.mItem.mRemoteUsername, 
+                                sReplItem.mRemoteUsername,
+                                QC_MAX_OBJECT_NAME_LEN );
+                sMetaItem.mItem.mRemoteUsername[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+                idlOS::strncpy( sMetaItem.mItem.mRemoteTablename,
+                                sReplItem.mRemoteTablename,
+                                QC_MAX_OBJECT_NAME_LEN );
+                sMetaItem.mItem.mRemoteTablename[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+                idlOS::strncpy( sMetaItem.mItem.mRemotePartname, 
+                                sReplItem.mRemotePartname,
+                                QC_MAX_OBJECT_NAME_LEN );
+                sMetaItem.mItem.mRemotePartname[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
                 // 최신 Meta를 구해서 보관한다.
                 IDE_TEST(rpdMeta::buildTableInfo( sSmiStmt, 
                                                   &sMetaItem, 
                                                   SMI_TBSLV_DDL_DML )
                          != IDE_SUCCESS);
+				
+                sMetaItem.mItem.mInvalidMaxSN = sReplItem.mInvalidMaxSN;
 
                 IDE_TEST(rpdMeta::insertOldMetaItem(sSmiStmt, &sMetaItem)
                          != IDE_SUCCESS);
@@ -8851,6 +9294,12 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
                                      ( QCI_MAX_OBJECT_NAME_LEN + 1) )
                      == 0 )
                 {
+                    fillRpdReplItems( sParseTree->replName,
+                                      aReplItem,
+                                      aTableInfo,
+                                      sPartInfo,
+                                      &sReplItem );
+
                     // SYS_REPL_ITEMS_에서 얻을 수 있는 smiTableMeta의 멤버를 채운다.
                     idlOS::memset(&sMetaItem, 0, ID_SIZEOF(rpdMetaItem));
 
@@ -8858,18 +9307,43 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
 
                     sMetaItem.mItem.mTableOID = smiGetTableId(sPartInfo->tableHandle);
 
-                    QCI_STR_COPY( sMetaItem.mItem.mLocalUsername, aReplItem->localUserName );
+                    idlOS::strncpy( sMetaItem.mItem.mLocalUsername, 
+                                    sReplItem.mLocalUsername,
+                                    QC_MAX_OBJECT_NAME_LEN );
+                    sMetaItem.mItem.mLocalUsername[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
-                    QCI_STR_COPY( sMetaItem.mItem.mLocalTablename, aReplItem->localTableName );
+                    idlOS::strncpy( sMetaItem.mItem.mLocalTablename, 
+                                    sReplItem.mLocalTablename,
+                                    QC_MAX_OBJECT_NAME_LEN );
+                    sMetaItem.mItem.mLocalTablename[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
-                    idlOS::strncpy( sMetaItem.mItem.mLocalPartname, sPartInfo->name, QC_MAX_OBJECT_NAME_LEN + 1 );
+                    idlOS::strncpy( sMetaItem.mItem.mLocalPartname, 
+                                    sReplItem.mLocalPartname,
+                                    QC_MAX_OBJECT_NAME_LEN );
                     sMetaItem.mItem.mLocalPartname[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+                    idlOS::strncpy( sMetaItem.mItem.mRemoteUsername, 
+                                    sReplItem.mRemoteUsername,
+                                    QC_MAX_OBJECT_NAME_LEN );
+                    sMetaItem.mItem.mRemoteUsername[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+                    idlOS::strncpy( sMetaItem.mItem.mRemoteTablename,
+                                    sReplItem.mRemoteTablename,
+                                    QC_MAX_OBJECT_NAME_LEN );
+                    sMetaItem.mItem.mRemoteTablename[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+                    idlOS::strncpy( sMetaItem.mItem.mRemotePartname, 
+                                    sReplItem.mRemotePartname,
+                                    QC_MAX_OBJECT_NAME_LEN );
+                    sMetaItem.mItem.mRemotePartname[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
                     // 최신 Meta를 구해서 보관한다.
                     IDE_TEST(rpdMeta::buildTableInfo( sSmiStmt, 
                                                       &sMetaItem, 
                                                       SMI_TBSLV_DDL_DML )
                              != IDE_SUCCESS);
+
+                    sMetaItem.mItem.mInvalidMaxSN = sReplItem.mInvalidMaxSN;
 
                     IDE_TEST(rpdMeta::insertOldMetaItem(sSmiStmt, &sMetaItem)
                              != IDE_SUCCESS);
@@ -8885,6 +9359,12 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
     }
     else // QCM_NON_PARTITIONED_TABLE
     {
+        fillRpdReplItems( sParseTree->replName,
+                          aReplItem,
+                          aTableInfo,
+                          NULL,
+                          &sReplItem );
+
         // SYS_REPL_ITEMS_에서 얻을 수 있는 smiTableMeta의 멤버를 채운다.
         idlOS::memset(&sMetaItem, 0, ID_SIZEOF(rpdMetaItem));
 
@@ -8892,15 +9372,33 @@ IDE_RC rpcManager::insertOneReplOldObject(void         * aQcStatement,
 
         sMetaItem.mItem.mTableOID = smiGetTableId(aTableInfo->tableHandle);
 
-        QCI_STR_COPY( sMetaItem.mItem.mLocalUsername, aReplItem->localUserName );
+        idlOS::strncpy( sMetaItem.mItem.mLocalUsername, 
+                        sReplItem.mLocalUsername,
+                        QC_MAX_OBJECT_NAME_LEN );
+        sMetaItem.mItem.mLocalUsername[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
-        QCI_STR_COPY( sMetaItem.mItem.mLocalTablename, aReplItem->localTableName );
+        idlOS::strncpy( sMetaItem.mItem.mLocalTablename, 
+                        sReplItem.mLocalTablename,
+                        QC_MAX_OBJECT_NAME_LEN );
+        sMetaItem.mItem.mLocalTablename[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+        idlOS::strncpy( sMetaItem.mItem.mRemoteUsername, 
+                        sReplItem.mRemoteUsername,
+                        QC_MAX_OBJECT_NAME_LEN );
+        sMetaItem.mItem.mRemoteUsername[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+        idlOS::strncpy( sMetaItem.mItem.mRemoteTablename,
+                        sReplItem.mRemoteTablename,
+                        QC_MAX_OBJECT_NAME_LEN );
+        sMetaItem.mItem.mRemoteTablename[QC_MAX_OBJECT_NAME_LEN] = '\0';
 
         // 최신 Meta를 구해서 보관한다.
         IDE_TEST(rpdMeta::buildTableInfo( sSmiStmt, 
                                           &sMetaItem, 
                                           SMI_TBSLV_DDL_DML)
                  != IDE_SUCCESS);
+
+        sMetaItem.mItem.mInvalidMaxSN = sReplItem.mInvalidMaxSN;
 
         IDE_TEST(rpdMeta::insertOldMetaItem(sSmiStmt, &sMetaItem)
                  != IDE_SUCCESS);
@@ -9144,7 +9642,7 @@ IDE_RC rpcManager::insertOneReplHost(void        * aQcStatement,
     QCI_STR_COPY( sQcmReplHosts.mHostIp, sReplHost->hostIp );
 
     // port
-    if(aRole == RP_ROLE_ANALYSIS)   // PROJ-1537
+    if ( ( aRole == RP_ROLE_ANALYSIS ) || ( aRole == RP_ROLE_ANALYSIS_PROPAGATION ) )   // PROJ-1537
     {
         if(idlOS::strMatch(RP_SOCKET_UNIX_DOMAIN_STR, RP_SOCKET_UNIX_DOMAIN_LEN,
                            sQcmReplHosts.mHostIp,
@@ -9161,6 +9659,9 @@ IDE_RC rpcManager::insertOneReplHost(void        * aQcStatement,
     {
         sQcmReplHosts.mPortNo = sReplHost->portNumber;
     }
+
+    sQcmReplHosts.mConnType  = sReplHost->connOpt->connType;
+    sQcmReplHosts.mIBLatency = sReplHost->connOpt->ibLatency;
 
     IDE_TEST( rpdCatalog::insertReplHost( sSmiStmt, & sQcmReplHosts )
               != IDE_SUCCESS );
@@ -9262,11 +9763,13 @@ IDE_RC rpcManager::selectReplications( smiStatement    *aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpcManager::wakeupPeer( rpdReplications *aReplication )
+IDE_RC rpcManager::wakeupPeer( idBool           * aExitFlag,
+                               rpdReplications  * aReplication )
 {
     SInt           sIndex;
 
-    if(aReplication->mRole != RP_ROLE_ANALYSIS)     // PROJ-1537
+    if ( ( aReplication->mRole != RP_ROLE_ANALYSIS ) &&
+         ( aReplication->mRole != RP_ROLE_ANALYSIS_PROPAGATION ) )    // PROJ-1537
     {
         IDE_TEST(rpdCatalog::getIndexByAddr(aReplication->mLastUsedHostNo,
                                          aReplication->mReplHosts,
@@ -9274,9 +9777,9 @@ IDE_RC rpcManager::wakeupPeer( rpdReplications *aReplication )
                                          &sIndex)
                  != IDE_SUCCESS);
 
-        IDE_TEST(wakeupPeerByAddr(aReplication,
-                                  aReplication->mReplHosts[sIndex].mHostIp,
-                                  aReplication->mReplHosts[sIndex].mPortNo)
+        IDE_TEST( wakeupPeerByIndex( aExitFlag,
+                                     aReplication,
+                                     sIndex )
                  != IDE_SUCCESS);
     }
 
@@ -9522,15 +10025,29 @@ IDE_RC rpcManager::buildRecordForReplManager( idvSQL              * /*aStatistic
 
     IDE_TEST_CONT( mMyself == NULL, NORMAL_EXIT );
 
-    // BUG-16313
-    sExecInfo.mPort                 = mMyself->mPort;
-    sExecInfo.mMaxReplSenderCount   = mMyself->mMaxReplSenderCount;
-    sExecInfo.mMaxReplReceiverCount = mMyself->mMaxReplReceiverCount;
+    if ( mMyself->mTCPPort != 0 )
+    {
+        sExecInfo.mPort                 = mMyself->mTCPPort;
+        sExecInfo.mMaxReplSenderCount   = mMyself->mMaxReplSenderCount;
+        sExecInfo.mMaxReplReceiverCount = mMyself->mMaxReplReceiverCount;
 
-    IDE_TEST( iduFixedTable::buildRecord( aHeader,
-                                          aMemory,
-                                          (void *)&sExecInfo )
-              != IDE_SUCCESS );
+        IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                              aMemory,
+                                              (void *)&sExecInfo )
+                  != IDE_SUCCESS );
+    }
+
+    if ( mMyself->mIBPort != 0 )
+    {
+        sExecInfo.mPort                 = mMyself->mIBPort;
+        sExecInfo.mMaxReplSenderCount   = mMyself->mMaxReplSenderCount;
+        sExecInfo.mMaxReplReceiverCount = mMyself->mMaxReplReceiverCount;
+
+        IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                              aMemory,
+                                              (void *)&sExecInfo )
+                  != IDE_SUCCESS );
+    }
 
     RP_LABEL( NORMAL_EXIT );
 
@@ -9808,8 +10325,8 @@ iduFixedTableColDesc rpcManager::gReplSenderColDesc[] =
     },
     {
         (SChar*)"NET_ERROR_FLAG",
-        offsetof(     rpxSenderInfo, mNetworkError),
-        IDU_FT_SIZEOF(rpxSenderInfo, mNetworkError),
+        offsetof(     rpxSenderInfo, mRetryError),
+        IDU_FT_SIZEOF(rpxSenderInfo, mRetryError),
         IDU_FT_TYPE_UBIGINT,
         NULL,
         0, 0,NULL // for internal use
@@ -9984,20 +10501,17 @@ IDE_RC rpcManager::buildRecordForReplSender( idvSQL              * /*aStatistics
             // BUG-16313
             sSenderInfo.mRepName      = sSender->mRepName;
             sSenderInfo.mCurrentType  = sSender->mCurrentType;
-            sSenderInfo.mNetworkError = sSender->mNetworkError;
+            sSenderInfo.mRetryError = sSender->mRetryError;
             sSenderInfo.mXSN          = sSender->mXSN;
             sSenderInfo.mCommitXSN    = sSender->mCommitXSN;
             sSenderInfo.mStatus       = sSender->mStatus;
-            sSender->getNetworkAddress( &sSenderInfo.mMyIP,
-                                        &sSenderInfo.mMyPort,
-                                        &sSenderInfo.mPeerIP,
-                                        &sSenderInfo.mPeerPort );
+            sSender->getLocalAddress( &sSenderInfo.mMyIP, &sSenderInfo.mMyPort );
+            sSender->getRemoteAddress( &sSenderInfo.mPeerIP, &sSenderInfo.mPeerPort );
             sSenderInfo.mReadLogCount = sSender->getReadLogCount();
             sSenderInfo.mSendLogCount = sSender->getSendLogCount();
             sSenderInfo.mParallelID   = sSender->mParallelID;
             sSenderInfo.mReplMode     = sSender->getMode();
-            if ( ( sSender->getIsExceedRepGap() == ID_TRUE ) ||
-                 ( sSender->mStatus == RP_SENDER_FAILBACK_NORMAL ) ||
+            if ( ( sSender->mStatus == RP_SENDER_FAILBACK_NORMAL ) ||
                  ( sSender->mStatus == RP_SENDER_FAILBACK_MASTER ) ||
                  ( sSender->mStatus == RP_SENDER_FAILBACK_SLAVE )  ||
                  ( sSender->mStatus == RP_SENDER_RETRY ) )
@@ -10030,27 +10544,17 @@ IDE_RC rpcManager::buildRecordForReplSender( idvSQL              * /*aStatistics
                 {
                     sSenderInfo.mRepName      = sSender->mChildArray[i].mRepName;
                     sSenderInfo.mCurrentType  = sSender->mChildArray[i].mCurrentType;
-                    sSenderInfo.mNetworkError = sSender->mChildArray[i].mNetworkError;
+                    sSenderInfo.mRetryError = sSender->mChildArray[i].mRetryError;
                     sSenderInfo.mXSN          = sSender->mChildArray[i].mXSN;
                     sSenderInfo.mCommitXSN    = sSender->mChildArray[i].mCommitXSN;
                     sSenderInfo.mStatus       = sSender->mChildArray[i].mStatus;
-                    sSender->mChildArray[i].getNetworkAddress(
-                        &(sSenderInfo.mMyIP),
-                        &(sSenderInfo.mMyPort),
-                        &(sSenderInfo.mPeerIP),
-                        &(sSenderInfo.mPeerPort) );
+                    sSender->mChildArray[i].getLocalAddress( &sSenderInfo.mMyIP, &sSenderInfo.mMyPort );
+                    sSender->mChildArray[i].getRemoteAddress( &sSenderInfo.mPeerIP, &sSenderInfo.mPeerPort );
                     sSenderInfo.mReadLogCount = sSender->mChildArray[i].getReadLogCount();
                     sSenderInfo.mSendLogCount = sSender->mChildArray[i].getSendLogCount();
                     sSenderInfo.mParallelID   = sSender->mChildArray[i].mParallelID;
                     sSenderInfo.mReplMode     = sSender->getMode();
-                    if ( sSender->mChildArray[i].getIsExceedRepGap() == ID_TRUE )
-                    {
-                        sSenderInfo.mActReplMode = RP_LAZY_MODE;
-                    }
-                    else
-                    {
-                        sSenderInfo.mActReplMode = sSenderInfo.mReplMode;
-                    }
+                    sSenderInfo.mActReplMode  = sSenderInfo.mReplMode;
 
                     sSenderInfo.mThroughput = sSender->mChildArray[i].getThroughput();
                     sSenderInfo.mCurrentFileNo = sSender->mChildArray[i].getCurrentFileNo();
@@ -10502,6 +11006,14 @@ iduFixedTableColDesc rpcManager::gReplReceiverParallelApplyColumnColDesc[] =
         0, 0, NULL // for internal use
     },
     {
+        (SChar*)"STATUS",
+        offsetof(     rpxReceiverParallelApplyInfo, mStatus),
+        IDU_FT_SIZEOF(rpxReceiverParallelApplyInfo, mStatus),
+        IDU_FT_TYPE_INTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
         NULL,
         0,
         0,
@@ -10946,6 +11458,14 @@ iduFixedTableColDesc rpcManager::gReplGapColDesc[] =
         0, 0,NULL // for internal use
     },    
     {
+        (SChar*)"REP_GAP_SIZE",
+        offsetof     (rpxSenderGapInfo, mSenderGAPSize),
+        IDU_FT_SIZEOF(rpxSenderGapInfo, mSenderGAPSize),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL
+    },
+    {
         NULL,
         0,
         0,
@@ -10967,6 +11487,8 @@ IDE_RC rpcManager::buildRecordForReplGap( idvSQL              * /*aStatistics*/,
     idBool             sLocked = ID_FALSE;
     idBool             sSubLocked = ID_FALSE;
     UInt               i;
+    smLSN              sSenderLSN;
+    smLSN              sCurrentLSN;
 
     IDE_TEST_CONT( mMyself == NULL, NORMAL_EXIT );
 
@@ -11010,7 +11532,17 @@ IDE_RC rpcManager::buildRecordForReplGap( idvSQL              * /*aStatistics*/,
             }
 
             sGap.mSenderSN  = sSender->mXSN;
-            sGap.mSenderGAP = sGap.mCurrentSN - sGap.mSenderSN;
+
+            SM_MAKE_LSN( sSenderLSN, sGap.mSenderSN );
+            SM_MAKE_LSN( sCurrentLSN, sGap.mCurrentSN );
+            
+            sGap.mSenderGAPSize = RP_GET_BYTE_GAP( sCurrentLSN, sSenderLSN );
+            sGap.mSenderGAP = sGap.mSenderGAPSize / RPU_REPLICATION_GAP_UNIT;
+
+            if ( sGap.mSenderGAPSize % RPU_REPLICATION_GAP_UNIT > 0 )
+            {
+                sGap.mSenderGAP++ ;
+            }
 
             IDE_ASSERT( sSender->mChildArrayMtx.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
             sSubLocked = ID_TRUE;
@@ -11055,7 +11587,16 @@ IDE_RC rpcManager::buildRecordForReplGap( idvSQL              * /*aStatistics*/,
                     IDE_ASSERT( smiGetLastValidGSN( &(sGap.mCurrentSN) ) == IDE_SUCCESS );
 
                     sGap.mSenderSN  = sSender->mChildArray[i].mXSN;
-                    sGap.mSenderGAP = sGap.mCurrentSN - sGap.mSenderSN;
+                    
+                    SM_MAKE_LSN( sSenderLSN, sGap.mSenderSN );
+                    SM_MAKE_LSN( sCurrentLSN, sGap.mCurrentSN );
+                    sGap.mSenderGAPSize = RP_GET_BYTE_GAP( sCurrentLSN, sSenderLSN );
+                    sGap.mSenderGAP = sGap.mSenderGAPSize / RPU_REPLICATION_GAP_UNIT;
+
+                    if ( sGap.mSenderGAPSize % RPU_REPLICATION_GAP_UNIT > 0 )
+                    {
+                        sGap.mSenderGAP++ ;
+                    }
 
                     if ( sSender->mChildArray[i].isLogMgrInit() == ID_TRUE )
                     {
@@ -11204,6 +11745,7 @@ IDE_RC rpcManager::buildRecordForReplSync( idvSQL              * /*aStatistics*/
 
         if ( ( sSender->isExit() != ID_TRUE ) &&
              ( sSender->getRole() != RP_ROLE_ANALYSIS ) &&
+             ( sSender->getRole() != RP_ROLE_ANALYSIS_PROPAGATION ) &&
              ( sSender->mCurrentType != RP_OFFLINE ) )
         {
             UInt k;
@@ -11888,11 +12430,10 @@ IDE_RC rpcManager::buildRecordForReplRecovery( idvSQL              * /*aStatisti
             {
                 if ( sItem->mRecoverySender->isExit() != ID_TRUE )
                 {
-                    sItem->mRecoverySender->getNetworkAddress(
-                        &(sRecoveryInfo.mRecoverySenderIP),
-                        &(sRecoveryInfo.mRecoverySenderPort),
-                        &(sRecoveryInfo.mPeerIP),
-                        &(sRecoveryInfo.mPeerPort) );
+                    sItem->mRecoverySender->getLocalAddress( &(sRecoveryInfo.mRecoverySenderIP),
+                                                             &(sRecoveryInfo.mRecoverySenderPort) );
+                    sItem->mRecoverySender->getRemoteAddress( &(sRecoveryInfo.mPeerIP),
+                                                              &(sRecoveryInfo.mPeerPort) );
 
                     sRecoveryInfo.mXSN                =
                         sItem->mRecoverySender->mXSN;
@@ -12360,6 +12901,9 @@ IDE_RC rpcManager::waitForReplicationBeforeCommit( idvSQL      * aStatistics,
                                                    const UInt    aReplModeFlag )
 {
     beginWaitEvent((idvSQL*)aStatistics, IDV_WAIT_INDEX_RP_BEFORE_COMMIT);
+
+
+    IDU_FIT_POINT( "rpcManager::waitForReplicationBeforeCommit::SLEEP" );
 
     IDE_TEST( rpcManager::waitBeforeCommitInLazy( aStatistics, aLastSN ) != IDE_SUCCESS );
 
@@ -12923,10 +13467,12 @@ IDE_RC rpcManager::prepareRecoveryItem( cmiProtocolContext * aProtocolContext,
                          "Out of Replication Recovery Items" );
         IDE_PUSH();
         (void)rpnComm::sendHandshakeAck( aProtocolContext,
+                                         &mExitFlag,
                                          RP_MSG_NOK,
                                          RP_FAILBACK_NONE,
                                          SM_SN_NULL,
-                                         sBuffer );
+                                         sBuffer,
+                                         RPU_REPLICATION_SENDER_SEND_TIMEOUT );
         IDE_POP();
         
         IDE_TEST( ID_TRUE );
@@ -13104,7 +13650,8 @@ IDE_RC rpcManager::createAndInitializeReceiver(
  *
  */
 void rpcManager::sendHandshakeAckAboutOutOfReplicationThreads(
-    cmiProtocolContext * aProtocolContext )
+    cmiProtocolContext * aProtocolContext,
+    idBool             * aExitFlag )
 {
     SChar        sBuffer[RP_ACK_MSG_LEN];
 
@@ -13112,10 +13659,12 @@ void rpcManager::sendHandshakeAckAboutOutOfReplicationThreads(
                          "Out of Replication Threads" );
     IDE_PUSH();
     (void)rpnComm::sendHandshakeAck( aProtocolContext,
+                                     aExitFlag,
                                      RP_MSG_NOK,
                                      RP_FAILBACK_NONE,
                                      SM_SN_NULL,
-                                     sBuffer );
+                                     sBuffer,
+                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT );
     IDE_POP();
 }
 
@@ -13126,7 +13675,7 @@ void rpcManager::sendHandshakeAckAboutOutOfReplicationThreads(
  * @param aMeta Sender나 PJChild가 보낸 Meta 정보
  */
 IDE_RC rpcManager::startNormalReceiverThread( cmiProtocolContext * aProtocolContext,
-                                               rpdMeta    * aMeta )
+                                              rpdMeta            * aMeta )
 {
     SChar        sRepName[QCI_MAX_NAME_LEN + 1];
     idBool       sIsReceiverReady  = ID_FALSE;
@@ -13142,7 +13691,7 @@ IDE_RC rpcManager::startNormalReceiverThread( cmiProtocolContext * aProtocolCont
     if ( getUnusedReceiverIndexFromReceiverList( &sReceiverIdx )
          != IDE_SUCCESS )
     {
-        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext );
+        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext, &mExitFlag );
 
         IDE_TEST( ID_TRUE );
     }
@@ -13244,7 +13793,7 @@ IDE_RC rpcManager::startNormalReceiverThread( cmiProtocolContext * aProtocolCont
  * @bried Start a parallel receiver thread
  */
 IDE_RC rpcManager::startParallelReceiverThread( cmiProtocolContext * aProtocolContext,
-                                                rpdMeta      * aMeta )
+                                                rpdMeta            * aMeta )
 {
     SChar        sRepName[QCI_MAX_NAME_LEN + 1];
     idBool       sIsReceiverReady  = ID_FALSE;
@@ -13262,7 +13811,7 @@ IDE_RC rpcManager::startParallelReceiverThread( cmiProtocolContext * aProtocolCo
     if ( getUnusedReceiverIndexFromReceiverList( &sReceiverIdx )
          != IDE_SUCCESS )
     {
-        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext );
+        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext, &mExitFlag );
 
         IDE_TEST( ID_TRUE );
     }
@@ -13393,7 +13942,7 @@ IDE_RC rpcManager::startParallelReceiverThread( cmiProtocolContext * aProtocolCo
  * @brief Start a offline receiver thread
  */
 IDE_RC rpcManager::startOfflineReceiverThread( cmiProtocolContext * aProtocolContext,
-                                               rpdMeta      * aMeta )
+                                               rpdMeta            * aMeta )
 {
     SChar        sRepName[QCI_MAX_NAME_LEN + 1];
     idBool       sIsReceiverReady  = ID_FALSE;
@@ -13407,7 +13956,7 @@ IDE_RC rpcManager::startOfflineReceiverThread( cmiProtocolContext * aProtocolCon
     if ( getUnusedReceiverIndexFromReceiverList( &sReceiverIdx )
          != IDE_SUCCESS )
     {
-        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext );
+        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext, &mExitFlag );
 
         IDE_TEST( ID_TRUE );
     }
@@ -13487,7 +14036,7 @@ IDE_RC rpcManager::startOfflineReceiverThread( cmiProtocolContext * aProtocolCon
  * @brief Start a sync receiver thread
  */
 IDE_RC rpcManager::startSyncReceiverThread( cmiProtocolContext * aProtocolContext,
-                                             rpdMeta      * aMeta )
+                                            rpdMeta            * aMeta )
 {
     SChar        sRepName[QCI_MAX_NAME_LEN + 1];
     idBool       sIsReceiverReady  = ID_FALSE;
@@ -13501,7 +14050,7 @@ IDE_RC rpcManager::startSyncReceiverThread( cmiProtocolContext * aProtocolContex
     if (getUnusedReceiverIndexFromReceiverList( &sReceiverIdx )
         != IDE_SUCCESS)
     {
-        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext );
+        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext, &mExitFlag );
 
         IDE_TEST( ID_TRUE );
     }
@@ -13578,7 +14127,7 @@ IDE_RC rpcManager::startSyncReceiverThread( cmiProtocolContext * aProtocolContex
  * @brief Start a recovery receiver thread
  */
 IDE_RC rpcManager::startRecoveryReceiverThread( cmiProtocolContext * aProtocolContext,
-                                                rpdMeta      * aMeta )
+                                                rpdMeta            * aMeta )
 {
     SChar        sRepName[QCI_MAX_NAME_LEN + 1];
     idBool       sIsReceiverReady  = ID_FALSE;
@@ -13592,7 +14141,7 @@ IDE_RC rpcManager::startRecoveryReceiverThread( cmiProtocolContext * aProtocolCo
     if (getUnusedReceiverIndexFromReceiverList( &sReceiverIdx )
         != IDE_SUCCESS)
     {
-        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext );
+        sendHandshakeAckAboutOutOfReplicationThreads( aProtocolContext, &mExitFlag );
 
         IDE_TEST( ID_TRUE );
     }
@@ -13667,6 +14216,32 @@ IDE_RC rpcManager::startRecoveryReceiverThread( cmiProtocolContext * aProtocolCo
     IDE_POP();
     return IDE_FAILURE;
 }
+/*----------------------------------------------------------------------------
+Name:
+    isEnableRP() -- Replication의 사용여부를 판단한다.
+Argument:
+
+Description:
+    이중화 PORT를 확인하여 이중화를 사용하는 경우 ID_TRUE, 그렇지 않으면
+    ID_FALSE을 리턴한다.
+
+*-----------------------------------------------------------------------------*/
+idBool rpcManager::isEnableRP()
+{
+    idBool sRc = ID_FALSE;
+
+    if ( RPU_REPLICATION_PORT_NO == 0 )
+    {
+        sRc = ID_FALSE;
+    }
+    else 
+    {
+        sRc = ID_TRUE;
+    }
+
+    return sRc;
+}
+
 
 /*----------------------------------------------------------------------------
 Name:
@@ -14005,10 +14580,11 @@ IDE_RC rpcManager::checkAndGiveupReplication( rpdReplications * aReplication,
                              != IDE_SUCCESS);
                     sStep = 3;
 
-                    IDE_TEST(stopSenderThread(&sSmiStmt,
-                                              aReplication->mRepName,
-                                              ID_TRUE,
-                                              NULL)
+                    IDE_TEST(stopSenderThread( &sSmiStmt,
+                                               aReplication->mRepName,
+                                               ID_TRUE,
+                                               NULL,
+                                               ID_FALSE )
                              != IDE_SUCCESS);
                     sSenderStoped = ID_TRUE;
 
@@ -14379,9 +14955,10 @@ void rpcManager::copyToRPLogBuf(idvSQL * aStatistics,
     return;
 }
 
-IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
-                                    idBool           *aIsNetworkError,
-                                    rpMsgReturn      *aResult)
+IDE_RC rpcManager::recoveryRequest( idBool           * aExitFlag,
+                                    rpdReplications  * aReplication,
+                                    idBool           * aIsNetworkError,
+                                    rpMsgReturn      * aResult)
 {
     cmiLink        * sLink = NULL;
     cmiConnectArg    sConnectArg;
@@ -14392,16 +14969,19 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
     SChar            sBuffer[RP_ACK_MSG_LEN];
     UInt             sMsgLen;
     SInt             sIndex;
-    idBool           sExitFlag = ID_FALSE;
     idBool sIsAllocCmBlock = ID_FALSE;
     idBool sIsAllocCmLink = ID_FALSE;
     cmiProtocolContext sProtocolContext;
     ULong  sDummyXSN;
+    
+    RP_SOCKET_TYPE   sConnType;
+    idBool           sIsConnected = ID_FALSE;
 
     *aIsNetworkError = ID_TRUE;
     *aResult         = RP_MSG_DISCONNECT;
 
-    IDE_ASSERT(aReplication->mRole != RP_ROLE_ANALYSIS);
+    IDE_ASSERT( ( aReplication->mRole != RP_ROLE_ANALYSIS ) &&
+                ( aReplication->mRole != RP_ROLE_ANALYSIS_PROPAGATION ) );
 
     //마지막으로 사용하던 호스트 정보 얻기
     IDE_TEST( rpdCatalog::getIndexByAddr( aReplication->mLastUsedHostNo,
@@ -14423,25 +15003,30 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
     //   set Communication information
     //----------------------------------------------------------------//
 
+    sConnType = aReplication->mReplHosts[sIndex].mConnType;
     IDU_FIT_POINT_RAISE( "rpcManager::recoveryRequest::Erratic::rpERR_ABORT_ALLOC_LINK",
                          ERR_ALLOC_LINK );
-    IDE_TEST_RAISE( cmiAllocLink( &sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_TCP )
-                    != IDE_SUCCESS, ERR_ALLOC_LINK );
-    sIsAllocCmLink = ID_TRUE;
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( sConnType == RP_SOCKET_TYPE_TCP )
     {
-        cmiLinkSetPacketTypeA5( sLink );
+        IDE_TEST_RAISE( cmiAllocLink( &sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_TCP )
+                        != IDE_SUCCESS, ERR_ALLOC_LINK );
+    }
+    else if ( sConnType == RP_SOCKET_TYPE_IB )
+    {
+        IDE_TEST_RAISE( cmiAllocLink( &sLink, CMI_LINK_TYPE_PEER_CLIENT, CMI_LINK_IMPL_IB )
+                        != IDE_SUCCESS, ERR_ALLOC_LINK );
     }
     else
     {
-        /* do nothing */
+        IDE_DASSERT( 0 );
     }
+    sIsAllocCmLink = ID_TRUE;
 
     /* Initialize Protocol Context & Alloc CM Block */
     IDE_TEST( cmiMakeCmBlockNull( &sProtocolContext ) != IDE_SUCCESS );
 
-    if ( rpuProperty::isUseV6Protocol() != ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( aReplication ) != ID_TRUE )
     {
         IDU_FIT_POINT_RAISE( "rpcManager::recoveryRequest::Erratic::rpERR_ABORT_ALLOC_CM_BLOCK",
                          ERR_ALLOC_CM_BLOCK );
@@ -14453,6 +15038,8 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
     }
     else
     {
+        cmiLinkSetPacketTypeA5( sLink );
+
         IDE_TEST_RAISE( cmiAllocCmBlockForA5( &(sProtocolContext),
                                               CMI_PROTOCOL_MODULE( RP ),
                                               (cmiLink *)sLink,
@@ -14462,9 +15049,25 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
     sIsAllocCmBlock = ID_TRUE;
 
     idlOS::memset(&sConnectArg, 0, ID_SIZEOF(cmiConnectArg));
-    sConnectArg.mTCP.mAddr = aReplication->mReplHosts[sIndex].mHostIp;
-    sConnectArg.mTCP.mPort = aReplication->mReplHosts[sIndex].mPortNo;
-    sConnectArg.mTCP.mBindAddr = NULL;
+
+
+    if ( sConnType == RP_SOCKET_TYPE_TCP )
+    {
+        sConnectArg.mTCP.mAddr = aReplication->mReplHosts[sIndex].mHostIp;
+        sConnectArg.mTCP.mPort = aReplication->mReplHosts[sIndex].mPortNo;
+        sConnectArg.mTCP.mBindAddr = NULL;
+    }
+    else if ( sConnType == RP_SOCKET_TYPE_IB )
+    {
+        sConnectArg.mIB.mAddr = aReplication->mReplHosts[sIndex].mHostIp;
+        sConnectArg.mIB.mPort = aReplication->mReplHosts[sIndex].mPortNo;
+        sConnectArg.mIB.mLatency = aReplication->mReplHosts[sIndex].mIBLatency;
+        sConnectArg.mIB.mBindAddr = NULL;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
 
     //----------------------------------------------------------------//
     // connect to Standby Server
@@ -14474,12 +15077,17 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
                                 &sWaitTimeValue,
                                 SO_REUSEADDR )
                     != IDE_SUCCESS, NORMAL_EXIT );
+    sIsConnected = ID_TRUE;
 
     //----------------------------------------------------------------//
     // connect success
     //----------------------------------------------------------------//
 
-    IDE_TEST( checkRemoteReplVersion( &sProtocolContext, &sResult, sBuffer )
+    IDE_TEST( checkRemoteNormalReplVersion( &sProtocolContext,
+                                            aExitFlag,
+                                            aReplication,
+                                            &sResult, 
+                                            sBuffer )
               != IDE_SUCCESS );
 
     switch ( sResult )
@@ -14503,10 +15111,15 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
             //BUG-20559
             aReplication->mRPRecoverySN = mMyself->mRPRecoverySN;
 
-            if ( rpnComm::sendMetaRepl( NULL, &sProtocolContext, aReplication ) == IDE_SUCCESS )
+            if ( rpnComm::sendMetaRepl( NULL, 
+                                        &sProtocolContext, 
+                                        aExitFlag,
+                                        aReplication,
+                                        RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
+                 == IDE_SUCCESS )
             {
                 if(rpnComm::recvHandshakeAck(&sProtocolContext,
-                                             &sExitFlag,
+                                             aExitFlag,
                                              (UInt *)&sResult,
                                              &sFailbackStatus,  // Dummy
                                              &sDummyXSN,
@@ -14555,12 +15168,14 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
     //----------------------------------------------------------------//
     // close Connection
     //----------------------------------------------------------------//
-    if ( rpnComm::isConnected( (cmiLink *)sLink ) == ID_TRUE )
+    if ( sIsConnected == ID_TRUE )
     {
         IDU_FIT_POINT_RAISE( "rpcManager::recoveryRequest::Erratic::rpERR_ABORT_SHUTDOWN_LINK",
                              ERR_SHUTDOWN_LINK );
         IDE_TEST_RAISE( cmiShutdownLink( sLink, CMI_DIRECTION_RDWR )
                         != IDE_SUCCESS, ERR_SHUTDOWN_LINK );
+
+        sIsConnected = ID_FALSE;
 
         IDU_FIT_POINT_RAISE( "rpcManager::recoveryRequest::Erratic::rpERR_ABORT_CLOSE_LINK",
                              ERR_CLOSE_LINK );
@@ -14613,7 +15228,7 @@ IDE_RC rpcManager::recoveryRequest(rpdReplications  *aReplication,
         (void)cmiFreeCmBlock( &sProtocolContext );
     }
 
-    if ( rpnComm::isConnected( (cmiLink *)sLink ) == ID_TRUE )
+    if ( sIsConnected == ID_TRUE )
     {
         (void)cmiShutdownLink( sLink, CMI_DIRECTION_RDWR );
         (void)cmiCloseLink( sLink );
@@ -14843,7 +15458,8 @@ IDE_RC rpcManager::startRecoverySenderThread(SChar         * aReplName,
                                aSNMapMgr,          //proj-1608
                                aActiveRPRecoverySN,//proj-1608
                                NULL,
-                               RP_DEFAULT_PARALLEL_ID)
+                               RP_DEFAULT_PARALLEL_ID,
+                               RPX_INVALID_SENDER_INDEX )
              != IDE_SUCCESS);
     sSndrIsInit  = ID_TRUE;
 
@@ -15835,7 +16451,12 @@ IDE_RC rpcManager::realizeRecoveryItem( idvSQL * aStatistics )
 IDE_RC rpcManager::writeTableMetaLog(void        * aQcStatement,
                                      smOID         aOldTableOID,
                                      smOID         aNewTableOID)
-{
+{  
+    if ( ( mMyself != NULL ) && ( qciMisc::isDDLSync( aQcStatement ) == ID_TRUE ) )
+    {
+        mMyself->mDDLSyncManager.setIsBuildNewMeta( aOldTableOID, ID_TRUE );
+    }
+
     return rpdMeta::writeTableMetaLog(aQcStatement, aOldTableOID, aNewTableOID);
 }
 
@@ -16645,15 +17266,15 @@ void rpcManager::printDebugInfo()
 
             if ( sSender->isExit() != ID_TRUE )
             {
-                sSender->getNetworkAddress( &sMyIP, &sMyPort,
-                                            &sPeerIP, &sPeerPort );
+                sSender->getLocalAddress( &sMyIP, &sMyPort );
+                sSender->getRemoteAddress( &sPeerIP, &sPeerPort );
 
                 sLog.append("================================================================================\n" );
                 sLog.append("Replication Sender Information \n" );
                 sLog.append("================================================================================\n" );
                 sLog.appendFormat("Replication Name      : %s \n",               sSender->mRepName );
                 sLog.appendFormat("Replication Type      : %u \n", sSender->mCurrentType );
-                sLog.appendFormat("Sender Network status : %u \n", sSender->mNetworkError );
+                sLog.appendFormat("Sender Network status : %u \n", sSender->mRetryError );
                 sLog.appendFormat("Sender XSN            : %llu \n", sSender->mXSN );
                 sLog.appendFormat("Sender Commit XSN     : %llu \n", sSender->mCommitXSN );
                 sLog.appendFormat("Sender Status         : %u \n", sSender->mStatus );
@@ -16679,7 +17300,7 @@ void rpcManager::printDebugInfo()
                     {
                         sLog.append("    ================================================================================\n" );
                         sLog.appendFormat("    child Sender number   : %u \n",  j );
-                        sLog.appendFormat("    Sender Network status : %u \n" , sSender->mChildArray[j].mNetworkError );
+                        sLog.appendFormat("    Sender Network status : %u \n" , sSender->mChildArray[j].mRetryError );
                         sLog.appendFormat("    Sender XSN            : %llu \n",  sSender->mChildArray[j].mXSN );
                         sLog.appendFormat("    Sender Commit XSN     : %llu \n",  sSender->mChildArray[j].mCommitXSN );
                         sLog.appendFormat("    Sender Status         : %u \n",  sSender->mChildArray[j].mStatus );
@@ -16742,20 +17363,19 @@ void rpcManager::printDebugInfo()
 /*
  *
  */
-IDE_RC rpcManager::checkRemoteReplVersion( cmiProtocolContext * aProtocolContext,
-                                           rpMsgReturn * aResult,
-                                           SChar       * aErrMsg )
+IDE_RC rpcManager::checkRemoteNormalReplVersion( cmiProtocolContext * aProtocolContext,
+                                                 idBool             * aExitFlag,
+                                                 rpdReplications    * aReplication,
+                                                 rpMsgReturn        * aResult,
+                                                 SChar              * aErrMsg )
 {
-    rpcManager  * sThis          = NULL;
-    idBool      * sExitFlagPtr   = NULL;
-    idBool        sExitDummyFlag = ID_FALSE;
     rpdVersion    sVersion;
     SInt          sFailbackStatus;
     UInt          sResult        = RP_MSG_DISCONNECT;
     ULong         sDummyXSN;
     UInt          sMsgLen;
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( aReplication ) == ID_TRUE )
     {
         sVersion.mVersion = RP_MAKE_VERSION( 6, 1, 1, REPLICATION_ENDIAN_64BIT);
     }
@@ -16764,18 +17384,12 @@ IDE_RC rpcManager::checkRemoteReplVersion( cmiProtocolContext * aProtocolContext
         sVersion.mVersion = RP_CURRENT_VERSION;
     }
 
-    (void)cmiGetOwnerForProtocolContext( aProtocolContext, (void **)&sThis );
-
-    if ( sThis != NULL )
-    {
-        sExitFlagPtr = &(sThis->mExitFlag);
-    }
-    else
-    {
-        sExitFlagPtr = &sExitDummyFlag;     // BUG-23302
-    }
-
-    if ( rpnComm::sendVersion( NULL, aProtocolContext, &sVersion ) != IDE_SUCCESS )
+    if ( rpnComm::sendVersion( NULL, 
+                               aProtocolContext, 
+                               aExitFlag,
+                               &sVersion,
+                               RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
+         != IDE_SUCCESS )
     {
         IDE_ERRLOG( IDE_RP_0 );
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRITE_SOCKET ) );
@@ -16787,7 +17401,7 @@ IDE_RC rpcManager::checkRemoteReplVersion( cmiProtocolContext * aProtocolContext
     }
 
     if ( rpnComm::recvHandshakeAck( aProtocolContext,
-                                    sExitFlagPtr,
+                                    aExitFlag,
                                     &sResult,
                                     &sFailbackStatus,    // Dummy
                                     &sDummyXSN,
@@ -16805,7 +17419,7 @@ IDE_RC rpcManager::checkRemoteReplVersion( cmiProtocolContext * aProtocolContext
         IDE_CONT( NORMAL_EXIT );
     }
 
-    IDU_FIT_POINT_RAISE( "rpcManager::checkRemoteReplVersion::Erratic::rpERR_ABORT_UNEXPECTED_HANDSHAKE_ACK",
+    IDU_FIT_POINT_RAISE( "rpcManager::checkRemoteNormalReplVersion::Erratic::rpERR_ABORT_UNEXPECTED_HANDSHAKE_ACK",
                          ERR_UNEXPECTED_HANDSHAKE_ACK );
     switch ( sResult )
     {
@@ -16894,7 +17508,7 @@ IDE_RC rpcManager::isDDLEnableOnReplicatedTable( UInt             aRequireLevel,
     IDE_EXCEPTION( ERR_REPLICATION_DDL_ENABLE_LEVEL )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_REPLICATION_DDL_ENABLE_LEVEL, 
-                                  aRequireLevel ) );
+                                  RPU_REPLICATION_DDL_ENABLE_LEVEL ) );
     }
     IDE_EXCEPTION( ERR_ECHAR_NOT_SUPPORT_REPLICATION )
     {
@@ -17298,9 +17912,11 @@ void rpcManager::sendXLog( const SChar * aLogPtr )
     smTID       sTransID = SM_NULL_TID;
     smiLogHdr   sLogHead;
     smSN        sCurrentSN = SM_SN_NULL;
-    smiLogType  sLogType;
     idBool      sIsBeginLog = ID_FALSE;
     idBool      sIsLock     = ID_FALSE;
+    rpxSender * sSender = NULL;
+    UInt        sSenderListIndex = 0;
+    rpdSenderInfo   * sSenderInfo = NULL;
 
     RP_SENDER_STATUS sSenderStatus = RP_SENDER_STOP;
 
@@ -17310,14 +17926,14 @@ void rpcManager::sendXLog( const SChar * aLogPtr )
 
     sTransID    = smiLogRec::getTransIDFromLogHdr( &sLogHead );
     sCurrentSN  = smiLogRec::getSNFromLogHdr( &sLogHead );
-    sLogType    = smiLogRec::getLogTypeFromLogHdr( &sLogHead );
     sIsBeginLog = smiLogRec::isBeginLogFromHdr( &sLogHead );
 
     IDE_TEST_CONT( sTransID == SM_NULL_TID, NORMAL_EXIT );
     
     for ( i = 0 ; i < mMyself->mMaxReplSenderCount ; i++ )
     {
-        if ( mMyself->mSenderInfoArrList[i][RP_DEFAULT_PARALLEL_ID].getReplMode() == RP_EAGER_MODE )
+        sSenderInfo = &mMyself->mSenderInfoArrList[i][RP_DEFAULT_PARALLEL_ID];
+        if ( sSenderInfo->getReplMode() == RP_EAGER_MODE )
         {
             sSenderStatus = mMyself->mSenderInfoArrList[i][RP_DEFAULT_PARALLEL_ID].getSenderStatus();
             /* BUG-42410 : Eager replication Stop/ Start를 동시에 할 경우, sender가 내려가지 않습니다.
@@ -17338,17 +17954,19 @@ void rpcManager::sendXLog( const SChar * aLogPtr )
                 }
                 idlOS::thr_yield();
 
-                sSenderStatus = mMyself->mSenderInfoArrList[i][RP_DEFAULT_PARALLEL_ID].getSenderStatus();
+                sSenderStatus = sSenderInfo->getSenderStatus();
             }
 
-            if ( ( mMyself->mSenderList[i] != NULL ) &&
+            sSenderListIndex = sSenderInfo->getSenderListIndex();
+
+            if ( ( sSenderListIndex != RPX_INVALID_SENDER_INDEX ) &&
                  ( sSenderStatus != RP_SENDER_STOP ) )
             {
-                mMyself->mSenderList[i]->sendXLog( aLogPtr,
-                                                   sLogType,
-                                                   sTransID,
-                                                   sCurrentSN,
-                                                   sIsBeginLog );
+                sSender = mMyself->mSenderList[sSenderListIndex];
+                sSender->sendXLog( aLogPtr,
+                                   sTransID,
+                                   sCurrentSN,
+                                   sIsBeginLog );
             }
             else
             {
@@ -17413,3 +18031,593 @@ ULong rpcManager::convertBufferSizeToByte( UChar aType, ULong aBufSize )
     return sBufSize;
 }
 
+IDE_RC rpcManager::ddlSyncBegin( qciStatement  * aQciStatement )
+{
+    rpcResourceManager * sResourceMgr;
+    smiStatement       * sSmiStmt;
+    volatile UInt        sStage;
+
+    IDE_TEST_CONT( mMyself == NULL, NORMAL_EXIT );    
+
+    IDE_FT_ROOT_BEGIN();
+
+    IDE_FT_BEGIN();
+    
+    sResourceMgr = NULL;
+    sSmiStmt = QCI_SMI_STMT( &( aQciStatement->statement ) );
+    sStage   = 0;
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPC,
+                                       ID_SIZEOF(rpcResourceManager),
+                                       (void**)&sResourceMgr,
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_RESOURCE_MGR );
+
+    sStage = 1;
+
+    IDE_TEST( sResourceMgr->initialize( IDU_MEM_RP_RPC ) 
+              != IDE_SUCCESS );
+    
+    sStage = 2;
+
+    IDE_TEST( mMyself->mDDLSyncManager.ddlSyncBegin( aQciStatement, 
+                                                     sResourceMgr )
+              != IDE_SUCCESS );
+
+    IDE_FT_END();
+
+    IDE_FT_ROOT_END();
+
+    RP_LABEL( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_MEMORY_ALLOC_RESOURCE_MGR );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_MEMORY_ALLOC,
+                                  "rpcManager::ddlSyncBegin",
+                                  "sResourceMgr" ) );
+    }
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_FAULT_TOLERATED ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
+    IDE_PUSH();
+
+    switch( sStage )
+    {
+        case 2:
+            sResourceMgr->finalize( &( mMyself->mDDLSyncManager ),
+                                    sSmiStmt->getTrans() );
+            /* fall through */
+        case 1:
+            (void)iduMemMgr::free( sResourceMgr );
+            sResourceMgr = NULL;
+            /* fall through */
+        default:
+            break;
+    }
+
+    IDE_POP();
+    IDE_FT_EXCEPTION_END();
+    IDE_FT_ROOT_END();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcManager::ddlSyncEnd( smiTrans * aDDLTrans )
+{
+    rpcResourceManager *sResourceMgr;
+
+    IDE_TEST_CONT( mMyself == NULL, NORMAL_EXIT );    
+    
+    IDE_FT_ROOT_BEGIN();
+    
+    IDE_FT_BEGIN();
+    
+    sResourceMgr = mMyself->mDDLSyncManager.mResourceMgr;
+    
+    IDE_TEST( mMyself->mDDLSyncManager.ddlSyncEnd( aDDLTrans )
+              != IDE_SUCCESS );
+
+    sResourceMgr->finalize( &( mMyself->mDDLSyncManager ), aDDLTrans );
+    
+    (void)iduMemMgr::free( sResourceMgr );
+    
+    IDE_FT_END();
+    
+    IDE_FT_ROOT_END();
+    
+    RP_LABEL( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_FAULT_TOLERATED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
+    IDE_PUSH();
+
+    sResourceMgr->finalize( &( mMyself->mDDLSyncManager ), aDDLTrans );
+    (void)iduMemMgr::free( sResourceMgr );
+
+    IDE_POP();
+    IDE_FT_EXCEPTION_END();
+    IDE_FT_ROOT_END();
+   
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcManager::ddlSyncBeginInternal( idvSQL              * aStatistics,
+                                         cmiProtocolContext  * aProtocolContext,
+                                         smiTrans            * aDDLTrans,
+                                         idBool              * aExitFlag,
+                                         rpdVersion          * aVersion,
+                                         SChar               * aRepName,
+                                         SChar              ** aUserName,
+                                         SChar              ** aSql )
+{
+    rpcResourceManager * sResourceMgr;
+    volatile UInt        sStage;
+
+    IDE_DASSERT( mMyself != NULL );  
+
+    IDE_ASSERT( ideEnableFaultMgr(ID_TRUE) == IDE_SUCCESS );
+
+    IDE_FT_ROOT_BEGIN();
+
+    IDE_FT_BEGIN();
+
+    sResourceMgr = NULL;
+    sStage       = 0;
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPX,
+                                       ID_SIZEOF(rpcResourceManager),
+                                       (void**)&sResourceMgr,
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_RESOURCE_MGR );
+
+    sStage = 1;
+
+    IDE_TEST( sResourceMgr->initialize( IDU_MEM_RP_RPX ) 
+              != IDE_SUCCESS );
+
+    sStage = 2;
+
+    IDE_TEST( mMyself->mDDLSyncManager.ddlSyncBeginInternal( aStatistics,
+                                                             aProtocolContext,
+                                                             aDDLTrans,
+                                                             aExitFlag,
+                                                             aVersion,
+                                                             aRepName,
+                                                             sResourceMgr,
+                                                             aUserName,
+                                                             aSql )
+              != IDE_SUCCESS );
+
+    IDE_FT_END();
+    IDE_FT_ROOT_END();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEMORY_ALLOC_RESOURCE_MGR );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_MEMORY_ALLOC,
+                                  "rpcManager::ddlSyncBeginInternal",
+                                  "sResourceMgr" ) );
+    }
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_FAULT_TOLERATED ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+        
+    IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
+    IDE_PUSH();
+
+    switch( sStage )
+    {
+        case 2:
+            sResourceMgr->finalize( &( mMyself->mDDLSyncManager ),
+                                    aDDLTrans );
+            /* fall through */
+        case 1:
+            (void)iduMemMgr::free( sResourceMgr );
+            sResourceMgr = NULL;
+            /* fall through */
+        default:
+            break;
+    }
+
+    IDE_POP();
+    IDE_FT_EXCEPTION_END();
+    IDE_FT_ROOT_END();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcManager::ddlSyncEndInternal( smiTrans * aDDLTrans )
+{
+    rpcResourceManager *sResourceMgr;
+
+    IDE_DASSERT( mMyself != NULL );    
+
+    IDE_FT_ROOT_BEGIN();
+
+    IDE_FT_BEGIN();
+    
+    sResourceMgr = mMyself->mDDLSyncManager.mResourceMgr;
+
+    IDE_TEST( mMyself->mDDLSyncManager.ddlSyncEndInternal( aDDLTrans ) != IDE_SUCCESS );
+
+    sResourceMgr->finalize( &( mMyself->mDDLSyncManager ), aDDLTrans );
+
+    (void)iduMemMgr::free( sResourceMgr );
+
+    IDE_FT_END();
+
+    IDE_FT_ROOT_END();
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_FAULT_TOLERATED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
+    IDE_PUSH();
+
+    sResourceMgr->finalize( &( mMyself->mDDLSyncManager ), aDDLTrans );
+    (void)iduMemMgr::free( sResourceMgr );
+    
+    IDE_POP();
+
+    IDE_FT_EXCEPTION_END();
+    IDE_FT_ROOT_END();
+
+    return IDE_FAILURE;
+}
+
+void rpcManager::ddlSyncException( smiTrans * aDDLTrans )
+{
+    rpcResourceManager *sResourceMgr = mMyself->mDDLSyncManager.mResourceMgr;
+
+    sResourceMgr->finalize( &( mMyself->mDDLSyncManager ), aDDLTrans );
+    (void)iduMemMgr::free( sResourceMgr );
+    sResourceMgr = NULL;
+}
+
+
+rpcDDLReplInfo * rpcManager::findDDLReplInfoByName( SChar * aRepName )
+{
+    rpcDDLReplInfo * sDDLReplInfo = NULL;
+
+    IDE_DASSERT( aRepName != NULL );
+
+    IDE_DASSERT( mMyself != NULL );
+
+    sDDLReplInfo = mMyself->mDDLSyncManager.findDDLReplInfoByName( aRepName );
+
+    return sDDLReplInfo;
+}
+
+IDE_RC rpcManager::getReplHosts( smiStatement     * aSmiStmt,
+                                 rpdReplications  * aReplications,
+                                 rpdReplHosts    ** aReplHosts )
+{
+    rpdReplHosts * sReplHosts = NULL;
+
+    IDE_DASSERT( aReplications->mHostCount > 0 );
+
+    IDU_FIT_POINT_RAISE( "rpcManager::getReplHosts::calloc::ReplHosts",
+                         ERR_MEMORY_ALLOC_HOSTS );
+    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPC,
+                                       aReplications->mHostCount,
+                                       ID_SIZEOF(rpdReplHosts),
+                                       (void**)&( sReplHosts ),
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_HOSTS );
+
+    IDE_TEST( rpdCatalog::selectReplHostsWithSmiStatement( aSmiStmt,
+                                                           aReplications->mRepName,
+                                                           sReplHosts,
+                                                           aReplications->mHostCount )
+              != IDE_SUCCESS);
+
+    *aReplHosts = sReplHosts;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEMORY_ALLOC_HOSTS );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_MEMORY_ALLOC,
+                                  "rpcManager::getReplHosts",
+                                  "sReplHosts" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if( sReplHosts != NULL )
+    {
+        (void)iduMemMgr::free( sReplHosts );
+        sReplHosts = NULL;
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcManager::buildReceiverNewMeta( smiStatement * aStatement, SChar * aRepName )
+{
+    SInt   i = 0;
+    idBool sIsRecvLock = ID_FALSE;
+    idBool sIsFind     = ID_FALSE;
+    rpxReceiver * sReceiver = NULL;
+
+    IDE_DASSERT( aRepName != NULL );
+
+    IDE_ASSERT( mMyself->mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+    sIsRecvLock = ID_TRUE;
+
+    for( i = 0; i < mMyself->mMaxReplReceiverCount; i++ )
+    {
+        if( mMyself->mReceiverList[i] != NULL )
+        {
+            if( mMyself->mReceiverList[i]->isYou( aRepName ) == ID_TRUE )
+            {
+                sReceiver = mMyself->mReceiverList[i];
+                IDE_TEST_RAISE( sReceiver->isExit() == ID_TRUE, ERR_RECEIVER_END );
+
+                IDE_TEST( sReceiver->buildNewMeta( aStatement ) != IDE_SUCCESS );
+                
+                sIsFind = ID_TRUE;
+                break;
+            }
+            else
+            {
+                /* nothing to do */
+            }
+        }
+        else
+        {
+            /* nothing to do */
+        }
+    }
+    
+    sIsRecvLock = ID_FALSE;
+    IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sIsFind == ID_FALSE, ERR_RECEIVER_END );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_RECEIVER_END )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_END_THREAD , aRepName ) );
+    }
+    IDE_EXCEPTION_END;
+
+    if( sIsRecvLock != ID_TRUE )
+    {
+        sIsRecvLock = ID_TRUE;
+        IDE_ASSERT( mMyself->mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+    }
+    else
+    {
+        /* noting to do */
+    }
+
+    if ( sReceiver != NULL )
+    {
+        sReceiver->removeNewMeta();
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    if( sIsRecvLock == ID_TRUE )
+    {
+        sIsRecvLock = ID_FALSE;
+        IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
+    }
+    else
+    {
+        /* noting to do */
+    }
+
+    return IDE_FAILURE;
+}
+
+void rpcManager::removeReceiverNewMeta( SChar * aRepName )
+{
+    SInt i = 0;
+
+    IDE_DASSERT( aRepName != NULL );
+
+    IDE_ASSERT( mMyself->mReceiverMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+
+    for( i = 0; i < mMyself->mMaxReplReceiverCount; i++ )
+    {
+        if( mMyself->mReceiverList[i] != NULL )
+        {
+            if( mMyself->mReceiverList[i]->isYou( aRepName ) == ID_TRUE )
+            {
+                mMyself->mReceiverList[i]->removeNewMeta();
+            }
+            else
+            {
+                /* nothing to do */
+            }
+        }
+        else
+        {
+            /* nothing to do */
+        }
+    }
+    
+    IDE_ASSERT( mMyself->mReceiverMutex.unlock() == IDE_SUCCESS );
+}
+
+IDE_RC rpcManager::waitLastProcessedSN( idvSQL * aStatistics,
+                                        idBool * aExitFlag,
+                                        SChar  * aRepName,
+                                        smSN     aLastSN )
+{
+    rpdSenderInfo * sSndrInfo = NULL;
+
+    IDE_DASSERT( aRepName != NULL );
+
+    sSndrInfo = getSenderInfo( aRepName );
+    IDE_TEST_RAISE( sSndrInfo == NULL, ERR_SENDER_NOT_RUNNING );
+    
+    IDE_TEST_RAISE( sSndrInfo->getSenderStatus() != RP_SENDER_RUN, ERR_SENDER_NOT_RUNNING );
+
+    IDE_TEST( sSndrInfo->waitLastProcessedSN( aStatistics,
+                                              aExitFlag,
+                                              aLastSN )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SENDER_NOT_RUNNING );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_NOT_RUNNING, aRepName ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcManager::setSkipUpdateXSN( SChar  * aRepName, idBool aIsSkip )
+{
+    rpdSenderInfo * sSndrInfo = NULL;
+
+    IDE_DASSERT( aRepName != NULL );
+
+    sSndrInfo = getSenderInfo( aRepName );
+    IDE_TEST_RAISE( sSndrInfo == NULL, ERR_SENDER_NOT_RUNNING );
+    
+    sSndrInfo->setSkipUpdateXSN( aIsSkip );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SENDER_NOT_RUNNING );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_NOT_RUNNING, aRepName ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void rpcManager::setDDLSyncCancelEvent( SChar * aRepName )
+{
+    IDE_DASSERT( mMyself != NULL );
+    IDE_DASSERT( aRepName != NULL );
+
+    mMyself->mDDLSyncManager.setDDLSyncCancelEvent( aRepName );
+}
+
+
+IDE_RC rpcManager::initRemoteData( SChar * aRepName )
+{
+    smiTrans        sTrans;
+    smiStatement   *spRootStmt;
+    smiStatement    sSmiStmt;
+    SInt            sStage  = 0;
+    smSCN           sDummySCN;
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sTrans.begin(&spRootStmt,
+                           NULL,
+                           (SMI_ISOLATION_NO_PHANTOM |
+                            SMI_TRANSACTION_NORMAL   |
+                            SMI_TRANSACTION_REPL_NONE|
+                            SMI_COMMIT_WRITE_WAIT),
+                           SMX_NOT_REPL_TX_ID)
+              != IDE_SUCCESS );
+    sStage = 2;
+
+    // update retry
+    for(;;)
+    {
+        IDE_TEST( sSmiStmt.begin( NULL,
+                                  spRootStmt,
+                                  SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+                        != IDE_SUCCESS );
+        sStage = 3;
+
+        if ( rpdCatalog::updateRemoteDataInit( &sSmiStmt, aRepName )
+             != IDE_SUCCESS )
+        {
+            IDE_TEST(ideIsRetry() != IDE_SUCCESS);
+
+            IDE_CLEAR();
+
+            sStage = 2;
+            IDE_TEST( sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE)
+                      != IDE_SUCCESS );
+
+            // retry.
+            RP_DBG_PRINTLINE();
+            continue;
+        }
+
+        IDE_TEST( sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
+                  != IDE_SUCCESS );
+        sStage = 2;
+	
+        break;
+    }
+
+    IDE_TEST( sTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    sStage = 1;
+
+    sStage = 0;
+    IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    switch(sStage)
+    {
+        case 3:
+            (void)sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE);
+        case 2:
+            IDE_ASSERT(sTrans.rollback() == IDE_SUCCESS);
+        case 1:
+            (void)sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}

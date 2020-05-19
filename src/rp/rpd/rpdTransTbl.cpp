@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdTransTbl.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpdTransTbl.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -85,8 +85,9 @@ IDE_RC rpdTransTbl::initialize(SInt aFlag, UInt aTransactionPoolSize)
                                  8,                        //align byte(default)
                                  ID_FALSE,				   //ForcePooling
                                  ID_TRUE,				   //GarbageCollection
-                                 ID_TRUE)                  //HWCacheLine
-             != IDE_SUCCESS);
+                                 ID_TRUE,                  /* HWCacheLine */
+                                 IDU_MEMPOOL_TYPE_LEGACY   /* mempool type*/) 
+              != IDE_SUCCESS);			
     sSvpPoolInit = ID_TRUE;
 
     IDU_FIT_POINT_RAISE( "rpdTransTbl::initialize::malloc::TransTbl",
@@ -253,6 +254,8 @@ void rpdTransTbl::initTransNode(rpdTransTblNode *aTransNode)
     aTransNode->mIsDDLTrans = ID_FALSE;
     IDU_LIST_INIT(&aTransNode->mItemMetaList);
 
+    aTransNode->mDDLStmtMetaLog = NULL;
+
     // BUG-28206 불필요한 Transaction Begin을 방지
     IDU_LIST_INIT(&aTransNode->mSvpList);
     aTransNode->mPSMSvp        = NULL;
@@ -407,6 +410,18 @@ void rpdTransTbl::removeTrans(smTID  aRemoteTID)
                 /* Nothing to do */
             }
 
+            if ( sTransTblNode->mDDLStmtMetaLog != NULL )
+            {
+                if ( sTransTblNode->mDDLStmtMetaLog->mLogBody != NULL )
+                {
+                    (void)iduMemMgr::free( sTransTblNode->mDDLStmtMetaLog->mLogBody );
+                    sTransTblNode->mDDLStmtMetaLog->mLogBody = NULL;
+                }
+
+                (void)iduMemMgr::free( sTransTblNode->mDDLStmtMetaLog );
+                sTransTblNode->mDDLStmtMetaLog = NULL;
+            }
+
             /* PROJ-1442 Replication Online 중 DDL 허용
              * DDL Transaction 정보 제거
              */
@@ -415,7 +430,11 @@ void rpdTransTbl::removeTrans(smTID  aRemoteTID)
                 sItemMetaEntry = (rpdItemMetaEntry *)sNode->mObj;
                 IDU_LIST_REMOVE(sNode);
 
-                (void)iduMemMgr::free(sItemMetaEntry->mLogBody);
+                if ( sItemMetaEntry->mLogBody != NULL )
+                {
+                    (void)iduMemMgr::free(sItemMetaEntry->mLogBody);
+                }
+
                 (void)iduMemMgr::free(sItemMetaEntry);
             }
         }
@@ -794,16 +813,23 @@ IDE_RC rpdTransTbl::addItemMetaEntry(smTID          aTID,
                   (const void  *)aItemMeta,
                   ID_SIZEOF(smiTableMeta));
 
-    IDU_FIT_POINT_RAISE( "rpdTransTbl::addItemMetaEntry::malloc::LogBody",
-                         ERR_MEMORY_ALLOC_LOG_BODY );
-    IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_RP_RPD,
-                                     (ULong)aItemMetaLogBodySize,
-                                     (void **)&sItemMetaEntry->mLogBody,
-                                     IDU_MEM_IMMEDIATE)
-                   != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
-    idlOS::memcpy((void *)sItemMetaEntry->mLogBody,
-                   aItemMetaLogBody,
-                   aItemMetaLogBodySize);
+    if ( aItemMetaLogBodySize > 0 )
+    {
+        IDU_FIT_POINT_RAISE( "rpdTransTbl::addItemMetaEntry::malloc::LogBody",
+                             ERR_MEMORY_ALLOC_LOG_BODY );
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPD,
+                                           (ULong)aItemMetaLogBodySize,
+                                           (void **)&sItemMetaEntry->mLogBody,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
+        idlOS::memcpy( (void *)sItemMetaEntry->mLogBody,
+                       aItemMetaLogBody,
+                       aItemMetaLogBodySize );
+    }
+    else
+    {
+        sItemMetaEntry->mLogBody = NULL;
+    }
 
     // 이후에는 실패하지 않는다
     IDU_LIST_INIT_OBJ(&(sItemMetaEntry->mNode), sItemMetaEntry);
@@ -891,7 +917,11 @@ void rpdTransTbl::removeFirstItemMetaEntry(smTID aTID)
             sItemMetaEntry = (rpdItemMetaEntry *)sNode->mObj;
             IDU_LIST_REMOVE(sNode);
 
-            (void)iduMemMgr::free((void *)sItemMetaEntry->mLogBody);
+            if ( sItemMetaEntry->mLogBody != NULL )
+            {
+                (void)iduMemMgr::free( (void *)sItemMetaEntry->mLogBody );
+            }
+
             (void)iduMemMgr::free((void *)sItemMetaEntry);
             break;
         }
@@ -911,6 +941,127 @@ idBool rpdTransTbl::existItemMeta(smTID aTID)
 
     return (IDU_LIST_IS_EMPTY(&mTransTbl[sIndex].mItemMetaList) != ID_TRUE)
            ? ID_TRUE : ID_FALSE;
+}
+
+iduList * rpdTransTbl::getItemMetaList( smTID aTID )
+{
+    UInt sIndex = aTID % mTblSize;
+
+    return &mTransTbl[sIndex].mItemMetaList;
+}
+
+idBool rpdTransTbl::existDDLStmtMetaLog( smTID aTID )
+{
+    UInt sIndex = aTID % mTblSize;
+
+    return ( mTransTbl[sIndex].mDDLStmtMetaLog != NULL )
+        ? ID_TRUE : ID_FALSE;
+}
+
+IDE_RC rpdTransTbl::setDDLStmtMetaLog( smTID            aTID,
+                                       smiDDLStmtMeta * aDDLStmtMeta,
+                                       const void     * aDDLStmtMetaLogBody,
+                                       UInt             aDDLStmtMetaLogBodySize )
+{
+    UInt sIndex = aTID % mTblSize;
+    rpdDDLStmtMetaLog * sDDLStmtMetaLog = NULL;
+
+    IDE_ASSERT( aDDLStmtMetaLogBodySize > 0 );
+    IDE_TEST_RAISE( mTransTbl[sIndex].mDDLStmtMetaLog != NULL, 
+                    ERR_ALREADY_EXIST_DDL_STMT_LOG );
+
+    IDU_FIT_POINT_RAISE( "rpdTransTbl::setDDLStmtMetaLog::malloc::sDDLStmtMetaLog",
+                         ERR_MEMORY_ALLOC_DDL_STMT_META_ENTRY );
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPD,
+                                       ID_SIZEOF(rpdDDLStmtMetaLog),
+                                       (void **)&sDDLStmtMetaLog,
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_DDL_STMT_META_ENTRY );
+    idlOS::memset( (void *)sDDLStmtMetaLog, 0, ID_SIZEOF(rpdDDLStmtMetaLog) );
+
+    idlOS::memcpy( (void *)&( sDDLStmtMetaLog->mDDLStmtMeta ),
+                   (const void  *)aDDLStmtMeta,
+                   ID_SIZEOF(smiDDLStmtMeta) );
+
+    IDU_FIT_POINT_RAISE( "rpdTransTbl::setDDLStmtMetaLog::malloc::LogBody",
+                         ERR_MEMORY_ALLOC_LOG_BODY );
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPD,
+                                       (ULong)aDDLStmtMetaLogBodySize,
+                                       (void **)&sDDLStmtMetaLog->mLogBody,
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
+    idlOS::memcpy( (void *)sDDLStmtMetaLog->mLogBody,
+                   aDDLStmtMetaLogBody,
+                   aDDLStmtMetaLogBodySize );
+
+    mTransTbl[sIndex].mDDLStmtMetaLog = sDDLStmtMetaLog;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_ALREADY_EXIST_DDL_STMT_LOG );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                                  "Already exist DDL statement log in trans table." ) )
+    }
+    IDE_EXCEPTION(ERR_MEMORY_ALLOC_DDL_STMT_META_ENTRY);
+    {
+        IDE_ERRLOG(IDE_RP_0);
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_MEMORY_ALLOC,
+                                "rpdTransTbl::setDDLStmtMetaLog",
+                                "sDDLStmtMetaLog"));
+    }
+    IDE_EXCEPTION(ERR_MEMORY_ALLOC_LOG_BODY);
+    {
+        IDE_ERRLOG(IDE_RP_0);
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_MEMORY_ALLOC,
+                                "rpdTransTbl::setDDLStmtMetaLog",
+                                "sDDLStmtMeta->mLogBody"));
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sDDLStmtMetaLog != NULL )
+    {
+        if ( sDDLStmtMetaLog->mLogBody != NULL )
+        {
+            (void)iduMemMgr::free( sDDLStmtMetaLog->mLogBody );
+            sDDLStmtMetaLog->mLogBody = NULL;
+        }
+
+        (void)iduMemMgr::free( sDDLStmtMetaLog );
+        sDDLStmtMetaLog = NULL;
+    }
+
+    IDE_POP();
+    return IDE_FAILURE;
+}
+
+void rpdTransTbl::getDDLStmtMetaLog( smTID aTID, rpdDDLStmtMetaLog ** aDDLStmtMetaLog )
+{
+    UInt sIndex = aTID % mTblSize;
+
+    *aDDLStmtMetaLog = mTransTbl[sIndex].mDDLStmtMetaLog;
+}
+
+void rpdTransTbl::removeDDLStmtMetaLog( smTID aTID )
+{
+    UInt sIndex = aTID % mTblSize;
+    rpdDDLStmtMetaLog * sDDLStmtMetaLog = NULL;
+
+    sDDLStmtMetaLog = mTransTbl[sIndex].mDDLStmtMetaLog;
+    IDE_DASSERT( sDDLStmtMetaLog != NULL );
+
+    if ( sDDLStmtMetaLog->mLogBody != NULL )
+    {
+        (void)iduMemMgr::free( sDDLStmtMetaLog->mLogBody );
+        sDDLStmtMetaLog->mLogBody = NULL;
+    }
+
+    (void)iduMemMgr::free( sDDLStmtMetaLog );
+    sDDLStmtMetaLog = NULL;
+
+    mTransTbl[sIndex].mDDLStmtMetaLog = NULL;
 }
 
 /*******************************************************************************
@@ -1157,8 +1308,9 @@ IDE_RC rpdTransTbl::initTransPool()
                                    8,                       //align byte(default)
                                    ID_FALSE,				//ForcePooling 
                                    ID_TRUE,					//GarbageCollection
-                                   ID_TRUE)                 //HWCacheLine
-             != IDE_SUCCESS);
+                                   ID_TRUE,                 /* HWCacheLine */
+                                   IDU_MEMPOOL_TYPE_LEGACY  /* mempool type*/) 
+              != IDE_SUCCESS);		
     sTransPoolInit = ID_TRUE;
     
     IDU_LIST_INIT( &mFreeTransList );
@@ -1363,7 +1515,7 @@ IDE_RC rpdTransTbl::buildRecordForReplReceiverTransTbl( void                    
 IDE_RC rpdTransTbl::allocConflictResolutionTransNode( smTID aTID )
 {
     rpdTrans * sRpdTrans = NULL;
-    SInt sIndex = getTransSlotID( aTID );
+    UInt sIndex = getTransSlotID( aTID );
 
     IDE_TEST( getTransNode( &sRpdTrans ) != IDE_SUCCESS );
 

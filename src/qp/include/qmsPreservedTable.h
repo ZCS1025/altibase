@@ -33,19 +33,58 @@ public:
     static IDE_RC initialize( qcStatement  * aStatement,
                               qmsSFWGH     * aSFWGH );
 
-    static IDE_RC addTable( qmsSFWGH     * aSFWGH,
+    static IDE_RC addTable( qcStatement  * aStatement,
+                            qmsSFWGH     * aSFWGH,
                             qmsTableRef  * aTableRef );
     
+    static IDE_RC addPredicate( qcStatement  * aStatement,
+                                qmsSFWGH     * aSFWGH,
+                                qtcNode      * aNode );
+
+    static IDE_RC addOnCondPredicate( qcStatement  * aStatement,
+                                      qmsSFWGH     * aSFWGH,
+                                      qmsFrom      * aFrom,
+                                      qtcNode      * aNode );
+
     static IDE_RC find( qcStatement  * aStatement,
                         qmsSFWGH     * aSFWGH );
 
     static IDE_RC getFirstKeyPrevTable( qmsSFWGH      * aSFWGH,
                                         qmsTableRef  ** aTableRef );
-
-    static IDE_RC checkKeyPreservedTableHints( qmsSFWGH     * aSFWGH );
     
+    static IDE_RC checkKeyPreservedTableHints( qmsSFWGH * aSFWGH );
+
+    /* BUG-46124 */
+    static IDE_RC checkAndSetPreservedInfo( qmsSFWGH    * aSFWGH,
+                                            qmsTableRef * aTableRef );
+
+    static IDE_RC searchQmsTargetForPreservedTable( qmsParseTree * aParseTree,
+                                                    qmsSFWGH     * aSFWGH,
+                                                    qmsFrom      * aFrom,
+                                                    qmsTarget    * aSearch,
+                                                    qmsTarget   ** aTarget );
+
 private:
 
+    static IDE_RC fromTreeDepInfo( qcStatement  * aStatement,
+                                   qmsFrom      * aFrom,
+                                   qcDepInfo    * aDependencies );
+    
+    static IDE_RC isUnique( qcStatement       * aStatement,
+                            qmsPreservedInfo  * aPreservedTable,
+                            qtcNode           * aFromNode,
+                            qtcNode           * aToNode,
+                            idBool            * aIsUnique );
+    
+    static IDE_RC mark( qmsPreservedInfo  * aPreservedTable,
+                        UShort              aFrom,
+                        UShort              aTo );
+
+    static IDE_RC unmarkAll( qmsPreservedInfo  * aPreservedTable );
+    
+    static IDE_RC transitivity( qmsPreservedInfo  * aPreservedTable );
+    
+    static IDE_RC checkPreservation( qmsPreservedInfo  * aPreservedTable );
 };
 
 #endif /* _O_QMS_PRESERVED_TABLE_H_ */

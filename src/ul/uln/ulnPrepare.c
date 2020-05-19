@@ -527,7 +527,9 @@ ACI_RC ulnPrepDoText(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );          //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     ACI_TEST( aTextLength <= 0 );
 
     // PROJ-1579 NCHAR
@@ -552,6 +554,11 @@ ACI_RC ulnPrepDoText(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnPrepDoText");
@@ -572,7 +579,9 @@ ACI_RC ulnPrepDoTextNchar(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );          //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     ACI_TEST( aTextLength <= 0 );
 
     // PROJ-1579 NCHAR
@@ -595,6 +604,11 @@ ACI_RC ulnPrepDoTextNchar(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnPrepDoTextNchar");
@@ -1769,10 +1783,9 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     sState = 2;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    /*
-     * BUG-28980 [CodeSonar]Null Pointer Dereference
-     */
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     sStmt = aFnContext->mHandle.mStmt;
 
     // BUG-17592
@@ -2071,8 +2084,18 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
     sState = 0;
     ulnEscapeFinalize(&sEscape);
 
+    if (ulnStmtIsSetDeferredQstr(sStmt) == ACP_TRUE)
+    {
+        ulnStmtClearDeferredQstr(sStmt);
+    }
+
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "PrepareCore");
@@ -2094,6 +2117,68 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
         default:
             break;
     }
+
+    return ACI_FAILURE;
+}
+
+
+ACI_RC ulnPrepareDefer(ulnFnContext *aFnContext,
+                       ulnStmt      *aStmt,
+                       acp_char_t   *aStatementText,
+                       acp_sint32_t  aTextLength,
+                       acp_uint8_t   aPrepareMode)
+{
+    if (aTextLength == SQL_NTS)
+    {
+        aTextLength = acpCStrLen(aStatementText, ACP_SINT32_MAX);
+    }
+
+    ACI_TEST_RAISE( ulnStmtEnsureAllocDeferredQstr(aStmt, aTextLength + 1)
+                    != ACI_SUCCESS,
+                    LABEL_NOT_ENOUGH_MEM );
+
+    acpMemCpy(aStmt->mDeferredQstr, aStatementText, aTextLength);
+    aStmt->mDeferredQstr[aTextLength] = '\0';
+    aStmt->mDeferredQstrLen = aTextLength;
+    aStmt->mDeferredPrepareMode = aPrepareMode;
+
+    aStmt->mDeferredPrepareStateFunc = *aFnContext->mStateFunc;
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
+    {
+        ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnPrepareDefer");
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulnPrepareDeferComplete(ulnFnContext *aFnContext,
+                               acp_bool_t    aFlush)
+{
+    ulnStmt *sStmt = aFnContext->mHandle.mStmt;
+
+    ACI_TEST( ulnPrepareCore(aFnContext,
+                             &(sStmt->mParentDbc->mPtContext),
+                             sStmt->mDeferredQstr,
+                             sStmt->mDeferredQstrLen,
+                             sStmt->mDeferredPrepareMode)
+              != ACI_SUCCESS );
+
+    if (aFlush == ACP_TRUE)
+    {
+        ACI_TEST( ulnFinalizeProtocolContext(aFnContext,
+                                             &(sStmt->mParentDbc->mPtContext))
+                  != ACI_SUCCESS );
+
+        ulnUpdateDeferredState(aFnContext, sStmt);
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
 }
@@ -2140,25 +2225,30 @@ SQLRETURN ulnPrepare(ulnStmt      *aStmt,
         /* Nothing */
     }
 
-    //fix BUG-17722
-    ACI_TEST( ulnPrepareCore(&sFnContext,
-                             &(aStmt->mParentDbc->mPtContext),
-                             aStatementText,
-                             aTextLength,
-                             sPrepareMode)
-              != ACI_SUCCESS );
-
-    sNeedFinPtContext = ACP_FALSE;
-    //fix BUG-17722
-    if (aStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_OFF)
+    if (aStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON)
     {
-        ACI_TEST( ulnFinalizeProtocolContext(&sFnContext,
-                                             &(aStmt->mParentDbc->mPtContext))
+        ACI_TEST( ulnPrepareDefer(&sFnContext,
+                                  aStmt,
+                                  aStatementText,
+                                  aTextLength,
+                                  sPrepareMode)
                   != ACI_SUCCESS );
+
+        sNeedFinPtContext = ACP_FALSE;
     }
     else
     {
-        /* Do nothing */
+        ACI_TEST( ulnPrepareCore(&sFnContext,
+                                 &(aStmt->mParentDbc->mPtContext),
+                                 aStatementText,
+                                 aTextLength,
+                                 sPrepareMode)
+                  != ACI_SUCCESS );
+
+        sNeedFinPtContext = ACP_FALSE;
+        ACI_TEST( ulnFinalizeProtocolContext(&sFnContext,
+                                             &(aStmt->mParentDbc->mPtContext))
+                  != ACI_SUCCESS );
     }
 
     sNeedExit = ACP_FALSE;

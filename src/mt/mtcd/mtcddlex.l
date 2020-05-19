@@ -231,6 +231,18 @@ SS          {
 IW          {
                 return MTD_DATE_FORMAT_IW;
             }
+IYYY        {
+                return MTD_DATE_FORMAT_IYYY;
+            }
+IYY         {
+                return MTD_DATE_FORMAT_IYY;
+            }
+IY          {
+                return MTD_DATE_FORMAT_IY;
+            }
+I           {
+                return MTD_DATE_FORMAT_I;
+            }
 WW2         {
                 return MTD_DATE_FORMAT_WW2;
             }

@@ -33,6 +33,8 @@ public class Picl {
     public static boolean isSupported = true;
     public static boolean isFileExist = true;
 
+    public static String mPiclLibName = null; // BUG-46607
+
     static {
 		// Library Naming Rule
 		// In Unix
@@ -42,8 +44,17 @@ public class Picl {
 		// In HPUX
 		// libPICL-arthitecture-os_name-version.sl
     	String fileSeparator = System.getProperty("file.separator");
+        String sPiclLibName = System.getProperty("picl"); // BUG-46607
 		try {
-			System.load(System.getProperty("user.dir")+fileSeparator+"lib"+fileSeparator+LibLoader.getLibName());
+            if (sPiclLibName == null)
+            {
+    			mPiclLibName = LibLoader.getLibName();
+            }
+            else
+            {
+                mPiclLibName = sPiclLibName;
+            }
+			System.load(System.getProperty("user.dir")+fileSeparator+"lib"+fileSeparator+mPiclLibName);
 			Picl.isLoad = true;
 		} catch(OsNotSupportedException ex) {
 			isSupported = false;

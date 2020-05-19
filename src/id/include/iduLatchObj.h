@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduLatchObj.h 71683 2015-07-09 02:55:50Z djin $
+ * $Id: iduLatchObj.h 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 /* ------------------------------------------------
@@ -94,6 +94,7 @@ public:
         mWriteMisses    = 0;
         mSpinCount      = 0;
         mSleepCount     = 0;
+        mWriteThreadID  = 0;
 
         return IDE_SUCCESS;
     }
@@ -103,7 +104,8 @@ public:
     virtual IDE_RC tryLockWrite(idBool* aSuccess, void* aStatSQL = NULL) = 0;
     virtual IDE_RC lockRead(void*  aStatSQL, void* aWeArgs) = 0;
     virtual IDE_RC lockWrite(void* aStatSQL, void* aWeArgs) = 0;
-    virtual IDE_RC unlock() = 0;
+    virtual IDE_RC unlock( idBool* aIsUnlockedAll = NULL ) = 0;
+    virtual IDE_RC unlockWriteAll() = 0;
 };
 
 class iduLatchPosix : public iduLatchObj
@@ -118,7 +120,8 @@ public:
     virtual IDE_RC tryLockWrite(idBool* aSuccess, void* aStatSQL = NULL);
     virtual IDE_RC lockRead(void*  aStatSQL, void* aWeArgs);
     virtual IDE_RC lockWrite(void* aStatSQL, void* aWeArgs);
-    virtual IDE_RC unlock();
+    virtual IDE_RC unlock( idBool* aIsUnlockedAll = NULL );
+    virtual IDE_RC unlockWriteAll();
 };
 
 class iduLatchPosix2 : public iduLatchObj
@@ -134,7 +137,8 @@ public:
     virtual IDE_RC tryLockWrite(idBool* aSuccess, void* aStatSQL = NULL);
     virtual IDE_RC lockRead(void*  aStatSQL, void* aWeArgs);
     virtual IDE_RC lockWrite(void* aStatSQL, void* aWeArgs);
-    virtual IDE_RC unlock();
+    virtual IDE_RC unlock( idBool* aIsUnlockedAll = NULL );
+    virtual IDE_RC unlockWriteAll();
 };
 
 class iduLatchNative : public iduLatchObj
@@ -150,7 +154,8 @@ public:
     virtual IDE_RC tryLockWrite(idBool* aSuccess, void* aStatSQL = NULL);
     virtual IDE_RC lockRead(void*  aStatSQL, void* aWeArgs);
     virtual IDE_RC lockWrite(void* aStatSQL, void* aWeArgs);
-    virtual IDE_RC unlock();
+    virtual IDE_RC unlock( idBool* aIsUnlockedAll = NULL );
+    virtual IDE_RC unlockWriteAll();
 
     void sleepForLatchValueChange(SInt aFlag);
 };
@@ -167,7 +172,8 @@ public:
     virtual IDE_RC tryLockWrite(idBool* aSuccess, void* aStatSQL = NULL);
     virtual IDE_RC lockRead(void*  aStatSQL, void* aWeArgs);
     virtual IDE_RC lockWrite(void* aStatSQL, void* aWeArgs);
-    virtual IDE_RC unlock();
+    virtual IDE_RC unlock( idBool* aIsUnlockedAll = NULL );
+    virtual IDE_RC unlockWriteAll();
 
     void sleepForLatchValueChange(SInt aFlag);
 };

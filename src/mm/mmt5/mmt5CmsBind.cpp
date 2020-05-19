@@ -1068,9 +1068,8 @@ IDE_RC mmtServiceThread::paramDataInProtocolA5(cmiProtocolContext *aProtocolCont
     //     pstmt.execute(); => bindDataIn 할때 segv
     if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_BIND_FLAG) == IDV_PROF_TYPE_BIND_FLAG)
     {
-        smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
-        smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
-
+        mmcTransObj *sTrans = sSession->getTransPtr(sStatement);
+        smTID sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
 
         idvProfile::writeBindA5( (void *)(sBindContext.mSource),
                 sStatement->getSessionID(),
@@ -1248,8 +1247,8 @@ IDE_RC mmtServiceThread::paramDataInListProtocolA5(cmiProtocolContext *aProtocol
             // bug-25312: prepare 이후에 autocommit을 off에서 on으로 변경하고
             // bind 하면 stmt->mTrans 가 null이어서 segv.
             // 변경: stmt->mTrans를 구하여 null이면 TransID로 0을 넘기도로 수정
-            smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
-            smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
+            mmcTransObj *sTrans = sSession->getTransPtr(sStatement);
+            smTID sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
 
             for ( j = 0; j < sParamCount; j++)
             {

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTouchPageList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTouchPageList.cpp 84923 2019-02-25 04:54:35Z djin $
  **********************************************************************/
 
 # include <idu.h>
@@ -30,6 +30,7 @@
 
 iduMemPool  smxTouchPageList::mMemPool;
 UInt        smxTouchPageList::mTouchNodeSize;
+UInt        smxTouchPageList::mTouchPageCntByNode;
 
 
 /***********************************************************************
@@ -43,10 +44,26 @@ UInt        smxTouchPageList::mTouchNodeSize;
  ***********************************************************************/
 IDE_RC smxTouchPageList::initializeStatic()
 {
-    mTouchNodeSize =
-        ID_SIZEOF( smxTouchInfo ) *
-        ( smuProperty::getTransTouchPageCntByNode() - 1 ) +
-        ID_SIZEOF( smxTouchNode );
+    UInt sPowerOfTwo;
+
+    mTouchPageCntByNode = smuProperty::getTransTouchPageCntByNode();
+
+    mTouchNodeSize = ( ID_SIZEOF( smxTouchInfo ) * ( mTouchPageCntByNode - 1 ) ) +
+                     ID_SIZEOF( smxTouchNode );
+
+    /* BUG-46434
+       mempool에서 IDU_MEMPOOL_TYPE_TIGHT를 사용하기 위해서는
+       size, align 값을 2^n 값으로 주어야한다. 
+       2^n 값이 되도록 mTouchNodeSize를 수정한다. */
+
+    /* 1. mTouchNodeSize 보다 같거나 큰 2^n 값 구하기 */
+    sPowerOfTwo = smuUtility::getPowerofTwo( mTouchNodeSize );
+
+    /* 2. smxTouchInfo를 더 추가할수 있는지 계산 */
+    mTouchPageCntByNode += ( ( sPowerOfTwo - mTouchNodeSize ) / ID_SIZEOF( smxTouchInfo ) );
+
+    /* 3. mTouchNodeSize 값을 갱신한다. */
+    mTouchNodeSize = sPowerOfTwo;
 
     IDE_TEST( mMemPool.initialize(
                   IDU_MEM_SM_TRANSACTION_DISKPAGE_TOUCHED_LIST,
@@ -59,8 +76,9 @@ IDE_RC smxTouchPageList::initializeStatic()
                   mTouchNodeSize,	/* AlignByte */
                   ID_FALSE,			/* ForcePooling */
                   ID_TRUE,			/* GarbageCollection */
-                  ID_TRUE )			/* HWCacheLine */
-              != IDE_SUCCESS );
+                  ID_TRUE,          /* HWCacheLine */
+                  IDU_MEMPOOL_TYPE_TIGHT  /* mempool type */ ) 
+              != IDE_SUCCESS );			
 
     return IDE_SUCCESS;
 
@@ -246,7 +264,7 @@ IDE_RC smxTouchPageList::add( scSpaceID     aSpaceID,
     }
     else
     {
-        if ( sCurNode->mPageCnt >= smuProperty::getTransTouchPageCntByNode() )
+        if ( sCurNode->mPageCnt >= mTouchPageCntByNode )
         {
             if ( mItemCnt < mMaxCachePageCnt )
             {

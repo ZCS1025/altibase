@@ -18,18 +18,20 @@ package Altibase.jdbc.driver.util;
 
 public final class AltibaseEnvironmentVariables
 {
-    public static final String ENV_ALTIBASE_HOME                  = "ALTIBASE_HOME";
-    public static final String ENV_ALTIBASE_PORT                  = "ALTIBASE_PORT_NO";
-    public static final String ENV_ALTIBASE_SSL_PORT              = "ALTIBASE_SSL_PORT_NO";
-    public static final String ENV_ALTIBASE_SSL_TEST              = "ALTIBASE___SSL_TEST";
-    public static final String ENV_ALTIBASE_TIME_ZONE             = "ALTIBASE_TIME_ZONE";
-    public static final String ENV_ALTIBASE_NLS_USE               = "ALTIBASE_NLS_USE";
-    public static final String ENV_ALTIBASE_NCHAR_LITERAL_REPLACE = "ALTIBASE_NLS_NCHAR_LITERAL_REPLACE";
-    public static final String ENV_ALTIBASE_DATE_FORMAT           = "ALTIBASE_DATE_FORMAT";
-    public static final String ENV_RESPONSE_TIMEOUT               = "ALTIBASE_RESPONSE_TIMEOUT";
-    public static final String ENV_HOME                           = "HOME";
-    public static final String ENV_ALTIBASE_JDBC_TRACE            = "ALTIBASE_JDBC_TRACE";
-    public static final String ENV_SOCK_RCVBUF_BLOCK_RATIO        = "ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO"; // PROJ-2625
+    public static final String ENV_ALTIBASE_HOME                    = "ALTIBASE_HOME";
+    public static final String ENV_ALTIBASE_PORT                    = "ALTIBASE_PORT_NO";
+    public static final String ENV_ALTIBASE_SSL_PORT                = "ALTIBASE_SSL_PORT_NO";
+    public static final String ENV_ALTIBASE_IB_PORT                 = "ALTIBASE_IB_PORT_NO";
+    public static final String ENV_ALTIBASE_CONNTYPE_FORCE_FOR_TEST = "ALTIBASE_CONNTYPE_FORCE_FOR_TEST";
+    public static final String ENV_ALTIBASE_HOST_FORCE_FOR_TEST     = "ALTIBASE_HOST_FORCE_FOR_TEST";
+    public static final String ENV_ALTIBASE_TIME_ZONE               = "ALTIBASE_TIME_ZONE";
+    public static final String ENV_ALTIBASE_NLS_USE                 = "ALTIBASE_NLS_USE";
+    public static final String ENV_ALTIBASE_NCHAR_LITERAL_REPLACE   = "ALTIBASE_NLS_NCHAR_LITERAL_REPLACE";
+    public static final String ENV_ALTIBASE_DATE_FORMAT             = "ALTIBASE_DATE_FORMAT";
+    public static final String ENV_RESPONSE_TIMEOUT                 = "ALTIBASE_RESPONSE_TIMEOUT";
+    public static final String ENV_HOME                             = "HOME";
+    public static final String ENV_ALTIBASE_JDBC_TRACE              = "ALTIBASE_JDBC_TRACE";
+    public static final String ENV_SOCK_RCVBUF_BLOCK_RATIO          = "ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO"; // PROJ-2625
 
     private AltibaseEnvironmentVariables()
     {
@@ -65,6 +67,11 @@ public final class AltibaseEnvironmentVariables
         return RuntimeEnvironmentVariables.getIntVariable(ENV_ALTIBASE_SSL_PORT, aDefaultSslPort);
     }
 
+    public static int getIBPort(int aDefaultIBPort)
+    {
+        return RuntimeEnvironmentVariables.getIntVariable(ENV_ALTIBASE_IB_PORT, aDefaultIBPort);
+    }
+
     public static String getTimeZone()
     {
         return RuntimeEnvironmentVariables.getVariable(ENV_ALTIBASE_TIME_ZONE);
@@ -90,9 +97,14 @@ public final class AltibaseEnvironmentVariables
         return RuntimeEnvironmentVariables.getVariable(ENV_ALTIBASE_DATE_FORMAT);
     }
     
-    public static boolean getSslTest()
+    public static String getConnTypeForceForTest()
     {
-        return RuntimeEnvironmentVariables.getBooleanVariable(ENV_ALTIBASE_SSL_TEST);
+        return RuntimeEnvironmentVariables.getVariable(ENV_ALTIBASE_CONNTYPE_FORCE_FOR_TEST);
+    }
+
+    public static String getHostForceForTest()
+    {
+        return RuntimeEnvironmentVariables.getVariable(ENV_ALTIBASE_HOST_FORCE_FOR_TEST);
     }
 
     public static int getResponseTimeout()

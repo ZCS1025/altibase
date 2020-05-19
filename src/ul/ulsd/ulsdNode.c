@@ -24,85 +24,145 @@
 
 #include <ulsd.h>
 
-ACI_RC ulsdCreateNodeInfo(ulsdNodeInfo     **aShardNodeInfo,
-                          acp_uint32_t       aNodeId,
-                          acp_char_t        *aNodeName,
-                          acp_char_t        *aServerIP,
-                          acp_uint16_t       aPortNo,
-                          acp_char_t        *aAlternateServerIP,
-                          acp_uint16_t       aAlternatePortNo)
+void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
+                      acp_uint32_t   aNodeId,
+                      acp_char_t   * aNodeName,
+                      acp_char_t   * aServerIP,
+                      acp_uint16_t   aPortNo,
+                      acp_char_t   * aAlternateServerIP,
+                      acp_uint16_t   aAlternatePortNo )
 {
-    ACI_TEST(ACP_RC_NOT_SUCCESS(acpMemAlloc((void**)aShardNodeInfo,
-                                            ACI_SIZEOF(ulsdNodeInfo))));
+    aShardNodeInfo->mNodeId = aNodeId;
 
-    (*aShardNodeInfo)->mNodeId = aNodeId;
-    acpMemSet((*aShardNodeInfo)->mNodeName,
-              0,
-              ACI_SIZEOF((*aShardNodeInfo)->mNodeName));
-    acpMemCpy((void *)(*aShardNodeInfo)->mNodeName,
-              (const void *)aNodeName,
-              acpCStrLen(aNodeName, ULSD_MAX_NODE_NAME_LEN));
+    acpMemSet( aShardNodeInfo->mNodeName,
+               0,
+               ACI_SIZEOF( aShardNodeInfo->mNodeName ) );
+    acpMemCpy( (void *)aShardNodeInfo->mNodeName,
+               (const void *)aNodeName,
+               acpCStrLen( aNodeName, ULSD_MAX_NODE_NAME_LEN ) );
 
-    acpMemSet((*aShardNodeInfo)->mServerIP,
-              0,
-              ACI_SIZEOF((*aShardNodeInfo)->mServerIP));
-    acpMemCpy((void *)(*aShardNodeInfo)->mServerIP,
-              (const void *)aServerIP,
-              acpCStrLen(aServerIP, ULSD_MAX_SERVER_IP_LEN));
-    (*aShardNodeInfo)->mPortNo = aPortNo;
+    acpMemSet( aShardNodeInfo->mServerIP,
+               0,
+               ACI_SIZEOF( aShardNodeInfo->mServerIP ) );
+    acpMemCpy( (void *)aShardNodeInfo->mServerIP,
+               (const void *)aServerIP,
+               acpCStrLen( aServerIP, ULSD_MAX_SERVER_IP_LEN ) );
 
-    acpMemSet((*aShardNodeInfo)->mAlternateServerIP,
-              0,
-              ACI_SIZEOF((*aShardNodeInfo)->mAlternateServerIP));
-    acpMemCpy((void *)(*aShardNodeInfo)->mAlternateServerIP,
-              (const void *)aAlternateServerIP,
-              acpCStrLen(aAlternateServerIP, ULSD_MAX_SERVER_IP_LEN));
-    (*aShardNodeInfo)->mAlternatePortNo = aAlternatePortNo;
+    aShardNodeInfo->mPortNo = aPortNo;
 
-    (*aShardNodeInfo)->mNodeDbc = SQL_NULL_HANDLE;
-    (*aShardNodeInfo)->mTouched = ACP_FALSE;
-    (*aShardNodeInfo)->mClosedOnExecute = ACP_FALSE;
+    acpMemSet( aShardNodeInfo->mAlternateServerIP,
+               0,
+               ACI_SIZEOF( aShardNodeInfo->mAlternateServerIP ) );
+    acpMemCpy( (void *)aShardNodeInfo->mAlternateServerIP,
+               (const void *)aAlternateServerIP,
+               acpCStrLen( aAlternateServerIP, ULSD_MAX_SERVER_IP_LEN ) );
+
+    aShardNodeInfo->mAlternatePortNo = aAlternatePortNo;
+
+    return;
+}
+
+ACI_RC ulsdApplyNodesInfo( ulnFnContext  * aFnContext,
+                           ulsdNodeInfo ** aNodeInfo,
+                           acp_uint16_t    aNodeCount,
+                           acp_uint64_t    aShardPin,
+                           acp_uint64_t    aShardMetaNumber,
+                           acp_uint8_t     aIsTestEnable )
+{
+    ulnDbc        * sMetaDbc        = ulnFnContextGetDbc( aFnContext );
+    ulsdDbc       * sShard          = sMetaDbc->mShardDbcCxt.mShardDbc;
+    ulsdNodeInfo  * sRemoveNodeInfo = NULL;
+    acp_uint16_t    i               = 0;
+    acp_uint16_t    j               = 0;
+
+    if ( ulnDbcGetShardMetaNumber( sMetaDbc ) < aShardMetaNumber )
+    {
+        if ( aIsTestEnable == 0 )
+        {
+            sShard->mIsTestEnable = ACP_FALSE;
+        }
+        else
+        {
+            sShard->mIsTestEnable = ACP_TRUE;
+        }
+
+        ulnDbcSetShardPin( sMetaDbc, aShardPin );
+        ulnDbcSetShardMetaNumber( sMetaDbc, aShardMetaNumber );
+
+        if ( sShard->mNodeInfo != NULL )
+        {
+            /* Ex) Node ID 1, 3 제거 & Node ID 4, 5 추가
+             *  기존 Node ID : ( 1, 2, 3 )
+             *  신규 Node ID :    ( 2,    4, 5 )
+             */
+
+            /* Node 제거 */
+            for ( i = 0, j = 0; i < sShard->mNodeCount; i++ )
+            {
+                if ( ( j < aNodeCount ) &&
+                     ( sShard->mNodeInfo[i]->mNodeId == aNodeInfo[j]->mNodeId ) )
+                {
+                    j++;
+                }
+                else
+                {
+                    sRemoveNodeInfo = sShard->mNodeInfo[i];
+                    ulsdRemoveNode( sMetaDbc,
+                                    sRemoveNodeInfo );
+                    acpMemFree( (void *)sRemoveNodeInfo );
+                    i--;
+                }
+            }
+
+            /* Node 추가 */
+            for ( ; j < aNodeCount; j++ )
+            {
+                ACI_TEST( ulsdAddNode( aFnContext,
+                                       sMetaDbc,
+                                       aNodeInfo[j] )
+                          != SQL_SUCCESS );
+                aNodeInfo[j] = NULL;
+            }
+
+            ACE_DASSERT( sShard->mNodeCount == aNodeCount );
+        }
+        else
+        {
+            sShard->mNodeCount = aNodeCount;
+            sShard->mNodeInfo  = aNodeInfo;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sShard->mNodeInfo != aNodeInfo )
+    {
+        for ( i = 0; i < aNodeCount; i++ )
+        {
+            if ( aNodeInfo[i] != NULL )
+            {
+                acpMemFree( (void *)aNodeInfo[i] );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
+        acpMemFree( (void *)aNodeInfo );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return ACI_SUCCESS;
 
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
-}
-
-ACI_RC ulsdUpdateNodeInfo(ulsdNodeInfo     **aShardNodeInfo,
-                          acp_uint32_t       aNodeId,
-                          acp_char_t        *aNodeName,
-                          acp_char_t        *aServerIP,
-                          acp_uint16_t       aPortNo,
-                          acp_char_t        *aAlternateServerIP,
-                          acp_uint16_t       aAlternatePortNo)
-{
-    (*aShardNodeInfo)->mNodeId = aNodeId;
-    acpMemSet((*aShardNodeInfo)->mNodeName,
-              0,
-              ACI_SIZEOF((*aShardNodeInfo)->mNodeName));
-    acpMemCpy((void *)(*aShardNodeInfo)->mNodeName,
-              (const void *)aNodeName,
-              acpCStrLen(aNodeName, ULSD_MAX_NODE_NAME_LEN));
-
-    acpMemSet((*aShardNodeInfo)->mServerIP,
-              0,
-              ACI_SIZEOF((*aShardNodeInfo)->mServerIP));
-    acpMemCpy((void *)(*aShardNodeInfo)->mServerIP,
-              (const void *)aServerIP,
-              acpCStrLen(aServerIP, ULSD_MAX_SERVER_IP_LEN));
-    (*aShardNodeInfo)->mPortNo = aPortNo;
-
-    acpMemSet((*aShardNodeInfo)->mAlternateServerIP,
-              0,
-              ACI_SIZEOF((*aShardNodeInfo)->mAlternateServerIP));
-    acpMemCpy((void *)(*aShardNodeInfo)->mAlternateServerIP,
-              (const void *)aAlternateServerIP,
-              acpCStrLen(aAlternateServerIP, ULSD_MAX_SERVER_IP_LEN));
-    (*aShardNodeInfo)->mAlternatePortNo = aAlternatePortNo;
-
-    return ACI_SUCCESS;
 }
 
 SQLRETURN ulsdNodeInfoFree(ulsdNodeInfo *aShardNodeInfo)
@@ -183,7 +243,8 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
         {
             sHashMax = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardRange.mHashMax;
 
-            if ( aHashValue <= sHashMax )
+            /* BUG-46288 */
+            if ( aHashValue < sHashMax )
             {
                 for ( j = i; j < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; j++ )
                 {
@@ -257,7 +318,8 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
                 }
             }
 
-            if ( ( sNewPriorGroup == ACP_TRUE ) && ( aHashValue <= sHashMax ) )
+            /* BUG-46288 */
+            if ( ( sNewPriorGroup == ACP_TRUE ) && ( aHashValue < sHashMax ) )
             {
                 ACI_TEST_RAISE( sRangeIndexCount >= 1000, LABEL_RANGE_MAX_ERROR );
 
@@ -277,7 +339,7 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
         /* default node가 있다면 설정한다 */
-        ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX,
+        ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
         *aHasDefaultNode = ACP_TRUE;
@@ -320,7 +382,7 @@ SQLRETURN ulsdGetRangeIndexFromClone(ulnStmt         *aMetaStmt,
     acp_uint16_t    sRangeIndex;
     acp_uint16_t    i;
 
-    acp_uint16_t    sTouchNode;
+    acp_uint32_t    sTouchNode;
     acp_bool_t      sIsFound = ACP_FALSE;
 
     acp_uint32_t     sSeed;
@@ -413,7 +475,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
             sRangeValue1.flag   = MTD_OFFSET_USELESS;
 
             if ( aShardKeyModule->logicalCompare( &sKeyValue,
-                                                  &sRangeValue1 ) <= 0 )
+                                                  &sRangeValue1 ) < 0 )
             {
                 for ( j = i; j < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; j++ )
                 {
@@ -497,7 +559,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
 
             if ( ( sNewPriorGroup == ACP_TRUE ) &&
                  ( aShardKeyModule->logicalCompare( &sKeyValue,
-                                                    &sRangeValue1 ) <= 0 ) )
+                                                    &sRangeValue1 ) < 0 ) )
             {
                 ACI_TEST_RAISE( sRangeIndexCount >= 1000, LABEL_RANGE_MAX_ERROR );
 
@@ -517,7 +579,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
         /* default node가 있다면 설정한다 */
-        ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX,
+        ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
         *aHasDefaultNode = ACP_TRUE;
@@ -612,7 +674,7 @@ SQLRETURN ulsdGetRangeIndexFromList(ulnStmt        *aMetaStmt,
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
         /* default node가 있다면 설정한다 */
-        ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX,
+        ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
         *aHasDefaultNode = ACP_TRUE;
@@ -645,4 +707,194 @@ SQLRETURN ulsdGetRangeIndexFromList(ulnStmt        *aMetaStmt,
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
+}
+
+SQLRETURN ulsdAddNodeToDbc( ulnFnContext * aFnContext,
+                            ulnDbc       * aMetaDbc,
+                            ulsdNodeInfo * aNewNodeInfo )
+{
+    acp_list_node_t * sIterator = NULL;
+    ulnStmt         * sStmt     = NULL;
+    SQLRETURN         sRet      = SQL_ERROR;
+
+    ACP_LIST_ITERATE( & aMetaDbc->mStmtList, sIterator )
+    {
+        sStmt = (ulnStmt *)sIterator;
+
+        sRet = ulsdAddNodeToStmt( aFnContext,
+                                  sStmt,
+                                  aNewNodeInfo );
+        ACI_TEST( sRet != SQL_SUCCESS );
+    }
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return sRet;
+}
+
+void ulsdRemoveNodeFromDbc( ulnDbc       * aMetaDbc,
+                            ulsdNodeInfo * aRemoveNodeInfo )
+{
+    acp_list_node_t * sIterator = NULL;
+    ulnStmt         * sStmt     = NULL;
+
+    ACP_LIST_ITERATE( & aMetaDbc->mStmtList, sIterator )
+    {
+        sStmt = (ulnStmt *)sIterator;
+
+        ulsdRemoveNodeFromStmt( sStmt, aRemoveNodeInfo );
+    }
+
+    return;
+}
+
+SQLRETURN ulsdAddNode( ulnFnContext * aFnContext,
+                       ulnDbc       * aMetaDbc,
+                       ulsdNodeInfo * aNewNodeInfo )
+{
+    ulsdDbc         * sShard       = NULL;
+    ulsdNodeInfo   ** sNodeInfoArr = NULL;
+    SQLRETURN         sRet         = SQL_ERROR;
+    acp_uint16_t      i            = 0;
+
+    ulsdGetShardFromDbc( aMetaDbc, &sShard );
+
+    aNewNodeInfo->mNodeDbc = NULL;
+
+    ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( acpMemCalloc( (void **) & sNodeInfoArr,
+                                                      sShard->mNodeCount + 1,
+                                                      ACI_SIZEOF(ulsdNodeInfo *) ) ),
+                    LABEL_NOT_ENOUGH_MEMORY );
+
+    sRet = ulsdAllocHandleNodeDbc( aFnContext,
+                                   aMetaDbc->mParentEnv,
+                                   & aNewNodeInfo->mNodeDbc );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    ulsdInitalizeNodeDbc( aNewNodeInfo->mNodeDbc, aMetaDbc );
+
+    sRet = ulsdSetConnectAttrOnNode( aFnContext,
+                                     & aMetaDbc->mShardDbcCxt,
+                                     aNewNodeInfo );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    sRet = ulsdDriverConnectToNodeInternal( aMetaDbc,
+                                            aFnContext,
+                                            aNewNodeInfo,
+                                            sShard->mIsTestEnable );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    sRet = ulsdAddNodeToDbc( aFnContext,
+                             aMetaDbc,
+                             aNewNodeInfo );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    for ( i = 0; i < sShard->mNodeCount; i++ )
+    {
+        sNodeInfoArr[i] = sShard->mNodeInfo[i];
+    }
+    sNodeInfoArr[sShard->mNodeCount] = aNewNodeInfo;
+
+    acpMemFree( (void *)sShard->mNodeInfo );
+    sShard->mNodeInfo = sNodeInfoArr;
+
+    sShard->mNodeCount++;
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
+    {
+        ulnError( aFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "AddNode",
+                  "Memory allocation error." );
+
+        sRet = ULN_FNCONTEXT_GET_RC( aFnContext );
+    }
+    ACI_EXCEPTION_END;
+
+    if ( aNewNodeInfo->mNodeDbc != NULL )
+    {
+        if ( ulnDbcIsConnected( aNewNodeInfo->mNodeDbc ) == ACP_TRUE )
+        {
+            (void)ulnDisconnectLocal( aNewNodeInfo->mNodeDbc );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        (void)ulnFreeHandle( SQL_HANDLE_DBC, aNewNodeInfo->mNodeDbc );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sNodeInfoArr != NULL )
+    {
+        acpMemFree( (void *)sNodeInfoArr );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sRet;
+}
+
+void ulsdRemoveNode( ulnDbc       * aMetaDbc,
+                     ulsdNodeInfo * aRemoveNodeInfo )
+{
+    ulsdDbc         * sShard = NULL;
+    SQLRETURN         sRet   = SQL_ERROR;
+    acp_uint16_t      i      = 0;
+
+    ulsdGetShardFromDbc( aMetaDbc, &sShard );
+
+    ulsdRemoveNodeFromDbc( aMetaDbc, aRemoveNodeInfo );
+
+    sRet = ulnDisconnectLocal( aRemoveNodeInfo->mNodeDbc );
+    if ( sRet != SQL_SUCCESS )
+    {
+        SHARD_LOG( "(Disconnect Local) NodeId=%d, Server=%s:%d\n",
+                   aRemoveNodeInfo->mNodeId,
+                   aRemoveNodeInfo->mServerIP,
+                   aRemoveNodeInfo->mPortNo );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    sRet = ulnFreeHandle( SQL_HANDLE_DBC, aRemoveNodeInfo->mNodeDbc );
+    if ( sRet != SQL_SUCCESS )
+    {
+        SHARD_LOG( "(Free Handle) NodeId=%d, Server=%s:%d\n",
+                   aRemoveNodeInfo->mNodeId,
+                   aRemoveNodeInfo->mServerIP,
+                   aRemoveNodeInfo->mPortNo );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    for ( i = 0; i < (sShard->mNodeCount - 1); i++ )
+    {
+        if ( sShard->mNodeInfo[i]->mNodeId >= aRemoveNodeInfo->mNodeId )
+        {
+            sShard->mNodeInfo[i] = sShard->mNodeInfo[i + 1];
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    sShard->mNodeCount--;
+
+    return;
 }

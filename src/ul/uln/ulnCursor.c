@@ -817,3 +817,34 @@ void ulnCursorSetDirection(ulnCursor *aCursor, ulnCursorDir aDirection)
     aCursor->mDirection = aDirection;
 }
 
+acp_bool_t ulnCursorHasNoData(ulnCursor *aCursor)
+{
+    ulnStmt    * sStmt   = aCursor->mParentStmt;
+    acp_bool_t   sResult = ACP_FALSE;
+
+    /* SELECT가 아닌 경우, Result Set Count가 0 이다.
+     * SQLCloseCursor()를 수행한 경우, ulnCursorGetState()가 ULN_CURSOR_STATE_CLOSED를 반환한다.
+     */
+    if ( ( ulnStmtGetResultSetCount( sStmt ) == 0 ) ||
+         ( ulnCursorGetState( aCursor ) == ULN_CURSOR_STATE_CLOSED ) )
+    {
+        sResult = ACP_TRUE;
+    }
+    else
+    {
+        /* Result Set이 여러 개인 경우, 마지막 Result Set인지 확인한다. (SQLMoreResults)
+         * 현재 Result Set을 모두 사용했는지 확인한다. (SQLFetch)
+         */
+        if ( ( ulnStmtGetCurrentResultSetID( sStmt ) >= ( ulnStmtGetResultSetCount( sStmt ) - 1 ) ) &&
+             ( ulnCursorGetServerCursorState( aCursor ) == ULN_CURSOR_STATE_CLOSED ) )
+        {
+            sResult = ACP_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return sResult;
+}

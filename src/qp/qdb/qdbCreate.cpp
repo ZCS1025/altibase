@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbCreate.cpp 82174 2018-02-02 02:28:16Z andrew.shin $
+ * $Id: qdbCreate.cpp 83334 2018-06-22 07:50:32Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
@@ -554,8 +554,9 @@ IDE_RC qdbCreate::validateCreateTableAsSelect(qcStatement * aStatement)
                                                        ID_TRUE ) /* aIsCreateTable */
                   != IDE_SUCCESS );
 
-        if( (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_RANGE) ||
-            (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_LIST) )
+        if ( (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_RANGE) ||
+             (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH) ||
+             (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_LIST) )
         {
             for( sPartAttr = sParseTree->partTable->partAttr, sPartCount = 0;
                  sPartAttr != NULL;

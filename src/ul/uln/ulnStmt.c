@@ -414,6 +414,9 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     aStmt->mShardStmtCxt.mNodeDbcIndexCount = 0;
     aStmt->mShardStmtCxt.mNodeDbcIndexCur  = -1;
 
+    /* BUG-46100 Session SMN Update */
+    aStmt->mShardStmtCxt.mShardMetaNumber  = 0;
+
     /* PROJ-2655 Composite shard key */
     aStmt->mShardStmtCxt.mShardSubValueCnt = 0;
     aStmt->mShardStmtCxt.mShardIsSubKeyExists = ACP_FALSE;
@@ -426,6 +429,15 @@ ACI_RC ulnStmtDestroy(ulnStmt *aStmt)
     else
     {
         /* Do Nothing. */
+    }
+
+    if (aStmt->mDeferredQstr != NULL)
+    {
+        acpMemFree(aStmt->mDeferredQstr);
+
+        aStmt->mDeferredQstr       = NULL;
+        aStmt->mDeferredQstrMaxLen = 0;
+        aStmt->mDeferredQstrLen    = 0;
     }
 
 #ifdef COMPILE_SHARDCLI
@@ -579,6 +591,10 @@ ACI_RC ulnStmtInitialize(ulnStmt *aStmt)
     /* BUG-44957 */
     aStmt->mAttrParamsRowCountsPtr = NULL;
     aStmt->mAttrParamsSetRowCounts = SQL_ROW_COUNTS_OFF;
+
+    aStmt->mDeferredQstr       = NULL;
+    aStmt->mDeferredQstrMaxLen = 0;
+    aStmt->mDeferredQstrLen    = 0;
 
     ulnShardStmtContextInitialize(aStmt);
 
@@ -2036,3 +2052,29 @@ void ulnStmtSetAttrPrefetchAutoTuningMax(ulnFnContext *aFnContext,
 
     sStmt->mAttrPrefetchAutoTuningMax = aPrefetchAutoTuningMax;
 }
+
+ACI_RC ulnStmtEnsureAllocDeferredQstr(ulnStmt *aStmt, acp_sint32_t aBufLen)
+{
+    if (aStmt->mDeferredQstrMaxLen < aBufLen)
+    {
+        if (aStmt->mDeferredQstr != NULL)
+        {
+            acpMemFree(aStmt->mDeferredQstr);
+        }
+
+        ACI_TEST( acpMemAlloc((void**)&aStmt->mDeferredQstr, aBufLen)
+                  != ACP_RC_SUCCESS );
+        aStmt->mDeferredQstrMaxLen = aBufLen;
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    aStmt->mDeferredQstr       = NULL;
+    aStmt->mDeferredQstrMaxLen = 0;
+    aStmt->mDeferredQstrLen    = 0;
+
+    return ACI_FAILURE;
+}
+

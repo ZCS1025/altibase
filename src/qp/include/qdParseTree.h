@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdParseTree.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdParseTree.h 82844 2018-04-19 00:41:18Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_QD_PARSE_TREE_H_
@@ -764,6 +764,9 @@ typedef struct qdTableParseTree
     /* PROJ-2464 hybrid partitioned table 지원 */
     qdSegStoAttrExist          existSegStoAttr;
 
+    // BUG-45745
+    qdPartitionAttribute     * mPartAttr;
+    
     /* PROJ-2600 Online DDL for Tablespace Alteration */
     qcNamePosition             mSourceUserName;
     qcNamePosition             mSourceTableName;
@@ -856,6 +859,7 @@ typedef struct qdTableParseTree
                                                                             \
     (_dst_)->accessOption = QCM_ACCESS_OPTION_NONE;                         \
     QD_SEGMENT_STORAGE_EXIST_INIT( &((_dst_)->existSegStoAttr ) );          \
+    (_dst_)->mPartAttr = NULL;                                              \
                                                                             \
     SET_EMPTY_POSITION( (_dst_)->mSourceUserName );                         \
     SET_EMPTY_POSITION( (_dst_)->mSourceTableName );                        \
@@ -2123,6 +2127,35 @@ typedef struct qdDisjoinConstr
     SChar                 newConstrName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qdDisjoinConstr     * next;
 } qdDisjoinConstr;
+
+/* BUG-45921 */
+typedef struct qdQueueSequenceParseTree
+{
+    qcParseTree           common;
+
+    qcNamePosition        mUserName;
+    qcNamePosition        mQueueName;
+
+    UInt                  mUserID;
+
+    qcmTableInfo        * mTableInfo;
+    void                * mTableHandle;
+    smSCN                 mTableSCN;
+
+    qcmSequenceInfo       mQueueSequenceInfo;
+    void                * mQueueSequenceHandle;
+} qdQueueSequenceParseTree;
+
+#define QD_QUEUE_SEQUENCE_PARSE_TREE_INIT(_dst_)        \
+    {                                                   \
+        SET_EMPTY_POSITION(_dst_->mUserName);           \
+        SET_EMPTY_POSITION(_dst_->mQueueName);          \
+        _dst_->mUserID = QC_EMPTY_USER_ID;              \
+        _dst_->mTableInfo = NULL;                       \
+        _dst_->mTableHandle = NULL;                     \
+        SMI_INIT_SCN( & (_dst_)->mTableSCN );           \
+        _dst_->mQueueSequenceHandle = NULL;             \
+    }
 
 #endif /* _O_QD_PARSE_TREE_H_ */
 

@@ -17,7 +17,7 @@
 
 /***********************************************************************
  *
- * $Id: sdpscSegDDL.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpscSegDDL.cpp 83020 2018-05-11 06:34:58Z seulki $
  *
  * 본 파일은 Circular-List Managed Segment의 Create/Drop/Alter/Reset 연산의
  * STATIC 인터페이스들을 관리한다.
@@ -224,6 +224,9 @@ IDE_RC sdpscSegDDL::allocNewExts( idvSQL           * aStatistics,
     IDE_ASSERT( aAllocExtRID        != NULL );
     IDE_ASSERT( aFstPIDOfExt        != NULL );
     IDE_ASSERT( aFstDataPIDOfExt    != NULL );
+
+    /* BUG-46036 codesonar warning 제거 */
+    sAllocExtDirInfo.mIsAllocNewExtDir = ID_FALSE;
 
 retry:
     

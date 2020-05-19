@@ -393,6 +393,9 @@ IDE_RC  dkdDataMgr::insertRow( void *aRow, void *aQcStatement )
                 case DKD_DATA_MGR_TYPE_MEMORY:
                     IDE_RAISE( MEMORY_LIMIT );
                     break;
+
+                default:
+                    IDE_DASSERT(0); /* can't reach here in fact */
             }
         }
     }

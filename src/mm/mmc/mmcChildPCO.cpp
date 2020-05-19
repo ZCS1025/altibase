@@ -17,7 +17,7 @@
 #include <iduMemMgr.h>
 #include <mmcChildPCO.h>
 
-void mmcChildPCO::initialize(SChar          *aSQLTextIdStr,
+void mmcChildPCO::initialize(SChar          *aSQLTextId,
                              const UInt      aChildID,
                              mmcChildPCOCR   aCreateReason,
                              const UInt      aRebuildedCnt,
@@ -37,12 +37,12 @@ void mmcChildPCO::initialize(SChar          *aSQLTextIdStr,
     mPreparedPrivateTemplate = NULL;
     mPreparedPrivateTemplateSize = 0;
     mEnvState = MMC_CHILD_PCO_ENV_IS_NOT_READY;
-    mSQLTextIdStr = aSQLTextIdStr;
+    mSQLTextId    = aSQLTextId;
     mChildID      = aChildID;
     mPlanState    = MMC_CHILD_PCO_PLAN_IS_NOT_READY;
     mCreateReason = aCreateReason;
     mRebuildedCnt = aRebuildedCnt;
-    mHitCntPtr =   aHitCntPtr;
+    mHitCntPtr    = aHitCntPtr;
 }
 
 void mmcChildPCO::finalize()

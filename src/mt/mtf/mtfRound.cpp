@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRound.cpp 82146 2018-01-29 06:47:57Z andrew.shin $
+ * $Id: mtfRound.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -86,6 +86,7 @@ static const mtcExecute mtfExecuteFloatFor1Arg = {
     mtf::calculateNA,
     mtfRoundCalculateFloatFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -97,6 +98,7 @@ static const mtcExecute mtfExecuteFloatFor2Args = {
     mtf::calculateNA,
     mtfRoundCalculateFloatFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -108,6 +110,7 @@ static const mtcExecute mtfExecuteFor1Arg = {
     mtf::calculateNA,
     mtfRoundCalculateFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -119,6 +122,7 @@ static const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfRoundCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

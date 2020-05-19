@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxUtil.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxUtil.cpp 83113 2018-05-29 02:04:30Z ahra.cho $
  **********************************************************************/
 
 /*
@@ -280,6 +280,36 @@ IDE_RC qsxUtil::assignValue (
  *
  ***********************************************************************/
 
+    qsxArrayBindingHeader* sHeader            = NULL;
+    qsxArrayInfo         * sSrcArrayInfo      = NULL;
+    qsxAvlTree           * sSrcTree           = NULL;
+    qsxArrayInfo         * sDstArrayInfo      = NULL;
+    qsxAvlTree           * sDstTree           = NULL;
+    void                 * sDstRowPtr         = NULL;
+    mtcColumn            * sKeyCol            = NULL;
+    void                 * sKeyPtr            = NULL;
+    mtcColumn            * sDataCol           = NULL;
+    void                 * sDataPtr           = NULL;
+    void                 * sRowPtr            = NULL;
+    UInt                   sActualSize        = 0;
+    SInt                   sKey               = -1;
+    SInt                   sPrevKey           = -1;
+    UInt                   sSize              = 0;
+    UInt                   sCount             = 0;
+    SChar                * sCursor            = NULL; 
+    SChar                * sFence             = NULL;       
+    idBool                 sFound             = ID_FALSE;
+    UInt                   sHasNull           = 0;
+    qcTemplate           * sTemplate          = (qcTemplate *)aDestTemplate;
+#if defined(ENDIAN_IS_BIG_ENDIAN)
+    idBool                 sIsBigEndianServer = ID_TRUE;
+#else
+    idBool                 sIsBigEndianServer = ID_FALSE;
+#endif
+    idBool                 sIsBigEndianClient = ID_FALSE;
+    UInt                   i;
+    SInt                   j;
+
     // right node가 NULL인 경우
     if ( aSourceColumn->type.dataTypeId == MTD_NULL_ID )
     {
@@ -326,7 +356,282 @@ IDE_RC qsxUtil::assignValue (
                                         aDestTemplate )
                   != IDE_SUCCESS );
     }
-    // 하나는 primitive, 하나는 udt인 경우
+    // BUG-45701
+    // source binary, dest array
+    else if ( (aSourceColumn->type.dataTypeId == MTD_BINARY_ID) &&
+              (aDestColumn->type.dataTypeId == MTD_ASSOCIATIVE_ARRAY_ID) )
+    {
+        IDE_ERROR_RAISE( sTemplate->stmt != NULL, ERR_UNEXPECTED_ERROR );
+        IDE_ERROR_RAISE( sTemplate->stmt->session != NULL, ERR_UNEXPECTED_ERROR );
+        IDE_ERROR_RAISE( sTemplate->stmt->session->mMmSession != NULL, ERR_UNEXPECTED_ERROR );
+
+        sIsBigEndianClient = qci::mSessionCallback.mIsBigEndianClient( sTemplate->stmt->session->mMmSession );
+
+        IDE_TEST_RAISE( (UInt)aSourceColumn->precision < ID_SIZEOF(qsxArrayBindingHeader), ERR_CONVERSION_NOT_APPLICABLE );
+
+        sHeader = (qsxArrayBindingHeader *)(((mtdBinaryType *)aSourceValue)->mValue);    
+        sDstArrayInfo = *(qsxArrayInfo**)aDestValue;
+
+        sFence = (SChar *)(((mtdBinaryType *)aSourceValue)->mValue) + aSourceColumn->precision;       
+
+        if ( sIsBigEndianServer != sIsBigEndianClient )
+        {
+            sHeader->version = qsxUtil::reverseEndian( sHeader->version );
+            sHeader->sqlType = qsxUtil::reverseEndian( sHeader->sqlType );
+            sHeader->elemCount = qsxUtil::reverseEndian( sHeader->elemCount );
+            sHeader->returnElemCount = qsxUtil::reverseEndian( sHeader->returnElemCount );
+            sHeader->hasNull = qsxUtil::reverseEndian( sHeader->hasNull );
+        }
+        else
+        {
+            // Nothing to do.
+        } 
+
+        IDE_TEST_RAISE( sHeader->version != QSX_ARRAY_BINDING_VERSION, ERR_INVALID_ARRAY_BINDING_PROTOCOL );
+ 
+        sDstTree = &sDstArrayInfo->avlTree;
+ 
+        IDE_TEST( qsxArray::truncateArray( sDstArrayInfo )
+                  != IDE_SUCCESS );
+ 
+        sKeyCol  = sDstTree->keyCol;
+        sDataCol = sDstTree->dataCol;
+ 
+        IDE_DASSERT( sKeyCol  != NULL );
+        IDE_DASSERT( sDataCol != NULL );
+
+        switch( sDataCol->type.dataTypeId )
+        {
+            case MTD_SMALLINT_ID:
+                sSize = 2;
+                break;
+            case MTD_INTEGER_ID:
+                sSize = 4;
+                break;
+            case MTD_BIGINT_ID:
+                sSize = 8;
+                break;
+            case MTD_REAL_ID:
+                sSize = 4;
+                break;
+            case MTD_DOUBLE_ID:
+                sSize = 8;
+                break;
+            default:
+               IDE_RAISE( ERR_CONVERSION_NOT_APPLICABLE ); 
+        }
+
+        IDE_TEST_RAISE( sKeyCol->type.dataTypeId != MTD_INTEGER_ID, ERR_CONVERSION_NOT_APPLICABLE );
+       
+        IDE_TEST_RAISE( sHeader->sqlType != (SInt)sDataCol->type.dataTypeId, ERR_CONVERSION_NOT_APPLICABLE );
+ 
+        for( i = 0; i < sHeader->elemCount; i++ ) 
+        {
+            sKey = i + 1;
+            sKeyPtr  = (void *)&sKey;
+            sDataPtr = (SChar*)(sHeader->data + i * sSize);
+
+            IDE_TEST_RAISE( (SChar *)sDataPtr + sSize > sFence, ERR_ARRAY_INDEX_OUT_OF_RANGE );
+
+            if ( sIsBigEndianServer != sIsBigEndianClient )
+            {
+                if ( sSize == 2 )
+                {
+                    *(UShort *)sDataPtr = qsxUtil::reverseEndian( *(UShort *)sDataPtr );
+                }
+                else if ( sSize == 4 )
+                {
+                    *(UInt *)sDataPtr = qsxUtil::reverseEndian( *(UInt *)sDataPtr );
+                }
+                else if ( sSize == 8 )
+                {
+                    *(ULong *)sDataPtr = qsxUtil::reverseEndian( *(ULong *)sDataPtr );
+                }
+            }
+            else
+            {
+                // Nothing to do.
+            }
+ 
+            IDE_TEST( qsxAvl::insert( sDstTree,
+                                      sKeyCol,
+                                      sKeyPtr,
+                                      &sDstRowPtr )
+                      != IDE_SUCCESS );
+ 
+            sDstRowPtr = (SChar*)sDstRowPtr + sDstTree->dataOffset;
+ 
+            sActualSize = sDataCol->module->actualSize( sDataCol,
+                                                        sDataPtr );
+            idlOS::memcpy( sDstRowPtr, sDataPtr, sActualSize );
+        }
+    }
+    // BUG-45701
+    // source array, dest binary 
+    else if ( (aDestColumn->type.dataTypeId == MTD_BINARY_ID) &&
+              (aSourceColumn->type.dataTypeId == MTD_ASSOCIATIVE_ARRAY_ID) )
+    {
+        IDE_ERROR_RAISE( sTemplate->stmt != NULL, ERR_UNEXPECTED_ERROR );
+        IDE_ERROR_RAISE( sTemplate->stmt->session != NULL, ERR_UNEXPECTED_ERROR );
+        IDE_ERROR_RAISE( sTemplate->stmt->session->mMmSession != NULL, ERR_UNEXPECTED_ERROR );
+
+        sIsBigEndianClient = qci::mSessionCallback.mIsBigEndianClient( sTemplate->stmt->session->mMmSession );
+
+        IDE_TEST_RAISE( (UInt)aDestColumn->precision < ID_SIZEOF(qsxArrayBindingHeader), ERR_CONVERSION_NOT_APPLICABLE );
+        
+        sHeader = (qsxArrayBindingHeader *)(((mtdBinaryType *)aDestValue)->mValue);    
+        sSrcArrayInfo = *(qsxArrayInfo**)aSourceValue;
+
+        sFence = (SChar *)(((mtdBinaryType *)aDestValue)->mValue) + aDestColumn->precision;       
+
+        sSrcTree = &sSrcArrayInfo->avlTree;
+ 
+        sKeyCol  = sSrcTree->keyCol;
+        sDataCol = sSrcTree->dataCol;
+ 
+        IDE_DASSERT( sKeyCol  != NULL );
+        IDE_DASSERT( sDataCol != NULL );
+
+        switch( sDataCol->type.dataTypeId )
+        {
+            case MTD_SMALLINT_ID:
+                sSize = 2;
+                break;
+            case MTD_INTEGER_ID:
+                sSize = 4;
+                break;
+            case MTD_BIGINT_ID:
+                sSize = 8;
+                break;
+            case MTD_REAL_ID:
+                sSize = 4;
+                break;
+            case MTD_DOUBLE_ID:
+                sSize = 8;
+                break;
+            default:
+               IDE_RAISE( ERR_CONVERSION_NOT_APPLICABLE ); 
+        }
+
+        IDE_TEST_RAISE( sKeyCol->type.dataTypeId != MTD_INTEGER_ID, ERR_CONVERSION_NOT_APPLICABLE );
+        
+        IDE_TEST( qsxAvl::searchMinMax( &sSrcArrayInfo->avlTree,
+                                        AVL_LEFT,
+                                        &sRowPtr,
+                                        &sFound )
+                  != IDE_SUCCESS );
+
+        while( sFound != ID_FALSE )
+        {
+            sKeyPtr  = sRowPtr;
+            sDataPtr = ((SChar*)sRowPtr + sSrcTree->dataOffset);
+
+            IDE_TEST_RAISE( *(SInt *)sKeyPtr <= 0, ERR_ARRAY_INDEX_OUT_OF_RANGE );
+
+            if ( sDataCol->module->isNull( sDataCol, sDataPtr ) == ID_TRUE )
+            {
+                sHasNull = 1;
+            }
+ 
+            sKey = *(SInt *)sKeyPtr;
+            sKey = sKey - 1;
+
+            // null padding
+            for ( j = sPrevKey + 1; j < sKey; j++ )
+            {
+                sCursor = sHeader->data + j * sSize;
+        
+                IDE_TEST_RAISE( sCursor + sSize > sFence, ERR_ARRAY_INDEX_OUT_OF_RANGE );
+
+                sDataCol->module->null( sDataCol, sCursor );
+
+                if ( sIsBigEndianServer != sIsBigEndianClient )
+                {
+                    if ( sSize == 2 )
+                    {
+                        *(UShort *)sCursor = qsxUtil::reverseEndian( *(UShort *)sCursor );
+                    }
+                    else if ( sSize == 4 )
+                    {
+                        *(UInt *)sCursor = qsxUtil::reverseEndian( *(UInt *)sCursor );
+                    }
+                    else if ( sSize == 8 )
+                    {
+                        *(ULong *)sCursor= qsxUtil::reverseEndian( *(ULong *)sCursor );
+                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+
+            sCursor = sHeader->data + sKey * sSize;
+            
+            IDE_TEST_RAISE( sCursor + sSize > sFence, ERR_ARRAY_INDEX_OUT_OF_RANGE );
+
+            idlOS::memcpy( sCursor, sDataPtr, sSize ); 
+
+            if ( sIsBigEndianServer != sIsBigEndianClient )
+            {
+                if ( sSize == 2 )
+                {
+                    *(UShort *)sCursor = qsxUtil::reverseEndian( *(UShort *)sCursor );
+                }
+                else if ( sSize == 4 )
+                {
+                    *(UInt *)sCursor = qsxUtil::reverseEndian( *(UInt *)sCursor );
+                }
+                else if ( sSize == 8 )
+                {
+                    *(ULong *)sCursor= qsxUtil::reverseEndian( *(ULong *)sCursor );
+                }
+            }
+            else
+            {
+                // Nothing to do.
+            }
+ 
+            IDE_TEST( qsxAvl::searchNext( &sSrcArrayInfo->avlTree,
+                                          sKeyCol,
+                                          sKeyPtr,
+                                          AVL_RIGHT,
+                                          AVL_NEXT,
+                                          &sRowPtr,
+                                          &sFound )
+                      != IDE_SUCCESS );
+            sCount++;  
+
+            sPrevKey = sKey;
+        }
+     
+        if ( sCount != (sKey + 1) )
+        {
+            sHasNull = 1;
+        }
+
+        sHeader->version = QSX_ARRAY_BINDING_VERSION;
+        sHeader->sqlType = sDataCol->type.dataTypeId;
+        sHeader->elemCount = 0;
+        sHeader->returnElemCount = sKey + 1;
+        sHeader->hasNull = sHasNull; 
+
+        ((mtdBinaryType *)aDestValue)->mLength = sSize * sHeader->returnElemCount 
+                                                    + offsetof(qsxArrayBindingHeader, data);  
+
+        if ( sIsBigEndianServer != sIsBigEndianClient )
+        {
+            sHeader->version = qsxUtil::reverseEndian( sHeader->version );
+            sHeader->sqlType = qsxUtil::reverseEndian( sHeader->sqlType );
+            sHeader->elemCount = qsxUtil::reverseEndian( sHeader->elemCount );
+            sHeader->returnElemCount = qsxUtil::reverseEndian( sHeader->returnElemCount );
+            sHeader->hasNull = qsxUtil::reverseEndian( sHeader->hasNull );
+        }
+        else
+        {
+            // Nothing to do.
+        } 
+    }
     else
     {
         // conversion not applicable.
@@ -336,8 +641,21 @@ IDE_RC qsxUtil::assignValue (
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_CONVERSION_NOT_APPLICABLE );
-    IDE_SET(ideSetErrorCode(mtERR_ABORT_CONVERSION_NOT_APPLICABLE));
-
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_CONVERSION_NOT_APPLICABLE));
+    }
+    IDE_EXCEPTION( ERR_ARRAY_INDEX_OUT_OF_RANGE );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_ARRAY_INDEX_OUT_OF_RANGE));
+    }
+    IDE_EXCEPTION( ERR_INVALID_ARRAY_BINDING_PROTOCOL );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_INVALID_ARRAY_BINDING_PROTOCOL));
+    }
+    IDE_EXCEPTION( ERR_UNEXPECTED_ERROR );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMC_UNEXPECTED_ERROR, "qsxUtil::assignValue", "Unexpected error"));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -2283,4 +2601,65 @@ IDE_RC qsxUtil::finalizeParamAndReturnColumnInfo( mtcColumn   * aColumn )
     }
 
     return IDE_SUCCESS;
+}
+
+IDE_RC 
+qsxUtil::preCalculateArray ( qcStatement * aQcStmt,
+                             qtcNode     * aQtcNode )
+{
+    qtcNode         * sQtcNode;
+    void            * sInfo;
+    qcTemplate      * sTemplate;
+    qtcColumnInfo   * sColumnInfo;
+    mtcColumn       * sDestColumn = NULL;
+
+    sTemplate = QC_PRIVATE_TMPLATE(aQcStmt);
+
+    for( sQtcNode = aQtcNode;
+         sQtcNode != NULL;
+         sQtcNode = (qtcNode*)sQtcNode->node.next )
+    {
+        if ( (sQtcNode->lflag & QTC_NODE_SP_NESTED_ARRAY_MASK)
+             == QTC_NODE_SP_NESTED_ARRAY_TRUE)
+        {
+            IDE_DASSERT( sQtcNode->node.orgNode != NULL );
+
+            //Right
+            if( qtc::calculate( (qtcNode *)(sQtcNode->node.orgNode),
+                                sTemplate )
+                != IDE_SUCCESS)
+            {
+                IDE_RAISE( ERR_INVALID_ARRAY );
+            }
+
+            IDE_TEST_RAISE( *((qsxArrayInfo **)(sTemplate->tmplate.stack[0].value)) == NULL, ERR_INVALID_ARRAY );
+
+            // left
+            sInfo = QTC_TMPL_EXECUTE(QC_PRIVATE_TMPLATE(aQcStmt),
+                                     sQtcNode)->calculateInfo;
+            sColumnInfo = (qtcColumnInfo*)sInfo;
+            sDestColumn = sTemplate->tmplate.rows[sColumnInfo->table].columns + sColumnInfo->column;
+
+            IDE_TEST( assignValue( QC_QMX_MEM(aQcStmt),
+                                   sTemplate->tmplate.stack[0].column,
+                                   sTemplate->tmplate.stack[0].value,
+                                   sDestColumn,
+                                   (void*)
+                                   ( (SChar*)sTemplate->tmplate.rows[sColumnInfo->table].row +
+                                     sDestColumn->column.offset ),
+                                   & sTemplate->tmplate,
+                                   ID_TRUE )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_ARRAY );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_UNINITIALIZED_ARRAY));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

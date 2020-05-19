@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smlLockMgrSpin.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smlLockMgrSpin.cpp 83745 2018-08-21 03:20:06Z emlee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smlLockMgr.cpp                          *
@@ -181,7 +181,7 @@ smlLockMode smlLockMgr::getLockMode( const smlLockNode* aNode )
     return mDecisionTBL[aNode->mFlag];
 }
 
-SLong smlLockMgr::getGrantedCnt( const SLong aLock, const smlLockMode aMode )
+SLong smlLockMgr::getGrantedCnt( const smlLockItemSpin* aItem, const smlLockMode aMode )
 {
     SInt    i;
     SLong   sSum;
@@ -189,22 +189,17 @@ SLong smlLockMgr::getGrantedCnt( const SLong aLock, const smlLockMode aMode )
     if ( aMode == SML_NLOCK )
     {
         sSum = 0;
-        for ( i = 0 ; i < SML_NUMLOCKTYPES ; i++ )
+        for ( i = 0 ; i < mSpinSlotCnt ; i ++ )
         {
-            sSum += (aLock & mLockMask[i]) >> mLockBit[i];
+            sSum += (SLong)acpBitCountSet64( aItem->mOwner[i] );
         }
     }
     else
     {
-        sSum = (aLock & mLockMask[aMode]) >> mLockBit[aMode];
+        sSum = ( aItem->mLock & mLockMask[aMode]) >> mLockBit[aMode];
     }
 
     return sSum;
-}
-
-SLong smlLockMgr::getGrantedCnt( const smlLockItemSpin* aItem, const smlLockMode aMode )
-{
-    return getGrantedCnt( aItem->mLock, aMode );
 }
 
 
@@ -229,18 +224,6 @@ IDE_RC smlLockMgr::initializeSpin( UInt aTransCnt )
                                       mTransCnt * sizeof(SInt*),
                                       (void**)&mPendingMatrix ) != IDE_SUCCESS,
                    insufficient_memory );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SML,
-                                       mTransCnt, sizeof(SInt),
-                                       (void**)&mPendingCount ) != IDE_SUCCESS,
-                    insufficient_memory );
-    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
-                                       mTransCnt * mTransCnt * sizeof(SInt),
-                                       (void**)&mIndicesArray ) != IDE_SUCCESS,
-                    insufficient_memory );
-    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
-                                       mTransCnt * sizeof(SInt*),
-                                       (void**)&mIndicesMatrix ) != IDE_SUCCESS,
-                    insufficient_memory );
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
                                        mTransCnt * sizeof(idBool),
                                        (void**)&mIsCycle ) != IDE_SUCCESS,
@@ -249,6 +232,11 @@ IDE_RC smlLockMgr::initializeSpin( UInt aTransCnt )
                                        mTransCnt * sizeof(idBool),
                                        (void**)&mIsChecked ) != IDE_SUCCESS,
                     insufficient_memory );
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
+                                       mTransCnt * sizeof(idBool),
+                                       (void**)&mIsDetected ) != IDE_SUCCESS,
+                    insufficient_memory );
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
                                        mTransCnt * sizeof(SInt),
                                        (void**)&mDetectQueue ) != IDE_SUCCESS,
@@ -263,14 +251,13 @@ IDE_RC smlLockMgr::initializeSpin( UInt aTransCnt )
     {
         mIsCycle[i]         = ID_FALSE;
         mIsChecked[i]       = ID_FALSE;
+        mIsDetected[i]      = ID_FALSE;
 
         mPendingMatrix[i]   = &(mPendingArray[mTransCnt * i]);
-        mIndicesMatrix[i]   = &(mIndicesArray[mTransCnt * i]);
 
         for ( j = 0 ; j < mTransCnt ; j++ )
         {
             mPendingMatrix[i][j] = SML_EMPTY;
-            mIndicesMatrix[i][j] = SML_EMPTY;
         }
     }
 
@@ -305,12 +292,6 @@ IDE_RC smlLockMgr::destroySpin()
 {
     (void)acpAtomicSet32( &mStopDetect, 1 );
     IDE_TEST( mDetectDeadlockThread.join()      != IDE_SUCCESS );
-    IDE_TEST( iduMemMgr::free( mIndicesMatrix ) != IDE_SUCCESS );
-    mIndicesMatrix = NULL;
-    IDE_TEST( iduMemMgr::free( mIndicesArray  ) != IDE_SUCCESS );
-    mIndicesArray = NULL;
-    IDE_TEST( iduMemMgr::free( mPendingCount  ) != IDE_SUCCESS );
-    mPendingCount = NULL;
     IDE_TEST( iduMemMgr::free( mPendingArray  ) != IDE_SUCCESS );
     mPendingArray = NULL;
     IDE_TEST( iduMemMgr::free( mPendingMatrix ) != IDE_SUCCESS );
@@ -319,6 +300,8 @@ IDE_RC smlLockMgr::destroySpin()
     mIsCycle = NULL;
     IDE_TEST( iduMemMgr::free( mIsChecked     ) != IDE_SUCCESS );
     mIsChecked = NULL; 
+    IDE_TEST( iduMemMgr::free( mIsDetected    ) != IDE_SUCCESS );
+    mIsDetected = NULL; 
 
     return IDE_SUCCESS;
 
@@ -410,6 +393,8 @@ IDE_RC smlLockMgr::lockTableSpin( SInt          aSlot,
     SInt        sIndex;
     SInt        sBitIndex;
     SInt        i;
+    SInt        sWaitTransSlot;
+    smxTrans  * sTrans;
 
     SInt        sSleepTime = smuProperty::getLockMgrMinSleep();
     acp_time_t  sBeginTime = acpTimeNow();
@@ -593,7 +578,7 @@ IDE_RC smlLockMgr::lockTableSpin( SInt          aSlot,
 
     if ( mCompatibleTBL[sCurMode][aLockMode] == ID_TRUE )
     {
-        IDE_TEST_CONT( getGrantedCnt( sCurLock, aLockMode ) >= mLockMax[aLockMode],
+        IDE_TEST_CONT( getGrantedCnt( sLockItem, aLockMode ) >= mLockMax[aLockMode],
                        TRY_TIMEOUT );
         for ( i = 0 ; i < SML_NUMLOCKTYPES ; i++ )
         {
@@ -729,6 +714,14 @@ IDE_RC smlLockMgr::lockTableSpin( SInt          aSlot,
 
     IDE_EXCEPTION_CONT(TRY_TIMEOUT);
     {
+        if ( sLoops == 0 )
+        {
+            /* RP인 경우 Lock Wait 시간이 달라진다. 
+             * Loop = 0일때만 Setting 하여 중복 Setting 을 피한다. */
+            sTrans            = (smxTrans *)smLayerCallback::getTransBySID( aSlot );
+            aLockWaitMicroSec = sTrans->getLockTimeoutByUSec( aLockWaitMicroSec );
+        }
+
         /* check timeout */
         sCurTime = acpTimeNow();
         IDE_TEST_RAISE( (ULong)(sCurTime - sBeginTime) > aLockWaitMicroSec,
@@ -754,17 +747,33 @@ IDE_RC smlLockMgr::lockTableSpin( SInt          aSlot,
 
             while ( sOwner != 0 )
             {
-                sOwnerIndex = acpBitFfs32(sOwner);
+                sOwnerIndex  = acpBitFfs64(sOwner);
+                sWaitTransSlot = ( i * 64 ) + sOwnerIndex;
 
-                if ( sOwnerIndex != aSlot )
+                if ( sWaitTransSlot != aSlot )
                 {
                     sOwnerDelta = ID_ULONG(1) << sOwnerIndex;
 
-                    registLockWaitSpin( aSlot, i * 64 + sOwnerIndex );
+                    registLockWaitSpin( aSlot, sWaitTransSlot );
+                    sOwner &= ~sOwnerDelta;
+                }
+                else
+                {
+                    /* 자기가 lock을 획득하고 있더라도 lock 획득에 실패할수 있다.
+                     * IS -> X의 경우 IS가 이미 여럿이 걸려있어서 내가 이미 IS를 가지고 있지만
+                     * X를 걸기 위해 다른 IS를 가진 Tx가 끝나길 기다려야 한다.
+                     * 여기서 sOwner에 자기 Tx의 Bit를 제거하지 않으면 무한루프를 돌기 때문에
+                     * Bit를 제거해준다. */
+                    sOwnerDelta = ID_ULONG(1) << sOwnerIndex;
                     sOwner &= ~sOwnerDelta;
                 }
             }
         }
+
+        /* Loop를 증가 시키지 않은 상태로 isCycle에서 예외 처리 되면
+         * PendingCnt가 줄지 않아 다른 Tx가 HANG에 걸리는 경우가 생김. */
+        /* loop to try again */
+        sLoops++;
 
         /*
          * add myself to deadlock detection matrix
@@ -772,14 +781,14 @@ IDE_RC smlLockMgr::lockTableSpin( SInt          aSlot,
          */
         IDE_TEST_RAISE( isCycle(aSlot) == ID_TRUE, err_deadlock );
 
-        /* loop to try again */
-        sLoops++;
-
         if ( ( sLoops % smuProperty::getLockMgrSpinCount() ) == 0 )
         {
             sTimeOut.set(0, sSleepTime);
             idlOS::sleep(sTimeOut);
             sSleepTime = IDL_MIN(sSleepTime * 2, smuProperty::getLockMgrMaxSleep());
+            /* sLoops이 계속 증가하여 Overflow로 0이 되어 
+             * 두번 PendingCnt를 증가하는 경우를 막기 위함 */
+            sLoops = 1;
         }
         else
         {
@@ -947,18 +956,14 @@ void* smlLockMgr::detectDeadlockSpin( void* /* aArg */ )
     SInt            j;
     SInt            k;
     SInt            l;
-    SInt            sWaitSlotNo;
     SInt            sQueueHead;
     SInt            sQueueTail;
     SInt            sLastDetected;
     idBool          sDetected;
-    idBool          sDetectAgain;
     ULong           sSerialMax;
     SInt            sSlotIDMax;
     SInt            sSleepTime;
     PDL_Time_Value  sTimeVal;
-
-    sDetectAgain = ID_FALSE;
 
     sLastDetected = -1;
     while ( mStopDetect == 0 )
@@ -1015,23 +1020,15 @@ void* smlLockMgr::detectDeadlockSpin( void* /* aArg */ )
             sQueueTail = 1;
 
             /* peek all slot IDs that are waiting on TX[i] */
-            for ( j = 0 ; j < mPendingCount[i] ; j++ )
+            for ( j=0; j<mTransCnt;j++)
             {
-                sWaitSlotNo = mPendingMatrix[i][j];
-
-                if ( (sWaitSlotNo !=  i) &&
-                     (sWaitSlotNo != -1) &&
-                     (mIsChecked[sWaitSlotNo] == ID_FALSE) )
+                if ( (mPendingMatrix[j][i] != -1) &&
+                     (mIsChecked[j] == ID_FALSE) )
                 {
-                    mIsChecked[sWaitSlotNo] = ID_TRUE;
-                    mDetectQueue[sQueueHead] = sWaitSlotNo;
+                    mIsChecked[j] = ID_TRUE;
+                    mDetectQueue[sQueueHead] = j;
                     sQueueHead++;
                 }
-                else
-                {
-                    /* continue */
-                }
-
             }
 
             /* extract graph and check cycle */
@@ -1041,45 +1038,36 @@ void* smlLockMgr::detectDeadlockSpin( void* /* aArg */ )
                 k = mDetectQueue[sQueueTail];
                 sQueueTail++;
 
-                /* peek all slot IDs that are waiting on TX[i] */
-                for ( j = 0 ; j < mPendingCount[k] ; j++ )
+                /* peek all slot IDs that are waiting on TX[k] */
+                for ( j=0; j < mTransCnt; j++ )
                 {
-                    sWaitSlotNo = mPendingMatrix[k][j];
-
-                    if ( (sWaitSlotNo != -1) &&
-                         (sWaitSlotNo !=  k) &&
-                         (mIsChecked[sWaitSlotNo] == ID_FALSE) )
+                    if ( (mPendingMatrix[j][k] != -1) &&
+                         (mIsChecked[j] == ID_FALSE) )
                     {
                         for ( l = 0 ; l < sQueueHead ; l++ )
                         {
-                            if ( mDetectQueue[l] == sWaitSlotNo )
+                            if ( mDetectQueue[l] == j )
                             {
                                 sDetected = ID_TRUE;
                                 break;
-                            }
-                            else
-                            {
-                                /* continue */
                             }
                         }
 
                         if ( sDetected != ID_TRUE )
                         {
-                            mIsChecked[sWaitSlotNo] = ID_TRUE;
-                            mDetectQueue[sQueueHead] = sWaitSlotNo;
+                            mIsChecked[j] = ID_TRUE;
+                            mDetectQueue[sQueueHead] = j;
                             sQueueHead++;
                         }
                     }
-                    else
-                    {
-                        /* continue */
-                    }
-                } /* for j */
+ 
+                }
+
             } /* while for queue */
 
             if ( sDetected == ID_TRUE )
             {
-                if ( sDetectAgain == ID_TRUE )
+                if ( mIsDetected[i] == ID_TRUE )
                 {
                     /* find smallest serial in blocked transactions */
                     sSlotIDMax = -1;
@@ -1098,7 +1086,7 @@ void* smlLockMgr::detectDeadlockSpin( void* /* aArg */ )
                     if ( sSlotIDMax != -1 )
                     {
                         mIsCycle[sSlotIDMax] = ID_TRUE;
-                        sDetectAgain = ID_FALSE;
+                        mIsDetected[i] = ID_FALSE;
                         sLastDetected = sSlotIDMax;
                     }
 
@@ -1107,12 +1095,13 @@ void* smlLockMgr::detectDeadlockSpin( void* /* aArg */ )
                 }
                 else
                 {
-                    sDetectAgain = ID_TRUE;
+                    mIsDetected[i] = ID_TRUE;
                     mIsCycle[i] = ID_FALSE;
                 }
             }
             else
             {
+                mIsDetected[i] = ID_FALSE;
                 mIsCycle[i] = ID_FALSE;
             }
         } /* for i */
@@ -1123,53 +1112,38 @@ void* smlLockMgr::detectDeadlockSpin( void* /* aArg */ )
 
 void smlLockMgr::registLockWaitSpin( SInt aSlot, SInt aWaitSlot )
 {
-    SInt sIndex;
 
-    /* simple deadlock verify */
-    sIndex = mIndicesMatrix[aWaitSlot][aSlot];
-    IDE_TEST_RAISE(sIndex != -1, err_deadlock);
-
-    sIndex = mIndicesMatrix[aSlot][aWaitSlot];
-    if ( sIndex == -1 )
+    if ( mPendingMatrix[aWaitSlot][aSlot] != -1 )
     {
-        sIndex = acpAtomicInc32( &(mPendingCount[aWaitSlot]) ) - 1;
-        mPendingMatrix[aWaitSlot][sIndex] = aSlot;
-    }
-    else
-    {
-        /* fall through */
+        if ( mIsDetected[aSlot] == ID_TRUE )
+        {
+            mIsCycle[aSlot] = ID_TRUE;
+            mIsDetected[aSlot] = ID_FALSE;
+        }
+        else
+        {
+            mIsCycle[aSlot] = ID_FALSE;
+            mIsDetected[aSlot] = ID_TRUE;
+        }
     }
 
-    mIndicesMatrix[aSlot][aWaitSlot] = sIndex;
+    mPendingMatrix[aSlot][aWaitSlot] = 1;
 
-    return;
-
-    IDE_EXCEPTION(err_deadlock);
-    {
-        mIsCycle[aSlot] = ID_TRUE;
-    }
-
-    IDE_EXCEPTION_END;
 }
 
 idBool smlLockMgr::didLockReleasedSpin( SInt aSlot, SInt aWaitSlot )
 {
-    SInt sIndex;
-
-    IDE_DASSERT(aSlot != aWaitSlot);
-    sIndex = mIndicesMatrix[aSlot][aWaitSlot];
-    return (mPendingMatrix[aWaitSlot][sIndex] == aSlot)? ID_FALSE : ID_TRUE;
+    return ( mPendingMatrix[aSlot][aWaitSlot] == -1 ) ? ID_TRUE : ID_FALSE;  
 }
 
 IDE_RC smlLockMgr::freeAllRecordLockSpin( SInt aSlot )
 {
     SInt i;
 
-    for ( i = 0 ; i < mPendingCount[aSlot] ; i++ )
+    for ( i = 0; i < mTransCnt; i++ )
     {
-        mPendingMatrix[aSlot][i] = SML_EMPTY;
+        mPendingMatrix[i][aSlot] = -1;
     }
-    (void)acpAtomicSet32(&(mPendingCount[aSlot]), 0);
 
     return IDE_SUCCESS;
 }
@@ -1223,7 +1197,6 @@ void smlLockMgr::setLockModeAndAddLockSlotSpin( SInt             aSlot,
 void smlLockMgr::clearWaitItemColsOfTransSpin( idBool aDoInit, SInt aSlot )
 {
     SInt sWaitSlot;
-    SInt sWaitIndex;
 
     PDL_UNUSED_ARG(aDoInit);
 
@@ -1231,17 +1204,7 @@ void smlLockMgr::clearWaitItemColsOfTransSpin( idBool aDoInit, SInt aSlot )
 
     for ( sWaitSlot = 0 ; sWaitSlot < mTransCnt ; sWaitSlot++ )
     {
-        sWaitIndex = mIndicesMatrix[aSlot][sWaitSlot];
-
-        if ( sWaitIndex != -1 )
-        {
-            (void)acpAtomicSet32( &(mPendingMatrix[sWaitSlot][sWaitIndex]), -1 );
-            mIndicesMatrix[aSlot][sWaitSlot] = -1;
-        }
-        else
-        {
-            /* nothing to do */
-        }
+        mPendingMatrix[aSlot][sWaitSlot] = -1;
     }
 
     mSerialArray[aSlot] = ID_ULONG(0);

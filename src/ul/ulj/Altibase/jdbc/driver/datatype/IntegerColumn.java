@@ -34,13 +34,14 @@ import Altibase.jdbc.driver.util.IntDynamicArray;
 
 public class IntegerColumn extends AbstractColumn
 {
-    private static final int NULL_VALUE = (int)0x80000000;
+    public static final int NULL_VALUE = (int)0x80000000;
     private static final int INTEGER_BYTE_SIZE = 4;
 
     private int mIntValue = 0;
 
     IntegerColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.INTEGER);
     }
 
     public int getDBColumnType()
@@ -48,11 +49,6 @@ public class IntegerColumn extends AbstractColumn
         return ColumnTypes.INTEGER;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.INTEGER };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "INTEGER";

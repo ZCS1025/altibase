@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmFixedTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmFixedTable.cpp 83512 2018-07-18 00:47:26Z hykim $
  *
  * Description :
  *
@@ -62,6 +62,11 @@ IDE_RC qcmFixedTable::validateTableName( qcStatement    *aStatement,
            ( idlOS::strMatch( (SChar *)(aTableName.stmtText + aTableName.offset),
                               2,
                               "V$",
+                              2 ) == 0 ) ||
+           /* BUG-45646 */
+           ( idlOS::strMatch( (SChar *)(aTableName.stmtText + aTableName.offset),
+                              2,
+                              "S$",
                               2 ) == 0 ) ) )
     {
         if( QC_SHARED_TMPLATE(aStatement)->fixedTableAutomataStatus == 0 )
@@ -359,16 +364,26 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
             {
                 sTableInfo->viewArrayNo = 0;
                 sTableInfo->tableType   = QCM_FIXED_TABLE;
+                sTableInfo->mPVType     = QCM_PV_TYPE_NORMAL;
             }
             else if ( idlOS::strMatch( aNameType, 2, "D$", 2 ) == 0 )
             {
                 sTableInfo->viewArrayNo = 0;
                 sTableInfo->tableType   = QCM_DUMP_TABLE;
+                sTableInfo->mPVType     = QCM_PV_TYPE_NORMAL;
             }
             else if ( idlOS::strMatch( aNameType, 2, "V$", 2 ) == 0 )
             {
                 sTableInfo->viewArrayNo = j;
                 sTableInfo->tableType   = QCM_PERFORMANCE_VIEW;
+                sTableInfo->mPVType     = QCM_PV_TYPE_NORMAL;
+            }
+            else if ( idlOS::strMatch( aNameType, 2, "S$", 2 ) == 0 )
+            {
+                /* BUG-45646 */
+                sTableInfo->viewArrayNo = j;
+                sTableInfo->tableType   = QCM_PERFORMANCE_VIEW;
+                sTableInfo->mPVType     = QCM_PV_TYPE_SHARD;
             }
 
             sTableInfo->replicationCount = 0;

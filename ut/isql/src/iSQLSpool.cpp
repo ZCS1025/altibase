@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLSpool.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLSpool.cpp 82438 2018-03-11 23:49:11Z bethy $
  **********************************************************************/
 
 #include <ida.h>
@@ -217,10 +217,15 @@ iSQLSpool::PrintOutFile()
     idlOS::fflush(gProgOption.m_OutFile);
 }
 
-void
-iSQLSpool::PrintCommand()
+/*
+ * BUG-45722 Renewal of Echo On|Off
+ *   This function was replaced with PrintCommand2()
+ *   and it should be removed later.
+ */
+void iSQLSpool::PrintCommand()
 {
     /* BUG-37772 */
+    /* BUG-45722
     if( ( gProperty.GetEcho()        == ID_TRUE  ) &&
         ( gProperty.GetTerm()        == ID_FALSE ) &&
         ( gSQLCompiler->IsFileRead() == ID_TRUE  ) )
@@ -234,6 +239,35 @@ iSQLSpool::PrintCommand()
         idlOS::fprintf(m_fpSpool, "%s%s",
                        gProperty.GetSqlPrompt(), m_Buf);
         idlOS::fflush(m_fpSpool);
+    }
+    */
+}
+
+/* BUG-45722 Renewal of Echo On|OFF */
+void iSQLSpool::PrintCommand2(idBool aDisplayOut, idBool aSpoolOut)
+{
+    if ( aDisplayOut == ID_TRUE )
+    {
+        idlOS::fprintf(gProgOption.m_OutFile, "%s", m_Buf);
+        idlOS::fflush(gProgOption.m_OutFile);
+    }
+
+    if ( aSpoolOut == ID_TRUE )
+    {
+        idlOS::fprintf(m_fpSpool, "%s", m_Buf);
+        idlOS::fflush(m_fpSpool);
+    }
+}
+
+idBool iSQLSpool::IsSpoolOut()
+{
+    if ( m_bSpoolOn == ID_TRUE && m_fpSpool != NULL )
+    {
+        return ID_TRUE;
+    }
+    else
+    {
+        return ID_FALSE;
     }
 }
 

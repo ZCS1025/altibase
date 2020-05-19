@@ -494,7 +494,8 @@ ACI_RC ulncNCHAR_ULONG(ulnFnContext  *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnCharSetConvert(&sCharSet,
                                aFnContext,
@@ -539,6 +540,11 @@ ACI_RC ulncNCHAR_ULONG(ulnFnContext  *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LITERAL)
     {
         ulnErrorExtended(aFnContext,

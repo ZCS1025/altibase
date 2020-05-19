@@ -217,12 +217,6 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
     gIpcShmInfo.mMaxBufferCount  = CMB_SHM_SEMA_UNDO_VALUE;
 
     /*
-     * Shared Memory가 이미 존재하는지 검사
-     */
-
-    IDE_TEST_RAISE(gIpcShmID != PDL_INVALID_HANDLE, ShmAlreadyCreated);
-
-    /*
      * 비정상 종료시 생성한 자원 해제
      */
 
@@ -420,10 +414,6 @@ IDE_RC cmbShmCreate(SInt aMaxChannelCount)
     IDE_EXCEPTION(InsufficientMemory);
     {
         IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
-    }
-    IDE_EXCEPTION(ShmAlreadyCreated);
-    {
-        IDE_SET(ideSetErrorCode(cmERR_ABORT_SHM_ALREADY_CREATED));
     }
     IDE_EXCEPTION(err_open_ipc_logfile);
     {

@@ -18,6 +18,7 @@
 #define _ULP_LIB_INTERFACE_ 1
 
 #include <sqlcli.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 # define EXTERN_C        extern "C"
@@ -42,7 +43,14 @@
 #define APRE_FILE_READ      SQL_FILE_READ
 #define MAX_CHAR_PTR        (65001)
 
+#define APRE_SHORT_IS_NULL(a)      (ulpShortIsNull(&(a)))
+#define APRE_INT_IS_NULL(a)        (ulpIntIsNull(&(a)))
+#define APRE_LONG_IS_NULL(a)       (ulpLongIsNull(&(a)))
+#define APRE_FLOAT_IS_NULL(a)      (ulpFloatIsNull(&(a)))
+#define APRE_DOUBLE_IS_NULL(a)     (ulpDoubleIsNull(&(a)))
+
 typedef char APRE_BINARY;
+typedef char APRE_BINARY2;
 typedef char APRE_BYTES;
 typedef char APRE_VARBYTES;
 typedef char APRE_NIBBLE;
@@ -193,5 +201,11 @@ EXTERN_C void        *ulpAlign( void* aMemPtr, unsigned int aAlign );
 
 EXTERN_C SQLDA* SQLSQLDAAlloc( int allocSize );
 EXTERN_C void SQLSQLDAFree( SQLDA *sqlda );
+
+EXTERN_C bool ulpShortIsNull( const short *aValue );
+EXTERN_C bool ulpIntIsNull( const int *aValue );
+EXTERN_C bool ulpLongIsNull( const long *aValue );
+EXTERN_C bool ulpFloatIsNull( const void *aValue );
+EXTERN_C bool ulpDoubleIsNull( const void *aValue );
 
 #endif

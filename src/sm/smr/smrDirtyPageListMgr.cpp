@@ -218,7 +218,7 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
 
     IDE_DASSERT( aSpaceNode != NULL );
 
-    if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
         // TBS상태가 DROP이나 OFFLINE으로 전이되지 않도록 보장
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
@@ -267,7 +267,7 @@ IDE_RC smrDPListMgr::writeDirtyPageAction( idvSQL            * /* aStatistics */
 
             // SMR Dirty Page List 객체 얻어오기
             IDE_TEST( findDPList( aSpaceNode->mID,
-                        & sDPList ) != IDE_SUCCESS );
+                                  & sDPList ) != IDE_SUCCESS );
 
             if ( sDPList != NULL )
             {
@@ -342,7 +342,7 @@ IDE_RC smrDPListMgr::writePIDLogAction( idvSQL*             /* aStatistics */,
 
     IDE_DASSERT( aSpaceNode != NULL );
 
-    if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
         // TBS상태가 DROP이나 OFFLINE으로 전이되지 않도록 보장
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
@@ -521,7 +521,7 @@ IDE_RC smrDPListMgr::countDPAction( idvSQL*             /*aStatistics */,
 
     smrCountDPArg * sActionArg = (smrCountDPArg*) aActionArg;
 
-    if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
         // TBS상태가 DROP이나 OFFLINE으로 전이되지 않도록 보장
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
@@ -802,7 +802,7 @@ IDE_RC smrDPListMgr::moveDPAction( idvSQL*            /*  aStatistics */,
 
     smrMoveDPArg     * sActionArg = (smrMoveDPArg *) aActionArg ;
 
-    if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
         // TBS상태가 DROP이나 OFFLINE으로 전이되지 않도록 보장
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( aSpaceNode )
@@ -932,7 +932,7 @@ IDE_RC smrDPListMgr::discardDPAction( idvSQL            * /* aStatistics */,
 {
     IDE_DASSERT( aSpaceNode != NULL );
 
-    if(sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
         // ONLINE/OFFLINE된 테이블스페이스에 대해서만 Media Recovery가
         // 가능하므로 다음 상태에 ASSERT 처리한다.

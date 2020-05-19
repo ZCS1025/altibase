@@ -69,6 +69,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_SpFormatErrorBacktrace,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

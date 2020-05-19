@@ -1333,8 +1333,7 @@ qmnINST::insertOneRow( qcTemplate * aTemplate,
     sInsertedRowValueCount = aTemplate->insOrUptRowValueCount[sCodePlan->valueIdx];
 
     // Memory 재사용을 위하여 현재 위치 기록
-    IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
-              != IDE_SUCCESS );
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
     //-----------------------------------
     // clear lob info
@@ -1604,8 +1603,7 @@ qmnINST::insertOneRow( qcTemplate * aTemplate,
     }
 
     // Memory 재사용을 위한 Memory 이동
-    IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
-              != IDE_SUCCESS);
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP ); 
 
     if ( ( *sDataPlan->flag & QMND_INST_INSERT_MASK )
          == QMND_INST_INSERT_FALSE )
@@ -1620,6 +1618,13 @@ qmnINST::insertOneRow( qcTemplate * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnINST::insertOneRow"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1941,8 +1946,7 @@ qmnINST::fireInsteadOfTrigger( qcTemplate * aTemplate,
     sInsertedRow = aTemplate->insOrUptRow[sCodePlan->valueIdx];
     
     // Memory 재사용을 위하여 현재 위치 기록
-    IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
-              != IDE_SUCCESS );
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     
     if ( ( sDataPlan->needTriggerRow == ID_TRUE ) ||
          ( sCodePlan->returnInto != NULL ) )
@@ -2045,11 +2049,17 @@ qmnINST::fireInsteadOfTrigger( qcTemplate * aTemplate,
     }
     
     // Memory 재사용을 위한 Memory 이동
-    IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
-              != IDE_SUCCESS);
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnINST::fireInsteadOfTrigger"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -2213,8 +2223,7 @@ IDE_RC qmnINST::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
         //------------------------------
 
         // Memory 재사용을 위하여 현재 위치 기록
-        IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
-                  != IDE_SUCCESS);
+        IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
         
         IDE_TEST( qdnForeignKey::checkParentRef( aTemplate->stmt,
                                                  NULL,
@@ -2225,8 +2234,7 @@ IDE_RC qmnINST::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
                   != IDE_SUCCESS);
 
         // Memory 재사용을 위한 Memory 이동
-        IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
-                  != IDE_SUCCESS);
+        IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
         IDE_TEST( aCursorIter->cursor.readNewRow( (const void **) & sRow,
                                                   & sRid )
@@ -2235,6 +2243,13 @@ IDE_RC qmnINST::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnINST::checkInsertChildRefOnScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

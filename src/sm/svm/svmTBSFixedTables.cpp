@@ -196,8 +196,7 @@ IDE_RC buildRecordForVolTablespaceDesc(
 
     while( sCurTBS != NULL )
     {
-        if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE ) 
+        if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) 
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -208,9 +207,9 @@ IDE_RC buildRecordForVolTablespaceDesc(
                   != IDE_SUCCESS);
         
         IDE_TEST(iduFixedTable::buildRecord(
-                     aHeader,
-                     aMemory,
-                     (void *) &sTBSDesc )
+                                     aHeader,
+                                     aMemory,
+                                     (void *) &sTBSDesc )
                  != IDE_SUCCESS);
 
         // Drop된 Tablespace는 SKIP한다

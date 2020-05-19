@@ -16,7 +16,7 @@
  
  
 /***********************************************************************
- * $Id: qmnConnectBy.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnConnectBy.h 82490 2018-03-16 00:17:55Z donovan.seo $
  ***********************************************************************/
 
 #ifndef _O_QMN_CONNECT_BY_H_
@@ -39,6 +39,14 @@
 #define QMNC_CNBY_FROM_DUAL_MASK           (0x00000004)
 #define QMNC_CNBY_FROM_DUAL_FALSE          (0x00000000)
 #define QMNC_CNBY_FROM_DUAL_TRUE           (0x00000004)
+
+#define QMNC_CNBY_JOIN_MASK                (0x00000008)
+#define QMNC_CNBY_JOIN_FALSE               (0x00000000)
+#define QMNC_CNBY_JOIN_TRUE                (0x00000008)
+
+#define QMNC_CNBY_SIBLINGS_MASK            (0x00000010)
+#define QMNC_CNBY_SIBLINGS_FALSE           (0x00000000)
+#define QMNC_CNBY_SIBLINGS_TRUE            (0x00000010)
 
 /* First Initialization Done */
 #define QMND_CNBY_INIT_DONE_MASK           (0x00000001)
@@ -107,6 +115,7 @@ typedef struct qmncCNBY
 
     qmcMtrNode    * sortNode;            /* Sort Temp Column */
     qmcMtrNode    * baseSortNode;        /* base Sort Temp Column */
+    qmcMtrNode    * mBaseMtrNode;        /* base Sort Temp Column */
 
     /* PROJ-2641 Hierarchy query Index */
     const void    * mTableHandle;
@@ -127,7 +136,9 @@ typedef struct qmncCNBY
 
     UInt            mtrNodeOffset;       /* Mtr node Offset */
     UInt            baseSortOffset;
+    UInt            mSortNodeOffset;
     UInt            sortMTROffset;       /* Sort Mgr Offset */
+    UInt            mBaseSortMTROffset;
 } qmncCNBY;
 
 typedef struct qmndCNBY
@@ -156,6 +167,7 @@ typedef struct qmndCNBY
 
     SLong           startWithPos;
 
+    qmdMtrNode    * mBaseMtrNode;
     qmdMtrNode    * mtrNode;
     qmcdSortTemp  * baseMTR;
     qmcdSortTemp  * sortMTR;
@@ -247,12 +259,23 @@ public:
     static IDE_RC doItNextTableDisk( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan,
                                      qmcRowFlag * aFlag );
+
+    static IDE_RC doItFirstJoin( qcTemplate * aTemplate,
+                                 qmnPlan    * aPlan,
+                                 qmcRowFlag * aFlag );
+
+    static IDE_RC doItNextJoin( qcTemplate * aTemplate,
+                                qmnPlan    * aPlan,
+                                qmcRowFlag * aFlag );
 private:
 
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncCNBY   * aCodePlan,
                              qmndCNBY   * aDataPlan );
 
+    static IDE_RC firstInitForJoin( qcTemplate * aTemplate,
+                                    qmncCNBY   * aCodePlan,
+                                    qmndCNBY   * aDataPlan );
     /* CMTR child를 수행 */
     static IDE_RC execChild( qcTemplate * aTemplate,
                              qmncCNBY   * aCodePlan,
@@ -435,6 +458,23 @@ private:
     static IDE_RC pushStackTableDisk( qcTemplate  * aTemplate,
                                       qmndCNBY    * aDataPlan,
                                       qmnCNBYItem * aItem );
+
+    static IDE_RC searchNextLevelDataForJoin( qcTemplate  * aTemplate,
+                                              qmncCNBY    * aCodePlan,
+                                              qmndCNBY    * aDataPlan,
+                                              qmnCNBYItem * aItem,
+                                              idBool      * aExist );
+
+    static IDE_RC searchSiblingDataForJoin( qcTemplate * aTemplate,
+                                            qmncCNBY   * aCodePlan,
+                                            qmndCNBY   * aDataPlan,
+                                            idBool     * aBreak );
+
+    static IDE_RC searchKeyRangeRowForJoin( qcTemplate  * aTemplate,
+                                            qmncCNBY    * aCodePlan,
+                                            qmndCNBY    * aDataPlan,
+                                            qmnCNBYItem * aOldItem,
+                                            qmnCNBYItem * aNewItem );
 };
 
 #endif /* _O_QMN_COONECT_BY_H_ */

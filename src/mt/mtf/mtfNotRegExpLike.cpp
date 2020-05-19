@@ -91,6 +91,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfNotRegExpLikeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

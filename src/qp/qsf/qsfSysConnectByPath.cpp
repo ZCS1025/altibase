@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfSysConnectByPath.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsfSysConnectByPath.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * SYS_CONNECT_BY_PATH( ColumnName, '\' )
  *  지정된 컬럼에 대해 레벨 1부터 현제 레벨 까지의 값을 구분자로 구분해서 보여준다.
@@ -75,6 +75,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfSysConnectByPathCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

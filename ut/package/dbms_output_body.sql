@@ -27,6 +27,18 @@ begin
     dummy := nvl2(print_out( chr(10)), 0, -1);
 end;
 
+procedure print_enable
+as
+begin
+    execute immediate 'alter session set __print_out_enable = 1';
+end;
+
+procedure print_disable
+as
+begin
+    execute immediate 'alter session set __print_out_enable = 0';
+end;
+
 end;
 
 /

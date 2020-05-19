@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.cpp 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: qdc.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -68,7 +68,7 @@
 //           value 를 하나만 갖는 property 기준으로 단순하게 구현함.
 //------------------------------------------------------------------------
 
-#define QDC_OPTIMIZER_FEATURE_CNT   (30)
+#define QDC_OPTIMIZER_FEATURE_CNT   (32)
 
 static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
 {
@@ -230,7 +230,17 @@ static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
       (SChar *)"1",
       (SChar *)"0",
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
-      PLAN_PROPERTY_OPTIMIZER_HIERARCHY_TRANSFORMATION }
+      PLAN_PROPERTY_OPTIMIZER_HIERARCHY_TRANSFORMATION },
+    { (SChar *)"__OPTIMIZER_UNNEST_COMPATIBILITY",  // 31
+      (SChar *)"1",
+      (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
+      PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY },
+    { (SChar *)"__OPTIMIZER_INVERSE_JOIN_ENABLE",               // 32
+      (SChar *)"0",
+      (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
+      PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY }
 };
 
 
@@ -309,6 +319,31 @@ IDE_RC qdc::shrinkMemPool( qcStatement * aStatement )
 
 #undef IDE_FN
 }
+
+
+
+
+//BUG-45182
+//ALTER SYSTEM dump_callstack;
+IDE_RC qdc::dumpAllCallstacks( qcStatement * aStatement )
+{
+#define IDE_FN "qdc::dumpAllCallstacks"
+
+    // check privileges
+    IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
+
+    // execution
+    IDE_TEST( iduStack::dumpAllCallstack() != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
+#undef IDE_FN
+}
+
 // ALTER SYSTEM REORGANIZE
 IDE_RC qdc::reorganize(qcStatement * aStatement)
 {

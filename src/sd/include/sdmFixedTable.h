@@ -34,6 +34,16 @@ typedef struct sdmConnectInfo4PV
     idBool   mLinkFailure;
 } sdmConnectInfo4PV;
 
+typedef struct sdmMetaNodeInfo4PV
+{
+    ULong       mSMN;       // SMN
+} sdmMetaNodeInfo4PV;
+
+typedef struct sdmDataNodeInfo4PV
+{
+    ULong       mSMN;       // SMN
+} sdmDataNodeInfo4PV;
+
 class sdmFixedTable
 {
 public:
@@ -43,6 +53,16 @@ public:
         void                * aHeader,
         void                * aDumpObj,
         iduFixedTableMemory * aMemory );
+
+    static IDE_RC buildRecordForShardMetaNodeInfo( idvSQL              * aStatistics,
+                                                   void                * aHeader,
+                                                   void                * aDumpObj,
+                                                   iduFixedTableMemory * aMemory );
+
+    static IDE_RC buildRecordForShardDataNodeInfo( idvSQL              * aStatistics,
+                                                   void                * aHeader,
+                                                   void                * aDumpObj,
+                                                   iduFixedTableMemory * aMemory );
 };
 
 #endif /* _O_SDM_FIXED_TABLE_H_ */

@@ -161,19 +161,23 @@ public class GlobalPiclInstance {
         mCpu4CPT = mPicl4CPT.getCpu();
 
         if(!Picl.isFileExist) {
-            AltimonLogger.theLogger.warn("PICL(Platform Information Collection Library) Library file does not exist.");
+            AltimonLogger.theLogger.warn(String.format(
+                        "PICL file(%s) does not exist.",
+                        Picl.mPiclLibName));
             //			System.exit(1); // BUG-43234
         }
 
         if(!Picl.isLoad)
         {
-            AltimonLogger.theLogger.warn("PICL(Platform Information Collection Library) could not be loaded.");
+            AltimonLogger.theLogger.warn(String.format(
+                        "PICL file(%s) could not be loaded.",
+                        Picl.mPiclLibName));
             //			System.exit(1); // BUG-43234
         }
 
         if(!Picl.isSupported)
         {
-            AltimonLogger.theLogger.warn("PICL(Platform Information Collection Library) does not support this platform.");
+            AltimonLogger.theLogger.warn("PICL does not support this platform.");
             //			System.exit(1); // BUG-43234
         }
     }

@@ -55,8 +55,13 @@ typedef struct qmgMRGE
     qcStatement        * selectTargetStatement;
     
     qcStatement        * updateStatement;
+    qcStatement        * deleteStatement;
     qcStatement        * insertStatement;
     qcStatement        * insertNoRowsStatement;  // BUG-37535
+
+    // insert where clause
+    qtcNode            * whereForInsert;
+
 } qmgMRGE;
 
 //---------------------------------------------------

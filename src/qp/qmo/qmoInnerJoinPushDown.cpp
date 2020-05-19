@@ -37,6 +37,13 @@ IDE_RC qmoInnerJoinPushDown::doTransform( qcStatement * aStatement,
 
     IDE_TEST_CONT( aQuerySet->SFWGH->where == NULL, skip );
 
+    /* PROJ-2509 Hierarchy Query Join
+     * Hierarchy Query의 Innerjoin시 PushDown을 하게되면 Hierarchy Query의
+     * Filter 로 처리되어야할 Where절의 predicate시 Join 절로 내려가서
+     * 결과가 다르게 나오게 되므로 InnerJoin PushDown을 하지 않도록 한다.
+     */
+    IDE_TEST_CONT( aQuerySet->SFWGH->hierarchy != NULL, skip );
+
     for( sFrom = aQuerySet->SFWGH->from;
          sFrom != NULL;
          sFrom = sFrom->next )

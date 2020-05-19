@@ -330,7 +330,9 @@ ACI_RC ulnParamDataCore(ulnFnContext *aFnContext,
             {
                 ACI_TEST( ULN_FNCONTEXT_GET_RC( aFnContext ) != SQL_NO_DATA );
                 ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
-                ACI_TEST( sDbc == NULL );
+                /* BUG-46052 codesonar Null Pointer Dereference */
+                ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
                 ACI_TEST( sDbc->mAttrOdbcCompatibility == 3 );
                 ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS );
             }
@@ -366,6 +368,11 @@ ACI_RC ulnParamDataCore(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
     {
         /* HY013 */
@@ -391,7 +398,8 @@ SQLRETURN ulnParamData(ulnStmt *aStmt, void **aValuePtr)
     ULN_FLAG_UP(sNeedExit);
 
     ULN_FNCONTEXT_GET_DBC(&sFnContext, sDbc);
-    ACI_TEST(sDbc == NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * ===========================================
@@ -460,6 +468,11 @@ SQLRETURN ulnParamData(ulnStmt *aStmt, void **aValuePtr)
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(ROWSET_PARAMDATA_FAILED_EXCEPTION)
     {
         ulnDiagRecMoveAll(&aStmt->mObj, &aStmt->mRowsetStmt->mObj);

@@ -479,8 +479,8 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_Swap_update
       return;
   }
 
-  swapTotal *= PAGESIZE;
-  swapFree *= PAGESIZE;
+  swapTotal *= PAGESIZE / 1024;
+  swapFree *= PAGESIZE / 1024;
       
   // Save into Java Object
   (*env)->SetLongField(env, swap_obj, swapTotal_fid, swapTotal);

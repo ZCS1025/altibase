@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoMultiNonPlan.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoMultiNonPlan.h 84968 2019-03-06 05:01:56Z donovan.seo $
  *
  * Description :
  *     Plan Generator
@@ -122,8 +122,11 @@ typedef struct qmoMRGEInfo
     qcStatement       * selectTargetStatement;
     
     qcStatement       * updateStatement;
+    qcStatement       * deleteStatement;
     qcStatement       * insertStatement;
     qcStatement       * insertNoRowsStatement;
+    
+    qtcNode           * whereForInsert;
     
     UInt                resetPlanFlagStartIndex;
     UInt                resetPlanFlagEndIndex;
@@ -205,6 +208,9 @@ private:
                                        qtcNode      ** aSubqueryFilter ,
                                        qtcNode      ** aPartitionFilter ,
                                        qtcNode      ** aRemain );
+
+    static IDE_RC    checkSimplePCRD( qcStatement * aStatement,
+                                      qmncPCRD    * aPCRD );
 };
 
 #endif /* _O_QMO_MULTI_CHILD_NON_MATER_H_ */

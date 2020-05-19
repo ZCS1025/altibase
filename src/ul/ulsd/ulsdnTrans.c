@@ -11,6 +11,7 @@
 #include <ulnPrivate.h>
 
 #include <ulsd.h>
+#include <ulsdnExecute.h>
 #include <ulsdnTrans.h>
 
 ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
@@ -18,8 +19,6 @@ ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
                                       void               *aServiceSession,
                                       void               *aUserContext)
 {
-    ulnFnContext           *sFnContext  = (ulnFnContext *)aUserContext;
-    ulnDbc                 *sDbc        = sFnContext->mHandle.mDbc;
     acp_uint8_t             sReadOnly;
 
     ACP_UNUSED(aProtocol);
@@ -27,9 +26,20 @@ ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
 
     CMI_RD1(aProtocolContext, sReadOnly);
 
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    return ulsdCallbackShardPrepareResultInternal( aUserContext,
+                                                   sReadOnly );
+}
+
+ACI_RC ulsdCallbackShardPrepareResultInternal( void        * aUserContext,
+                                               acp_uint8_t   aReadOnly )
+{
+    ulnFnContext           *sFnContext  = (ulnFnContext *)aUserContext;
+    ulnDbc                 *sDbc        = sFnContext->mHandle.mDbc;
+
     ACI_TEST_RAISE(ULN_OBJ_GET_TYPE(sDbc) != ULN_OBJ_TYPE_DBC, LABEL_MEM_MANAGE_ERR);
 
-    if ( sReadOnly == (acp_uint8_t)1 )
+    if ( aReadOnly == (acp_uint8_t)1 )
     {
         sDbc->mShardDbcCxt.mReadOnlyTx = ACP_TRUE;
     }
@@ -44,7 +54,7 @@ ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
     {
         ulnError(sFnContext,
                  ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
-                 "CallbackShardPrepareResult, Object is not a DBC handle.");
+                 "CallbackShardPrepareResultInternal, Object is not a DBC handle.");
     }
     ACI_EXCEPTION_END;
 

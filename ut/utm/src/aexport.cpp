@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: aexport.cpp 80542 2017-07-19 08:01:20Z daramix $
+ * $Id: aexport.cpp 82975 2018-05-04 03:50:15Z bethy $
  **********************************************************************/
 
 #include <idl.h>
@@ -336,9 +336,7 @@ static IDE_RC createFile( SChar *aUserName)
 
     IDE_EXCEPTION(openError);
     {
-        uteSetErrorCode(&gErrorMgr,
-                        utERR_ABORT_openFileError,
-                        sFileName);
+        printError();
     }
     IDE_EXCEPTION_END;
 
@@ -547,6 +545,7 @@ static IDE_RC hasEnoughPriv4Analysis(SChar* aUserName)
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Insufficient_Priv_Error);
     }
+    IDE_EXCEPTION_END;
 
     printError();
 
@@ -554,8 +553,6 @@ static IDE_RC hasEnoughPriv4Analysis(SChar* aUserName)
     {
         FreeStmt( &s_userStmt );
     }
-
-    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
@@ -875,15 +872,11 @@ static IDE_RC doObjModeExport()
     
     IDE_EXCEPTION(openError);
     {
-        uteSetErrorCode(&gErrorMgr,
-                        utERR_ABORT_openFileError,
-                        sCreateFileName);
+        printError();
     }
     IDE_EXCEPTION(closeError);
     {
-        uteSetErrorCode(&gErrorMgr,
-                        utERR_ABORT_openFileError,
-                        "sql file");
+        printError();
     }
     IDE_EXCEPTION(init_error);
     {

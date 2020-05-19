@@ -464,7 +464,7 @@ IDE_RC mmuAccessList::loadAccessList()
         }
         else
         {
-            sMask[i] = idlOS::atoi(sTk);
+            sMask[i] = (UInt)idlOS::atoi(sTk);
             /* max ipv6 addr bits: 128 */
             IDE_TEST_RAISE( sMask[i] > 128, 
                             ERR_ABORT_INVALID_ACCESS_LIST_VALUE );

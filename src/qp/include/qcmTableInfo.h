@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmTableInfo.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmTableInfo.h 83512 2018-07-18 00:47:26Z hykim $
  **********************************************************************/
 
 #ifndef _O_QCM_TABLE_INFO_H_
@@ -74,6 +74,7 @@ enum qcmPartitionMethod
     QCM_PARTITION_METHOD_RANGE = 0,
     QCM_PARTITION_METHOD_HASH  = 1,
     QCM_PARTITION_METHOD_LIST  = 2,
+    QCM_PARTITION_METHOD_RANGE_USING_HASH = 3,
     QCM_PARTITION_METHOD_NONE  = 100
 };
 
@@ -118,6 +119,14 @@ enum qcmAccessOption
     QCM_ACCESS_OPTION_READ_APPEND   /* 'A' */
 };
 
+/* BUG-45646 */
+typedef enum
+{
+    QCM_PV_TYPE_NONE   = 0,
+    QCM_PV_TYPE_NORMAL = 1,
+    QCM_PV_TYPE_SHARD  = 2
+} qcmPVType;
+
 // PROJ-1407 Temporary Table
 typedef struct qcmTemporaryInfo
 {
@@ -133,6 +142,7 @@ typedef struct qcmTableInfo
     void                    * tableHandle;
     SChar                     name[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qcmTableType              tableType;
+    qcmPVType                 mPVType;
 
     // BUG-13725
     UInt                      operatableFlag;

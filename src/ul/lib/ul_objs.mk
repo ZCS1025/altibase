@@ -150,7 +150,8 @@ ULN_SRCS        = $(UL_DIR)/uln/ulnPrepare.c             \
                   $(UL_DIR)/uln/ulnTrimLob.c             \
                   $(UL_DIR)/uln/ulnSemiAsyncPrefetch.c   \
                   $(UL_DIR)/uln/ulnFetchOpAsync.c        \
-                  $(UL_DIR)/uln/ulnShard.c
+                  $(UL_DIR)/uln/ulnShard.c	               \
+                  $(UL_DIR)/uln/ulnSavepoint.c
 
 ULNW_SRCS		= $(UL_DIR)/ulnw/ulnwCPoolAllocHandle.c	 \
 				  $(UL_DIR)/ulnw/ulnwCPoolFreeHandle.c   \
@@ -185,7 +186,9 @@ ULSDN_SRCS      = $(UL_DIR)/ulsd/ulsdnExecute.c         \
                   $(UL_DIR)/ulsd/ulsdnDbc.c             \
                   $(UL_DIR)/ulsd/ulsdnDescribeCol.c     \
                   $(UL_DIR)/ulsd/ulsdnBindData.c        \
-                  $(UL_DIR)/ulsd/ulsdnTrans.c
+                  $(UL_DIR)/ulsd/ulsdnTrans.c           \
+                  $(UL_DIR)/ulsd/ulsdnStmt.c            \
+                  $(UL_DIR)/ulsd/ulsdnFailover.c
 
 ULSD_SRC        = $(UL_DIR)/ulsd/ulsdError.c            \
                   $(UL_DIR)/ulsd/ulsdConnString.c       \
@@ -205,7 +208,8 @@ ULSD_SRC        = $(UL_DIR)/ulsd/ulsdError.c            \
                   $(UL_DIR)/ulsd/ulsdModule.c           \
                   $(UL_DIR)/ulsd/ulsdModule_COORD.c     \
                   $(UL_DIR)/ulsd/ulsdModule_META.c      \
-                  $(UL_DIR)/ulsd/ulsdModule_NODE.c
+                  $(UL_DIR)/ulsd/ulsdModule_NODE.c      \
+                  $(UL_DIR)/ulsd/ulsdFailover.c
 
 ULO_SRC_SQL_WRAPPER       = $(UL_DIR)/ulc/ulcSqlWrapper.c
 
@@ -238,6 +242,7 @@ UL_SRCS_ULA         = $(MT_C_CLIENT_SRCS) $(ULN_SRCS) $(ULU_SRCS) $(ULS_SRCS) $(
 #
 SHARDCLI_LIB_PATH      = $(ALTI_HOME)/lib/$(LIBPRE)shardcli.$(LIBEXT)
 SHARDCLI_SHLIB_PATH    = $(ALTI_HOME)/lib/$(LIBPRE)shardcli_sl.$(SOEXT)
+SHARDLOADERCLI_LIB_PATH      = $(ALTI_HOME)/lib/$(LIBPRE)shardloadercli.$(LIBEXT)
 ODBCCLI_LIB_PATH       = $(ALTI_HOME)/lib/$(LIBPRE)odbccli.$(LIBEXT)
 ODBCCLI_SHLIB_PATH     = $(ALTI_HOME)/lib/$(LIBPRE)odbccli_sl.$(SOEXT)
 ALA_LIB_PATH           = $(ALTI_HOME)/lib/$(LIBPRE)ala.$(LIBEXT)
@@ -276,6 +281,7 @@ ODBCCLI_OBJS    = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_aoc.$(OBJEXT)     ,$(b
 ODBCCLI_SHOBJS  = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_soc.$(OBJEXT)     ,$(basename $(ODBCCLI_SRCS)))
 SHARDCLI_OBJS   = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_sd_aoc.$(OBJEXT)  ,$(basename $(SHARDCLI_SRCS)))
 SHARDCLI_SHOBJS = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_sd_soc.$(OBJEXT)  ,$(basename $(SHARDCLI_SRCS)))
+SHARDLOADERCLI_OBJS   = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_sdld_aoc.$(OBJEXT)  ,$(basename $(SHARDCLI_SRCS)))
 #BUG-22936
 UNIX_ODBC64_OBJS = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_64.$(OBJEXT)     ,$(basename $(UNIX_ODBC_SRCS)))
 UNIX_ODBC_OBJS  = $(patsubst $(DEV_DIR)/%,$(TARGET_DIR)/%_soc.$(OBJEXT)     ,$(basename $(patsubst $(UL_DIR)/ulc/ulcSqlWrapper.c,,$(patsubst $(UL_DIR)/uln/ulnSetConnectAttr.c,,$(UNIX_ODBC_SRCS))))) \

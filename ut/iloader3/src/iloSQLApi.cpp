@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloSQLApi.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iloSQLApi.cpp 83627 2018-08-06 10:11:18Z lswhh $
  **********************************************************************/
 
 #include <idl.h>
@@ -1525,7 +1525,7 @@ SInt iloSQLApi::setQueryTimeOut( SInt aTime )
     rc = SQLAllocStmt( m_ICon, &sStmt );
     IDE_TEST_RAISE( rc != SQL_SUCCESS, err_alloc );
 
-    idlOS::sprintf(sQuery, SQL_HEADER"alter session set query_timeout=%d", aTime );
+    idlOS::sprintf(sQuery, SHARD_LOADER_SQL_PREFIX"alter session set query_timeout=%d", aTime );
 
     rc = SQLExecDirect( sStmt, (SQLCHAR *)sQuery, SQL_NTS );
     IDE_TEST_RAISE( rc != SQL_SUCCESS, err_exec );
@@ -1533,7 +1533,7 @@ SInt iloSQLApi::setQueryTimeOut( SInt aTime )
     rc = SQLFreeStmt(sStmt, SQL_CLOSE);
     IDE_TEST_RAISE(rc != SQL_SUCCESS, FreeStmtError);
 
-    idlOS::sprintf(sQuery, SQL_HEADER"alter session set utrans_timeout=%d", aTime );
+    idlOS::sprintf(sQuery, SHARD_LOADER_SQL_PREFIX"alter session set utrans_timeout=%d", aTime );
 
     rc = SQLExecDirect( sStmt, (SQLCHAR *)sQuery, SQL_NTS );
     IDE_TEST_RAISE( rc != SQL_SUCCESS, err_exec );
@@ -1541,7 +1541,7 @@ SInt iloSQLApi::setQueryTimeOut( SInt aTime )
     rc = SQLFreeStmt(sStmt, SQL_CLOSE);
     IDE_TEST_RAISE(rc != SQL_SUCCESS, FreeStmtError);
 
-    idlOS::sprintf(sQuery, SQL_HEADER"alter session set fetch_timeout=%d", aTime );
+    idlOS::sprintf(sQuery, SHARD_LOADER_SQL_PREFIX"alter session set fetch_timeout=%d", aTime );
 
     rc = SQLExecDirect( sStmt, (SQLCHAR *)sQuery, SQL_NTS );
     IDE_TEST_RAISE( rc != SQL_SUCCESS, err_exec );
@@ -1549,7 +1549,7 @@ SInt iloSQLApi::setQueryTimeOut( SInt aTime )
     rc = SQLFreeStmt(sStmt, SQL_CLOSE);
     IDE_TEST_RAISE(rc != SQL_SUCCESS, FreeStmtError);
 
-    idlOS::sprintf(sQuery, SQL_HEADER"alter session set idle_timeout=%d", aTime );
+    idlOS::sprintf(sQuery, SHARD_LOADER_SQL_PREFIX"alter session set idle_timeout=%d", aTime );
 
     rc = SQLExecDirect( sStmt, (SQLCHAR *)sQuery, SQL_NTS );
     IDE_TEST_RAISE( rc != SQL_SUCCESS, err_exec );
@@ -1591,11 +1591,11 @@ IDE_RC iloSQLApi::alterReplication( SInt aBool )
 
     if ( aBool == SQL_TRUE )
     {
-        idlOS::sprintf(sQuery, SQL_HEADER"alter session set replication=true");
+        idlOS::sprintf(sQuery, SHARD_LOADER_SQL_PREFIX"alter session set replication=true");
     }
     else
     {
-        idlOS::sprintf(sQuery, SQL_HEADER"alter session set replication=false");
+        idlOS::sprintf(sQuery, SHARD_LOADER_SQL_PREFIX"alter session set replication=false");
     }
 
     rc = SQLExecDirect( sStmt, (SQLCHAR *)sQuery, SQL_NTS );

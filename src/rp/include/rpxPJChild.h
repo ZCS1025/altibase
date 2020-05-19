@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJChild.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxPJChild.h 83321 2018-06-21 07:03:04Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPX_PJ_CHILD_H_    // Parallel Job Child
@@ -63,6 +63,11 @@ private:
     smiStatement     * mStatement;
 
     rpnMessenger       mMessenger;
+
+    RP_SOCKET_TYPE     mSocketType;
+    SChar            * mIPAddress;
+    UInt               mPortNo;
+    rpIBLatency        mIBLatency;
     
     iduListNode * getFirstNode();
     iduListNode * getNextNode( iduListNode *aNode );
@@ -73,11 +78,15 @@ public:
 
     IDE_RC initialize( rpxPJMgr     * aParent,
                        rpdMeta      * aMeta,
+                       RP_SOCKET_TYPE aSocketType,
+                       SChar        * aIPAddress,
+                       UInt           aPortNo,
+                       rpIBLatency    aIBLatency,
                        smiStatement * aStatement,
                        UInt           aChildCount,
                        UInt           aNumber,
                        iduList      * aSyncList,
-                       idBool       * aExitFlag );
+                       idBool       * aExitFlag ); 
     void   destroy();
 
     /* BUG-38533 numa aware thread initialize */

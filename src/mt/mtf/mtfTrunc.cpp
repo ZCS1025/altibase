@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTrunc.cpp 82146 2018-01-29 06:47:57Z andrew.shin $
+ * $Id: mtfTrunc.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -87,6 +87,7 @@ static const mtcExecute mtfExecuteFloatFor1Arg = {
     mtf::calculateNA,
     mtfTruncCalculateFloatFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -98,6 +99,7 @@ static const mtcExecute mtfExecuteFloatFor2Args = {
     mtf::calculateNA,
     mtfTruncCalculateFloatFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -109,6 +111,7 @@ static const mtcExecute mtfExecuteFor1Arg = {
     mtf::calculateNA,
     mtfTruncCalculateFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -120,6 +123,7 @@ static const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfTruncCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

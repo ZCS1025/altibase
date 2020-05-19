@@ -32,16 +32,22 @@ static IDE_RC mmmPhaseActionInitCM(mmmPhase        aPhase,
     // BUG-19465 : CM_Buffer의 pending list를 제한
     sCmMaxPendingList = mmuProperty::getCmMaxPendingList();
 
-    switch(aPhase)
+    switch (aPhase)
     {
         case MMM_STARTUP_PRE_PROCESS:
-            IDE_TEST(cmiInitialize( sCmMaxPendingList ) != IDE_SUCCESS);
+            IDE_TEST(cmiInitialize(sCmMaxPendingList) != IDE_SUCCESS);
 
             /* BUG-44488 */
-            if( mmuProperty::getSslEnable() == ID_TRUE ) 
+            if (mmuProperty::getSslEnable() == ID_TRUE) 
             {
                 /* Load OpenSSL library dynamically */
                 IDE_TEST(cmiSslInitialize() != IDE_SUCCESS);
+            }
+
+            /* PROJ-2681 */
+            if (mmuProperty::getIBEnable() == ID_TRUE)
+            {
+                IDE_TEST(cmiIBInitialize() != IDE_SUCCESS);
             }
 
             IDE_TEST(mmtThreadManager::setupProtocolCallback() != IDE_SUCCESS);

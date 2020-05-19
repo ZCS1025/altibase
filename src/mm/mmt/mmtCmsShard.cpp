@@ -23,7 +23,6 @@
 #include <qci.h>
 #include <mmtServiceThread.h>
 #include <cm.h>
-#include <qci.h>
 #include <sdi.h>
 #include <sduVersion.h>
 #include <mmErrorCode.h>
@@ -57,16 +56,28 @@ IDE_RC mmtServiceThread::shardHandshakeProtocol( cmiProtocolContext * aCtx,
     PDL_UNUSED_ARG(aSessionOwner);
     PDL_UNUSED_ARG(sFlags);
 
+    IDU_FIT_POINT_RAISE( "mmtServiceThread::shardHandshakeProtocol::ShardMetaVersionMismatch",
+                         ShardMetaVersionMismatch );
+
     if ( (sMajorVersion == SHARD_MAJOR_VERSION) &&
-         (sMinorVersion == SHARD_MINOR_VERSION) &&
-         (sPatchVersion == SHARD_PATCH_VERSION) )
+         (sMinorVersion == SHARD_MINOR_VERSION) )
     {
         CMI_WOP(aCtx, CMP_OP_DB_ShardHandshakeResult);
         CMI_WR1(aCtx, sMajorVersion);
         CMI_WR1(aCtx, sMinorVersion);
         CMI_WR1(aCtx, sPatchVersion);
         CMI_WR1(aCtx, sFlags);
-        IDE_TEST(cmiSend(aCtx, ID_TRUE) != IDE_SUCCESS);
+
+        if ( cmiGetLinkImpl( aCtx ) == CMI_LINK_IMPL_IPCDA )
+        {
+            /* PROJ-2616 */
+            MMT_IPCDA_INCREASE_DATA_COUNT( aCtx );
+        }
+        else
+        {
+            IDE_TEST( cmiSend( aCtx, ID_TRUE ) != IDE_SUCCESS );
+        }
+
     }
     else
     {
@@ -88,15 +99,18 @@ IDE_RC mmtServiceThread::shardHandshakeProtocol( cmiProtocolContext * aCtx,
 
 /* PROJ-2598 */
 static IDE_RC answerShardNodeGetListResult( cmiProtocolContext * aProtocolContext,
-                                            sdiNodeInfo        * aNodeInfo )
+                                            sdiNodeInfo        * aNodeInfo,
+                                            mmcSession         * aSession )
 {
     cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
     UInt               sWriteSize = 1+2;
     UChar              sLen;
     UChar              sIsTestEnable = (UChar)0;
     UShort             i;
+    sdiShardPin        sShardPin = SDI_SHARD_PIN_INVALID;
+    ULong              sShardMetaNumber = ID_ULONG(0);
 
-    if ( QCU_SHARD_TEST_ENABLE == 1 )
+    if ( SDU_SHARD_TEST_ENABLE == 1 )
     {
         sIsTestEnable = (UChar)1;
     }
@@ -111,7 +125,7 @@ static IDE_RC answerShardNodeGetListResult( cmiProtocolContext * aProtocolContex
         sWriteSize += idlOS::strlen(aNodeInfo->mNodes[i].mNodeName);
     }
 
-    sWriteSize += 1;
+    sWriteSize += 1 + 8 + 8;
 
     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
     CMI_WRITE_CHECK( aProtocolContext, sWriteSize );
@@ -133,6 +147,12 @@ static IDE_RC answerShardNodeGetListResult( cmiProtocolContext * aProtocolContex
         CMI_WCP( aProtocolContext, &(aNodeInfo->mNodes[i].mAlternateServerIP), 16 );
         CMI_WR2( aProtocolContext, &(aNodeInfo->mNodes[i].mAlternatePortNo) );
     }
+
+    sShardPin = aSession->getShardPIN();
+    CMI_WR8( aProtocolContext, &sShardPin );
+
+    sShardMetaNumber = aSession->getShardMetaNumber();
+    CMI_WR8( aProtocolContext, &sShardMetaNumber );
 
     /* PROJ-2616 */
     MMT_IPCDA_INCREASE_DATA_COUNT(aProtocolContext);
@@ -158,31 +178,75 @@ static IDE_RC answerShardNodeGetListResult( cmiProtocolContext * aProtocolContex
 /* PROJ-2598 */
 IDE_RC mmtServiceThread::shardNodeGetListProtocol( cmiProtocolContext *aProtocolContext,
                                                    cmiProtocol        * /* aProtocol */,
-                                                   void               * /*aSessionOwner*/,
-                                                   void               * /*aUserContext*/ )
+                                                   void               * aSessionOwner,
+                                                   void               * aUserContext )
 {
-    IDE_RC            sRet;
-    qciShardNodeInfo  sNodeInfo;
+    qciShardNodeInfo   sNodeInfo;
+    mmcTask          * sTask             = (mmcTask *)aSessionOwner;
+    mmtServiceThread * sThread           = (mmtServiceThread *)aUserContext;
+    mmcSession       * sSession          = NULL;
+    ULong              sOldSMNForSession = ID_ULONG(0);
+    ULong              sDataSMN          = ID_ULONG(0);
 
-    qci::getShardNodeInfo( &sNodeInfo );
+    IDE_TEST_RAISE( sTask == NULL, NoTask );
 
-    sRet = answerShardNodeGetListResult( aProtocolContext,
-                                         &sNodeInfo );
+    sSession          = sTask->getSession();
+    sOldSMNForSession = sSession->getShardMetaNumber();
 
-    return sRet;
+    /* BUG-46090 Meta Node SMN 전파 */
+    sSession->setMetaNodeShardCli( ID_TRUE );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    sDataSMN = sdi::getSMNForDataNode();
+    sSession->setShardMetaNumber( sDataSMN );
+
+    IDE_TEST( sdi::getExternalNodeInfo( &sNodeInfo,
+                                        sDataSMN )
+              != IDE_SUCCESS );
+
+    IDE_TEST( answerShardNodeGetListResult( aProtocolContext,
+                                            &sNodeInfo,
+                                            sSession )
+              != IDE_SUCCESS );
+
+    /* BUG-46100 Session SMN Update */
+    if ( ( sOldSMNForSession < sDataSMN ) &&
+         ( sdi::getNeedToDisconnect( sSession->getQciSession() ) == ID_FALSE ) )
+    {
+        sSession->clearShardDataInfo();
+        sdi::finalizeSession( sSession->getQciSession() );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( NoTask );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_NOT_SPECIFIED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return sThread->answerErrorResult( aProtocolContext,
+                                       CMI_PROTOCOL_OPERATION(DB, ShardNodeGetList),
+                                       0 );
 }
 
 /* PROJ-2622 Shard Retry Execution */
 static IDE_RC answerShardNodeUpdateListResult( cmiProtocolContext * aProtocolContext,
-                                               sdiNodeInfo        * aNodeInfo )
+                                               sdiNodeInfo        * aNodeInfo,
+                                               mmcSession         * aSession )
 {
     cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
     UInt               sWriteSize = 1+2;
     UChar              sLen;
     UChar              sIsTestEnable = (UChar)0;
     UShort             i;
+    ULong              sShardMetaNumber = ID_ULONG(0);
 
-    if ( QCU_SHARD_TEST_ENABLE == 1 )
+    if ( SDU_SHARD_TEST_ENABLE == 1 )
     {
         sIsTestEnable = (UChar)1;
     }
@@ -197,7 +261,7 @@ static IDE_RC answerShardNodeUpdateListResult( cmiProtocolContext * aProtocolCon
         sWriteSize += idlOS::strlen(aNodeInfo->mNodes[i].mNodeName);
     }
 
-    sWriteSize += 1;
+    sWriteSize += 1 + 8;
 
     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
     CMI_WRITE_CHECK( aProtocolContext, sWriteSize );
@@ -219,6 +283,9 @@ static IDE_RC answerShardNodeUpdateListResult( cmiProtocolContext * aProtocolCon
         CMI_WCP( aProtocolContext, &(aNodeInfo->mNodes[i].mAlternateServerIP), 16 );
         CMI_WR2( aProtocolContext, &(aNodeInfo->mNodes[i].mAlternatePortNo) );
     }
+
+    sShardMetaNumber = aSession->getShardMetaNumber();
+    CMI_WR8( aProtocolContext, &sShardMetaNumber );
 
     /* PROJ-2616 */
     MMT_IPCDA_INCREASE_DATA_COUNT(aProtocolContext);
@@ -244,18 +311,43 @@ static IDE_RC answerShardNodeUpdateListResult( cmiProtocolContext * aProtocolCon
 /* PROJ-2622 Shard Retry Execution */
 IDE_RC mmtServiceThread::shardNodeUpdateListProtocol( cmiProtocolContext *aProtocolContext,
                                                       cmiProtocol        * /* aProtocol */,
-                                                      void               * /*aSessionOwner*/,
-                                                      void               * /*aUserContext*/ )
+                                                      void               * aSessionOwner,
+                                                      void               * aUserContext )
 {
-    IDE_RC            sRet;
-    qciShardNodeInfo  sNodeInfo;
+    qciShardNodeInfo   sNodeInfo;
+    mmcTask          * sTask    = (mmcTask *)aSessionOwner;
+    mmtServiceThread * sThread  = (mmtServiceThread *)aUserContext;
+    ULong              sDataSMN = ID_ULONG(0);
 
-    qci::getShardNodeInfo( &sNodeInfo );
+    IDE_TEST_RAISE( sTask == NULL, NoTask );
 
-    sRet = answerShardNodeUpdateListResult( aProtocolContext,
-                                            &sNodeInfo );
+    /* BUG-46090 Meta Node SMN 전파 */
+    sTask->getSession()->setMetaNodeShardCli( ID_TRUE );
 
-    return sRet;
+    /* PROJ-2701 Sharding online data rebuild */
+    sDataSMN = sdi::getSMNForDataNode();
+    sTask->getSession()->setShardMetaNumber( sDataSMN );
+
+    IDE_TEST( sdi::getExternalNodeInfo( &sNodeInfo,
+                                        sDataSMN )
+              != IDE_SUCCESS );
+
+    IDE_TEST( answerShardNodeUpdateListResult( aProtocolContext,
+                                               &sNodeInfo,
+                                               sTask->getSession() )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( NoTask );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_NOT_SPECIFIED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return sThread->answerErrorResult( aProtocolContext,
+                                       CMI_PROTOCOL_OPERATION(DB, ShardNodeUpdateList),
+                                       0 );
 }
 
 /* PROJ-2598 Shard pilot (shard analyze) */
@@ -340,13 +432,14 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
     qciShardAnalyzeInfo * sAnalyzeInfo;
     sdiRange            * sRange;
     UChar                 sSplitMethod;
-    UChar                 sSubSplitMethod;
+    UChar                 sSubSplitMethod = 0;
     UShort                sNodeCnt  = 0;
     UShort                sValueCnt = 0;
     UShort                sSubValueCnt = 0;
     UInt                  sWriteSize = 0;
 
-    UChar                 sSubKeyExists; 
+    UChar                 sSubKeyExists;
+    UChar                 sIsShardQuery;
 
     IDE_TEST( qci::getShardAnalyzeInfo( sQciStmt, &sAnalyzeInfo )
               != IDE_SUCCESS );
@@ -363,6 +456,15 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
         sSubKeyExists = 0;
     }
 
+    if ( sAnalyzeInfo->mIsCanMerge == ID_TRUE )
+    {
+        sIsShardQuery = 1;
+    }
+    else
+    {
+        sIsShardQuery = 0;
+    }
+
     /************************************************
      * Get protocol static context size
      ************************************************/
@@ -374,7 +476,7 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
                + 2 // resultSetCount
                + 1 // splitMethod
                + 4 // keyDataType
-               + 2 // defaultNodeId
+               + 4 // defaultNodeId
                + 1 // subKeyExists
                + 1 // isCanMerge
                + 2 // valueCount
@@ -499,7 +601,7 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
             /* Nothing to do. */
         }
 
-        sWriteSize += 2;
+        sWriteSize += 4;
     }
 
     /************************************************
@@ -518,11 +620,11 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
     /* PROJ-2598 Shard pilot(shard analyze) */
     CMI_WR1( aProtocolContext, sSplitMethod );
     CMI_WR4( aProtocolContext, &(sAnalyzeInfo->mKeyDataType) );
-    CMI_WR2( aProtocolContext, &(sAnalyzeInfo->mDefaultNodeId) );
+    CMI_WR4( aProtocolContext, &(sAnalyzeInfo->mDefaultNodeId) );
 
     CMI_WR1( aProtocolContext, sSubKeyExists );
 
-    CMI_WR1( aProtocolContext, sAnalyzeInfo->mIsCanMerge );
+    CMI_WR1( aProtocolContext, sIsShardQuery );
     CMI_WR2( aProtocolContext, &(sAnalyzeInfo->mValueCount) );
     for ( sValueCnt = 0; sValueCnt < sAnalyzeInfo->mValueCount; sValueCnt++ )
     {
@@ -645,7 +747,7 @@ static IDE_RC answerShardAnalyzeResult( cmiProtocolContext *aProtocolContext,
             /* Nothing to do. */
         }
 
-        CMI_WR2( aProtocolContext, &(sRange->mNodeId) );
+        CMI_WR4( aProtocolContext, &(sRange->mNodeId) );
     }
 
     /* PROJ-2616 */
@@ -685,10 +787,9 @@ IDE_RC mmtServiceThread::shardAnalyzeProtocol(cmiProtocolContext *aProtocolConte
     UInt              sStatementID;
     UInt              sStatementStringLen;
     UInt              sRowSize;
-    UChar             sDummy;
 
     CMI_RD4(aProtocolContext, &sStatementID);
-    CMI_RD1(aProtocolContext, sDummy);
+    CMI_SKIP_READ_BLOCK(aProtocolContext, 1);
     CMI_RD4(aProtocolContext, &sStatementStringLen);
 
     sRowSize   = sStatementStringLen;
@@ -736,7 +837,7 @@ IDE_RC mmtServiceThread::shardAnalyzeProtocol(cmiProtocolContext *aProtocolConte
     }
 
     IDE_TEST_RAISE(sStatementStringLen == 0, NullQuery);
-    IDU_FIT_POINT( "mmtServiceThread::shardPrepareProtocol::malloc::Query" );
+    IDU_FIT_POINT( "mmtServiceThread::shardAnalyzeProtocol::malloc::Query" );
 
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_MMC,
                                sStatementStringLen + 1,
@@ -907,6 +1008,9 @@ IDE_RC mmtServiceThread::shardTransactionProtocol(cmiProtocolContext *aProtocolC
             break;
     }
 
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    IDE_TEST( sSession->checkSMNForDataNode( "ShardTransactionResult" ) != IDE_SUCCESS );
+
     return answerShardTransactionResult(aProtocolContext);
 
     IDE_EXCEPTION(DCLNotAllowedError);
@@ -925,10 +1029,28 @@ IDE_RC mmtServiceThread::shardTransactionProtocol(cmiProtocolContext *aProtocolC
 }
 
 static IDE_RC answerShardPrepareResult( cmiProtocolContext *aProtocolContext,
-                                        idBool              aReadOnly )
+                                        idBool              aReadOnly,
+                                        mmcSession         *aSession,
+                                        mmtServiceThread   *aThread )
 {
     cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
     UChar              sReadOnly;
+
+    ULong              sSMNForSession    = aSession->getShardMetaNumber();
+    ULong              sSMNForDataNode   = ID_ULONG(0);
+    const SChar      * sDisconnectStr[2] = { "Y", "N" };
+
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    if ( ( aReadOnly == ID_TRUE ) &&
+         ( sSMNForSession != ID_ULONG(0) ) )
+    {
+        sSMNForDataNode = sdi::getSMNForDataNode();
+        IDE_TEST_RAISE( sSMNForSession < sSMNForDataNode, ERR_INVALID_SMN );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
     CMI_WRITE_CHECK(aProtocolContext, 2);
@@ -952,6 +1074,18 @@ static IDE_RC answerShardPrepareResult( cmiProtocolContext *aProtocolContext,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INVALID_SMN )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_WITH_INVALID_SMN,
+                                  sSMNForSession,
+                                  sSMNForDataNode,
+                                  sDisconnectStr[SDU_SHARD_ALLOW_OLD_SMN], /* BUG-46100 Session SMN Update */
+                                  "ShardPrepareResult 1 " ) );
+
+        return aThread->answerErrorResult( aProtocolContext,
+                                           CMP_OP_DB_ShardPrepare,
+                                           0 );
+    }
     IDE_EXCEPTION_END;
 
     /* BUG-44124 ipcda 모드 사용 중 hang - iloader 컬럼이 많은 테이블 */
@@ -980,8 +1114,6 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
     UInt                 sXIDSize;
     ID_XID               sXID;
     idBool               sReadOnly;
-    UChar                sDummy;
-    UInt                 i;
 
     /* xid */
     CMI_RD4(aProtocolContext, &sXIDSize);
@@ -992,10 +1124,7 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
     else
     {
         /* size가 잘못되었다. 일단 읽고 에러 */
-        for ( i = 0; i < sXIDSize; i++ )
-        {
-            CMI_RD1(aProtocolContext, sDummy);
-        }
+        CMI_SKIP_READ_BLOCK(aProtocolContext, (UShort)sXIDSize);
     }
 
     IDE_CLEAR();
@@ -1010,9 +1139,9 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
     IDE_TEST_RAISE(sSession->getXaAssocState() != MMD_XA_ASSOC_STATE_NOTASSOCIATED,
                    DCLNotAllowedError);
 
-    IDE_TEST(sSession->prepare(&sXID, &sReadOnly) != IDE_SUCCESS);
+    IDE_TEST(sSession->prepareForShard(&sXID, &sReadOnly) != IDE_SUCCESS);
 
-    return answerShardPrepareResult(aProtocolContext, sReadOnly);
+    return answerShardPrepareResult(aProtocolContext, sReadOnly, sSession, sThread);
 
     IDE_EXCEPTION(ERR_INVALID_XID);
     {
@@ -1060,6 +1189,38 @@ static IDE_RC answerShardEndPendingTxResult( cmiProtocolContext *aProtocolContex
     return IDE_FAILURE;
 }
 
+/* BUG-46785 Shard statement partial rollback */
+static IDE_RC answerShardStmtPartialRollbackResult( cmiProtocolContext  * aProtocolContext )
+{
+    cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
+    CMI_WRITE_CHECK( aProtocolContext, 1 );
+    sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    CMI_WOP( aProtocolContext, CMP_OP_DB_ShardStmtPartialRollbackResult );
+
+    /* PROJ-2616 */
+    MMT_IPCDA_INCREASE_DATA_COUNT( aProtocolContext );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    /* BUG-44124 ipcda 모드 사용 중 hang - iloader 컬럼이 많은 테이블 */
+    if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
+        ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE ) );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_FAILURE;
+}
+
 IDE_RC mmtServiceThread::shardEndPendingTxProtocol(cmiProtocolContext *aProtocolContext,
                                                    cmiProtocol        *,
                                                    void               *aSessionOwner,
@@ -1072,8 +1233,6 @@ IDE_RC mmtServiceThread::shardEndPendingTxProtocol(cmiProtocolContext *aProtocol
     UInt                 sXIDSize;
     ID_XID               sXID;
     UChar                sOperation;
-    UChar                sDummy;
-    UInt                 i;
 
     /* xid */
     CMI_RD4(aProtocolContext, &sXIDSize);
@@ -1084,10 +1243,7 @@ IDE_RC mmtServiceThread::shardEndPendingTxProtocol(cmiProtocolContext *aProtocol
     else
     {
         /* size가 잘못되었다. 일단 읽고 에러 */
-        for ( i = 0; i < sXIDSize; i++ )
-        {
-            CMI_RD1(aProtocolContext, sDummy);
-        }
+        CMI_SKIP_READ_BLOCK(aProtocolContext, (UShort)sXIDSize);
     }
 
     /* trans op */
@@ -1139,4 +1295,29 @@ IDE_RC mmtServiceThread::shardEndPendingTxProtocol(cmiProtocolContext *aProtocol
     return sThread->answerErrorResult(aProtocolContext,
                                       CMI_PROTOCOL_OPERATION(DB, ShardEndPendingTx),
                                       0);
+}
+
+/* BUG-46785 Shard statement partial rollback */
+IDE_RC mmtServiceThread::shardStmtPartialRollback( cmiProtocolContext *aProtocolContext,
+                                                   cmiProtocol        *,
+                                                   void               *aSessionOwner,
+                                                   void               *aUserContext )
+{
+    mmcTask             *sTask = (mmcTask *)aSessionOwner;
+    mmtServiceThread    *sThread = (mmtServiceThread *)aUserContext;
+    mmcSession          *sSession;
+
+    IDE_TEST( findSession( sTask, &sSession, sThread ) != IDE_SUCCESS );
+
+    IDE_TEST( checkSessionState( sSession, MMC_SESSION_STATE_SERVICE ) != IDE_SUCCESS) ;
+
+    IDE_TEST( sSession->shardStmtPartialRollback() != IDE_SUCCESS );
+
+    return answerShardStmtPartialRollbackResult( aProtocolContext );
+
+    IDE_EXCEPTION_END;
+
+    return sThread->answerErrorResult( aProtocolContext,
+                                       CMI_PROTOCOL_OPERATION( DB, ShardStmtPartialRollback ),
+                                       0 );
 }

@@ -1823,19 +1823,23 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
      */
     sNewRow = sDataPlan->newRow;
 
-    /* BUG-39399 remove search key preserved table */
-    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
-         == QMNC_UPTE_VIEW_TRUE )
+    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_UPTE_VIEW_KEY_PRESERVED_FALSE )
     {
-        IDE_TEST( checkDuplicateUpdate( sCodePlan,
-                                        sDataPlan )
-                  != IDE_SUCCESS );
+        /* BUG-39399 remove search key preserved table */
+        if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+             == QMNC_UPTE_VIEW_TRUE )
+        {
+            IDE_TEST( checkDuplicateUpdate( sCodePlan,
+                                            sDataPlan )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing To Do */
+        }
     }
-    else
-    {
-        /* Nothing To Do */
-    }
-        
+    
     //-----------------------------------
     // clear lob
     //-----------------------------------
@@ -2036,7 +2040,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
                                                 sSmiValues )
                   != IDE_SUCCESS );
     }
-
+    
     sDataPlan->retryInfo.mIsRowRetry = ID_FALSE;
 
     if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
@@ -2058,6 +2062,25 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     else
     {
         sSmiValuesForPartition = sSmiValues;
+    }
+    
+    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
+    {
+        // PROJ-2204 join update, delete
+        // tuple 원복시 cursor도 원복해야한다.
+        if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+             == QMNC_UPTE_VIEW_TRUE )
+        {
+            IDE_TEST( sDataPlan->updateCursor->setRowPosition(
+                          sDataPlan->updateTuple->row,
+                          sDataPlan->updateTuple->rid )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
 
     while( sDataPlan->updateCursor->updateRow( sSmiValuesForPartition,
@@ -2368,17 +2391,21 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
      */
     sNewRow = sDataPlan->newRow;
 
-    /* BUG-39399 remove search key preserved table */
-    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
-         == QMNC_UPTE_VIEW_TRUE )
+    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_UPTE_VIEW_KEY_PRESERVED_FALSE )
     {
-        IDE_TEST( checkDuplicateUpdate( sCodePlan,
-                                        sDataPlan )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        /* Nothing To Do */
+        /* BUG-39399 remove search key preserved table */
+        if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+             == QMNC_UPTE_VIEW_TRUE )
+        {
+            IDE_TEST( checkDuplicateUpdate( sCodePlan,
+                                            sDataPlan )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing To Do */
+        }
     }
     
     //-----------------------------------
@@ -2640,6 +2667,25 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                                               sDataPlan->rowGRID )
                   != IDE_SUCCESS );
 
+    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
+        {
+            // PROJ-2204 join update, delete
+            // tuple 원복시 cursor도 원복해야한다.
+            if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+                 == QMNC_UPTE_VIEW_TRUE )
+            {
+                IDE_TEST( sDataPlan->updateCursor->setRowPosition(
+                              sDataPlan->updateTuple->row,
+                              sDataPlan->updateTuple->rid )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        
         // delete row
         IDE_TEST( sDataPlan->updateCursor->deleteRow()
                   != IDE_SUCCESS );
@@ -2703,6 +2749,25 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                 sSmiValuesForPartition = sSmiValues;
             }
 
+            if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+                 == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
+            {
+                // PROJ-2204 join update, delete
+                // tuple 원복시 cursor도 원복해야한다.
+                if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+                     == QMNC_UPTE_VIEW_TRUE )
+                {
+                    IDE_TEST( sDataPlan->updateCursor->setRowPosition(
+                                  sDataPlan->updateTuple->row,
+                                  sDataPlan->updateTuple->rid )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+            
             IDE_TEST( sDataPlan->updateCursor->updateRow( sSmiValuesForPartition,
                                                           NULL,
                                                           & sRow,
@@ -2872,6 +2937,25 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                                                   sRow,
                                                   sDataPlan->rowGRID )
                       != IDE_SUCCESS );
+            
+            if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+                 == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
+            {
+                // PROJ-2204 join update, delete
+                // tuple 원복시 cursor도 원복해야한다.
+                if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+                     == QMNC_UPTE_VIEW_TRUE )
+                {
+                    IDE_TEST( sDataPlan->updateCursor->setRowPosition(
+                                  sDataPlan->updateTuple->row,
+                                  sDataPlan->updateTuple->rid )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
             
             // delete row
             IDE_TEST( sDataPlan->updateCursor->deleteRow()
@@ -3067,19 +3151,23 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
      */
     sNewRow = sDataPlan->newRow;
 
-    /* BUG-39399 remove search key preserved table */
-    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
-         == QMNC_UPTE_VIEW_TRUE )
+    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_UPTE_VIEW_KEY_PRESERVED_FALSE )
     {
-        IDE_TEST( checkDuplicateUpdate( sCodePlan,
-                                        sDataPlan )
-                  != IDE_SUCCESS );
+        /* BUG-39399 remove search key preserved table */
+        if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+             == QMNC_UPTE_VIEW_TRUE )
+        {
+            IDE_TEST( checkDuplicateUpdate( sCodePlan,
+                                            sDataPlan )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing To Do */
+        }
     }
-    else
-    {
-        /* Nothing To Do */
-    }
-
+    
     //-----------------------------------
     // clear lob
     //-----------------------------------
@@ -3258,6 +3346,25 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
         sSmiValuesForPartition = sSmiValues;
     }
 
+    if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
+    {
+        // PROJ-2204 join update, delete
+        // tuple 원복시 cursor도 원복해야한다.
+        if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
+             == QMNC_UPTE_VIEW_TRUE )
+        {
+            IDE_TEST( sDataPlan->updateCursor->setRowPosition(
+                          sDataPlan->updateTuple->row,
+                          sDataPlan->updateTuple->rid )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    
     IDE_TEST( sDataPlan->updateCursor->updateRow( sSmiValuesForPartition,
                                                   NULL,
                                                   & sRow,
@@ -3732,8 +3839,7 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
             while ( sSearchRow != NULL )
             {
                 // Memory 재사용을 위하여 현재 위치 기록
-                IDE_TEST( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus)
-                          != IDE_SUCCESS);
+                IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
                 //------------------------------------------
                 // Master Table에 대한 Referencing 검사
@@ -3749,8 +3855,7 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
                           != IDE_SUCCESS );
 
                 // Memory 재사용을 위한 Memory 이동
-                IDE_TEST( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus)
-                          != IDE_SUCCESS);
+                IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
                 sOrgRow = sSearchRow = sDataPlan->updateTuple->row;
 
@@ -3771,6 +3876,13 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnUPTE::checkUpdateParentRef"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -3840,8 +3952,7 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
         while( sSearchRow != NULL )
         {
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus)
-                    != IDE_SUCCESS );
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             //------------------------------------------
             // Child Table에 대한 Referencing 검사
@@ -3857,8 +3968,7 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
                     != IDE_SUCCESS );
 
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus)
-                    != IDE_SUCCESS );
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             sOrgRow = sSearchRow = aUpdateTuple->row;
 
@@ -3877,6 +3987,13 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnUPTE::checkUpdateParentRefOnScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION( ERR_NOT_FOUND )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
@@ -4067,8 +4184,7 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
         while( sSearchRow != NULL )
         {
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             //------------------------------------------
             // Child Table에 대한 Referencing 검사
@@ -4087,8 +4203,8 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
                       != IDE_SUCCESS );
 
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
             sOrgRow = sSearchRow = aUpdateTuple->row;
 
             IDE_TEST(
@@ -4107,6 +4223,13 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnUPTE::checkUpdateChildRefOnScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION( ERR_NOT_FOUND )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,

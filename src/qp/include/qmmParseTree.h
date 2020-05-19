@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmmParseTree.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmmParseTree.h 84499 2018-12-04 01:47:06Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QMM_PARSE_TREE_H_
@@ -106,6 +106,7 @@ typedef struct qmmInsParseTree
     qcmColumn          * columnsForValues;  // for INSERT ... SELECT ...
     qcmParentInfo      * parentConstraints;
     UInt                 valueIdx;          // index to qcTemplate.insOrUptRow
+    qtcNode            * spVariable;        // BUG-46174 sp variable in VALUES clause
 
     /* PROJ-2204 Join Update, Delete */
     struct qmsTableRef * insertTableRef;
@@ -184,6 +185,7 @@ typedef struct qmmSetClause // temporary struct for parser
     qmmValueNode       * values;     // update values
     qmmSubqueries      * subqueries; // subqueries in set clause
     qmmValueNode       * lists;      // lists in set clause
+    qtcNode            * spVariable; // BUG-46174 sp variable in set clause
 } qmmSetClause;
 
 typedef struct qmmUptParseTree
@@ -195,6 +197,7 @@ typedef struct qmmUptParseTree
     qmmValueNode       * values;     // update values
     qmmSubqueries      * subqueries; // subqueries in set clause
     qmmValueNode       * lists;      // lists in set clause
+    qtcNode            * spVariable; // BUG-46174 sp variable in set clause
     qmsQuerySet        * querySet;   // table information and where clause
     qcmParentInfo      * parentConstraints;
     qcmRefChildInfo    * childConstraints;  // BUG-28049
@@ -265,6 +268,7 @@ typedef struct qmmLockParseTree
 
     qcNamePosition       userName;
     qcNamePosition       tableName;
+    qcNamePosition       partitionName;
 
     smiTableLockMode     tableLockMode;
     ULong                lockWaitMicroSec;
@@ -277,7 +281,11 @@ typedef struct qmmLockParseTree
     qcmTableInfo       * tableInfo;
     void               * tableHandle;
     smSCN                tableSCN;
-    
+
+    /* BUG-46273 Lock Partition */
+    qcmTableInfo       * partitionInfo;
+    void               * partitionHandle;
+    smSCN                partitionSCN;
 } qmmLockParseTree;
 
 /* PROJ-1988 Implement MERGE statement */
@@ -286,6 +294,7 @@ typedef struct qmmMergeParseTree
     qcParseTree           common;
 
     qcStatement         * updateStatement;
+    qcStatement         * deleteStatement;    
     qcStatement         * insertStatement;
     qcStatement         * insertNoRowsStatement;   // BUG-37535
     qcStatement         * selectSourceStatement;
@@ -295,7 +304,12 @@ typedef struct qmmMergeParseTree
     struct qmsQuerySet  * source;
     struct qtcNode      * onExpr;
 
+    struct qtcNode      * whereForUpdate;
+    struct qtcNode      * whereForDelete;
+    struct qtcNode      * whereForInsert;
+
     qmmUptParseTree     * updateParseTree;
+    qmmDelParseTree     * deleteParseTree;
     qmmInsParseTree     * insertParseTree;
     qmmInsParseTree     * insertNoRowsParseTree;   // BUG-37535
     qmsParseTree        * selectSourceParseTree;
@@ -305,7 +319,12 @@ typedef struct qmmMergeParseTree
 
 typedef struct qmmMergeActions
 {
+    struct qtcNode      * whereForUpdate;
+    struct qtcNode      * whereForDelete;
+    struct qtcNode      * whereForInsert;
+
     qmmUptParseTree     * updateParseTree;
+    qmmDelParseTree     * deleteParseTree;
     qmmInsParseTree     * insertParseTree;
     qmmInsParseTree     * insertNoRowsParseTree;   // BUG-37535
 
@@ -321,7 +340,11 @@ typedef struct qmmJobOrRoleParseTree
 
 #define QMM_INIT_MERGE_ACTIONS(_dst_)         \
 {                                             \
+    (_dst_)->whereForUpdate        = NULL;    \
+    (_dst_)->whereForDelete        = NULL;    \
+    (_dst_)->whereForInsert        = NULL;    \
     (_dst_)->updateParseTree       = NULL;    \
+    (_dst_)->deleteParseTree       = NULL;    \
     (_dst_)->insertParseTree       = NULL;    \
     (_dst_)->insertNoRowsParseTree = NULL;    \
 }

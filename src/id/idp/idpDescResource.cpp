@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idpDescResource.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: idpDescResource.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
  *
  * Description:
  *
@@ -273,17 +273,6 @@ static IDE_RC registDatabaseLinkProperties( void )
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0);
-
-    /* PROJ-2661 commit/rollback failure test of RM */
-    IDP_DEF(UInt, "__DBLINK_RM_ABORT_ENABLE",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1, 0);
 
      return IDE_SUCCESS;
      
@@ -666,6 +655,16 @@ IDE_RC registProperties()
             0,  /* min */
             1,  /* max */
             1); /* default */
+
+    IDP_DEF(UInt, "__USE_DUMP_CALLSTACKS",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);    //min,max,default
 
     IDP_DEF(UInt, "SHM_LOCK",
             IDP_ATTR_SL_ALL |
@@ -1177,7 +1176,7 @@ IDE_RC registProperties()
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 2, 1 );
+            0, 3, 1 ); /* BUG-46195 */
 
     /* PROJ-1090 Function-based Index */
     IDP_DEF(UInt, "QUERY_REWRITE_ENABLE",
@@ -1503,6 +1502,16 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
+    IDP_DEF(UInt, "__KEY_PRESERVED_TABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+    
 
     //----------------------------------
     // For SM
@@ -2159,7 +2168,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_SLONG_MAX, 50);
-
+#if 0
     IDP_DEF(UInt, "LOCK_SELECT",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
@@ -2169,7 +2178,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
-
+#endif
     IDP_DEF(UInt, "TABLE_LOCK_ENABLE",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
@@ -3126,7 +3135,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 10 * 1024 * 1024);
-
+#if 0
     IDP_DEF(UInt, "LOG_BUFFER_LIST_COUNT",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
@@ -3146,7 +3155,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 5);
-
+#endif
     // 0 : buffered IO
     // 1 : direct IO
     // 디버그 속성
@@ -3781,6 +3790,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             1, 128, 128);
+#if 0
 // sda
     // BUFFER POOL의 페이지 개수에 비례한 TSS의 개수의 %값
     // TSS개수를 BUFFER의 몇%로 제한함으로써 undo 페이지의 무한 확장을 막는다.
@@ -3794,7 +3804,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 100,(0));
-
+#endif
 //smx
     // transaction table이 full상황에서 transaction을 alloc못받을 경우에
     // 대기 하는  시간 micro sec.
@@ -3848,7 +3858,7 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX , (80));
 
-
+#if 0
     IDP_DEF(UInt, "TRANS_KEEP_TABLE_INFO_COUNT",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
@@ -3858,6 +3868,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             1, 1024, 5);
+#endif
 
 #if defined(ALTIBASE_PRODUCT_XDB)
     // BUG-40960 : [sm-transation] [HDB DA] make transaction suspend sleep time tunable
@@ -3979,6 +3990,7 @@ IDE_RC registProperties()
 // For sdb
 
 #if defined(ALTIBASE_PRODUCT_HDB)
+#if 0
 /* --------------------------------------------------------------------
  * DEBUG 모드에서 validate 함수 수행 여부
  * 이 함수가 수행될때 성능이 저하될 수 있다.
@@ -3993,7 +4005,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
-
+#endif
     /* PROJ-2669 begin */
 /* --------------------------------------------------------------------
  * HOT_FLUSH_LIST_PCT
@@ -4211,7 +4223,7 @@ IDE_RC registProperties()
              IDP_ATTR_RD_READONLY |
              IDP_ATTR_ML_JUSTONE,
              8*1024, ID_ULONG_MAX, 32*1024*1024 );
-
+#if 0
     IDP_DEF( UInt, "BUFFER_PINNING_COUNT",
              IDP_ATTR_SL_ALL |
              IDP_ATTR_IU_ANY |
@@ -4231,7 +4243,7 @@ IDE_RC registProperties()
              IDP_ATTR_RD_READONLY |
              IDP_ATTR_ML_JUSTONE,
              0, 256, 5 );
-
+#endif
     IDP_DEF( UInt, "DEFAULT_FLUSHER_WAIT_SEC",
              IDP_ATTR_SL_ALL |
              IDP_ATTR_IU_ANY |
@@ -4423,7 +4435,7 @@ IDE_RC registProperties()
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 0 );
@@ -6150,7 +6162,7 @@ IDE_RC registProperties()
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
@@ -6192,6 +6204,26 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 65535, 0);
+
+    IDP_DEF(UInt, "REPLICATION_IB_PORT_NO",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 65535, 0);
+
+    IDP_DEF(UInt, "REPLICATION_IB_LATENCY",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);
 
     IDP_DEF(SInt, "REPLICATION_MAX_LOGFILE",
             IDP_ATTR_SL_ALL |
@@ -6405,6 +6437,7 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 600);
 
+    // deprecated
     IDP_DEF(UInt, "REPLICATION_SERVICE_WAIT_MAX_LIMIT",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
@@ -6827,6 +6860,16 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK,
              0, 1, 0 );
 
+    IDP_DEF( UInt, "REPLICATION_RECEIVER_APPLIER_YIELD_COUNT",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, UINT_MAX, 20000 );
+
     // PROJ-1723
     IDP_DEF(UInt, "DDL_SUPPLEMENTAL_LOG_ENABLE",
             IDP_ATTR_SL_ALL |
@@ -6837,6 +6880,27 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
+
+    /* PROJ-2677 DDL 복제 허용*/
+    IDP_DEF( UInt, "REPLICATION_DDL_SYNC",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 0 );
+
+    IDP_DEF( UInt, "REPLICATION_DDL_SYNC_TIMEOUT",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, ID_UINT_MAX, 7200 );
 
     IDP_DEF(UInt, "XA_HEURISTIC_COMPLETE",
             IDP_ATTR_SL_ALL |
@@ -7201,6 +7265,51 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 2);
+
+    /* ------------------------------------------------------------------
+     *  SD  BUG-46138 
+     * --------------------------------------------------------------*/
+    IDP_DEF(String, "SD_MSGLOG_FILE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_SK_PATH     |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, IDP_MAX_PROP_STRING_LEN, (SChar *)PRODUCT_PREFIX"altibase_sd.log");
+
+    IDP_DEF(UInt, "SD_MSGLOG_SIZE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_UINT_MAX, (10 * 1024 * 1024));
+
+    IDP_DEF(UInt, "SD_MSGLOG_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_UINT_MAX, 10);
+
+    IDP_DEF(UInt, "SD_MSGLOG_FLAG",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_UINT_MAX, 1);
+
     /* ------------------------------------------------------------------
      *   SM
      * --------------------------------------------------------------*/
@@ -7514,7 +7623,7 @@ IDE_RC registProperties()
             0,
             2,
             0);
-
+#if 0
     /* TASK-4690
      * 인덱스 cardinality 통계 다중화 */
     IDP_DEF(UInt, "__INDEX_STAT_PARALLEL_FACTOR",
@@ -7526,7 +7635,7 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             1, 512, IDL_MIN(idlVA::getProcessorCount() * 2, 512));
-
+#endif
     /* TASK-4690
      * 0이면 iduOIDMemory 를 사용하고,
      * 1이면 iduMemPool 을 사용한다. */
@@ -7760,6 +7869,16 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 6);
     
+    IDP_DEF(ULong, "REPLICATION_GAP_UNIT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, ID_ULONG_MAX, 1024 * 1024 );
+ 
     // ==================================================================
     // iduMemory
     // ==================================================================
@@ -8359,16 +8478,24 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1); //default는 1로서 출력하는것임.
 
-    // PROJ-1864  Partial Write Problem에 대한 문제 해결.
-    // Recovery에서 Corrupt page 처리 정책
-    // 0 - corrupt page를 발견하면 무시한다.
-    //     Group Hdr page가 corrupt 된 경우에는 서버 종료 한다.
-    // 1 - corrupt page를 발견하면 서버를 종료한다.
-    // 2 - corrupt page를 발견하면 ImgLog가 있을 경우 OverWrite 한다.
-    //     단 Group Hdr page가 corrupt 된 경우를 제외하고
-    //     Corrupt Page를 Overwrite하지 못해도 서버 종료 하지 않는다.
-    // 3 - corrupt page를 발견하면 ImgLog로 OverWrite 시도
-    //     보정되지 못한 Corrupt Page가 존재한다면 서버 종료.
+    /* PROJ-1864  Partial Write Problem에 대한 문제 해결.
+     * Recovery에서 Corrupt page 처리 정책
+     *
+     * BUG-45598: 운영중 Corrupt page 처리 정책도 포함한다.
+     *
+     * BUG-46182: default 값을 3에서 2로 변경
+     *
+     * 0 - corrupt page를 발견하면 무시한다.
+     *     Group Hdr page가 corrupt 된 경우에는 서버 종료 한다.
+     * 1 - corrupt page를 발견하면 서버를 종료한다.
+     * 2 - corrupt page를 발견하면 ImgLog가 있을 경우 OverWrite 한다.
+     *     단 Group Hdr page가 corrupt 된 경우를 제외하고
+     *     Corrupt Page를 Overwrite하지 못해도 서버 종료 하지 않는다.
+     * 3 - corrupt page를 발견하면 ImgLog로 OverWrite 시도
+     *     보정되지 못한 Corrupt Page가 존재한다면 서버 종료.
+     *
+     * * 운영중: 0, 2 ABORT / 1, 3 FATAL
+     */
     IDP_DEF(UInt, "CORRUPT_PAGE_ERR_POLICY",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
@@ -8377,7 +8504,7 @@ IDE_RC registProperties()
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 3, 3);
+            0, 3, 2);
 
     // bug-19279 remote sysdba enable + sys can kill session
     // default: 1 (on)
@@ -8407,7 +8534,7 @@ IDE_RC registProperties()
      *   Shard Related
      * --------------------------------------------------------------*/
 
-    IDP_DEF(UInt, "SHARD_META_ENABLE",
+    IDP_DEF(UInt, "SHARD_ENABLE",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
@@ -8436,6 +8563,163 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
+
+    IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_MIN,
+            IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_MAX,
+            IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_DEFAULT);
+
+    IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_MIN,
+            IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_MAX,
+            IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_DEFAULT);
+
+    /* BUG-45967 Rebuild Data 완료 대기 */
+    IDP_DEF(SInt, "SHARD_REBUILD_DATA_STEP",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            -1, 1000, 0);
+
+    IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_MIN,
+            IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_MAX,
+            IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_DEFAULT);
+
+    IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_MIN,
+            IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_MAX,
+            IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_DEFAULT);
+
+    /* BUG-46100 SMN Propagation Failure Ignore */
+    IDP_DEF(UInt, "SHARD_IGNORE_SMN_PROPAGATION_FAILURE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);
+
+    /* BUG-46100 Session SMN Update */
+    IDP_DEF(UInt, "SHARD_ALLOW_OLD_SMN",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
+    /* BUG-45899 */
+    IDP_DEF(UInt, "TRCLOG_DETAIL_SHARD",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    IDP_DEF(UInt, "SHARD_META_HISTORY_AUTO_PURGE_DISABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1 );
+
+    IDP_DEF(UInt, "SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
+
+    IDP_DEF(UInt, "SHARD_REBUILD_LOCK_TABLE_WITH_DML_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
+
+    IDP_DEF(ULong, "SHARD_META_PROPAGATION_TIMEOUT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0,         /* min = 0usec */
+            60000000,  /* max = 60000000usec = 60sec */
+            3000000 ); /* default 3000000usec = 3sec */
+
+    IDP_DEF(UInt, "SHARD_TRANSFORM_STRING_LENGTH_MAX",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            32,    /* min = 32 bytes */
+            65535, /* max */
+            512 ); /* default 512 bytes */
+
+    IDP_DEF(UInt, "SHARD_SMN_CACHE_APPLY_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
 
     /* ------------------------------------------------------------------
      *   Cluster Related
@@ -8959,8 +9243,8 @@ IDE_RC registProperties()
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 1, 0);
-    
+            0, 2, 0);
+
     /*
      * BUG-32177  The server might hang when disk is full during checkpoint.
      *
@@ -9348,7 +9632,7 @@ IDE_RC registProperties()
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 8192, 8192);
+            0, 524288, 8192);  /* BUG-46411 */
 
     // PASSWORD_LOCK_TIME
     IDP_DEF(UInt, "PASSWORD_LOCK_TIME",
@@ -11030,10 +11314,171 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
 
+    // BUG-46154
+    IDP_DEF(UInt, "__PRINT_OUT_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+    
+    /* PROJ-2681 */
+#if defined(ALTI_CFG_OS_LINUX)
+    IDP_DEF(UInt, "IB_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);
+#else /* ALTI_CFG_OS_LINUX */
+    IDP_DEF(UInt, "IB_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 0, 0);
+#endif /* ALTI_CFG_OS_LINUX */
+
+    IDP_DEF(UInt, "IB_PORT_NO",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1024,   /* min */
+            65535,  /* max */
+            20300); /* default */
+
+    IDP_DEF(UInt, "IB_MAX_LISTEN",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1024, 128);
+
+    IDP_DEF(UInt, "IB_LISTENER_DISABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);
+
+    IDP_DEF(UInt, "IB_LATENCY",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);
+
+    IDP_DEF(UInt, "IB_CONCHKSPIN",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 2147483, 0);
+
+    /* BUG-46267 */
+    IDP_DEF( UInt, "NUMBER_CONVERSION_MODE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_READONLY |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1 );
+
+    //consider requested size for EXECUTE_STMT_MEMORY_MAXIMUM 
+    IDP_DEF(UInt, "__USE_REQUESTED_SIZE_FOR_EXECUTE_STMT_MEMORY_MAXIMUM",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0,   /* min */
+            1,  /* max */
+            0); /* default */
+
+    IDP_DEF( UInt, "__OPTIMIZER_UNNEST_COMPATIBILITY",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1 );
+
+    /* PROJ-2632 */
+    IDP_DEF( UInt, "SERIAL_EXECUTE_MODE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 0 );
+
+    /* PROJ-2632 */
+    IDP_DEF( UInt, "TRCLOG_DETAIL_INFORMATION",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 0 );
+
+    IDP_DEF( ULong, "MATHEMATICS_TEMP_MEMORY_MAXIMUM",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, ID_ULONG_MAX, 0 );
+
+    /* BUG-46932 */
+    IDP_DEF( UInt, "__OPTIMIZER_INVERSE_JOIN_ENABLE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1 );
+
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+     IDE_EXCEPTION_END;
+     return IDE_FAILURE;
 }
 

@@ -108,7 +108,14 @@ private:
  
     void        wakeup( void );
 
-    IDE_RC      applyTableMetaLog( smTID    aTID );
+    IDE_RC      applyTableMetaLog( smTID aTID );
+
+    IDE_RC      updateMeta( smiStatement     * aSmiStmt,
+                            rpdItemMetaEntry * aItemMetaEntry,
+                            smOID              aOldTableOID,
+                            smOID              aNewTableOID );
+
+    rpdTableMetaType getTableMetaType( smOID aOldTableOID, smOID aNewTableOID );
 
 public:
     rpxAheadAnalyzer() : idtBaseThread() { };

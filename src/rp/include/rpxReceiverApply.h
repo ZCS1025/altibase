@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverApply.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxReceiverApply.h 85244 2019-04-16 05:09:21Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RPX_RECEIVER_APPLY_H_
@@ -293,8 +293,7 @@ private:
                         UInt                aSQLBufferLength );
 
     IDE_RC getConfictResolutionTransaction( smTID        aTID,
-                                            smiTrans  ** aTrans,
-                                            UInt       * aReplLockTimeout );
+                                            smiTrans  ** aTrans );
 
     // private member data
     SChar           * mRepName;
@@ -317,7 +316,7 @@ private:
     rprSNMapMgr*          mSNMapMgr;
 
     /* BUG-31545 수행시간 통계정보 */
-    idvSQL              * mOpStatistics;
+    idvSQL              * mStatistics;
 
     UInt                  mTransactionFlag;
 
@@ -353,6 +352,8 @@ private:
 
     SChar               * mSQLBuffer;
     UInt                  mSQLBufferLength;
+
+    ULong       mSyncTupleSuccessCount;
 
 public:
     //proj-1608 recovery from replication

@@ -124,15 +124,11 @@ SQLRETURN ulnNumResultCols(ulnStmt *aStmt, acp_sint16_t *aColumnCountPtr)
 
     sNeedExit = ACP_TRUE;
 
-    /* PROJ-1891 Deferred Prepare 
-     * If the Defer Prepares is enabled, send the deferred prepare first */
-    if( aStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON )
-    {   
-        ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,
-               &(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
-
-        ulnUpdateDeferredState(&sFnContext, aStmt);
-    }   
+    /* PROJ-1891, BUG-46011 If deferred prepare is exists, process it first */
+    if (ulnStmtIsSetDeferredQstr(aStmt) == ACP_TRUE)
+    {
+        ACI_TEST( ulnPrepareDeferComplete(&sFnContext, ACP_TRUE) );
+    }
 
     /*
      * 넘겨진 인자들의 유효성 체크

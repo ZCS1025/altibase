@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfQuoted_printable_decode.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfQuoted_printable_decode.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 /***********************************************************************
@@ -82,6 +82,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfQuoted_printable_decodeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

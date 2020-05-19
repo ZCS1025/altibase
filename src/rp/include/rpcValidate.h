@@ -60,6 +60,8 @@ public:
     static IDE_RC validateAlterSetParallel(void * aQcStatement);
     static IDE_RC validateAlterSetGrouping(void * aQcStatement);
 
+    static IDE_RC validateAlterSetDDLReplicate( void * aQcStatement );
+
     /* BUG-42851 */
     static IDE_RC validateAlterPartition( void * aQcStatement,
                                           qcmTableInfo * aPartInfo );

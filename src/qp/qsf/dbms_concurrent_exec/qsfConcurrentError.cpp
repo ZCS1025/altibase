@@ -172,6 +172,7 @@ static const mtcExecute qsfGetErrSeq = {
     mtf::calculateNA,
     qsfCalculate_SpConcGetErrSeq,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -183,6 +184,7 @@ static const mtcExecute qsfGetErrCode = {
     mtf::calculateNA,
     qsfCalculate_SpConcGetErrCode,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -195,6 +197,7 @@ static const mtcExecute qsfGetErrMsg = {
     mtf::calculateNA,
     qsfCalculate_SpConcGetErrMsg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -206,6 +209,7 @@ static const mtcExecute qsfGetText = {
     mtf::calculateNA,
     qsfCalculate_SpConcGetText,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -217,6 +221,7 @@ static const mtcExecute qsfGetErrCnt = {
     mtf::calculateNA,
     qsfCalculate_SpConcGetErrCnt,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

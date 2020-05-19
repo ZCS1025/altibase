@@ -242,7 +242,7 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
     cmpArgDBConnectA5  *sArg    = CMI_PROTOCOL_GET_ARG(*aProtocol, DB, Connect);
     mmcTask          *sTask   = (mmcTask *)aSessionOwner;
     mmtServiceThread *sThread = (mmtServiceThread *)aUserContext;
-    mmcSession       *sSession;
+    mmcSession       *sSession = NULL;
     qciUserInfo       sUserInfo;
     SChar             sUserName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar             sPassword[QC_MAX_NAME_LEN + 1];
@@ -314,7 +314,7 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
     if( cmiGetLinkInfo( sTask->getLink(),
                         sUserInfo.loginIP,
                         QCI_MAX_IP_LEN,
-                        CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS )
+                        CMI_LINK_INFO_REMOTE_IP_ADDRESS )
         == IDE_SUCCESS )
     {
         sUserInfo.loginIP[QCI_MAX_IP_LEN] = '\0';
@@ -435,18 +435,17 @@ IDE_RC mmtServiceThread::connectProtocolA5(cmiProtocolContext *aProtocolContext,
     }
     IDE_EXCEPTION_END;
     {
-        /* BUG-41986 */
-        IDE_TEST_CONT( mmtAuditManager::isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED_FOR_ERR_RESULT );
+        /* BUG-41986,46038 */
+        if ((mmtAuditManager::isAuditStarted() == ID_TRUE) && (sSession != NULL))
+        {
+            mmtAuditManager::initAuditConnInfo( sSession, 
+                                                &sAuditTrail, 
+                                                &sUserInfo, 
+                                                E_ERROR_CODE(ideGetErrorCode()),
+                                                QCI_AUDIT_OPER_DISCONNECT );
 
-        mmtAuditManager::initAuditConnInfo( sSession, 
-                                            &sAuditTrail, 
-                                            &sUserInfo, 
-                                            E_ERROR_CODE(ideGetErrorCode()),
-                                            QCI_AUDIT_OPER_DISCONNECT );
-
-        mmtAuditManager::auditConnectInfo( &sAuditTrail );
-
-        IDE_EXCEPTION_CONT( AUDIT_NOT_STARTED_FOR_ERR_RESULT );
+            mmtAuditManager::auditConnectInfo( &sAuditTrail );
+        }
 
         sRet = sThread->answerErrorResultA5(aProtocolContext,
                                           CMI_PROTOCOL_OPERATION(DB, Connect),
@@ -468,7 +467,7 @@ IDE_RC mmtServiceThread::disconnectProtocolA5(cmiProtocolContext *aProtocolConte
 {
     mmcTask          *sTask = (mmcTask *)aSessionOwner;
     mmtServiceThread *sThread = (mmtServiceThread *)aUserContext;
-    mmcSession       *sSession;
+    mmcSession       *sSession = NULL;
 
     idvAuditTrail     sAuditTrail; /* BUG-41986 */
 
@@ -508,18 +507,17 @@ IDE_RC mmtServiceThread::disconnectProtocolA5(cmiProtocolContext *aProtocolConte
 
     IDE_EXCEPTION_END;
 
-    /* BUG-41986 */
-    IDE_TEST_CONT( mmtAuditManager::isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED_FOR_ERR_RESULT );
+    /* BUG-41986,46038 */
+    if ((mmtAuditManager::isAuditStarted() == ID_TRUE) && (sSession != NULL))
+    {
+        mmtAuditManager::initAuditConnInfo( sSession, 
+                                            &sAuditTrail, 
+                                            sSession->getUserInfo(), 
+                                            E_ERROR_CODE(ideGetErrorCode()),
+                                            QCI_AUDIT_OPER_DISCONNECT );
 
-    mmtAuditManager::initAuditConnInfo( sSession, 
-                                        &sAuditTrail, 
-                                        sSession->getUserInfo(), 
-                                        E_ERROR_CODE(ideGetErrorCode()),
-                                        QCI_AUDIT_OPER_DISCONNECT );
-
-    mmtAuditManager::auditConnectInfo( &sAuditTrail );
-
-    IDE_EXCEPTION_CONT( AUDIT_NOT_STARTED_FOR_ERR_RESULT );
+        mmtAuditManager::auditConnectInfo( &sAuditTrail );
+    }
 
     return sThread->answerErrorResultA5(aProtocolContext,
                                       CMI_PROTOCOL_OPERATION(DB, Disconnect),

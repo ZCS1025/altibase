@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfReplace2.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfReplace2.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -83,6 +83,7 @@ const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfReplace2CalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -94,6 +95,7 @@ const mtcExecute mtfExecuteFor3Args = {
     mtf::calculateNA,
     mtfReplace2CalculateFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -105,6 +107,7 @@ const mtcExecute mtfExecuteNcharFor2Args = {
     mtf::calculateNA,
     mtfReplace2CalculateNcharFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -116,6 +119,7 @@ const mtcExecute mtfExecuteNcharFor3Args = {
     mtf::calculateNA,
     mtfReplace2CalculateNcharFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduFile.cpp 82136 2018-01-26 04:20:33Z emlee $
+ * $Id: iduFile.cpp 84646 2018-12-24 04:40:35Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -441,6 +441,14 @@ IDE_RC iduFile::open( PDL_HANDLE *aFD )
             IDE_SET(ideSetErrorCode(idERR_ABORT_FILENAME_TOO_LONG, mFilename));
             break;
 #endif
+#if defined(ETXTBSY)
+        case ETXTBSY:
+#endif
+        case EAGAIN:
+            IDE_SET(ideSetErrorCode(idERR_ABORT_DISK_OR_DEVICE_BUSY,
+                                    mFilename,
+                                    0,
+                                    0));
         default:
             IDE_SET( ideSetErrorCode( idERR_ABORT_SysOpen, mFilename ) );
             break;
@@ -485,7 +493,8 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
 
         IDU_FIT_POINT_RAISE( "iduFile::openUntilSuccess::exceptionTest", 
                              exception_test );
-
+        IDU_FIT_POINT_RAISE( "BUG-46596@iduFile::openUntilSuccess::exceptionTest", 
+                             exception_test );
         sFD = idf::open( mFilename, sFOFlag );
 
         if( sFD != IDL_INVALID_HANDLE )
@@ -497,20 +506,44 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
         {
             sSystemErrno = errno;
 
-#if defined(EDQUOT)
-            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && 
-                            ( sSystemErrno != ENOSPC ) && 
-                            ( sSystemErrno != EDQUOT ) &&
-                            ( sSystemErrno != ENFILE ) &&
-                            ( sSystemErrno != EMFILE ), open_error );
+#if defined(EDQUOT) && defined(ETXTBSY)
+            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory 
+                            ( sSystemErrno != ENOSPC ) && // No space left on device 
+                            ( sSystemErrno != EDQUOT ) && // Disc quota exceeded
+                            ( sSystemErrno != ENFILE ) && // Too many open files
+                            ( sSystemErrno != EMFILE ) && // Too many open files
+                            ( sSystemErrno != EAGAIN ) && // Resource temporarily unavailable
+                            ( sSystemErrno != ETXTBSY ) , // Resource busy 
+                            open_error );
+#elif !defined(EDQUOT) && defined(ETXTBSY)
+            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory 
+                            ( sSystemErrno != ENOSPC ) && // No space left on device 
+                            ( sSystemErrno != ENFILE ) && // Too many open files
+                            ( sSystemErrno != EMFILE ) && // Too many open files
+                            ( sSystemErrno != EAGAIN ) && // Resource temporarily unavailable
+                            ( sSystemErrno != ETXTBSY ),  // Resource busy 
+                            open_error );
+#elif defined(EDQUOT) && !defined(ETXTBSY)
+            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory 
+                            ( sSystemErrno != ENOSPC ) && // No space left on device 
+                            ( sSystemErrno != EDQUOT ) && // Disc quota exceeded
+                            ( sSystemErrno != ENFILE ) && // Too many open files
+                            ( sSystemErrno != EMFILE ) && // Too many open files
+                            ( sSystemErrno != EAGAIN ), // Resource temporarily unavailable
+                            open_error );
 #else
             IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && 
                             ( sSystemErrno != ENOSPC ) && 
                             ( sSystemErrno != ENFILE ) &&
-                            ( sSystemErrno != EMFILE ), open_error );
+                            ( sSystemErrno != EMFILE ) &&
+                            ( sSystemErrno != EAGAIN ),
+                            open_error );
 
 #endif 
+
+#ifdef ALTIBASE_FIT_CHECK
             IDE_EXCEPTION_CONT( exception_test );
+#endif
 
             ideLog::log(IDE_SERVER_0, "File Open Fail for Disk Full or File Descriptor Full" );
 
@@ -552,8 +585,28 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
 #endif
     IDE_EXCEPTION( open_error );
     {    
-        IDE_SET( ideSetErrorCode( idERR_ABORT_SysOpen,
-                                  mFilename ) ); 
+        sSystemErrno = errno;
+
+        switch(sSystemErrno)
+        {
+        case EEXIST:
+            IDE_SET(ideSetErrorCode(idERR_ABORT_FILE_ALREADY_EXIST, mFilename));
+            break;
+        case ENOENT:
+            IDE_SET(ideSetErrorCode(idERR_ABORT_NO_SUCH_FILE, mFilename));
+            break;
+        case EACCES:
+            IDE_SET(ideSetErrorCode(idERR_ABORT_INVALID_ACCESS, mFilename));
+            break;
+#if defined(ENAMETOOLONG)
+        case ENAMETOOLONG:
+            IDE_SET(ideSetErrorCode(idERR_ABORT_FILENAME_TOO_LONG, mFilename));
+            break;
+#endif
+        default:
+            IDE_SET( ideSetErrorCode( idERR_ABORT_SysOpen, mFilename ) );
+            break;
+        }
     }    
     IDE_EXCEPTION_END;
 

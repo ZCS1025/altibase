@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSum.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfSum.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -220,6 +220,7 @@ static const mtcExecute mtfSumExecuteFloat = {
     mtfSumFinalizeFloat,
     mtfSumCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -530,6 +531,7 @@ static const mtcExecute mtfSumExecuteDouble = {
     mtfSumFinalizeDouble,
     mtfSumCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -543,6 +545,7 @@ static const mtcExecute mtfSumExecuteDoubleFast = {
     mtfSumFinalizeDouble,
     mtfSumCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -895,6 +898,7 @@ static const mtcExecute mtfSumExecuteBigint = {
     mtfSumFinalizeBigint,
     mtfSumCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -909,6 +913,7 @@ static const mtcExecute mtfSumExecuteBigintFast = {
     mtfSumFinalizeBigint,
     mtfSumCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

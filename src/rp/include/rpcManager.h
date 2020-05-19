@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpcManager.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpcManager.h 85321 2019-04-25 04:58:40Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RPC_MANAGER_H_
@@ -41,6 +41,7 @@
 #include <rpdSenderInfo.h>
 #include <rpdLogBufferMgr.h>
 #include <rprSNMapMgr.h>
+#include <rpcDDLSyncManager.h>
 
 class smiStatement;
 
@@ -59,6 +60,7 @@ typedef struct rpxSenderGapInfo
     smSN           mCurrentSN;   // REP_LAST_SN
     smSN           mSenderSN;    // REP_SN
     ULong          mSenderGAP;   // REP_GAP
+    ULong          mSenderGAPSize; // REP_GAP_SIZE
 
     UInt           mLFGID;       // READ_LFG_ID
     UInt           mFileNo;      // READ_FILE_NO
@@ -89,7 +91,7 @@ typedef struct rpxSenderInfo
 {
     SChar *             mRepName;            // REP_NAME
     RP_SENDER_TYPE      mCurrentType;        // CURRENT_TYPE
-    idBool              mNetworkError;       // NET_ERROR_FLAG
+    idBool              mRetryError;         // RESTART_ERROR_FLAG
     smSN                mXSN;                // XSN
     smSN                mCommitXSN;          // COMMIT_XSN
     RP_SENDER_STATUS    mStatus;             // STATUS
@@ -173,6 +175,7 @@ typedef struct rpxReceiverParallelApplyInfo
     ULong               mDeleteFailureCount; // DELETE_FAILURE_COUNT
     ULong               mCommitCount;        // COMMIT COUNT
     ULong               mAbortCount;         // ABORT COUNT
+    UInt                mStatus;
 } rpxReceiverParallelApplyInfo;
 
 /* For the X$REPRECEIVER STATISTICS Fix Table
@@ -337,18 +340,18 @@ public:
 public:
     rpcManager();
     virtual ~rpcManager() {};
-    IDE_RC initialize( UShort            aPort,
-                       SInt              aMax,
+    IDE_RC initialize( SInt              aMax,
                        rpdReplications * aReplications,
                        UInt              aReplCount );
     void   destroy();
 
     static IDE_RC initREPLICATION();
     static IDE_RC finalREPLICATION();
-    static IDE_RC wakeupPeerByAddr( rpdReplications * aReplication,
-                                    SChar           * aHostIp,
-                                    SInt              aPortNo );
-    static IDE_RC wakeupPeer( rpdReplications *aReplication );
+    static IDE_RC wakeupPeerByIndex( idBool          * aExitFlag,
+                                     rpdReplications * aReplication,
+                                     SInt              aIndex );
+    static IDE_RC wakeupPeer( idBool            * aExitFlag,
+                              rpdReplications   * aReplication );
 
     void   final();
     IDE_RC wakeupManager();
@@ -427,6 +430,8 @@ public:
     static IDE_RC alterReplicationSetParallel(void        * aQcStatement);
     static IDE_RC alterReplicationSetGrouping(void        * aQcStatement);
 
+    static IDE_RC alterReplicationSetDDLReplicate( void        * aQcStatement );
+
     static IDE_RC dropReplication( void        * aQcStatement );
 
     //BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지 않아야 합니다.
@@ -440,10 +445,11 @@ public:
                                     SInt            aParallelFactor,
                                     idBool          aAlreadyLocked, // BUG-14898
                                     idvSQL        * aStatistics); 
-    static IDE_RC stopSenderThread(smiStatement * aSmiStmt,
-                                   SChar        * aReplName,
-                                   idBool         aAlreadyLocked,   // BUG-14898
-                                   idvSQL       * aStatistics);
+    static IDE_RC stopSenderThread( smiStatement * aSmiStmt,
+                                    SChar        * aReplName,
+                                    idBool         aAlreadyLocked,   // BUG-14898
+                                    idvSQL       * aStatistics,
+                                    idBool         aIsImmediate );
     static IDE_RC resetReplication(smiStatement * aSmiStmt,
                                    SChar        * aReplName,
                                    idvSQL       * aStatistics);
@@ -491,14 +497,18 @@ public:
                                      rpdReplItems * aReplItems,
                                      smSN           aSN);
 
+    static IDE_RC updateOldInvalidMaxSN( smiStatement * aSmiStmt,
+                                         rpdReplItems * aReplItems,
+                                         smSN           aSN );
+
     static IDE_RC selectReplications( smiStatement    * aSmiStmt,
                                       UInt*             aNumReplications,
                                       rpdReplications * aReplications,
                                       UInt              aMaxReplications );
 
     //proj-1608 recovery from replications
-    IDE_RC processRPRequest(cmiLink           *aLink,
-                            idBool             aIsRecoveryPhase);
+    IDE_RC processRPRequest( cmiLink        * aLink,
+                             idBool           aIsRecoveryPhase);
 
     // aRepName을 갖는 Sender를 깨운다.
     void   wakeupSender(const SChar* aRepName);
@@ -517,6 +527,14 @@ public:
                                        idvSQL       * aStatistics,
                                        smOID        * aTableOIDArray,
                                        UInt           aTableOIDCount );
+
+    static idBool isEnableRP();           // BUG-45984 replication port를 확인하여 이중화 사용여부를 확인
+
+
+    IDE_RC addReplListener( rpLinkImpl aImpl );
+    cmiLinkImpl getCMLinkImplByRPLinkImpl( rpLinkImpl aLinkImpl );
+
+
 
     static IDE_RC isEnabled();
 
@@ -706,9 +724,10 @@ public:
     IDE_RC loadRecoveryInfos(SChar* aRepName);
     IDE_RC saveAllRecoveryInfos();
 
-    static IDE_RC recoveryRequest(rpdReplications *aReplication,
-                                  idBool          *aIsError,
-                                  rpMsgReturn     *aResult);
+    static IDE_RC recoveryRequest( idBool           * aExitFlag,
+                                   rpdReplications  * aReplication,
+                                   idBool           * aIsError,
+                                   rpMsgReturn      * aResult );
     rprRecoveryItem* getRecoveryItem(const SChar* aRepName);
     rprRecoveryItem* getMergedRecoveryItem(const SChar* aRepName, smSN aRecoverySN);
     smSN             getMinReplicatedSNfromRecoveryItems(SChar * aRepName);
@@ -772,9 +791,10 @@ public:
     /* archive log를 읽을 수 있는 ALA인가? */
     inline static idBool isArchiveALA(SInt aRole)
         {
-            if ((aRole == RP_ROLE_ANALYSIS) &&
-                (RPU_REPLICATION_LOG_BUFFER_SIZE == 0) &&
-                (smiGetArchiveMode() == SMI_LOG_ARCHIVE) )
+            if ( ( ( aRole == RP_ROLE_ANALYSIS ) || 
+                   ( aRole == RP_ROLE_ANALYSIS_PROPAGATION ) ) &&
+                 ( RPU_REPLICATION_LOG_BUFFER_SIZE == 0 ) &&
+                 ( smiGetArchiveMode() == SMI_LOG_ARCHIVE ) )
             {
                 return ID_TRUE;
             }
@@ -801,12 +821,16 @@ public:
             return ( mMyself->mToDoFailbackCount > 0 ) ? ID_TRUE : ID_FALSE;
         }
 
+    inline static idBool isInitRepl() { return mIsInitRepl; }
+
 private:
+    rpcDDLSyncManager   mDDLSyncManager;
 
     iduMutex            mReceiverMutex;
     iduMutex            mRecoveryMutex;
     iduMutex            mOfflineStatusMutex;
-    UShort              mPort;
+    UShort              mTCPPort;
+    UShort              mIBPort;
     SInt                mMaxReplSenderCount;
     SInt                mMaxReplReceiverCount;
     rpxSender         **mSenderList;
@@ -821,7 +845,8 @@ private:
     rprRecoveryItem    *mRecoveryItemList;
     UInt                mToDoRecoveryCount;
     smSN                mRPRecoverySN;
-    cmiLink            *mListenLink;
+
+    cmiLink            *mListenLink[RP_LINK_IMPL_MAX];
     cmiDispatcher      *mDispatcher;
 
     // Failback for Eager Replication
@@ -845,15 +870,14 @@ private:
     SChar               mServerID[IDU_SYSTEM_INFO_LENGTH + 1];
 
     UInt                mReplSeq;
+    
+    static idBool       mIsInitRepl;
 
     iduLatch            mSenderLatch;
 
     /* BUG-31374 Implicit Savepoint 이름의 배열 */
     static SChar        mImplSPNameArr[SMI_STATEMENT_DEPTH_MAX][RP_SAVEPOINT_NAME_LEN + 1];
 
-    static IDE_RC checkRemoteReplVersion( cmiProtocolContext * aProtocolContext,
-                                          rpMsgReturn * aResult,
-                                          SChar       * aErrMsg );
 private:
 
     IDE_RC getUnusedReceiverIndexFromReceiverList( SInt * aReceiverListIndex );
@@ -879,8 +903,14 @@ private:
                                         rpReceiverStartMode    aReceiverMode,
                                         rpxReceiver         ** aReceiver );
 
-    void sendHandshakeAckAboutOutOfReplicationThreads( cmiProtocolContext * aProtocolContext );
+    void sendHandshakeAckAboutOutOfReplicationThreads( cmiProtocolContext * aProtocolContext,
+                                                       idBool             * aExitFlag );
         
+    /* PROJ-2677 DDL synchronization */
+    IDE_RC recvOperationInfo( cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              UChar              * aOpCode );
+
     IDE_RC startRecoveryReceiverThread( cmiProtocolContext * aProtocolContext,
                                         rpdMeta      * aMeta );
 
@@ -894,7 +924,7 @@ private:
                                         rpdMeta      * aMeta );
 
     IDE_RC startNormalReceiverThread( cmiProtocolContext * aProtocolContext,
-                                      rpdMeta      * aMeta );
+                                      rpdMeta            * aMeta );
 
     static IDE_RC rebuildTableInfo( void            * aQcStatement,
                                     qcmTableInfo    * aOldTableInfo );
@@ -1031,14 +1061,54 @@ public:
                                           UInt           aItemCount,
                                           smOID          aTableOID );
 
+    /* PTOJ-2677 */
+    static IDE_RC ddlSyncBegin( qciStatement * aQciStatement );
 
-    /*
-     *  PROJ-2453
-     */
+    static IDE_RC ddlSyncEnd( smiTrans * aDDLTrans );
+
+    static IDE_RC ddlSyncBeginInternal( idvSQL              * aStatistics,
+                                        cmiProtocolContext  * aProtocolContext,
+                                        smiTrans            * aDDLTrans,
+                                        idBool              * aExitFlag,
+                                        rpdVersion          * aVersion,
+                                        SChar               * aRepName,
+                                        SChar              ** aUserName,
+                                        SChar              ** aSql );
+    static IDE_RC ddlSyncEndInternal( smiTrans * aDDLTrans );
+
+    static void   ddlSyncException( smiTrans * aDDLTrans ); 
+
+    static IDE_RC checkRemoteNormalReplVersion( cmiProtocolContext * aProtocolContext,
+                                                idBool             * aExitFlag,
+                                                rpdReplications    * aReplication,
+                                                rpMsgReturn        * aResult,
+                                                SChar              * aErrMsg );
+
+    static IDE_RC getReplHosts( smiStatement     * aSmiStmt,
+                                rpdReplications  * aReplications,
+                                rpdReplHosts    ** aReplHosts );
+
+
+    static IDE_RC buildReceiverNewMeta( smiStatement * aStatement, SChar * aRepName );
+    static void   removeReceiverNewMeta( SChar * aRepName );
+
+    static void   setDDLSyncCancelEvent( SChar * aRepName );
+
+    static IDE_RC  waitLastProcessedSN( idvSQL * aStatistics,
+                                        idBool * aExitFlag,
+                                        SChar  * aRepName,
+                                        smSN     aLastSN );
+
+    static IDE_RC setSkipUpdateXSN( SChar * aRepName, idBool aIsSkip );
+
+    static rpcDDLReplInfo * findDDLReplInfoByName( SChar * aRepName );
+
 private:
     static void     sendXLog( const SChar * aLogPtr ); 
     static idBool   needReplicationByType( const SChar * aLogPtr );
     static ULong    convertBufferSizeToByte( UChar aType, ULong aBufSize );
+
+    static IDE_RC   initRemoteData( SChar * aRepName );
 };
 
 #endif  /* _O_RPC_MANAGER_H_ */

@@ -840,7 +840,7 @@ IDE_RC smpTBSAlterOnOff::finiOfflineTBSAction( idvSQL*          /* aStatistics *
 { 
     IDE_DASSERT( aTBSNode != NULL );
 
-    if(sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE )
     {
         // Tablespace의 상태가 Offline인데
         if ( SMI_TBS_IS_OFFLINE(aTBSNode->mState) )

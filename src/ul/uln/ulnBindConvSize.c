@@ -51,6 +51,4 @@ acp_sint32_t ulnBindConvSize_NATIONAL_CHARACTER(ulnDbc       *aDbc,
 {
     return (aUserOctetLength * aDbc->mNcharCharsetLangModule->maxPrecision(1)) /
            (aDbc->mWcharCharsetLangModule->maxPrecision(1)) ;
-
-    return 0;
 }

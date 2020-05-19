@@ -65,8 +65,9 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfGetClobLocatorCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA,
+    mtk::extractRangeNA
 };
 
 IDE_RC mtfGetClobLocatorEstimate( mtcNode*     aNode,
@@ -127,7 +128,7 @@ IDE_RC mtfGetClobLocatorCalculate( mtcNode*     aNode,
     mtdClobLocatorType   sLocator;
     MTC_CURSOR_PTR       sCursor;
     idBool               sFound;
-    void               * sRow;
+    void               * sRow = NULL;
     scGRID               sGRID;
     UInt                 sInfo = 0;
     UShort               sOrgTableID;
@@ -187,6 +188,8 @@ IDE_RC mtfGetClobLocatorCalculate( mtcNode*     aNode,
         if ( (sOrgLobColumn->column.flag & SMI_COLUMN_STORAGE_MASK)
              == SMI_COLUMN_STORAGE_MEMORY )
         {
+            IDE_TEST_RAISE( sRow == NULL, ERR_NOT_APPLICABLE );
+
             IDE_TEST( mtc::openLobCursorWithRow( sCursor,
                                                  sRow,
                                                  & sOrgLobColumn->column,

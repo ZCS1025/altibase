@@ -3761,6 +3761,200 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
     return IDE_FAILURE;
 }
 
+IDE_RC mtdNcharInterface::toNchar( SInt               aPrecision,
+                                   const mtlModule  * aSrcCharSet,
+                                   const mtlModule  * aDestCharSet,
+                                   mtdCharType      * aSource,
+                                   mtdNcharType     * aResult )
+{
+/***********************************************************************
+ *
+ * Description : 
+ *      CHAR 타입을 NCHAR 타입으로 변환하는 함수
+ *      PROJ-2632
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    idnCharSetList   sIdnDestCharSet;
+    idnCharSetList   sIdnSrcCharSet;
+    UChar          * sSourceIndex;
+    UChar          * sTempIndex;
+    UChar          * sSourceFence;
+    UChar          * sResultValue;
+    UChar          * sResultFence;
+    UInt             sNcharCnt = 0;
+    SInt             sSrcRemain = 0;
+    SInt             sDestRemain = 0;
+    SInt             sTempRemain = 0;
+
+    sDestRemain  = aDestCharSet->maxPrecision( aPrecision );
+    sSourceIndex = aSource->value;
+    sSrcRemain   = aSource->length;
+    sSourceFence = sSourceIndex + aSource->length;
+
+    sResultValue = aResult->value;
+    sResultFence = sResultValue + sDestRemain;
+
+    if( aSrcCharSet->id != aDestCharSet->id )
+    {
+        sIdnSrcCharSet = mtl::getIdnCharSet( aSrcCharSet );
+        sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
+
+        //-----------------------------------------
+        // 캐릭터 셋 변환
+        //-----------------------------------------
+        while( sSourceIndex < sSourceFence )
+        {
+            IDE_TEST_RAISE( sResultValue >= sResultFence,
+                            ERR_INVALID_DATA_LENGTH );
+
+            sTempRemain = sDestRemain;
+            
+            IDE_TEST( convertCharSet( sIdnSrcCharSet,
+                                      sIdnDestCharSet,
+                                      sSourceIndex,
+                                      sSrcRemain,
+                                      sResultValue,
+                                      & sDestRemain,
+                                      MTU_NLS_NCHAR_CONV_EXCP )
+                      != IDE_SUCCESS );
+
+            sTempIndex = sSourceIndex;
+
+            (void)aSrcCharSet->nextCharPtr( & sSourceIndex, sSourceFence );
+
+            if( sTempRemain - sDestRemain > 0 )
+            {
+                sResultValue += (sTempRemain - sDestRemain);
+                sNcharCnt++;
+
+            }
+            else
+            {
+                // Nothing to do.
+            }
+                        
+            sSrcRemain -= ( sSourceIndex - sTempIndex );
+        }
+
+        aResult->length = sResultValue - aResult->value;
+    }
+    else
+    {
+        idlOS::memcpy( aResult->value,
+                       aSource->value,
+                       aSource->length );
+
+        aResult->length = aSource->length;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_DATA_LENGTH );
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_VALIDATE_INVALID_LENGTH));
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mtdNcharInterface::toChar( SInt               aPrecision,
+                                  const mtlModule  * aSrcCharSet,
+                                  const mtlModule  * aDestCharSet,
+                                  mtdNcharType     * aSource,
+                                  mtdCharType      * aResult )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      NCHAR 타입을 CHAR 타입으로 변환하는 함수
+ *      PROJ-2632
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    idnCharSetList   sIdnDestCharSet;
+    idnCharSetList   sIdnSrcCharSet;
+    UChar          * sSourceIndex;
+    UChar          * sTempIndex;
+    UChar          * sSourceFence;
+    UChar          * sResultValue;
+    UChar          * sResultFence;
+    SInt             sSrcRemain = 0;
+    SInt             sDestRemain = 0;
+    SInt             sTempRemain = 0;
+    UShort           sSourceLen;
+
+    sDestRemain  = aPrecision;
+    sSourceIndex = aSource->value;
+    sSourceLen   = aSource->length;
+    sSourceFence = sSourceIndex + sSourceLen;
+    sSrcRemain   = sSourceLen;
+
+    sResultValue = aResult->value;
+    sResultFence = sResultValue + sDestRemain;
+
+    if( aSrcCharSet->id != aDestCharSet->id )
+    {
+        sIdnSrcCharSet = mtl::getIdnCharSet( aSrcCharSet );
+        sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
+
+        //-----------------------------------------
+        // 캐릭터 셋 변환
+        //-----------------------------------------
+        while( sSourceIndex < sSourceFence )
+        {
+            IDE_TEST_RAISE( sResultValue >= sResultFence,
+                            ERR_INVALID_DATA_LENGTH );
+
+            sTempRemain = sDestRemain;
+            
+            IDE_TEST( convertCharSet( sIdnSrcCharSet,
+                                      sIdnDestCharSet,
+                                      sSourceIndex,
+                                      sSrcRemain,
+                                      sResultValue,
+                                      & sDestRemain,
+                                      MTU_NLS_NCHAR_CONV_EXCP )
+                      != IDE_SUCCESS );
+
+            sTempIndex = sSourceIndex;
+
+            (void)aSrcCharSet->nextCharPtr( & sSourceIndex, sSourceFence );
+            
+            sResultValue += (sTempRemain - sDestRemain);
+            
+            sSrcRemain -= ( sSourceIndex - sTempIndex );
+        }
+
+        aResult->length = sResultValue - aResult->value;
+    }
+    else
+    {
+        idlOS::memcpy( aResult->value,
+                       aSource->value,
+                       aSource->length );
+
+        aResult->length = aSource->length;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_DATA_LENGTH );
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_VALIDATE_INVALID_LENGTH));
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
     const mtlModule * aSourceCharSet,
     const mtlModule * aResultCharSet,

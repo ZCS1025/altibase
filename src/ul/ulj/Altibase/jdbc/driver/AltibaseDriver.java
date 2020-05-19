@@ -26,11 +26,10 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import Altibase.jdbc.driver.cm.CmResultFactory;
-import Altibase.jdbc.driver.datatype.ColumnFactory;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.LoggingProxyFactory;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
 public final class AltibaseDriver implements Driver
@@ -49,9 +48,6 @@ public final class AltibaseDriver implements Driver
             // LOGGING
         }
 
-        ColumnFactory.class.getClass();
-        CmResultFactory.class.getClass();
-        LobObjectFactoryImpl.registerLobFactory();
         mLogWriter = DriverManager.getLogWriter();
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
         {
@@ -81,14 +77,16 @@ public final class AltibaseDriver implements Driver
         }
         AltibaseProperties sAltiProp = new AltibaseProperties(aInfo);
         // BUG-43349 url parsing을 별도의 클래스에서 처리한다.
-        AltibaseUrlParser.parseURL(aURL, sAltiProp);
-
-        return createConnection(sAltiProp);
+        return createConnection(sAltiProp, AltibaseUrlParser.parseURL(aURL, sAltiProp));
     }
 
-    private Connection createConnection(AltibaseProperties sAltiProp) throws SQLException
+    private Connection createConnection(AltibaseProperties aAltiProp,
+                                        boolean aIncludesShardPrefix) throws SQLException
     {
-        Connection sConn = new AltibaseConnection(sAltiProp, null);
+        // PROJ-2690 shard prefix가 포함되어 있는 경우 AltibaseShardingConnection을 생성한다.
+        Connection sConn = (aIncludesShardPrefix) ? new AltibaseShardingConnection(aAltiProp) :
+                                                    new AltibaseConnection(aAltiProp, null, null);
+
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
         {
             sConn = LoggingProxyFactory.createConnectionProxy(sConn);

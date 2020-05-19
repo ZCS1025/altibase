@@ -100,10 +100,27 @@ public:
     IDE_RC duplicate( smnIndexHeader * aSrcIndex,
                       smnIndexHeader * aDestIndex);
 
+    SChar * getPivot( smnbHeader      * aIndexHeader,
+                      smnbStatistic   * aIndexStat,
+                      smnbLNode      ** aArrNode,
+                      smnbLNode       * aLeftNode,
+                      UInt              aLeftPos,
+                      smnbLNode       * aRightNode,
+                      UInt              aRightPos );
+ 
+    SChar * getPivot4Large( smnbHeader      * aIndexHeader,
+                            smnbStatistic   * aIndexStat,
+                            smnbLNode      ** aArrNode,
+                            smnbLNode       * aLeftNode,
+                            UInt              aLeftPos,
+                            smnbLNode       * aRightNode,
+                            UInt              aRightPos );
+
     IDE_RC destroy();       /* 쓰레드 해제 */
 
     void run();
-    
+ 
+  
 public:
     idvSQL             * mStatistics;
     SChar              * mNullPtr;

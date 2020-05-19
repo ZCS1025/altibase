@@ -251,6 +251,10 @@ extern mtdDateType mtcdDateNull;
 # define MTD_DATE_FORMAT_WW2                  (56)   /* BUG-42941 TO_CHAR()에 WW2(Oracle Version WW) 추가 */
 # define MTD_DATE_FORMAT_SYYYY                (57)   /* BUG-36296 SYYYY Format 지원 */
 # define MTD_DATE_FORMAT_SCC                  (58)   /* BUG-36296 SCC Format 지원 */
+# define MTD_DATE_FORMAT_IYYY                 (59)   /* BUG-46727 TO_CHAR()에 IYYY 추가 */
+# define MTD_DATE_FORMAT_IYY                  (60)   /* BUG-46727 TO_CHAR()에 IYY 추가 */
+# define MTD_DATE_FORMAT_IY                   (61)   /* BUG-46727 TO_CHAR()에 IY 추가 */
+# define MTD_DATE_FORMAT_I                    (62)   /* BUG-46727 TO_CHAR()에 I 추가 */
 
 # define MTD_DATE_GREGORY_ONLY       (0)
 # define MTD_DATE_GREGORY_AND_JULIAN (1)

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiver.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxReceiver.h 84479 2018-11-30 00:36:30Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_RPX_RECEIVER_H_
@@ -65,6 +65,7 @@ public:
     void   finalizeThread();
 
     static IDE_RC checkProtocol( cmiProtocolContext  *aProtocolContext,
+                                 idBool              *aExitFlag,
                                  rpRecvStartStatus   *aStatus,
                                  rpdVersion          *aVersion );
 
@@ -90,8 +91,19 @@ public:
     };
 
     inline idBool isApplierExist()
-    { 
-        return mIsApplierExist; 
+    {
+        idBool  sIsApplierExist = ID_FALSE;
+
+        if ( mApplier != NULL )
+        {
+            sIsApplierExist = ID_TRUE;
+        }
+        else
+        {
+            sIsApplierExist = ID_FALSE;
+        }
+
+        return sIsApplierExist; 
     };
     //proj-1608 
     inline idBool isRecoveryComplete() 
@@ -139,7 +151,7 @@ public:
 
     smSN getApplyXSN( void );
 
-    IDE_RC searchRemoteTable( rpdMetaItem ** aItem, ULong aTableOID );
+    IDE_RC searchRemoteTable( rpdMetaItem ** aItem, ULong aRemoteTableOID );
     IDE_RC searchTableFromRemoteMeta( rpdMetaItem ** aItem, 
                                       ULong          aTableOID );
 
@@ -147,11 +159,15 @@ public:
     ULong getApplierInitBufferSize( void );
 
     void enqueueFreeXLogQueue( rpdXLog      * aXLog );
-    rpdXLog * dequeueFreeXLogQueue( void );
+    IDE_RC dequeueFreeXLogQueue( rpdXLog   ** aXLog );
 
     IDE_RC checkAndWaitAllApplier( smSN   aWaitSN );
-    IDE_RC checkAndWaitApplier( UInt     aApplierIndex,
-                                smSN     aWaitSN );
+    IDE_RC checkAndWaitApplier( UInt          aApplierIndex,
+                                smSN          aWaitSN,
+                                iduMutex    * aMutex,
+                                iduCond     * aCond,
+                                idBool      * aIsWait );
+    void wakeupReceiverApplier( void );
 
     IDE_RC enqueueXLogAndSendAck( rpdXLog * aXLog );
     UInt assignApplyIndex( smTID aTID );
@@ -176,8 +192,57 @@ public:
         return mMeta.getSqlApplyTableCount();
     }
 
-private:
+    IDE_RC buildNewMeta( smiStatement * aStatement );
+    void   removeNewMeta();
 
+    IDE_RC sendDDLASyncStartAck( UInt aType,  ULong aSendTimeout );
+
+    IDE_RC recvDDLASyncExecute( UInt         * aType,
+                                SChar        * aUserName,
+                                UInt         * aDDLEnableLevel,
+                                UInt         * aTargetCount,
+                                SChar        * aTargetTableName,
+                                SChar       ** aTargetPartNames,
+                                smSN         * aDDLCommitSN,
+                                rpdVersion   * aReplVersion,
+                                SChar       ** aDDLStmt,
+                                ULong          aRecvTimeout );
+    IDE_RC sendDDLASyncExecuteAck( UInt    aType,
+                                   UInt    aIsSuccess,
+                                   UInt    aErrCode,
+                                   SChar * aErrMsg,
+                                   ULong   aSendTimeout );
+
+    idBool isAlreadyAppliedDDL( smSN aRemoteDDLCommitSN );
+
+    IDE_RC checkLocalAndRemoteNames( SChar  * aUserName,
+                                     UInt     aTargetCount,
+                                     SChar  * aTargetTableName,
+                                     SChar  * aTargetPartNames );
+
+    IDE_RC metaRebuild( smiTrans * aTrans );
+
+    void   setSelfExecuteDDLTransID( smTID aTID )
+    {
+        idCore::acpAtomicSet64( &mSelfExecuteDDLTransID, aTID );
+    }
+
+    idBool isSelfExecuteDDLTrans( smTID aTID )
+    {
+        smTID  sExecuteTID = SM_NULL_TID;
+        idBool sResult     = ID_FALSE;
+
+        sExecuteTID = idCore::acpAtomicGet64( &mSelfExecuteDDLTransID );
+        if ( sExecuteTID == aTID )
+        {
+            sResult = ID_TRUE;
+        }
+        
+        return sResult;
+    }
+
+private:
+    rpdMeta           * mNewMeta;
     rpdQueue            mFreeXLogQueue;
     ULong               mApplierQueueSize;
     ULong               mXLogSize;
@@ -189,10 +254,14 @@ private:
     smSN                mLastWaitSN;
     UInt                mLastWaitApplierIndex;
 
-    UInt                mNextApplyIndexForKeepAlive;
     smSN                mRestartSN;
 
+    smSN                mLastReceivedSN;
+
+    smTID               mSelfExecuteDDLTransID;
+
     IDE_RC initializeParallelApplier( UInt     aParallelApplierCount );
+    void   finalizeParallelApplier( void );
 
     void   finalize(); // called when thread stop
 
@@ -218,14 +287,14 @@ private:
     iduMutex           mThreadJoinMutex;
     iduCond            mThreadJoinCV;
 
-    /* BUG-31545 수행시간 통계정보 */
-    idvSQL             mOpStatistics;
+    /* BUG-31545 수행시간 통계정보, BUG-46548 Receiver 이벤트 제어를 위한 Statistic */
+    idvSQL             mStatistics;
+    ULong              mEventFlag;
     idvSession         mStatSession;
     idvSession         mOldStatSession;
 
     rpxReceiverApplier  * mApplier;
     UInt                  mApplierCount;
-    idBool                mIsApplierExist;
 
     SInt getIdleReceiverApplyIndex( void );
 
@@ -239,6 +308,8 @@ private:
 
     IDE_RC checkSelfReplication( idBool    aIsLocalReplication,
                                  rpdMeta * aMeta );
+
+    IDE_RC copyNewMeta();
 
     IDE_RC checkMeta ( rpdMeta  * aMeta );
 
@@ -288,6 +359,8 @@ private:
     void resetCounterForNextAck();
 
     IDE_RC startApplier( void );
+    void   joinApplier( void );
+
     IDE_RC getLocalFlushedRemoteSN( smSN aRemoteFlushSN,
                                     smSN aRestartSN,
                                     smSN * aLocalFlushedRemoteSN );
@@ -314,7 +387,7 @@ private:
 
     void setKeepAlive( rpdXLog     * aSrcXLog,
                        rpdXLog     * aDestXLog );
-    void enqueueAllApplier( rpdXLog  * aXLog );
+    IDE_RC enqueueAllApplier( rpdXLog  * aXLog );
 
     idBool isAllApplierFinish( void );
     void   waitAllApplierComplete( void );
@@ -323,6 +396,8 @@ private:
     ULong getApplierQueueSize( ULong aBufSize, ULong aOptionSize );
 
     IDE_RC updateRemoteXSN( smSN aSN );
+
+    void wakeup( void );
 
 public:
     SChar              *mRepName;
@@ -336,6 +411,8 @@ public:
     rpdMeta             mMeta;
 
     iduMutex            mHashMutex;
+    iduCond             mHashCV;
+    idBool              mIsWait;
 
     rpxReceiverApply    mApply;
 
@@ -372,6 +449,8 @@ public:
     
     ULong getReceiveDataSize( void );
     ULong getReceiveDataCount( void );
+
+    idvSQL * getStatistics( void ) { return &mStatistics; } 
 };
 
 inline IDE_RC rpxReceiver::lock()

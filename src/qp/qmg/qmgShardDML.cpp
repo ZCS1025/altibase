@@ -408,7 +408,7 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
             }
         }
 
-        if ( aAnalyzeInfo->mSubKeyExists == 1 )
+        if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
         {
             for ( sSubValueIndex = 0;
                   sSubValueIndex < aAnalyzeInfo->mSubValueCount;
@@ -449,7 +449,7 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
         // default node
         //----------------------------------
 
-        if ( aAnalyzeInfo->mDefaultNodeId != ID_USHORT_MAX )
+        if ( aAnalyzeInfo->mDefaultNodeId != ID_UINT_MAX )
         {
             sConnectInfo = sdi::findConnect( sClientInfo,
                                              aAnalyzeInfo->mDefaultNodeId );
@@ -562,7 +562,7 @@ IDE_RC qmgShardDML::printSplitInfo(  qcStatement    * /*aStatement*/,
             break;
     }
 
-    if ( aAnalyzeInfo->mSubKeyExists == 1 )
+    if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
     {
         switch ( aAnalyzeInfo->mSubSplitMethod )
         {
@@ -620,7 +620,7 @@ IDE_RC qmgShardDML::printRangeInfo( qcStatement    * /*aStatement*/,
         {
             case SDI_SPLIT_HASH :
                 iduVarStringAppendFormat(
-                    aString, "  %s : <=%"ID_UINT32_FMT,
+                    aString, "  %s : <%"ID_UINT32_FMT,  /* BUG-46288 */
                     sConnectInfo->mNodeName,
                     (UInt)sRangeInfo->mRanges[j].mValue.mHashMax );
                 break;
@@ -628,21 +628,21 @@ IDE_RC qmgShardDML::printRangeInfo( qcStatement    * /*aStatement*/,
                 if ( aAnalyzeInfo->mKeyDataType == MTD_SMALLINT_ID )
                 {
                     iduVarStringAppendFormat(
-                        aString, "  %s : <=%"ID_INT32_FMT,
+                        aString, "  %s : <%"ID_INT32_FMT,
                         sConnectInfo->mNodeName,
                         (SInt)sRangeInfo->mRanges[j].mValue.mSmallintMax );
                 }
                 else if ( aAnalyzeInfo->mKeyDataType == MTD_INTEGER_ID )
                 {
                     iduVarStringAppendFormat(
-                        aString, "  %s : <=%"ID_INT32_FMT,
+                        aString, "  %s : <%"ID_INT32_FMT,
                         sConnectInfo->mNodeName,
                         sRangeInfo->mRanges[j].mValue.mIntegerMax );
                 }
                 else if ( aAnalyzeInfo->mKeyDataType == MTD_BIGINT_ID )
                 {
                     iduVarStringAppendFormat(
-                        aString, "  %s : <=%"ID_INT64_FMT,
+                        aString, "  %s : <%"ID_INT64_FMT,
                         sConnectInfo->mNodeName,
                         sRangeInfo->mRanges[j].mValue.mBigintMax );
                 }
@@ -650,7 +650,7 @@ IDE_RC qmgShardDML::printRangeInfo( qcStatement    * /*aStatement*/,
                           ( aAnalyzeInfo->mKeyDataType == MTD_VARCHAR_ID ) )
                 {
                     iduVarStringAppendFormat(
-                        aString, "  %s : <='%.*s'",
+                        aString, "  %s : <'%.*s'",
                         sConnectInfo->mNodeName,
                         sRangeInfo->mRanges[j].mValue.mCharMax.length,
                         sRangeInfo->mRanges[j].mValue.mCharMax.value );
@@ -707,39 +707,39 @@ IDE_RC qmgShardDML::printRangeInfo( qcStatement    * /*aStatement*/,
                 break;
         }
 
-        if ( aAnalyzeInfo->mSubKeyExists == 1 )
+        if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
         {
             switch ( aAnalyzeInfo->mSubSplitMethod )
             {
                 case SDI_SPLIT_HASH:
                     iduVarStringAppendFormat(
-                        aString, ", <=%"ID_UINT32_FMT,
+                        aString, ", <%"ID_UINT32_FMT,  /* BUG-46288 */
                         (UInt)sRangeInfo->mRanges[j].mSubValue.mHashMax );
                     break;
                 case SDI_SPLIT_RANGE:
                     if ( aAnalyzeInfo->mSubKeyDataType == MTD_SMALLINT_ID )
                     {
                         iduVarStringAppendFormat(
-                            aString, ", <=%"ID_INT32_FMT,
+                            aString, ", <%"ID_INT32_FMT,
                             (SInt)sRangeInfo->mRanges[j].mSubValue.mSmallintMax );
                     }
                     else if ( aAnalyzeInfo->mSubKeyDataType == MTD_INTEGER_ID )
                     {
                         iduVarStringAppendFormat(
-                            aString, ", <=%"ID_INT32_FMT,
+                            aString, ", <%"ID_INT32_FMT,
                             sRangeInfo->mRanges[j].mSubValue.mIntegerMax );
                     }
                     else if ( aAnalyzeInfo->mSubKeyDataType == MTD_BIGINT_ID )
                     {
                         iduVarStringAppendFormat(
-                            aString, ", <=%"ID_INT64_FMT,
+                            aString, ", <%"ID_INT64_FMT,
                             sRangeInfo->mRanges[j].mSubValue.mBigintMax );
                     }
                     else if ( ( aAnalyzeInfo->mSubKeyDataType == MTD_CHAR_ID ) ||
                               ( aAnalyzeInfo->mSubKeyDataType == MTD_VARCHAR_ID ) )
                     {
                         iduVarStringAppendFormat(
-                            aString, ", <='%.*s'",
+                            aString, ", <'%.*s'",
                             sRangeInfo->mRanges[j].mSubValue.mCharMax.length,
                             sRangeInfo->mRanges[j].mSubValue.mCharMax.value );
                     }

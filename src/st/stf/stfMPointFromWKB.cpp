@@ -69,6 +69,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfMPointFromWKBCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

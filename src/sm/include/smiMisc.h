@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: smiMisc.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smiMisc.h 84383 2018-11-20 04:18:42Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMI_MISC_H_
@@ -322,7 +322,9 @@ idBool   smiIsReplicationLogging();
   For A4 :
       TableSpace별로 Database Size를 반환한다.
 */
+#if 0 //not used 
 ULong    smiTBSSize( scSpaceID aTableSpaceID );
+#endif
 
 // Disk Segment를 생성하기 위한 최소 Extent 개수
 UInt smiGetMinExtPageCnt();

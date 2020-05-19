@@ -38,6 +38,13 @@ static SInt               gCMInitCount;
 /* bug-33841: ipc thread's state is wrongly displayed */
 static cmiCallbackSetExecute gCMCallbackSetExecute = NULL;
 
+/* PROJ-2681 */
+extern "C" const acp_uint32_t aciVersionID;
+
+const acp_char_t *gCmErrorFactory[] =
+{
+#include "E_CM_US7ASCII.c"
+};
 
 inline IDE_RC cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
                                        UInt                aMicroSleepTime,
@@ -45,8 +52,6 @@ inline IDE_RC cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
 {
     idBool            sLinkIsClosed = ID_FALSE;
     cmnLinkPeerIPCDA *sLink         = (cmnLinkPeerIPCDA *)aCtx->mLink;
-
-    IDE_TEST_RAISE(aCtx->mIsDisconnect == ID_TRUE, err_disconnected);
 
     if( ++(*aCurLoopCount) == aCtx->mIPDASpinMaxCount )
     {
@@ -92,13 +97,16 @@ inline IDE_RC cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
 
 inline IDE_RC cmiIPCDACheckReadFlag(cmiProtocolContext *aCtx, UInt aMicroSleepTime)
 {
-    cmiProtocolContext * sCtx          = (cmiProtocolContext *)aCtx;
-    cmbBlockIPCDA      * sBlock        = NULL;
-    UInt                 sLoopCount    = 0;
+    cmiProtocolContext *sCtx          = (cmiProtocolContext *)aCtx;
+    cmbBlockIPCDA      *sReadBlock    = NULL;
+    UInt                sLoopCount    = 0;
 
-    sBlock = (cmbBlockIPCDA*)sCtx->mReadBlock;
+    sReadBlock = (cmbBlockIPCDA*)sCtx->mReadBlock;
 
-    while (sBlock->mRFlag == CMB_IPCDA_SHM_DEACTIVATED)
+    IDE_TEST(aCtx->mIsDisconnect == ID_TRUE);
+    
+    /* BUG-46502 atomic 함수 적용 */
+    while ( acpAtomicGet32( &sReadBlock->mRFlag) == CMB_IPCDA_SHM_DEACTIVATED )
     {
         IDE_TEST( cmiIPCDACheckLinkAndWait(aCtx,
                                            aMicroSleepTime,
@@ -122,16 +130,19 @@ inline IDE_RC cmiIPCDACheckReadFlag(cmiProtocolContext *aCtx, UInt aMicroSleepTi
 }
 
 inline IDE_RC cmiIPCDACheckDataCount(cmiProtocolContext *aCtx,
-                                     UInt               *aCount,
+                                     volatile UInt      *aCount,
                                      UInt                aCompValue,
                                      UInt                aMicroSleepTime)
 {
     IDE_RC sRC = IDE_FAILURE;
     UInt   sLoopCount    = 0;
 
+    IDE_TEST(aCtx->mIsDisconnect == ID_TRUE);
+
     IDE_TEST(aCount == NULL);
 
-    while(*aCount == aCompValue)
+    /* BUG-46502 atomic 함수 적용 */
+    while( (UInt)acpAtomicGet32(aCount) <= aCompValue )
     {
         sRC = cmiIPCDACheckLinkAndWait(aCtx,
                                        aMicroSleepTime,
@@ -317,6 +328,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
     iduListNode *sIterator;
     iduListNode *sNodeNext;
     idBool       sSendSuccess;
+    UInt         sSendDataSize = 0;
 
     // bug-27250 IPC linklist can be crushed.
     PDL_Time_Value      sWaitTime;
@@ -361,6 +373,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
 
         sSendSuccess = ID_TRUE;
 
+        sSendDataSize = sPendingBlock->mDataSize;
         // BUG-19465 : CM_Buffer의 pending list를 제한
         while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != IDE_SUCCESS)
         {
@@ -413,7 +426,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
         }
         
         /* BUG-45184 */
-        aProtocolContext->mSendDataSize += sPendingBlock->mDataSize;
+        aProtocolContext->mSendDataSize += sSendDataSize;
         aProtocolContext->mSendDataCount++;
             
         aProtocolContext->mListLength--;
@@ -424,6 +437,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
      */
     if (sIterator == &aProtocolContext->mWriteBlockList)
     {
+        sSendDataSize = sBlock->mDataSize;
         if (sLink->mPeerOp->mSend(sLink, sBlock) != IDE_SUCCESS)
         {
             IDE_TEST_RAISE(ideIsRetry() != IDE_SUCCESS, SendFail);
@@ -433,7 +447,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
         }
         
         /* BUG-45184 */
-        aProtocolContext->mSendDataSize += sBlock->mDataSize;
+        aProtocolContext->mSendDataSize += sSendDataSize;
         aProtocolContext->mSendDataCount++;
     }
     else
@@ -462,6 +476,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
         {
             sPendingBlock = (cmbBlock *)sIterator->mObj;
 
+            sSendDataSize = sPendingBlock->mDataSize;
             while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != IDE_SUCCESS)
             {
                 IDE_TEST_RAISE(ideIsRetry() != IDE_SUCCESS, SendFail);
@@ -494,7 +509,7 @@ static IDE_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, idBool aIsEnd,
             }
             
             /* BUG-45184 */
-            aProtocolContext->mSendDataSize += sPendingBlock->mDataSize;
+            aProtocolContext->mSendDataSize += sSendDataSize;
             aProtocolContext->mSendDataCount++;
         }
 
@@ -791,6 +806,12 @@ IDE_RC cmiInitialize( UInt   aCmMaxPendingList )
     }
     
     gCMInitCount++;
+
+    /* PROJ-2681 */
+    (void)aciRegistErrorFromBuffer(ACI_E_MODULE_CM,
+                                   aciVersionID,
+                                   ID_SIZEOF(gCmErrorFactory) / ID_SIZEOF(gCmErrorFactory[0]), /* count */
+                                   (acp_char_t **)&gCmErrorFactory);
 
     IDE_ASSERT(idlOS::thread_mutex_unlock(&gCMInitMutex) == 0);
    
@@ -1450,21 +1471,12 @@ IDE_RC cmiFreeDispatcher(cmiDispatcher *aDispatcher)
 IDE_RC cmiAddLinkToDispatcher(cmiDispatcher *aDispatcher, cmiLink *aLink)
 {
     /*
-     * Dispatcher에서 사용할 수 있는 Link Impl인지 검사
-     */
-    IDE_TEST_RAISE(cmiDispatcherImplForLink(aLink) != aDispatcher->mImpl, InvalidLinkImpl);
-
-    /*
      * Dispatcher에 Link 추가
      */
     IDE_TEST(aDispatcher->mOp->mAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(InvalidLinkImpl);
-    {
-        IDE_SET(ideSetErrorCode(cmERR_ABORT_INVALID_LINK_IMPL));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1926,6 +1938,11 @@ IDE_RC cmiInitializeProtocolContext( cmiProtocolContext * aCtx,
      * [rp-sender] It needs a property to give sending timeout to replication sender. 
      */
     aCtx->mResendBlock = aResendBlock;
+
+    aCtx->mSendDataSize           = 0;
+    aCtx->mReceiveDataSize        = 0;
+    aCtx->mSendDataCount          = 0;
+    aCtx->mReceiveDataCount       = 0;
     
     return IDE_SUCCESS;
 }
@@ -2587,12 +2604,14 @@ IDE_RC cmiCheckRemoteAccess(cmiLink* aLink, idBool* aIsRemote)
 
     *aIsRemote = ID_FALSE;
     /* BUG-44530 SSL에서 ALTIBASE_SOCK_BIND_ADDR 지원 */
-    if ((aLink->mImpl == CMN_LINK_IMPL_TCP) || (aLink->mImpl == CMN_LINK_IMPL_SSL))
+    if ((aLink->mImpl == CMN_LINK_IMPL_TCP) ||
+        (aLink->mImpl == CMN_LINK_IMPL_SSL) ||
+        (aLink->mImpl == CMN_LINK_IMPL_IB))
     {
         /* proj-1538 ipv6 */
         idlOS::memset(&sAddr, 0x00, ID_SIZEOF(sAddr));
         IDE_TEST(cmiGetLinkInfo(aLink, (SChar *)&sAddr, ID_SIZEOF(sAddr),
-                                CMI_LINK_INFO_TCP_REMOTE_SOCKADDR)
+                                CMI_LINK_INFO_REMOTE_SOCKADDR)
                  != IDE_SUCCESS);
 
         /* bug-30541: ipv6 code review bug.
@@ -2877,16 +2896,6 @@ IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
 
     IDE_TEST(aCtx->mLink == NULL);
 
-    /* mWriteBlockList 에 할다되어 있는 Block 이 있으면 해제 한다. */
-    IDU_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
-    {
-        sPool = aCtx->mLink->mPool;
-
-        sPendingBlock = (cmbBlock *)sIterator->mObj;
-        IDE_TEST( sPool->mOp->mFreeBlock(sPool, sPendingBlock) != IDE_SUCCESS );
-        aCtx->mListLength--;
-    }
-
     if (aCtx->mLink->mLink.mPacketType != CMP_PACKET_TYPE_A5)
     {
         sPool = aCtx->mLink->mPool;
@@ -2927,6 +2936,16 @@ IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
         IDE_TEST(cmiFreeReadBlock(aCtx) != IDE_SUCCESS);
     }
 
+    /* BUG-46608 mWriteBlockList 에 할당되어 있는 Block 이 있으면 해제 한다. */
+    IDU_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
+    {
+        sPool = aCtx->mLink->mPool;
+
+        sPendingBlock = (cmbBlock *)sIterator->mObj;
+        IDE_TEST( sPool->mOp->mFreeBlock(sPool, sPendingBlock) != IDE_SUCCESS );
+        aCtx->mListLength--;
+    }
+    
     IDE_EXCEPTION_CONT(ContFreeCmBlock);
 
     return IDE_SUCCESS;
@@ -3283,7 +3302,7 @@ beginToRecv:
     while (1)
     {
         CMI_RD1(aCtx, sOpID);
-        IDE_TEST(sOpID >= aCtx->mModule->mOpMax);
+        IDE_TEST_RAISE(sOpID >= aCtx->mModule->mOpMax, InvalidOpError);  /* BUG-45804 */
 #ifdef CMI_DUMP
         ideLog::logLine(IDE_CM_4, "%s", gCmpOpDBMap[sOpID].mCmpOpName);
 #endif
@@ -3335,23 +3354,28 @@ beginToRecv:
 
     return sRet; // IDE_SUCCESS, IDE_FAILURE, IDE_CM_STOP
 
-    IDE_EXCEPTION(Disconnected);
+    IDE_EXCEPTION(Disconnected)
     {
         IDE_SET(ideSetErrorCode(cmERR_ABORT_CONNECTION_CLOSED));
     }
-    IDE_EXCEPTION(InvalidProtocolSeqNo);
+    IDE_EXCEPTION(InvalidProtocolSeqNo)
     {
         IDE_SET(ideSetErrorCode(cmERR_ABORT_INVALID_PROTOCOL_SEQUENCE));
 
         cmiDump(aCtx, sHeader, aCtx->mReadBlock, 0, aCtx->mReadBlock->mDataSize);
     }
-    IDE_EXCEPTION(MarshalErr);
+    IDE_EXCEPTION(MarshalErr)
     {
         IDE_SET(ideSetErrorCode(cmERR_ABORT_MARSHAL_ERROR));
 
         cmiDump(aCtx, sHeader, aCtx->mReadBlock, 0, aCtx->mReadBlock->mDataSize);
     }
+    IDE_EXCEPTION(InvalidOpError)
+    {
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_INVALID_OPERATION));
+    }
     IDE_EXCEPTION_END;
+
     return IDE_FAILURE;
 }
 
@@ -3378,12 +3402,13 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
     cmbBlock             sTmpBlock;
 
     UInt                 sCurReadOperationCount     = 0;
-    idBool               sNeedFinalizeRead          = ID_FALSE;
-    idBool               sNeedFinalizeWrite         = ID_FALSE;
 
     sLinkIPCDA = (cmnLinkPeerIPCDA *)aCtx->mLink;
 
     sOrgBlock              = (cmbBlockIPCDA *)aCtx->mReadBlock;
+
+    IDE_TEST_RAISE(aCtx->mIsDisconnect == ID_TRUE, Disconnected);
+
     sTmpBlock.mBlockSize   = sOrgBlock->mBlock.mBlockSize;
     sTmpBlock.mCursor      = CMP_HEADER_SIZE;
     sTmpBlock.mDataSize    = sOrgBlock->mBlock.mDataSize;
@@ -3391,7 +3416,6 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
     sTmpBlock.mData        = &sOrgBlock->mData;
 
     IDE_TEST_RAISE(cmiIPCDACheckReadFlag(aCtx, aMicroSleepTime) == IDE_FAILURE, Disconnected);
-    sNeedFinalizeRead = ID_TRUE;
 
     aCtx->mReadBlock = &sTmpBlock;
 
@@ -3402,21 +3426,22 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
                                               sCurReadOperationCount,
                                               aMicroSleepTime) == IDE_FAILURE, Disconnected);
 
-        /* 수신받은 데이터 사이즈 갱신 */
-        /* BUG-44705 sTmpBlock.mDataSize값 보장을 위한 메모리 배리어 추가 */
-        IDL_MEM_BARRIER;
         sTmpBlock.mDataSize = sOrgBlock->mBlock.mDataSize;
 
         CMI_RD1(aCtx, sOpID);
+
         IDE_TEST_RAISE(sOpID >= aCtx->mModule->mOpMax, InvalidOpError);
 
         /* Check end-of protocol */
-        IDE_TEST_CONT(sOpID == CMP_OP_DB_IPCDALastOpEnded, EndOfReadProcess);
+        /* BUG-46502 */
+        if ( sOpID == CMP_OP_DB_IPCDALastOpEnded )
+        {
+            break;
+        }
 
         if (sCurReadOperationCount++ == 0)
         {
-            IDE_TEST(cmnLinkPeerInitSvrWriteIPCDA((void*)aCtx) == IDE_FAILURE);
-            sNeedFinalizeWrite = ID_TRUE;
+            IDE_TEST_RAISE(cmnLinkPeerInitSvrWriteIPCDA((void*)aCtx) == IDE_FAILURE, Disconnected);
         }
 
         /* Callback Function 획득 */
@@ -3438,26 +3463,15 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
         CMP_DB_PROTOCOL_STAT_ADD( aCtx->mProtocol.mOpID, 1 );
 
         /* BUG-44125 [mm-cli] IPCDA 모드 테스트 중 hang - iloader CLOB */
-        IDE_TEST(sRet != IDE_SUCCESS);
+        /* BUG-46502 */
+        if ( sRet == IDE_CM_STOP )
+        {
+            break;
+        }
+        IDE_TEST(sRet == IDE_FAILURE);
     }
-
-    IDE_EXCEPTION_CONT(EndOfReadProcess);
-
-#if defined(ALTI_CFG_OS_LINUX)
-    /* message queue */
-    if( sLinkIPCDA->mMessageQ.mNeedToNotify == ID_TRUE )
-    {
-        sLinkIPCDA->mMessageQ.mNeedToNotify = ID_FALSE;
-        IDE_TEST(cmiMessageQNotify(sLinkIPCDA) != IDE_SUCCESS);
-    }
-#endif
 
     aCtx->mReadBlock = (cmbBlock *)sOrgBlock;
-
-    sNeedFinalizeWrite = ID_FALSE;
-    cmnLinkPeerFinalizeSvrWriteIPCDA((void*)aCtx);
-    sNeedFinalizeRead  = ID_FALSE;
-    cmnLinkPeerFinalizeSvrReadIPCDA((void*)aCtx);
 
     return sRet; // IDE_SUCCESS, IDE_FAILURE, IDE_CM_STOP
 
@@ -3471,27 +3485,8 @@ IDE_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
     }
     IDE_EXCEPTION_END;
 
-#if defined(ALTI_CFG_OS_LINUX)
-    /* message queue */
-    if( sLinkIPCDA->mMessageQ.mNeedToNotify == ID_TRUE )
-    {
-        sLinkIPCDA->mMessageQ.mNeedToNotify = ID_FALSE;
-        cmiMessageQNotify(sLinkIPCDA);
-    }
-#endif
-
     /* BUG-44468 [cm] codesonar warning in CM */
     aCtx->mReadBlock = (cmbBlock *)sOrgBlock;
-
-    if (sNeedFinalizeWrite == ID_TRUE)
-    {
-        cmnLinkPeerFinalizeSvrWriteIPCDA((void*)aCtx);
-    }
-
-    if (sNeedFinalizeRead == ID_TRUE)
-    {
-        cmnLinkPeerFinalizeSvrReadIPCDA((void*)aCtx);
-    }
 
     return IDE_FAILURE;
 }
@@ -3614,7 +3609,8 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
     idBool       sNeedToSave = ID_FALSE;
     cmbBlock    *sNewBlock;
 
-    UInt                sCmSeqNo;
+    UInt         sCmSeqNo = 0;
+    UInt         sSendDataSize = 0;
 
     IDE_TEST_CONT((sLink->mLink.mImpl == CMN_LINK_IMPL_IPCDA), noDataToSend);
     IDE_TEST_CONT(sBlock->mCursor == CMP_HEADER_SIZE, noDataToSend);
@@ -3664,6 +3660,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
 
         sSendSuccess = ID_TRUE;
 
+        sSendDataSize = sPendingBlock->mDataSize;
         // BUG-19465 : CM_Buffer의 pending list를 제한
         while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != IDE_SUCCESS)
         {
@@ -3693,7 +3690,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
         }
 
         /* BUG-45184 */
-        aCtx->mSendDataSize += sPendingBlock->mDataSize;
+        aCtx->mSendDataSize += sSendDataSize;
         aCtx->mSendDataCount++;
 
         IDE_TEST(sPool->mOp->mFreeBlock(sPool, sPendingBlock) != IDE_SUCCESS);
@@ -3703,6 +3700,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
     // send current block if there is no pendng block
     if (sIterator == &aCtx->mWriteBlockList)
     {
+        sSendDataSize = sBlock->mDataSize;
         if (sLink->mPeerOp->mSend(sLink, sBlock) != IDE_SUCCESS)
         {
             IDE_TEST_RAISE(ideIsRetry() != IDE_SUCCESS, SendFail);
@@ -3713,7 +3711,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
             sNeedToSave = ID_FALSE;
             
             /* BUG-45184 */
-            aCtx->mSendDataSize += sBlock->mDataSize;
+            aCtx->mSendDataSize += sSendDataSize;
             aCtx->mSendDataCount++;
         }
     }
@@ -3754,6 +3752,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
         {
             sPendingBlock = (cmbBlock *)sIterator->mObj;
 
+            sSendDataSize = sPendingBlock->mDataSize;
             while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != IDE_SUCCESS)
             {
                 IDE_TEST_RAISE(ideIsRetry() != IDE_SUCCESS, SendFail);
@@ -3765,7 +3764,7 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
             }
             
             /* BUG-45184 */
-            aCtx->mSendDataSize += sPendingBlock->mDataSize;
+            aCtx->mSendDataSize += sSendDataSize;
             aCtx->mSendDataCount++;
 
             IDE_TEST(sPool->mOp->mFreeBlock(sPool, sPendingBlock) != IDE_SUCCESS);
@@ -3823,6 +3822,78 @@ IDE_RC cmiSend( cmiProtocolContext  * aCtx,
     return IDE_FAILURE;
 }
 
+/*************************************************************
+ * BUG-46163 IPCDA Send
+ * IPCDA에서 Server -> Client로 응답 Protocol 전송이
+ * 완료 되었을때 호출한다.
+*************************************************************/
+IDE_RC cmiLinkPeerFinalizeSvrForIPCDA( cmiProtocolContext  * aCtx )
+{
+    cmnLinkPeerIPCDA  *sLinkIPCDA = NULL;
+
+    sLinkIPCDA = (cmnLinkPeerIPCDA *)aCtx->mLink;
+
+    IDE_TEST_RAISE(aCtx->mIsDisconnect == ID_TRUE, Disconnected);
+
+    /* BUG-46163 이미 데이터는 shard memory에 copy되어 있으므로 완료 신호만 보낸다. */
+#if defined(ALTI_CFG_OS_LINUX)
+    /* message queue */
+    if( sLinkIPCDA->mMessageQ.mNeedToNotify == ID_TRUE )
+    {
+        sLinkIPCDA->mMessageQ.mNeedToNotify = ID_FALSE;
+        IDE_TEST(cmiMessageQNotify(sLinkIPCDA) != IDE_SUCCESS);
+    }
+#endif
+
+    /* BUG-46502 */
+    if (aCtx->mWriteBlock != NULL)
+    {
+        /* Write marking for end-of-protocol. */
+        CMI_WOP(aCtx, CMP_OP_DB_IPCDALastOpEnded);
+        cmiIPCDAIncDataCount(aCtx);
+        acpAtomicSet32( &(((cmbBlockIPCDA *)aCtx->mWriteBlock)->mWFlag), CMB_IPCDA_SHM_DEACTIVATED );
+    }
+
+    /* BUG-44125 [mm-cli] IPCDA 모드 테스트 중 hang - iloader CLOB */
+    if (aCtx->mReadBlock != NULL)
+    {
+        /* BUG-46502 operationCount 초기화 */
+        acpAtomicSet32( &(((cmbBlockIPCDA *)aCtx->mReadBlock)->mOperationCount), 0 );
+
+        /* BUG-46502 atomic 함수 적용 */
+        acpAtomicSet32( &(((cmbBlockIPCDA *)aCtx->mReadBlock)->mRFlag), CMB_IPCDA_SHM_DEACTIVATED );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(Disconnected);
+    {
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_CONNECTION_CLOSED));
+    }
+    IDE_EXCEPTION_END;
+
+    /* BUG-46502 */
+    if (aCtx->mWriteBlock != NULL)
+    {
+        /* Write marking for end-of-protocol. */
+        CMI_WOP(aCtx, CMP_OP_DB_IPCDALastOpEnded);
+        cmiIPCDAIncDataCount(aCtx);
+        acpAtomicSet32( &(((cmbBlockIPCDA *)aCtx->mWriteBlock)->mWFlag), CMB_IPCDA_SHM_DEACTIVATED);
+    }
+
+    /* BUG-44125 [mm-cli] IPCDA 모드 테스트 중 hang - iloader CLOB */
+    if (aCtx->mReadBlock != NULL)
+    {
+        /* BUG-46502 operationCount 초기화 */
+        acpAtomicSet32( &(((cmbBlockIPCDA *)aCtx->mReadBlock)->mOperationCount), 0 );
+
+        /* BUG-46502 atomic 함수 적용 */
+        acpAtomicSet32( &(((cmbBlockIPCDA *)aCtx->mReadBlock)->mRFlag), CMB_IPCDA_SHM_DEACTIVATED );
+    }
+    
+    return IDE_FAILURE;
+}
+
 /*
  *  BUG-38716 
  *  [rp-sender] It needs a property to give sending timeout to replication sender. 
@@ -3839,11 +3910,13 @@ IDE_RC cmiFlushPendingBlock( cmiProtocolContext * aCtx,
     cmbBlock        * sPendingBlock = NULL;
     iduListNode     * sIterator = NULL;
     iduListNode     * sNodeNext = NULL;
+    UInt              sSendDataSize = 0;
 
     IDU_LIST_ITERATE_SAFE( &aCtx->mWriteBlockList, sIterator, sNodeNext )
     {
         sPendingBlock = (cmbBlock *)sIterator->mObj;
 
+        sSendDataSize = sPendingBlock->mDataSize;
         while ( sLink->mPeerOp->mSend( sLink, sPendingBlock ) != IDE_SUCCESS )
         {
             IDE_TEST( ideIsRetry() != IDE_SUCCESS );
@@ -3855,7 +3928,7 @@ IDE_RC cmiFlushPendingBlock( cmiProtocolContext * aCtx,
         }
         
         /* BUG-45184 */
-        aCtx->mSendDataSize += sPendingBlock->mDataSize;
+        aCtx->mSendDataSize += sSendDataSize;
         aCtx->mSendDataCount++;
         
         IDE_TEST( sPool->mOp->mFreeBlock( sPool, sPendingBlock ) != IDE_SUCCESS );
@@ -4235,3 +4308,33 @@ IDE_RC cmiSslFinalize( void )
 #endif
     return IDE_SUCCESS;
 }
+
+/* PROJ-2681 */
+IDE_RC cmiIBInitialize(void)
+{
+    IDE_TEST_RAISE(cmnIBInitialize() != ACI_SUCCESS, InitFailed);
+
+    ideLog::log(IDE_SERVER_0, CM_TRC_IB_INITIALIZED);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(InitFailed)
+    {
+        IDE_SET(ideSetErrorCodeAndMsg(aciGetErrorCode(), aciGetErrorMsg(aciGetErrorCode())));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC cmiIBFinalize(void)
+{
+    ACI_TEST(cmnIBFinalize() != ACI_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

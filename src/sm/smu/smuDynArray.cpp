@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smuDynArray.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smuDynArray.cpp 84032 2018-09-19 05:32:05Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -47,7 +47,9 @@ IDE_RC smuDynArray::initializeStatic(UInt aNodeMemSize)
                                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                   ID_FALSE,							/* ForcePooling */
                                   ID_TRUE,							/* GarbageCollection */
-                                  ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                                  ID_TRUE,                          /* HWCacheLine */
+                                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+            != IDE_SUCCESS);			
     
     return IDE_SUCCESS;
     

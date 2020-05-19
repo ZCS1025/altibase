@@ -21,7 +21,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 120
+# Last Number = 125
 
 SECTION = 5
 
@@ -428,3 +428,22 @@ SECTION = 5
 # *Cause: The value of the dynamic sql to be bound is too small.
 # *Action: Check the bind size and enlarge the value.
 
+121, HY000, ulpERR_ABORT_Not_Supported_Host_Var_Type = Currently not supported host variable type.
+# *Cause: Currently not supported host variable type.
+# *Action: Refer to the Precompiler user's manual for available host variables.
+
+122, HY000, ulpERR_ABORT_Column_Value_Is_Null = The fetched result contains a NULL value. or Fetch column value is NULL.
+# *Cause: The fetched result contains a NULL value. or Fetch column value is NULL.
+# *Action: Verify that the stored procedure contains NULL.(Revise the cursor definition so that no columns possibly containing NULL values are retrieved.)
+
+123, HY000, ulpERR_ABORT_Invalid_PSM_Array_Version = Invalid psm array meta version.
+# *Cause: Invalid psm array meta version.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+124, 07006, ulpERR_ABORT_Invalid_PSM_Array_Type = The apre type and psm array type do not match.
+# *Cause: The apre host variable type and psm array type do not match.
+# *Action: Change the apre host variable types to the data types that are supported by psm array.
+
+125, 07006, ulpERR_ABORT_PSM_Not_Exist_Error = The name of PSM does not exist. (<0%s>)
+# *Cause: There is no PSM with the name you specified.
+# *Action: Verify the existence of PSM name and try again.

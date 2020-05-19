@@ -54,23 +54,24 @@ void finalizeImportedLibrary( void )
 {
 #ifdef ALTIADAPTER
     /* nothing to do */
-    return;
 #elif JDBCADAPTER            
-    return oaFinalizeJAVAVM();
+    oaFinalizeJAVAVM();
 #else
-    return oaFinalizeOCILibrary();
+    oaFinalizeOCILibrary();
 #endif
+    return;
 }
 
 void finalizeApplier( oaApplierHandle *aApplierHandle )
 {
 #ifdef ALTIADAPTER
-    return finalizeAltiApplier( aApplierHandle );
+    finalizeAltiApplier( aApplierHandle );
 #elif JDBCADAPTER
-    return finalizeJDBCApplier( aApplierHandle );
+    finalizeJDBCApplier( aApplierHandle );
 #else
-    return finalizeOciApplier( aApplierHandle );
+    finalizeOciApplier( aApplierHandle );
 #endif
+    return;
 }
 
 /*
@@ -110,7 +111,7 @@ void addPlaceHolderToQuery( acp_str_t              * aQuery,
 #elif JDBCADAPTER
         (void)acpStrCatFormat( aQuery, "?" );
 #else
-        (void)acpStrCatFormat( aQuery, "TO_DATE(:%d, 'YYYY/MM/DD HH24:MI:SS')", aPlaceHolderIndex );
+        (void)acpStrCatFormat( aQuery, "TO_TIMESTAMP(:%d, 'YYYY/MM/DD HH24:MI:SS.FF6')", aPlaceHolderIndex );
 #endif
         break;
 

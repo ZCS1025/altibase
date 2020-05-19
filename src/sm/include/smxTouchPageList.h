@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTouchPageList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTouchPageList.h 84178 2018-10-16 06:45:10Z justin.kwon $
  **********************************************************************/
 
 # ifndef _O_SMX_TOUCH_PAGE_LIST_H_
@@ -72,6 +72,7 @@ public:
     ULong               mMaxCachePageCnt;
     static iduMemPool   mMemPool;
     static UInt         mTouchNodeSize;
+    static UInt         mTouchPageCntByNode;
 };
 
 inline void smxTouchPageList::init( idvSQL * aStatistics )
@@ -98,7 +99,7 @@ inline void smxTouchPageList::init( idvSQL * aStatistics )
            mMaxCachePageCnt를 조정한다.*/
 
         /* chunk당 page정보 갯수 */
-        sPageCntPerChunk = mMemPool.mElemCnt * smuProperty::getTransTouchPageCntByNode();
+        sPageCntPerChunk = mMemPool.mElemCnt * mTouchPageCntByNode;
 
         /* mMaxCachePageCnt가 들어갈수 있는 chunk 갯수 */
         sNeedChunkCnt    = ( ( mMaxCachePageCnt - 1 ) / ( sPageCntPerChunk ) ) + 1 ;

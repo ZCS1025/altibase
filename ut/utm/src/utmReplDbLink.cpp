@@ -38,8 +38,9 @@
     "where a.REPLICATION_NAME = b.REPLICATION_NAME "                 \
     "order by a.REPLICATION_NAME "                                   \
 
+/* BUG-46209 IB support on Replication */
 #define GET_IP_PORT_QUERY                                            \
-    "select /*+ NO_PLAN_CACHE */ a.HOST_IP, a.PORT_NO "              \
+    "select /*+ NO_PLAN_CACHE */ a.HOST_IP, a.PORT_NO, a.CONN_TYPE, a.IB_LATENCY " \
     "from SYSTEM_.SYS_REPL_HOSTS_ a, SYSTEM_.SYS_REPLICATIONS_ b "   \
     "where a.REPLICATION_NAME = b.REPLICATION_NAME "                 \
           "and a.REPLICATION_NAME = ? "                              \
@@ -199,10 +200,29 @@ SQLRETURN getReplQuery( FILE *aReplFp )
         idlOS::fprintf( aReplFp, "replication \"%s\" ", sRepName );
 
         /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
-        // default 0, 1 value means Log Analyzer 
-        if ( sRepRole == 1 )
+        /* BUG-46157 PROPAGATION 기능 지원 */
+        // default : 0, 1 : Log Analyzer, 2 : Propagable Logging, 3 : Propagation, 4 : Log Analysis Propagation 
+        switch ( sRepRole )
         {
-            idlOS::fprintf( aReplFp, "for analysis " );
+            case 1 :
+                idlOS::fprintf( aReplFp, "for analysis " );
+                break;
+            
+            case 2 :
+                idlOS::fprintf( aReplFp, "for propagable logging " );
+                break;
+            
+            case 3 :
+                idlOS::fprintf( aReplFp, "for propagation " );
+                break;
+            
+            case 4 :            
+                idlOS::fprintf( aReplFp, "for analysis propagation " );
+                break;
+            
+            case 0 : 
+            default :
+                break;
         }
 
         /* BUG-39661 Aexport should support 'OPTIONS' syntax. */
@@ -214,6 +234,11 @@ SQLRETURN getReplQuery( FILE *aReplFp )
         else
         {
             idlOS::fprintf( aReplFp, "options\n" );
+        }
+        if ( ( sRepOption & RP_OPTION_V6_PROTOCOL_MASK ) == RP_OPTION_V6_PROTOCOL_SET )
+        {
+            /* BUG-46528 Apply __REPLICATION_USE_V6_PROTOCOL to each replication. */
+            idlOS::fprintf( aReplFp, "v6_protocol\n" );
         }
 
         /* BUG-41270 More replication options must be supported
@@ -243,6 +268,11 @@ SQLRETURN getReplQuery( FILE *aReplFp )
         if ( (sRepOption & RP_OPTION_GROUPING_MASK) == RP_OPTION_GROUPING_SET )
         {
             idlOS::fprintf( aReplFp, "grouping\n" );
+        }
+        if ( (sRepOption & RP_OPTION_DDL_REPLICATE_MASK) == RP_OPTION_DDL_REPLICATE_SET )
+        {
+            /* BUG-46252 Partition Merge / Split DDL synchronization support */
+            idlOS::fprintf( aReplFp, "ddl_replicate\n" );
         }
 
         /* BUG-45236 Local Replication 지원
@@ -305,6 +335,8 @@ SQLRETURN getReplWithClause( FILE   *aReplFp,
 
     SChar     sHostIP[STR_LEN + 1]      = {'\0',};
     SInt      sPortNo                   = 0;
+    SChar     sConnType[STR_LEN + 1]    = {'\0',};
+    SChar     sIBLatency[STR_LEN + 1]   = {'\0',};
     
 
     IDE_TEST_RAISE(
@@ -343,6 +375,23 @@ SQLRETURN getReplWithClause( FILE   *aReplFp,
                     0,
                     NULL ) != SQL_SUCCESS, stmt_error );
 
+    /* BUG-46209 IB support on Replication */
+    IDE_TEST_RAISE(    
+        SQLBindCol( sResultStmt,
+                    3, 
+                    SQL_C_CHAR,
+                    (SQLPOINTER)sConnType,
+                    (SQLLEN)ID_SIZEOF(sConnType),
+                    NULL ) != SQL_SUCCESS, stmt_error );
+
+    IDE_TEST_RAISE(    
+        SQLBindCol( sResultStmt,
+                    4,
+                    SQL_C_CHAR,
+                    (SQLPOINTER)sIBLatency,
+                    (SQLLEN)ID_SIZEOF(sIBLatency),
+                    NULL ) != SQL_SUCCESS, stmt_error );
+
     IDE_TEST_RAISE( SQLExecute(sResultStmt) != SQL_SUCCESS,
                     stmt_error );
         
@@ -350,14 +399,24 @@ SQLRETURN getReplWithClause( FILE   *aReplFp,
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmt_error );
 
-        /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
-        if( idlOS::strcasecmp(sHostIP, "UNIX_DOMAIN") != 0 )
+        /* BUG-46209 IB support on Replication */
+        if( idlOS::strcasecmp(sConnType, "TCP") == 0 )
         {
-            idlOS::fprintf( aReplFp, "'%s', %"ID_INT32_FMT" \n", sHostIP, sPortNo);
+            idlOS::fprintf( aReplFp, "'%s', %"ID_INT32_FMT" \n", sHostIP, sPortNo );
+        }
+        /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
+        else if( idlOS::strcasecmp(sConnType, "UNIX_DOMAIN") == 0 )
+        {
+            idlOS::fprintf( aReplFp, "UNIX_DOMAIN " );
+        }
+        else if( idlOS::strcasecmp(sConnType, "IB") == 0 )
+        {
+            idlOS::fprintf( aReplFp, "'%s', %"ID_INT32_FMT" USING %s %s \n", 
+                            sHostIP, sPortNo, sConnType, sIBLatency );
         }
         else
         {
-            idlOS::fprintf( aReplFp, "UNIX_DOMAIN " );
+            /* Do nothing */
         }
     }
 

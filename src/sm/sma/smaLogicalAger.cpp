@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaLogicalAger.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smaLogicalAger.cpp 84166 2018-10-15 07:54:37Z justin.kwon $
  **********************************************************************/
 
 #include <idl.h>
@@ -79,10 +79,11 @@ IDE_RC smaLogicalAger::initializeStatic()
                    insufficient_memory );
 
 
-    IDE_TEST( mSlotList[0]->initialize( ID_SIZEOF(smaOidList),
+    IDE_TEST( mSlotList[0]->initialize( IDU_MEM_SM_SMA_LOGICAL_AGER,
+                                        "SMA_AGER_OID_LIST",
+                                        ID_SIZEOF( smaOidList ),
                                         SMA_NODE_POOL_MAXIMUM,
-                                        SMA_NODE_POOL_CACHE,
-                                        NULL )
+                                        SMA_NODE_POOL_CACHE )
               != IDE_SUCCESS );
 
     /* TC/FIT/Limit/sm/sma/smaLogicalAger_alloc_malloc2.sql */
@@ -94,11 +95,9 @@ IDE_RC smaLogicalAger::initializeStatic()
                                (void**)&(mSlotList[1])) != IDE_SUCCESS,
                    insufficient_memory );
 
-
-    IDE_TEST( mSlotList[1]->initialize( ID_SIZEOF(smaOidList),
-                                        SMA_NODE_POOL_MAXIMUM,
-                                        SMA_NODE_POOL_CACHE,
-                                        mSlotList[0] )
+    IDE_TEST( mSlotList[0]->makeChild( SMA_NODE_POOL_MAXIMUM,
+                                       SMA_NODE_POOL_CACHE,
+                                       mSlotList[1] )
               != IDE_SUCCESS );
 
     /* TC/FIT/Limit/sm/sma/smaLogicalAger_alloc_malloc3.sql */
@@ -110,10 +109,9 @@ IDE_RC smaLogicalAger::initializeStatic()
                                (void**)&(mSlotList[2])) != IDE_SUCCESS,
                    insufficient_memory );
 
-    IDE_TEST( mSlotList[2]->initialize( ID_SIZEOF(smaOidList),
-                                        SMA_NODE_POOL_MAXIMUM,
-                                        SMA_NODE_POOL_CACHE,
-                                        mSlotList[0] )
+    IDE_TEST( mSlotList[0]->makeChild( SMA_NODE_POOL_MAXIMUM,
+                                       SMA_NODE_POOL_CACHE,
+                                       mSlotList[2] )
               != IDE_SUCCESS );
 
     IDE_TEST( mBlock.initialize((SChar*)"MEMORY_LOGICAL_GC_MUTEX",

@@ -55,6 +55,8 @@ abstract class CommonDateTimeColumn extends AbstractColumn
     protected Calendar         mCalendar                = Calendar.getInstance();
     private Timestamp          mTimestamp               = new Timestamp(0);
     private boolean            mIsNullValueSet;
+    // BUG-46513 date_format jdbc 속성값을 저장하기 위한 멤버변수
+    private String             mDateFormat;
 
     CommonDateTimeColumn()
     {
@@ -305,5 +307,15 @@ abstract class CommonDateTimeColumn extends AbstractColumn
     public void setLocalCalendar(Calendar aCalendar)
     {
         mCalendar = aCalendar;
+    }
+
+    public void setDateFormat(String aDateFormat)
+    {
+        mDateFormat = aDateFormat;
+    }
+
+    public String getDateFormat()
+    {
+        return mDateFormat;
     }
 }

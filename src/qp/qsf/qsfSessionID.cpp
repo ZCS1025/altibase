@@ -59,6 +59,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfSessionIDCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

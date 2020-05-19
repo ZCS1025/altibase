@@ -999,6 +999,13 @@ IDE_RC smcLob::reserveSpaceInternal( void*               aTrans,
 
         if ( sNewLobLen <= aLobColumn->vcInOutBaseSize )
         {
+            if ( ( sOldLobDesc->flag & SM_VCDESC_MODE_MASK ) == SM_VCDESC_MODE_OUT )
+            {
+                /* BUG-46666 : FULL WRITE에서,
+                               out -> in 일때, new값(aLobDesc)를 초기화해야 old값이 aging된다. */
+                SMC_LOB_DESC_INIT( aLobDesc );
+            }
+
             aLobDesc->flag = SM_VCDESC_MODE_IN;
         }
         else

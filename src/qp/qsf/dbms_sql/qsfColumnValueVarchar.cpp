@@ -130,6 +130,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_SpColumnValue,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

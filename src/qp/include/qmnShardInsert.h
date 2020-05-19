@@ -166,6 +166,8 @@ public:
                              iduVarString * aString,
                              qmnDisplay     aMode );
 
+    static void shardStmtPartialRollbackUsingSavepoint( qcTemplate    * aTemplate,
+                                                        qmnPlan       * aPlan );
 private:
 
     //------------------------

@@ -1,4 +1,4 @@
-# $Id: Makefile 79821 2017-04-25 01:50:09Z kit.lee $
+# $Id: Makefile 83627 2018-08-06 10:11:18Z lswhh $
 #
 
 include ../../utEnv.mk
@@ -33,7 +33,7 @@ endif
 DEP_LIBS += $(LIBS)
 
 ILOADER_DEP_LIBS := $(DEP_LIBS) $(foreach i, altiutil id pd odbccli, $(LIBOPT)$(i)$(LIBAFT))
-SHARDLOADER_DEP_LIBS := $(DEP_LIBS) $(foreach i, altiutil id pd shardcli, $(LIBOPT)$(i)$(LIBAFT))
+SHARDLOADER_DEP_LIBS := $(DEP_LIBS) $(foreach i, altiutil id pd shardloadercli, $(LIBOPT)$(i)$(LIBAFT))
 
 ILOADERARC = $(LIBPRE)$(PRODUCT_PREFIX)iloaderobj.$(LIBEXT)
 SHARDLOADERARC = $(LIBPRE)$(PRODUCT_PREFIX)shardloaderobj.$(LIBEXT)
@@ -43,18 +43,18 @@ ifeq "$(NEED_BUILD_LIBEDIT)" "yes"
 endif
 
 ILOADER_OBJS=$(SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT))
-SHARDLOADER_OBJS=$(SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_sd.$(OBJEXT))
+SHARDLOADER_OBJS=$(SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_sdld.$(OBJEXT))
 
-quiet_cmd_c_o_cc_sd = CC $@
-      cmd_c_o_cc_sd = mkdir -p $(dir $@); $(COMPILE.cc) -DCOMPILE_SHARDCLI $(INCLUDES) $(CCOUT)$@ $<
+quiet_cmd_c_o_cc_sdld = CC $@
+      cmd_c_o_cc_sdld = mkdir -p $(dir $@); $(COMPILE.cc) -DCOMPILE_SHARDCLI -DCOMPILE_SHARDLOADERCLI $(INCLUDES) $(CCOUT)$@ $<
 
-define COMPILE_IT_CC_SD
-  $(Q) $(if $(quiet),echo ' $($(quiet)cmd_c_o_cc_sd)')
-  $(Q) $(cmd_c_o_cc_sd)
+define COMPILE_IT_CC_SDLD
+  $(Q) $(if $(quiet),echo ' $($(quiet)cmd_c_o_cc_sdld)')
+  $(Q) $(cmd_c_o_cc_sdld)
 endef
 
-$(TARGET_DIR)/%_sd.$(OBJEXT): $(DEV_DIR)/%.cpp
-	$(COMPILE_IT_CC_SD)
+$(TARGET_DIR)/%_sdld.$(OBJEXT): $(DEV_DIR)/%.cpp
+	$(COMPILE_IT_CC_SDLD)
 
 .PHONY: compile archive install clean 
 
@@ -81,7 +81,7 @@ $(ILOADERARC): $(ILOADER_OBJS)
 endif
 
 ifeq "$(NEED_BUILD_LIBEDIT)" "yes"
-$(SHARDLOADERARC): $(SHARDLOADER_OBJS) $(LIBEDIT_OBJS)
+$(SHARDLOADERARC): $(SHARDLOADER_OBJS) $(LIBEDIT_OBJS) 
 else
 $(SHARDLOADERARC): $(SHARDLOADER_OBJS)
 endif

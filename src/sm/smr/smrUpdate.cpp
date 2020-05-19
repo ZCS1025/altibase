@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrUpdate.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smrUpdate.cpp 84383 2018-11-20 04:18:42Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -2832,7 +2832,6 @@ IDE_RC smrUpdate::writeVolatileTBSAlterAutoExtend(
     // 여기 들어오는 Tablespace는 항상 Volatile Tablespace여야 한다.
     IDE_ERROR( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID )
                == ID_TRUE );
-
 
     IDE_TEST( smuDynArray::initialize(&sBuffer) != IDE_SUCCESS );
     sState = 1;

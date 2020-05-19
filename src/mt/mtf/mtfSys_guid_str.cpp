@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSys_guid_str.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfSys_guid_str.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 /***********************************************************************
@@ -90,6 +90,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfSys_guidCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

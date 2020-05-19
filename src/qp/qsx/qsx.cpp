@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsx.cpp 82152 2018-01-29 09:32:47Z khkwak $
+ * $Id: qsx.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -1187,12 +1187,6 @@ IDE_RC qsx::qsxLoadProcByProcOID( smiStatement   * aSmiStmt,
 
     qcg::setSmiStmt( &sStatement, aSmiStmt );
 
-    IDE_TEST( qsxProc::getProcText( &sStatement,
-                                    aProcOID,
-                                    &sStatement.myPlan->stmtText,
-                                    &sStatement.myPlan->stmtTextLen )
-              != IDE_SUCCESS );
-
     if( aCreateProcInfo == ID_FALSE )
     {
         IDE_TEST( qsxProc::getProcObjectInfo( aProcOID,
@@ -1754,12 +1748,6 @@ IDE_RC qsx::qsxLoadPkgByPkgOID( smiStatement   * aSmiStmt,
     sStatement.mStatistics = aSmiStmt->mStatistics;
 
     qcg::setSmiStmt( &sStatement, aSmiStmt );
-
-    IDE_TEST( qsxPkg::getPkgText( &sStatement,
-                                  aPkgOID,
-                                  &sStatement.myPlan->stmtText,
-                                  &sStatement.myPlan->stmtTextLen )
-              != IDE_SUCCESS );
 
     if ( aCreatePkgInfo == ID_FALSE )
     {
@@ -3613,84 +3601,89 @@ IDE_RC qsx::execAT( qsxExecutorInfo * aExecInfo,
                     SInt              aStackRemain )
 {
     qciSwapTransContext   sContext;
-    smiTrans              sNewTrans;
-    smiStatement        * sDummySmiStmt = NULL;
-    smSCN                 sDummySCN;
     UInt                  sOriFlag      = 0;
-    SInt                  sStage        = 0;
-    qciStmtType           sOrgStmtKind;
     UInt                  sOrgNumRows   = 0;
-
+    idBool                sIsSwapTransSuccess = ID_FALSE;
     /* BUG-43197 */
     sOriFlag = aQcStmt->spxEnv->mFlag;
-    sOrgStmtKind = aQcStmt->myPlan->parseTree->stmtKind;
     sOrgNumRows = QC_PRIVATE_TMPLATE(aQcStmt)->numRows; 
-    /* initialize transaction */
-    IDE_TEST( sNewTrans.initialize()
-              != IDE_SUCCESS );
-    sStage = 1;
-
-    /* Begin Transaction */
-    IDE_TEST( sNewTrans.begin( &sDummySmiStmt,
-                               aQcStmt->mStatistics )
-              != IDE_SUCCESS );
-    sStage = 2;
 
     /* set sContext for chaning transaction */
     sContext.mmStatement = QC_MM_STMT( aQcStmt );
     sContext.mmSession   = aQcStmt->session->mMmSession;
-    sContext.newTrans    = &sNewTrans;
-    sContext.oriTrans    = NULL;
-    sContext.oriSmiStmt  = NULL;
-
-    /* swap transaction to new transaction for autonomous transaction &
+    sContext.mNewMmcTrans = NULL;
+    sContext.mOriMmcTrans = NULL;
+    sContext.mOriSmiStmt  = NULL;
+    sContext.mIsExecSuccess   = ID_FALSE;
+    /* swap transaction to alloc new transaction for autonomous transaction &
        back up for original transaction */
     IDE_TEST( qci::mSessionCallback.mSwapTransaction( &sContext , ID_TRUE )
               != IDE_SUCCESS );
+    sIsSwapTransSuccess = ID_TRUE;
     aQcStmt->spxEnv->mFlag = QSX_ENV_DURING_AT;
-    aQcStmt->myPlan->parseTree->stmtKind = QCI_STMT_MASK_SP;
-    sStage = 3;
 
     IDE_TEST( qsxExecutor::execPlan( aExecInfo,
                                      aQcStmt,
                                      aStack,
                                      aStackRemain )
               != IDE_SUCCESS );
-
-    sStage = 2;
+    sContext.mIsExecSuccess   = ID_TRUE;
     aQcStmt->spxEnv->mFlag = sOriFlag;
-    aQcStmt->myPlan->parseTree->stmtKind = sOrgStmtKind;
     QC_PRIVATE_TMPLATE(aQcStmt)->numRows = sOrgNumRows;
+
+    sIsSwapTransSuccess = ID_FALSE;
     /* swap transaction to original transaction */
     IDE_TEST( qci::mSessionCallback.mSwapTransaction( &sContext , ID_FALSE )
               != IDE_SUCCESS );
-
-    sStage = 1;
-    IDE_TEST( sNewTrans.commit(&sDummySCN) != IDE_SUCCESS );
-
-    sStage = 0;
-    IDE_TEST( sNewTrans.destroy( aQcStmt->mStatistics ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    switch ( sStage )
+    if ( sIsSwapTransSuccess == ID_TRUE )
     {
-        case 3:
-            aQcStmt->spxEnv->mFlag = sOriFlag;
-            aQcStmt->myPlan->parseTree->stmtKind = sOrgStmtKind;
-            QC_PRIVATE_TMPLATE(aQcStmt)->numRows = sOrgNumRows;
-            (void)qci::mSessionCallback.mSwapTransaction( &sContext , ID_FALSE );
-        case 2:
-            (void)sNewTrans.rollback();  
-        case 1:
-            (void)sNewTrans.destroy( aQcStmt->mStatistics );  
-        case 0:
-            break;
-        default:
-            break;
+        aQcStmt->spxEnv->mFlag = sOriFlag;
+        QC_PRIVATE_TMPLATE(aQcStmt)->numRows = sOrgNumRows;
+        (void)qci::mSessionCallback.mSwapTransaction( &sContext , ID_FALSE );
     }
 
     return IDE_FAILURE;
 }
+
+IDE_RC qsx::executeAB( qcStatement * aQcStmt )
+{
+    iduMemoryStatus    sQmxMemStatus;
+    UInt               sStage = 0;
+
+    IDE_TEST( QC_QMX_MEM(aQcStmt)->getStatus( &sQmxMemStatus )
+              != IDE_SUCCESS);
+    sStage = 1;
+
+    IDE_TEST( callProcWithStack ( aQcStmt,
+                                  (qsProcParseTree*)aQcStmt->myPlan->parseTree,
+                                  QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
+                                  QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stackRemain,
+                                  NULL,
+                                  QC_PRIVATE_TMPLATE(aQcStmt) )
+              != IDE_SUCCESS );
+
+    sStage=0;
+    IDE_TEST( QC_QMX_MEM(aQcStmt)->setStatus( &sQmxMemStatus )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if (sStage == 1)
+    {
+        if ( QC_QMX_MEM(aQcStmt)->setStatus( &sQmxMemStatus )
+             != IDE_SUCCESS )
+        {
+            IDE_ERRLOG(IDE_QP_1);
+        }
+    }
+
+    return IDE_FAILURE;
+}
+

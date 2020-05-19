@@ -64,6 +64,16 @@ cmpOpMap gCmpOpRPMap[] =
     {"CMP_OP_RP_MetaDictTableCount" } ,
     {"CMP_OP_RP_AckonDML"           } ,
     {"CMP_OP_RP_AckEager"           } ,
+    {"CMP_OP_RP_DDLSyncInfo"        } ,
+    {"CMP_OP_RP_DDLSyncMsg"         } ,
+    {"CMP_OP_RP_DDLSyncMsgAck"      } ,
+    {"CMP_OP_RP_DDLSyncCancel"      } ,
+    {"CMP_OP_RP_DDLReplicateHandshake"      }, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    {"CMP_OP_RP_DDLReplicateQueryStatement" },
+    {"CMP_OP_RP_DDLReplicateExecute"},
+    {"CMP_OP_RP_DDLReplicateAck"    },
+    {"CMP_OP_RP_MetaPartitionCount" },
+    {"CMP_OP_RP_MetaInitialize    " },
     {"CMP_OP_RP_MAX_VER1"           }
 };
 
@@ -358,7 +368,17 @@ cmpArgFunction gCmpArgInitializeFunctionRP[CMP_OP_RP_MAX] =
     cmpArgNULL,                       /* CMP_OP_RP_MetaReplCheck    */
     cmpArgNULL,                       /* CMP_OP_RP_MetaDictTableCount*/
     cmpArgNULL,                       /* CMP_OP_RP_AckonDML         */
-    cmpArgNULL                        /* CMP_OP_RP_AckEager         */
+    cmpArgNULL,                       /* CMP_OP_RP_AckEager         */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncInfo      */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncMsg       */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncMsgAck    */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncCancel    */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateHandshake      */ 
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateQueryStatement */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateExecute        */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateAck  */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaPartitionCount */
+    cmpArgNULL                        /* CMP_OP_RP_MetaInitialize */
 };
 
 cmpArgFunction gCmpArgFinalizeFunctionRP[CMP_OP_RP_MAX] =
@@ -408,5 +428,15 @@ cmpArgFunction gCmpArgFinalizeFunctionRP[CMP_OP_RP_MAX] =
     cmpArgNULL,                       /* CMP_OP_RP_MetaReplCheck    */
     cmpArgNULL,                       /* CMP_OP_RP_MetaDictTableCount*/
     cmpArgNULL,                       /* CMP_OP_RP_AckonDML         */
-    cmpArgNULL                        /* CMP_OP_RP_AckEager         */
+    cmpArgNULL,                       /* CMP_OP_RP_AckEager         */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncInfo      */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncMsg       */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncMsgAck    */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLSyncCancel    */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateHandshake      */ 
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateQueryStatement */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateExecute        */
+    cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateAck  */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaPartitionCount */
+    cmpArgNULL                        /* CMP_OP_RP_MetaInitialize */
 };

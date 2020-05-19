@@ -2,7 +2,7 @@ include ../toolEnv.mk
 
 BIN=altipkg$(BINEXT) altipkg_v$(BINEXT)
 
-INCLUDES += $(foreach i,$(MM_DIR)/include $(QP_DIR)/include $(RP_DIR)/include $(MT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(CM_DIR)/include .,$(IDROPT)$(i))
+INCLUDES += $(foreach i,$(MM_DIR)/include $(QP_DIR)/include $(SD_DIR)/include $(RP_DIR)/include $(MT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(CM_DIR)/include .,$(IDROPT)$(i))
 
 LIBDIR=$(LDROPT)$(SM_DIR)/lib $(LDROPT)$(ID_DIR)/lib $(LDROPT)$(PD_DIR)/lib $(LDROPT)$(ALTI_HOME)/lib
 

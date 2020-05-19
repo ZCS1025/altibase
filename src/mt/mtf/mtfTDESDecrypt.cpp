@@ -67,6 +67,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfTDESDecryptCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

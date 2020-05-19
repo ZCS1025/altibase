@@ -28,6 +28,8 @@
 
 #include <rpxAheadAnalyzer.h>
 
+#include <rpcDDLASyncManager.h>
+
 /*
  *
  */
@@ -133,8 +135,9 @@ IDE_RC rpxReplicator::initialize( iduMemAllocator   * aAllocator,
                                             8,                        //align byte(default)
                                             ID_FALSE,				  //ForcePooling 
                                             ID_TRUE,				  //GarbageCollection
-                                            ID_TRUE )                 //HWCacheLine
-              != IDE_SUCCESS );
+                                            ID_TRUE,                  /* HWCacheLine */
+                                            IDU_MEMPOOL_TYPE_LEGACY   /* mempool type */
+                ) != IDE_SUCCESS);			
     sStage = 1;
 
     idlOS::snprintf( sName, IDU_MUTEX_NAME_LEN,
@@ -932,7 +935,9 @@ IDE_RC rpxReplicator::sendXLog( rpdLogAnalyzer * aLogAnlz )
     {
         IDE_TEST_RAISE( ( ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED ) ||
                         ( ideGetErrorCode() == cmERR_ABORT_SEND_ERROR ) || 
-                        ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                        ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                        ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                        ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK );
         IDE_RAISE( ERR_ETC );
     }
@@ -1054,7 +1059,9 @@ IDE_RC rpxReplicator::addXLogSyncPK( rpdMetaItem    * aMetaItem,
     {
         IDE_TEST_RAISE( ( ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED ) ||
                         ( ideGetErrorCode() == cmERR_ABORT_SEND_ERROR ) || 
-                        ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                        ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                        ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                        ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK );
         IDE_RAISE( ERR_ETC );
     }
@@ -1143,7 +1150,9 @@ IDE_RC rpxReplicator::addXLogImplSVP( smTID aTID,
     {
         IDE_TEST_RAISE( ( ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED ) ||
                         ( ideGetErrorCode() == cmERR_ABORT_SEND_ERROR ) ||
-                        ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ),
+                        ( ideGetErrorCode() == rpERR_ABORT_RP_SENDER_SEND_ERROR ) ||
+                        ( ideGetErrorCode() == rpERR_ABORT_SEND_TIMEOUT_EXCEED ) ||
+                        ( ideGetErrorCode() == rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ),
                         ERR_NETWORK );
         IDE_RAISE( ERR_ETC );
     }
@@ -1468,6 +1477,7 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
     rpdLogAnalyzer   * sLogAnlz;
     smTID              sTID = aLog->getTransID();
     smiTableMeta     * sItemMeta = NULL;
+    smiDDLStmtMeta   * sDDLStmtMeta = NULL;
     smiLogType         sLogType;
     smiChangeLogType   sChangeLogType;
     idBool             sNeedInitMtdValueLen = ID_FALSE;
@@ -1622,6 +1632,16 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
                                                    aLog->getTblMetaLogBodySize())
                       != IDE_SUCCESS );
         }
+        else if ( sLogType == SMI_LT_DDL_QUERY_STRING )
+        {
+            sDDLStmtMeta = aLog->getDDLStmtMeta();
+
+            IDE_TEST( mTransTbl->setDDLStmtMetaLog( sTID, 
+                                                    sDDLStmtMeta,
+                                                    (const void *)aLog->getDDLStmtMetaLogBodyPtr(),
+                                                    aLog->getDDLStmtMetaLogBodySize() )
+                      != IDE_SUCCESS );
+        }
         else
         {
             /*
@@ -1751,16 +1771,29 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
         // Failback Slave에서 Failback 전에 DDL을 수행하면 안 된다.
         IDE_ASSERT( aAction == RP_SEND_XLOG_ON_ADD_XLOG );
 
-        IDE_TEST( applyTableMetaLog( sTID,
-                                     mTransTbl->getTrNode( sTID )->mBeginSN,
-                                     aLog->getRecordSN() )
-                  != IDE_SUCCESS );
+        if ( mTransTbl->existDDLStmtMetaLog( sTID ) == ID_TRUE )
+        {
+            IDE_TEST( rpcDDLASyncManager::ddlASynchronization( mSender,
+                                                               sTID,
+                                                               aLog->getRecordSN() ) 
+                      != IDE_SUCCESS );
+
+            mTransTbl->removeDDLStmtMetaLog( sTID );
+        }
+
+        if ( mSender->checkInterrupt() == RP_INTR_NONE )
+        {
+            IDE_TEST( applyTableMetaLog( sTID,
+                                         mTransTbl->getTrNode( sTID )->mBeginSN,
+                                         aLog->getRecordSN() )
+                      != IDE_SUCCESS );
+        }
 
         /* PROJ-2563
          * 만일 V6프로토콜을 사용할 때,
          * DDL 수행 후 LOB column 이 포함되어 있다면 시작을 실패해야한다.
          */
-        if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+        if ( rpdMeta::isUseV6Protocol( &( mMeta->mReplication ) ) == ID_TRUE )
         {
             IDE_TEST_RAISE( mMeta->hasLOBColumn() == ID_TRUE,
                             ERR_NOT_SUPPORT_LOB_COLUMN_WITH_V6_PROTOCOL );
@@ -1835,7 +1868,7 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
     smiTrans           sTrans;
     SInt               sStage = 0;
     idBool             sIsTxBegin = ID_FALSE;
-    smiStatement     * spRootStmt;
+    smiStatement     * spRootStmt;    
     smiStatement       sSmiStmt;
     smSCN              sDummySCN;
     UInt               sFlag = RPU_ISOLATION_LEVEL |
@@ -1844,22 +1877,11 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
                                SMI_COMMIT_WRITE_NOWAIT;
 
     rpdItemMetaEntry * sItemMetaEntry;
-    rpdMetaItem      * sMetaItem;
     PDL_Time_Value     sTimeValue;
     smOID              sOldTableOID = SM_OID_NULL;
     smOID              sNewTableOID = SM_OID_NULL;
-    idBool             sIsUpdateOldItem = ID_FALSE;
 
     sTimeValue.initialize( 1, 0 );
-
-    if ( mSender->mCurrentType != RP_OFFLINE )
-    {
-        sIsUpdateOldItem = ID_TRUE;
-    }
-    else
-    {
-        sIsUpdateOldItem = ID_FALSE;
-    }
 
     // BUG-24427 [RP] Network 작업 후, Meta Cache를 갱신해야 합니다
     // DDL 전에 발생한 DML이 Standby Server에 반영되기를 기다린다.
@@ -1884,16 +1906,10 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
     {
         mTransTbl->getFirstItemMetaEntry( aTID, &sItemMetaEntry );
 
-        IDE_TEST( mMeta->searchTable( &sMetaItem,
-                                      sItemMetaEntry->mItemMeta.mOldTableOID )
-                  != IDE_SUCCESS );
         sOldTableOID = sItemMetaEntry->mItemMeta.mOldTableOID;
-        //BUG-26720 : serchTable에서 sMetaItem이 NULL일수 있음
-        IDU_FIT_POINT_RAISE( "rpxReplicator::applyTableMetaLog::Erratic::rpERR_ABORT_RP_META_NO_SUCH_DATA",
-                             ERR_NOT_FOUND_TABLE );
-        IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_FOUND_TABLE );
+        sNewTableOID = sItemMetaEntry->mItemMeta.mTableOID;
 
-        // Table Meta와 Table Meta Cache를 갱신한다.
+       // Table Meta와 Table Meta Cache를 갱신한다.
         IDE_TEST( sSmiStmt.begin( NULL,
                                   spRootStmt,
                                   SMI_STATEMENT_NORMAL |
@@ -1901,28 +1917,17 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
                   != IDE_SUCCESS );
         sStage = 3;
 
-        /* PROJ-1915 off-line sender의 경우 Meta를 갱신하지 않는다. */
-        IDE_TEST( mMeta->updateOldTableInfo( &sSmiStmt,
-                                             sMetaItem,
-                                             &sItemMetaEntry->mItemMeta,
-                                             (const void *)sItemMetaEntry->mLogBody,
-                                             sIsUpdateOldItem )
-                  != IDE_SUCCESS );
-        sNewTableOID = sMetaItem->mItem.mTableOID;
-        sStage = 2;
-        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-        // 해당 Table의 Invalid Max SN을 갱신한다.
-        IDE_TEST( mSender->updateInvalidMaxSN( spRootStmt,
-                                               &sMetaItem->mItem,
-                                               aDDLCommitSN )
+        IDE_TEST( updateMeta( &sSmiStmt,
+                              sItemMetaEntry,
+                              sOldTableOID,
+                              sNewTableOID,
+                              aDDLCommitSN )
                   != IDE_SUCCESS );
 
         mTransTbl->removeFirstItemMetaEntry( aTID );
 
-        IDE_TEST( mSender->updateSentLogCount( sNewTableOID,
-                                               sOldTableOID )
-                  != IDE_SUCCESS );
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+        sStage = 2;
     }
 
     sStage = 1;
@@ -1936,10 +1941,6 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_NOT_FOUND_TABLE );
-    {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_META_NO_SUCH_DATA ) );
-    }
     IDE_EXCEPTION_END;
 
     // 이후 Sender가 종료되므로, Table Meta Cache를 복원하지 않는다
@@ -1968,6 +1969,147 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
     return IDE_FAILURE;
 }
 
+IDE_RC rpxReplicator::insertNewTableInfo( smiStatement     * aSmiStmt, 
+                                          rpdItemMetaEntry * aItemMetaEntry,
+                                          smSN               aDDLCommitSN )
+
+{
+    IDE_TEST( mMeta->insertNewTableInfo( aSmiStmt, 
+                                         &( aItemMetaEntry->mItemMeta ),
+                                         (const void *)aItemMetaEntry->mLogBody,
+                                         aDDLCommitSN,
+                                         ID_TRUE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( mSender->allocAndRebuildNewSentLogCount() != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReplicator::deleteOldTableInfo( smiStatement * aSmiStmt, smOID aOldTableOID )
+{
+    IDE_TEST( mMeta->deleteOldTableInfo( aSmiStmt, aOldTableOID ) != IDE_SUCCESS );
+
+    IDE_TEST( mSender->allocAndRebuildNewSentLogCount() != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReplicator::updateOldTableInfo( smiStatement     * aSmiStmt,
+                                          rpdItemMetaEntry * aItemMetaEntry,
+                                          smOID              aOldTableOID,
+                                          smOID              aNewTableOID,
+                                          smSN               aDDLCommitSN )
+
+{
+    rpdMetaItem  * sMetaItem = NULL;
+    idBool         sIsUpdateOldItem = ID_FALSE;
+
+    IDE_TEST( mMeta->searchTable( &sMetaItem, aOldTableOID ) != IDE_SUCCESS );
+    IDU_FIT_POINT_RAISE( "rpxReplicator::updateOldTableInfo::Erratic::rpERR_ABORT_RP_META_NO_SUCH_DATA",
+                         ERR_NOT_FOUND_TABLE );
+    IDE_TEST_RAISE( sMetaItem == NULL,  ERR_NOT_FOUND_TABLE );
+
+    if ( mSender->mCurrentType != RP_OFFLINE )
+    {
+        sIsUpdateOldItem = ID_TRUE;
+    }
+    else
+    {
+        sIsUpdateOldItem = ID_FALSE;
+    }
+
+    /* PROJ-1915 off-line sender의 경우 Meta를 갱신하지 않는다. */
+    IDE_TEST( mMeta->updateOldTableInfo( aSmiStmt,
+                                         sMetaItem,
+                                         &( aItemMetaEntry->mItemMeta ),
+                                         (const void *)aItemMetaEntry->mLogBody,
+                                         aDDLCommitSN,
+                                         sIsUpdateOldItem )
+              != IDE_SUCCESS );
+
+    IDE_TEST( mSender->updateSentLogCount( aNewTableOID,
+                                           aOldTableOID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FOUND_TABLE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_META_NO_SUCH_DATA ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+rpdTableMetaType rpxReplicator::getTableMetaType( smOID aOldTableOID, smOID aNewTableOID )
+{
+    rpdTableMetaType sType = RP_META_NONE_ITEM;
+
+    if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = RP_META_INSERT_ITEM;    
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
+    {
+        sType = RP_META_DELETE_ITEM;
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = RP_META_UPDATE_ITEM;
+    }
+    else
+    {
+        sType = RP_META_NONE_ITEM;
+    }
+
+    return sType;
+}
+
+IDE_RC rpxReplicator::updateMeta( smiStatement     * aSmiStmt,
+                                  rpdItemMetaEntry * aItemMetaEntry,
+                                  smOID              aOldTableOID,
+                                  smOID              aNewTableOID,
+                                  smSN               aDDLCommitSN )
+{
+    switch( getTableMetaType( aOldTableOID, aNewTableOID ) )
+    {
+        case RP_META_INSERT_ITEM:
+            IDE_TEST( insertNewTableInfo( aSmiStmt, 
+                                          aItemMetaEntry,
+                                          aDDLCommitSN ) 
+                      != IDE_SUCCESS );
+            break;
+        case RP_META_DELETE_ITEM:
+            IDE_TEST( deleteOldTableInfo( aSmiStmt, aOldTableOID ) != IDE_SUCCESS );
+            break;
+        case RP_META_UPDATE_ITEM:
+            IDE_TEST( updateOldTableInfo( aSmiStmt,
+                                          aItemMetaEntry,
+                                          aOldTableOID,
+                                          aNewTableOID,
+                                          aDDLCommitSN ) 
+                         != IDE_SUCCESS );
+            break;
+        default:
+            IDE_DASSERT( 0 );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 /*
  *
  */
@@ -2028,7 +2170,9 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
         case RP_OFFLINE:
             if ( aLog->needNormalReplicate() == ID_FALSE )
             {
-                if ( ( mSender->getRole() == RP_ROLE_PROPAGATION ) && ( isReplPropagableLog( aLog ) == ID_TRUE ) )
+                if ( ( ( mSender->getRole() == RP_ROLE_PROPAGATION ) ||
+                       ( mSender->getRole() == RP_ROLE_ANALYSIS_PROPAGATION ) ) &&
+                     ( isReplPropagableLog( aLog ) == ID_TRUE ) )
                 {
                     /*do nothing : to do analysis for propagation*/
                 }
@@ -2052,7 +2196,9 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
         case RP_PARALLEL:
             if ( aLog->needNormalReplicate() == ID_FALSE )
             {
-                if ( ( mSender->getRole() == RP_ROLE_PROPAGATION ) && ( isReplPropagableLog( aLog ) == ID_TRUE ) )
+                if ( ( ( mSender->getRole() == RP_ROLE_PROPAGATION ) ||
+                       ( mSender->getRole() == RP_ROLE_ANALYSIS_PROPAGATION ) ) && 
+                     ( isReplPropagableLog( aLog ) == ID_TRUE ) )
                 {
                         /*do nothing : to do analysis for propagation*/
                 }
@@ -2198,6 +2344,7 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
     switch ( sLogType )
     {
         case SMI_LT_TABLE_META :
+        case SMI_LT_DDL_QUERY_STRING :
         case SMI_LT_TRANS_COMMIT :
         case SMI_LT_TRANS_ABORT :
         case SMI_LT_TRANS_PREABORT :
@@ -2262,7 +2409,14 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
                     /* Nothing to do */
                 }
 
-                *aIsOk = ID_FALSE;
+                if ( isSkipLog( aLog ) != ID_TRUE )
+                {
+                    *aIsOk = ID_TRUE;
+                }
+                else
+                {
+                    *aIsOk = ID_FALSE;
+                }
             }
 
             /* BUG-20919
@@ -2329,6 +2483,18 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
             mSender->mCommitXSN = aLog->getRecordSN();
             break;
 
+        case SMI_LT_DDL_QUERY_STRING :
+            if ( ( mTransTbl->existItemMeta( sTID ) == ID_TRUE ) && 
+                 ( ( mMeta->mReplication.mOptions & RP_OPTION_DDL_REPLICATE_MASK ) 
+                   == RP_OPTION_DDL_REPLICATE_SET ) )
+            {
+                *aIsOk = ID_TRUE;
+            }
+            else
+            {
+                *aIsOk = ID_FALSE;
+            }
+            break;
         default:
             *aIsOk = ID_FALSE;
             break;
@@ -3022,27 +3188,14 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
                                               sReadLSN,
                                               sIsStartedAheadAnalyzer ) 
                              != IDE_SUCCESS, ERR_CHECK_AND_MAKE_XLOG );    
-
-            mSender->mXSN = sCurrentSN;
-            mNeedSN = sCurrentSN + 1;
-
-            if ( ( mSender->mStatus == RP_SENDER_FLUSH_FAILBACK ) ||
-                 ( mSender->mStatus == RP_SENDER_FAILBACK_EAGER ) )
-            {
-                mSender->setAssignedTransactionInSender( sLog.getTransID() );
-            }
-            else
-            {
-                /*
-                 * Lazy 일 경우는 Assinged Transaction 하고 관련 없다.
-                 */
-                /* do nothing */
-            }
         }
         else
         {
             /* do nothing */
         }
+
+        mSender->mXSN = sCurrentSN;
+        mNeedSN = sCurrentSN + 1;
 
         /*
          * PROJ-2453 Eager Replication Performance Enhancement
@@ -3054,6 +3207,8 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
              ( mSender->mStatus == RP_SENDER_FLUSH_FAILBACK ) &&
              ( mSender->getFailbackEndSN() < sCurrentSN ) )
         {
+            IDE_TEST( mSender->addXLogKeepAlive() != IDE_SUCCESS );
+
             mSender->setStatus( RP_SENDER_IDLE );
             break;
         }
@@ -4174,3 +4329,174 @@ idBool rpxReplicator::isReplPropagableLog( smiLogRec * aLog )
     return aLog->needReplRecovery();
 }
 
+idBool rpxReplicator::isSkipLog( smiLogRec * aLog )
+{
+    idBool         sIsSkipLog = ID_FALSE;
+    smiTableMeta * sItemMeta  = aLog->getTblMeta();
+    rpdMetaItem  * sMetaItem  = NULL;
+    smOID          sOldTableOID = aLog->getTableOID();
+    smOID          sNewTableOID = sItemMeta->mTableOID;
+
+    if ( ( mMeta->findTableMetaItem( sItemMeta->mUserName, sItemMeta->mTableName ) != NULL ) && 
+         ( isNewPartition( sOldTableOID ) == ID_TRUE ) )
+    {
+        (void)mMeta->searchTable( &sMetaItem, sNewTableOID );
+        if ( sMetaItem != NULL )
+        {
+            if ( sMetaItem->mItem.mInvalidMaxSN >= aLog->getRecordSN() )
+            {
+                sIsSkipLog = ID_TRUE;
+            }
+        }
+    }
+    else
+    {
+        sIsSkipLog = ID_TRUE;
+    }
+
+    return sIsSkipLog;
+}
+
+idBool rpxReplicator::isNewPartition( smOID aOldTableOID )
+{
+    idBool sIsNew = ID_FALSE;
+
+    if ( aOldTableOID == SM_OID_NULL )
+    {
+        sIsNew = ID_TRUE;
+    }
+    else
+    {
+        sIsNew = ID_FALSE;
+    }
+
+    return sIsNew;
+}
+
+IDE_RC rpxReplicator::getDDLInfoFromDDLStmtLog( smTID   aTID, 
+                                                SInt    aMaxDDLStmtLen,
+                                                SChar * aUserName,
+                                                SChar * aDDLStmt )
+{
+    UInt sOffset = 0;
+    SInt sDDLStmtLen = 0;
+    SChar * sLogBody = NULL;
+    rpdDDLStmtMetaLog * sDDLStmtMetaLog = NULL;
+
+    mTransTbl->getDDLStmtMetaLog( aTID, &sDDLStmtMetaLog );
+    sLogBody = (SChar *)sDDLStmtMetaLog->mLogBody;
+
+    idlOS::strncpy( aUserName,
+                    sDDLStmtMetaLog->mDDLStmtMeta.mUserName,
+                    SMI_MAX_NAME_LEN );
+    aUserName[SMI_MAX_NAME_LEN] = '\0';
+
+    idlOS::memcpy( (void *)&sDDLStmtLen,
+                   (const void *)&sLogBody[sOffset],
+                   ID_SIZEOF(SInt) );
+    sOffset += ID_SIZEOF(SInt);
+
+    IDE_TEST_RAISE( sDDLStmtLen > aMaxDDLStmtLen, ERR_TOO_LONG_DDL );
+
+    idlOS::memcpy( (void *)aDDLStmt,
+                   (const void *)&sLogBody[sOffset],
+                   sDDLStmtLen );
+    sOffset += sDDLStmtLen;
+
+    aDDLStmt[sDDLStmtLen] = '\0';
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_TOO_LONG_DDL )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                                  "Too long DDL statement." ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReplicator::getTargetNamesFromItemMetaEntry( smTID    aTID,
+                                                       UInt   * aTargetCount,
+                                                       SChar  * aTargetTableName,
+                                                       SChar ** aTargetPartNames )
+{
+    UInt           sOffset       = 0;
+    UInt           sTargetCount  = 0;
+    smiTableMeta * sTableMeta    = NULL;
+    iduListNode  * sNode         = NULL;
+    iduList      * sItemMetaList = NULL;
+    SChar        * sTargetPartName     = NULL;
+    SChar        * sTargetPartNames    = NULL;
+    rpdMetaItem      * sMetaItem       = NULL;
+    rpdMetaItem      * sTargetMetaItem = NULL;
+    rpdItemMetaEntry * sItemMetaEntry  = NULL;
+
+    sItemMetaList = mTransTbl->getItemMetaList( aTID );
+
+    IDU_LIST_ITERATE( sItemMetaList, sNode )
+    {
+        sItemMetaEntry = (rpdItemMetaEntry *)sNode->mObj;
+        sTableMeta = &( sItemMetaEntry->mItemMeta );
+
+        IDE_TEST( mMeta->searchTable( &sMetaItem, (ULong)( sTableMeta->mOldTableOID ) ) 
+                  != IDE_SUCCESS );
+        if ( sMetaItem != NULL )
+        {
+            sTargetCount += 1;
+        }
+    }
+
+    IDE_TEST( iduMemMgr::malloc( IDU_MEM_RP_RPX,
+                                 sTargetCount * 
+                                 ( ID_SIZEOF(SChar) * ( QC_MAX_OBJECT_NAME_LEN + 1 ) ),
+                                 (void**)&( sTargetPartNames ),
+                                 IDU_MEM_IMMEDIATE )
+              != IDE_SUCCESS );
+
+    IDU_LIST_ITERATE( sItemMetaList, sNode )
+    {
+        sItemMetaEntry = (rpdItemMetaEntry *)sNode->mObj;
+        sTableMeta = &( sItemMetaEntry->mItemMeta );
+
+        IDE_TEST( mMeta->searchTable( &sMetaItem, (ULong)( sTableMeta->mOldTableOID ) ) 
+                  != IDE_SUCCESS );
+        if ( sMetaItem != NULL )
+        {
+            sTargetMetaItem = sMetaItem;
+            sTargetPartName = sTargetPartNames + sOffset;
+                
+            idlOS::memcpy( sTargetPartName,
+                           sMetaItem->mItem.mLocalPartname,
+                           QC_MAX_OBJECT_NAME_LEN + 1 );
+            sTargetPartName[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+            sOffset += QC_MAX_OBJECT_NAME_LEN + 1;
+        }
+    }
+
+    if ( sTargetMetaItem != NULL ) 
+    { 
+        idlOS::memcpy( aTargetTableName,
+                       sTargetMetaItem->mItem.mLocalTablename,
+                       QC_MAX_OBJECT_NAME_LEN + 1 );           
+
+        aTargetTableName[QC_MAX_OBJECT_NAME_LEN] = '\0';
+    }
+
+    *aTargetCount = sTargetCount;
+    *aTargetPartNames = sTargetPartNames;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sTargetPartNames != NULL )
+    {
+        (void)iduMemMgr::free( sTargetPartNames );
+        sTargetPartNames = NULL;
+    }
+
+    return IDE_FAILURE;
+}

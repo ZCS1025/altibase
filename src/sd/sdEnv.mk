@@ -1,7 +1,7 @@
 include $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))/../../env.mk
 include $(SD_DIR)/lib/sd_objs.mk
 
-INCLUDES += $(foreach i,$(QP_DIR)/include $(SD_DIR)/include $(RP_DIR)/include $(MT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(CM_DIR)/include ,$(IDROPT)$(i))
+INCLUDES += $(foreach i,$(QP_DIR)/include $(SD_DIR)/include $(RP_DIR)/include $(MT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(CM_DIR)/include $(UL_DIR)/include ,$(IDROPT)$(i))
 LFLAGS   += $(foreach i,$(ID_DIR)/lib $(MT_DIR)/lib $(ST_DIR)/lib $(SM_DIR)/lib $(QP_DIR)/lib $(SD_DIR)/lib,$(LDROPT)$(i))
 INCLUDES_CLI += $(foreach i,$(QP_DIR)/include $(SD_DIR)/include $(RP_DIR)/include $(MT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(CM_DIR)/include,$(IDROPT)$(i))
 

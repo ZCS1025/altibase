@@ -69,6 +69,7 @@ static const mtcExecute qsfWait = {
     mtf::calculateNA,
     qsfCalculate_SpConcWait,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -81,6 +82,7 @@ static const mtcExecute qsfWaitAll= {
     mtf::calculateNA,
     qsfCalculate_SpConcWaitAll,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

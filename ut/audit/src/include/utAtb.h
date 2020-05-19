@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtb.h 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utAtb.h 82706 2018-04-05 01:32:59Z bethy $
  ******************************************************************************/
 #ifndef _UT_ALTIBASE_H_
 #define _UT_ALTIBASE_H_ 1
@@ -39,6 +39,7 @@ class utAtbConnection;
 class utAtbQuery;
 class utAtbRow;
 class utAtbField;
+class utAtbLob; // BUG-45909
 
 IDL_EXTERN_C_BEGIN
     SInt sqlTypeToAltibase(SInt type);
@@ -108,7 +109,7 @@ public:
 
     IDE_RC execute (bool=true         );
     IDE_RC execute (const SChar*, ... );    // direct execution
-    IDE_RC lobAtToAt (Query *, Query *, SChar *);
+    IDE_RC lobAtToAt (Query *, Query *, SChar *, SChar *);
 
     IDE_RC bind(const UInt   , void *, UInt, SInt  // SQL Type aka SQL_VARCHAR etc.
                 , bool isNull // for Indicator
@@ -139,12 +140,18 @@ public:
     /* TASK-4212: audit툴의 대용량 처리시 개선 */
     IDE_RC  utaCloseCur(void);
 
+    /* BUG-45909 Improve LOB Processing */
+    IDE_RC      putLob(UShort, Field *);
+    IDE_RC      close4DML();
+    void        printError();
+    SQLUBIGINT  getBindLobLoc(UShort aPos);
+
 protected:  friend class utAtbConnection;
     friend class utAtbRow       ;
     friend class utAtbField     ;
+    friend class utAtbLob       ;
 
     SQLLEN     mLobInd;
-    SQLUBIGINT mLobLoc;
     
     //** from utAtbcleConnect **//
     utAtbConnection *   _conn;
@@ -163,6 +170,11 @@ protected:  friend class utAtbConnection;
         SQLPOINTER       value;    // Pointer to buffer
         SQLLEN     valueLength;    // Parametr Length for the pointer
 
+
+        /* BUG-45909 Improve LOB Processing */
+        SQLUSMALLINT      mPos;
+        SQLUBIGINT     mLobLoc;
+
         binds_t       * next;
     };
     binds_t    * _binds;
@@ -175,6 +187,7 @@ public:
     utAtbRow( utAtbQuery *, SInt &); // import from Query
 
     IDE_RC initialize();
+    IDE_RC reset();
 
     /* TASK-4212: audit툴의 대용량 처리시 개선 */
     IDE_RC setStmtAttr4Array(void);
@@ -201,6 +214,12 @@ public:
     // SQL_NULL_DATA로 set할수 있는 함수가 필요.
     inline void setIsNull(bool aIsNull) { *mValueInd = (aIsNull)?SQL_NULL_DATA:0; }
 
+    /* BUG-45909 Improve LOB Processing */
+    inline utAtbLob * getLob() { return mLob; }
+    IDE_RC initLob();
+    IDE_RC finiLob();
+    bool   compareLob(Field *);
+
 protected:  friend class utAtbRow;
 // BUG-17604
 #if defined(_MSC_VER) && defined(COMPILE_64BIT)
@@ -219,8 +238,39 @@ protected:  friend class utAtbRow;
     IDE_RC finalize  (void);
 
     utAtbRow        *  mRow;
+    utAtbLob        *  mLob; // BUG-45909
 
     inline SInt mapType (SInt aSqlType) { return sqlTypeToAltibase(aSqlType); }
+};
+
+/* BUG-45909 Improve LOB Processing */
+class utAtbLob : Object
+{
+    SQLHDBC      mDbc;
+    SQLHSTMT     mStmt;
+    SQLSMALLINT  mSourceCType;
+    SInt         mLocatorCType;
+    SQLUINTEGER  mOffset;
+    SQLUINTEGER  mTotalLen;
+    SQLUINTEGER  mCurrLen;
+    SQLUBIGINT   mLobLoc;
+    SQLPOINTER   mBuf[BUF_LEN];
+
+    utAtbQuery  *mQuery; 
+
+public:
+    IDE_RC initialize(utAtbQuery *aQuery,
+                      SInt        aSqlType,
+                      SQLUBIGINT  aLobLoc);
+    IDE_RC finalize  (void);
+
+    inline SQLUINTEGER  getLobLength() { return mTotalLen; }
+    inline SQLUINTEGER  getCurrLen()   { return mCurrLen; }
+    inline SQLPOINTER   getValue()     { return mBuf; }
+
+    IDE_RC next(SQLUINTEGER *aLen);
+    bool   equals(utAtbLob *aLob);
+
 };
 
 #endif

@@ -260,7 +260,7 @@ IDE_RC smmTBSDrop::doDropTableSpace( sctTableSpaceNode * aTBSNode,
     
 
     // 여기 들어오는 Tablespace는 항상 Memory Tablespace여야 한다.
-    IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mID )
+    IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mID )
                 == ID_TRUE );
     
 

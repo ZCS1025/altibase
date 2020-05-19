@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiMain.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiMain.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -133,8 +133,8 @@ IDE_RC smiGetDBFilePageCount( scSpaceID aSpaceID, scPageID * aDBFilePageCount)
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(aSpaceID,
                                                        (void**)&sTBSNode)
               != IDE_SUCCESS );
-    IDE_ASSERT(sTBSNode != NULL);
-    IDE_DASSERT(sctTableSpaceMgr::isMemTableSpace(aSpaceID) == ID_TRUE);
+    IDE_ASSERT( sTBSNode != NULL);
+    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(aSpaceID) == ID_TRUE );
 
     IDE_TEST( smmManager::readMemBaseInfo( sTBSNode,
                                            & sDBFilePageCount,
@@ -304,11 +304,11 @@ static IDE_RC smiCreateMemoryTableSpaces(
     sState = 1;
 
 
-    IDE_TEST( sTrans->begin( NULL,
-                             ( SMI_TRANSACTION_REPL_DEFAULT |
-                               SMI_COMMIT_WRITE_NOWAIT ),
-                             SMX_NOT_REPL_TX_ID )
-             != IDE_SUCCESS );
+    IDE_ASSERT( sTrans->begin( NULL,
+                               ( SMI_TRANSACTION_REPL_DEFAULT |
+                                 SMI_COMMIT_WRITE_NOWAIT ),
+                               SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
     sState = 2;
 
     IDE_TEST( smmTBSCreate::createTBS(sTrans,
@@ -333,11 +333,11 @@ static IDE_RC smiCreateMemoryTableSpaces(
     IDE_TEST( sTrans->commit(&sDummySCN) != IDE_SUCCESS );
 
 
-    IDE_TEST( sTrans->begin( NULL,
-                             ( SMI_TRANSACTION_REPL_DEFAULT |
-                               SMI_COMMIT_WRITE_NOWAIT ),
-                             SMX_NOT_REPL_TX_ID )
-             != IDE_SUCCESS );
+    IDE_ASSERT( sTrans->begin( NULL,
+                               ( SMI_TRANSACTION_REPL_DEFAULT |
+                                 SMI_COMMIT_WRITE_NOWAIT ),
+                               SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
     sState = 2;
     IDE_TEST( smmTBSCreate::createTBS(
                             sTrans,
@@ -386,7 +386,8 @@ static IDE_RC smiCreateMemoryTableSpaces(
     switch ( sState )
     {
         case 2:
-            sTrans->abort();
+            sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                           NULL      /* aLegacyTrans */ );
             break;
 
         case 1:
@@ -498,11 +499,11 @@ static IDE_RC smiCreateDiskTableSpaces( )
 
     IDE_TEST( smxTransMgr::alloc( &sTx ) != IDE_SUCCESS );
 
-    IDE_TEST( sTx->begin( NULL,
-                          ( SMI_TRANSACTION_REPL_NONE |
-                            SMI_COMMIT_WRITE_NOWAIT ),
-                          SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTx->begin( NULL,
+                            ( SMI_TRANSACTION_REPL_NONE |
+                              SMI_COMMIT_WRITE_NOWAIT ),
+                            SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     /* PROJ-1671 Bitmap-base Tablespace And Segment Space Management
      * Create Database 과정에서는 기본 시스템 프로퍼티값을 판독한다 */
@@ -590,11 +591,11 @@ static IDE_RC smiCreateDiskTableSpaces( )
 
     sDFAttrPtr = &sDFAttr;
 
-    IDE_TEST( sTx->begin( NULL,
-                          ( SMI_TRANSACTION_REPL_NONE |
-                            SMI_COMMIT_WRITE_NOWAIT ),
-                          SMX_NOT_REPL_TX_ID )
-             != IDE_SUCCESS );
+    IDE_ASSERT( sTx->begin( NULL,
+                            ( SMI_TRANSACTION_REPL_NONE |
+                              SMI_COMMIT_WRITE_NOWAIT ),
+                            SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     sTbsAttr.mDiskAttr.mSegMgmtType  = SMI_SEGMENT_MGMT_CIRCULARLIST_TYPE;
     sTbsAttr.mDiskAttr.mExtMgmtType  = SMI_EXTENT_MGMT_BITMAP_TYPE;
@@ -614,11 +615,11 @@ static IDE_RC smiCreateDiskTableSpaces( )
      * 크기가 증가하였다. */
     IDE_TEST( sTx->commit(&sDummySCN) != IDE_SUCCESS );
 
-    IDE_TEST( sTx->begin( NULL,
-                          ( SMI_TRANSACTION_REPL_NONE |
-                            SMI_COMMIT_WRITE_NOWAIT ),
-                          SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTx->begin( NULL,
+                            ( SMI_TRANSACTION_REPL_NONE |
+                              SMI_COMMIT_WRITE_NOWAIT ),
+                            SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     /***********************************************************************
      * PROJ-1704 DISK MVCC 리뉴얼
@@ -709,11 +710,11 @@ static IDE_RC smiCreateDiskTableSpaces( )
 
     sDFAttrPtr = &sDFAttr;
 
-    IDE_TEST( sTx->begin( NULL,
-                          ( SMI_TRANSACTION_REPL_NONE |
-                            SMI_COMMIT_WRITE_NOWAIT ),
-                          SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTx->begin( NULL,
+                            ( SMI_TRANSACTION_REPL_NONE |
+                              SMI_COMMIT_WRITE_NOWAIT ),
+                            SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     sTbsAttr.mDiskAttr.mSegMgmtType  = SMI_SEGMENT_MGMT_FREELIST_TYPE;
     sTbsAttr.mDiskAttr.mExtMgmtType  = SMI_EXTENT_MGMT_BITMAP_TYPE;

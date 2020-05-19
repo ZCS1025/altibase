@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdpDPathInfoMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpDPathInfoMgr.cpp 84032 2018-09-19 05:32:05Z kclee $
  *
  * Description : Direct-Path INSERT를 수행할 때 실제 Table에 반영할 Segment의
  *          정보를 관리하는 자료구조가 DPathInfo이다. sdpDPathInfoMgr 클래스는
@@ -49,8 +49,9 @@ IDE_RC sdpDPathInfoMgr::initializeStatic()
                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                  ID_FALSE,							/* ForcePooling */
                  ID_TRUE,							/* GarbageCollection */
-                 ID_TRUE ) 							/* HWCacheLine */
-              != IDE_SUCCESS );
+                 ID_TRUE,                           /* HWCacheLine */
+                 IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+              != IDE_SUCCESS);			
 
     return IDE_SUCCESS;
 

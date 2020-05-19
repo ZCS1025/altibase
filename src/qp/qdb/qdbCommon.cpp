@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbCommon.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdbCommon.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -58,6 +58,7 @@
 extern mtdModule mtdBigint;
 extern mtdModule mtdBoolean;
 extern mtdModule mtdClobLocator;
+extern mtdModule mtdInteger;
 
 /***********************************************************************
  * Description : qsort()가 Platform에 dependent하기 때문에
@@ -9443,6 +9444,7 @@ idBool qdbCommon::containDollarInName( qcNamePosition * aObjectNamePos )
         if ( ( aObjectNamePos->size >= 2 ) &&
              ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
                ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+               ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
                ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
         {
             sContainDollar = ID_TRUE;
@@ -9559,7 +9561,8 @@ IDE_RC qdbCommon::validatePartKeyCondValues( qcStatement        * aStatement,
                       != IDE_SUCCESS );
         }
 
-        if( aPartTable->partMethod == QCM_PARTITION_METHOD_RANGE )
+        if ( ( aPartTable->partMethod == QCM_PARTITION_METHOD_RANGE ) ||
+             ( aPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
         {
             // range인 경우.
             // 파티션 키 조건 값의 중복검사.
@@ -9635,12 +9638,23 @@ IDE_RC qdbCommon::makePartKeyCondValues( qcStatement          * aStatement,
                                  NULL )
                   != IDE_SUCCESS);
 
-        IDE_TEST( qtc::makeConversionNode( sCurrValue->value,
-                                           aStatement,
-                                           aTemplate,
-                                           sCurrColumn->basicInfo->module )
-                  != IDE_SUCCESS );
-
+        /* BUG-46065 support range using hash */
+        if ( aPartMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+        {
+            IDE_TEST( qtc::makeConversionNode( sCurrValue->value,
+                                               aStatement,
+                                               aTemplate,
+                                               &mtdInteger )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qtc::makeConversionNode( sCurrValue->value,
+                                               aStatement,
+                                               aTemplate,
+                                               sCurrColumn->basicInfo->module )
+                      != IDE_SUCCESS );
+        }
         // Constant value로 만들어 주어야 함.
         IDE_TEST( qtc::estimateConstExpr( sCurrValue->value,
                                           aTemplate,
@@ -9671,90 +9685,103 @@ IDE_RC qdbCommon::makePartKeyCondValues( qcStatement          * aStatement,
         sValue = (void*)( (UChar*)sTemplate->rows[sNode->table].row
                           + sValueColumn->column.offset );
 
-        // 데이터 타입이 반드시 같아야 함.
-        IDE_DASSERT( sCurrColumn->basicInfo->type.dataTypeId ==
-                     sValueColumn->type.dataTypeId );
-
-        // PROJ-2002 Column Security
-        // aPartCondVal은 DML의 optimize시 partition pruning을 위한 것으로
-        // compare에만 사용된다. 그러므로 value를 column의 policy에 맞춰
-        // 암호화할 필요가 없고, default policy로 canonize한다.
-        if ( (sCurrColumn->basicInfo->module->flag & MTD_ENCRYPT_TYPE_MASK)
-             == MTD_ENCRYPT_TYPE_TRUE )
+        if ( aPartMethod != QCM_PARTITION_METHOD_RANGE_USING_HASH )
         {
-            IDE_TEST( qcsModule::getECCSize(
-                          sCurrColumn->basicInfo->precision,
-                          & sECCSize )
-                      != IDE_SUCCESS );
+            // 데이터 타입이 반드시 같아야 함.
+            IDE_DASSERT( sCurrColumn->basicInfo->type.dataTypeId ==
+                         sValueColumn->type.dataTypeId );
 
+            // PROJ-2002 Column Security
+            // aPartCondVal은 DML의 optimize시 partition pruning을 위한 것으로
+            // compare에만 사용된다. 그러므로 value를 column의 policy에 맞춰
+            // 암호화할 필요가 없고, default policy로 canonize한다.
+            if ( (sCurrColumn->basicInfo->module->flag & MTD_ENCRYPT_TYPE_MASK)
+                 == MTD_ENCRYPT_TYPE_TRUE )
+            {
+                IDE_TEST( qcsModule::getECCSize(
+                              sCurrColumn->basicInfo->precision,
+                              & sECCSize )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( mtc::initializeColumn(
+                              & sColumn,
+                              sCurrColumn->basicInfo->module,
+                              1,
+                              sCurrColumn->basicInfo->precision,
+                              0 )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( mtc::initializeEncryptColumn(
+                              & sColumn,
+                              (const SChar*) "",
+                              sCurrColumn->basicInfo->precision,
+                              sECCSize )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                mtc::copyColumn( & sColumn, sCurrColumn->basicInfo );
+            }
+
+            // canonize
+            // canonize가 실패하는 경우는 overflow가 나는 경우.
+            // 파티션 키 조건 값도 테이블에 저장될 수 있는 값이어야 한다.
+            if ( ( sCurrColumn->basicInfo->module->flag & MTD_CANON_MASK )
+                 == MTD_CANON_NEED )
+            {
+                sCanonizedValue = sValue;
+
+                IDE_TEST( sCurrColumn->basicInfo->module->canonize(
+                              & sColumn,
+                              & sCanonizedValue,           // canonized value
+                              NULL,
+                              sValueColumn,
+                              sValue,                     // original value
+                              NULL,
+                              & aTemplate->tmplate )
+                          != IDE_SUCCESS );
+
+                sValue = sCanonizedValue;
+            }
+            else if ( ( sCurrColumn->basicInfo->module->flag & MTD_CANON_MASK )
+                      == MTD_CANON_NEED_WITH_ALLOCATION )
+            {
+                IDU_LIMITPOINT("qdbCommon::makePartKeyCondValues::malloc");
+                IDE_TEST(QC_QMP_MEM(aStatement)->alloc(
+                             sColumn.column.size,
+                             (void**)&sCanonizedValue )
+                         != IDE_SUCCESS);
+
+                IDE_TEST( sCurrColumn->basicInfo->module->canonize(
+                              & sColumn,
+                              & sCanonizedValue,           // canonized value
+                              NULL,
+                              sValueColumn,
+                              sValue,                      // original value
+                              NULL,
+                              & aTemplate->tmplate )
+                          != IDE_SUCCESS );
+
+                sValue = sCanonizedValue;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
             IDE_TEST( mtc::initializeColumn(
-                          & sColumn,
-                          sCurrColumn->basicInfo->module,
-                          1,
-                          sCurrColumn->basicInfo->precision,
+                          &sColumn,
+                          &mtdInteger,
+                          0,
+                          0,
                           0 )
                       != IDE_SUCCESS );
-
-            IDE_TEST( mtc::initializeEncryptColumn(
-                          & sColumn,
-                          (const SChar*) "",
-                          sCurrColumn->basicInfo->precision,
-                          sECCSize )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            mtc::copyColumn( & sColumn, sCurrColumn->basicInfo );
-        }
-
-        // canonize
-        // canonize가 실패하는 경우는 overflow가 나는 경우.
-        // 파티션 키 조건 값도 테이블에 저장될 수 있는 값이어야 한다.
-        if ( ( sCurrColumn->basicInfo->module->flag & MTD_CANON_MASK )
-             == MTD_CANON_NEED )
-        {
-            sCanonizedValue = sValue;
-
-            IDE_TEST( sCurrColumn->basicInfo->module->canonize(
-                          & sColumn,
-                          & sCanonizedValue,           // canonized value
-                          NULL,
-                          sValueColumn,
-                          sValue,                     // original value
-                          NULL,
-                          & aTemplate->tmplate )
-                      != IDE_SUCCESS );
-
-            sValue = sCanonizedValue;
-        }
-        else if ( ( sCurrColumn->basicInfo->module->flag & MTD_CANON_MASK )
-                  == MTD_CANON_NEED_WITH_ALLOCATION )
-        {
-            IDU_LIMITPOINT("qdbCommon::makePartKeyCondValues::malloc");
-            IDE_TEST(QC_QMP_MEM(aStatement)->alloc(
-                         sColumn.column.size,
-                         (void**)&sCanonizedValue )
-                     != IDE_SUCCESS);
-
-            IDE_TEST( sCurrColumn->basicInfo->module->canonize(
-                          & sColumn,
-                          & sCanonizedValue,           // canonized value
-                          NULL,
-                          sValueColumn,
-                          sValue,                      // original value
-                          NULL,
-                          & aTemplate->tmplate )
-                      != IDE_SUCCESS );
-
-            sValue = sCanonizedValue;
-        }
-        else
-        {
-            // Nothing to do.
         }
 
         // range partition인 경우 null을 쓸 수 없다.
-        if( aPartMethod == QCM_PARTITION_METHOD_RANGE )
+        if ( aPartMethod == QCM_PARTITION_METHOD_RANGE )
         {
             if( sCurrColumn->basicInfo->module->isNull( sCurrColumn->basicInfo,
                                                         sValue )
@@ -9769,6 +9796,31 @@ IDE_RC qdbCommon::makePartKeyCondValues( qcStatement          * aStatement,
             else
             {
                 // Nothing to do.
+            }
+        }
+        /* BUG-46065 support range using hash */
+        else if ( aPartMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+        {
+            if ( sColumn.module->isNull( &sColumn, sValue )
+                 == ID_TRUE )
+            {
+                sqlInfo.setSourceInfo( aStatement, &sCurrValue->value->position );
+                IDE_RAISE( ERR_PARTCOND_VALUE );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            if ( ( *(SInt *)sValue > QMO_RANGE_USING_HASH_MAX_VALUE ) ||
+                 ( *(SInt *)sValue <= 0 ) )
+            {
+                sqlInfo.setSourceInfo( aStatement, &sCurrValue->value->position );
+                IDE_RAISE( ERR_PARTCOND_VALUE );
+            }
+            else
+            {
+                /* Nothing to do */
             }
         }
         else
@@ -9842,11 +9894,19 @@ IDE_RC qdbCommon::checkDupListPartKeyValues( qcStatement        * aStatement,
     mtdValueInfo           sValueInfo1;
     mtdValueInfo           sValueInfo2;
 
-    sCompare =
-        aPartTable->partKeyColumns->basicInfo->module->logicalCompare[MTD_COMPARE_ASCENDING];
+    /* BUG-46065 support range using hash */
+    if ( aPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+    {
+        sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+        sColumn = NULL;
+    }
+    else
+    {
+        sCompare =
+            aPartTable->partKeyColumns->basicInfo->module->logicalCompare[MTD_COMPARE_ASCENDING];
 
-    sColumn = aPartTable->partKeyColumns->basicInfo;
-
+        sColumn = aPartTable->partKeyColumns->basicInfo;
+    }
     // 파티션 개수만큼 루프
     for( sFirstPartAttr = aPartTable->partAttr;
          sFirstPartAttr != NULL;
@@ -10012,10 +10072,19 @@ IDE_RC qdbCommon::checkDupRangePartKeyValues( qcStatement        * aStatement,
                  i++,
                      sPartKeyColumn = sPartKeyColumn->next )
             {
-                sCompare =
-                    sPartKeyColumn->basicInfo->module->logicalCompare[MTD_COMPARE_ASCENDING];
+                /* BUG-46065 support range using hash */
+                if ( aPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+                {
+                    sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+                    sColumn = NULL;
+                }
+                else
+                {
+                    sCompare =
+                        sPartKeyColumn->basicInfo->module->logicalCompare[MTD_COMPARE_ASCENDING];
 
-                sColumn = sPartKeyColumn->basicInfo;
+                    sColumn = sPartKeyColumn->basicInfo;
+                }
 
                 sValueInfo1.column = sColumn;
                 sValueInfo1.value  =
@@ -10095,6 +10164,23 @@ comparePartCondKeyValues( const void* aElem1, const void* aElem2 )
         &sComp2->partAttr->partCondVal );
 }
 
+/* BUG-46065 support range using hash */
+extern "C" SInt compareRangeHashPartCondKeyValues( const void * aElem1, const void * aElem2 )
+{
+    qdPartIdx * sComp1;
+    qdPartIdx * sComp2;
+
+    sComp1 = (qdPartIdx*)aElem1;
+    sComp2 = (qdPartIdx*)aElem2;
+
+    IDE_DASSERT( sComp1 != NULL );
+    IDE_DASSERT( sComp2 != NULL );
+
+    return qmoPartition::compareRangeUsingHashPartition(
+        &sComp1->partAttr->partCondVal,
+        &sComp2->partAttr->partCondVal );
+}
+
 IDE_RC qdbCommon::sortPartition( qcStatement        * aStatement,
                                  qdPartitionedTable * aPartTable )
 {
@@ -10126,10 +10212,20 @@ IDE_RC qdbCommon::sortPartition( qcStatement        * aStatement,
         sPartArr[i++].column = aPartTable->partKeyColumns;
     }
 
-    idlOS::qsort( sPartArr,
-                  sPartCount,
-                  ID_SIZEOF(qdPartIdx),
-                  comparePartCondKeyValues );
+    if ( aPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+    {
+        idlOS::qsort( sPartArr,
+                      sPartCount,
+                      ID_SIZEOF(qdPartIdx),
+                      compareRangeHashPartCondKeyValues );
+    }
+    else
+    {
+        idlOS::qsort( sPartArr,
+                      sPartCount,
+                      ID_SIZEOF(qdPartIdx),
+                      comparePartCondKeyValues );
+    }
 
     // 순서대로 파티션 리스트를 재구성
     for( i= 0; i < sPartCount-1; i++ )
@@ -10221,6 +10317,15 @@ IDE_RC qdbCommon::validatePartitionedTable( qcStatement         * aStatement,
         sPartKeyColCnt++;
     }
 
+    /* BUG-46065 support range using hash */
+    if ( sPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+    {
+        IDE_TEST_RAISE( sPartKeyColCnt > 1, ERR_MAX_PARTITION_KEY_COLUMN_COUNT );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
     // -----------------------------------------------
     // 1. 파티션 키 컬럼 validation
     // -----------------------------------------------
@@ -10359,7 +10464,8 @@ IDE_RC qdbCommon::validatePartitionedTable( qcStatement         * aStatement,
                 sLastCondValPos.size;
         }
 
-        if( sPartTable->partMethod == QCM_PARTITION_METHOD_RANGE )
+        if ( ( sPartTable->partMethod == QCM_PARTITION_METHOD_RANGE ) ||
+             ( sPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
         {
             // 기본 파티션일 경우는 체크하지 않음
             if( sPartAttr->partValuesType != QD_DEFAULT_VALUES_TYPE )
@@ -10429,6 +10535,10 @@ IDE_RC qdbCommon::validatePartitionedTable( qcStatement         * aStatement,
     IDE_EXCEPTION(ERR_NOT_SUPPORTED_TEMPORARY_TABLE_FEATURE)
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_NOT_SUPPORTED_TEMPORARY_TABLE_FEATURE));
+    }
+    IDE_EXCEPTION(ERR_MAX_PARTITION_KEY_COLUMN_COUNT)
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_MAX_PARTITION_KEY_COLUMN_COUNT ));
     }
 
     IDE_EXCEPTION_END;
@@ -10561,6 +10671,7 @@ IDE_RC qdbCommon::validatePartKeyColList( qcStatement * aStatement )
     // RANGE, HASH인 경우, 테이블의 컬럼 개수보다 작고,
     // QC_MAX_KET_COLUMN_COUNT보다 작아야 한다.
     if( ( sPartTable->partMethod == QCM_PARTITION_METHOD_RANGE ) ||
+        ( sPartTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) ||
         ( sPartTable->partMethod == QCM_PARTITION_METHOD_HASH ) )
     {
         IDE_TEST_RAISE( ( sPartKeyColCnt > QC_MAX_KEY_COLUMN_COUNT ) ||
@@ -10924,7 +11035,8 @@ IDE_RC qdbCommon::getPartitionMinMaxValue( qcStatement          * aStatement,
     //    PARTITION_MIN_VALUE와 PARTITION_MAX_VALUE를 구한다.
     //    PARTITION_MIN_VALUE는 이전 파티션의 PARTITION_MAX_VALUE이다.
     //---------------------------------------------------
-    if( aPartMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( ( aPartMethod == QCM_PARTITION_METHOD_RANGE ) ||
+         ( aPartMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         // 가장 작은 기준 값을 갖는  파티션의
         // PARTITION_MIN_VALUE는 NULL이다.
@@ -11117,7 +11229,38 @@ IDE_RC qdbCommon::checkSplitCond( qcStatement      * aStatement,
                 }
             }
             break;
+        /* BUG-46065 support range using hash */
+        case QCM_PARTITION_METHOD_RANGE_USING_HASH:
+            {
+                // PARTITION_MIN_VALUE가 없는 파티션은
+                // MIN_VALUE와 비교하지 않는다.
+                if ( sPartKeyCondMinValueStr->length != 0 )
+                {
+                    // ---------------------------------------------------
+                    // 6-1. 분할 기준 값이
+                    //      SrcPart의 PARTITION_MIN_VALUE보다 커야 한다.
+                    // ---------------------------------------------------
+                    IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                                        sPartCondMinVal,
+                                        sSplitCondVal ) != -1,
+                                    ERR_SPLIT_COND_VALUE_ON_RANGE_PARTITION );
+                }
 
+                // PARTITION_MAX_VALUE가 없는 파티션(기본 파티션)은
+                // MAX_VALUE와 비교하지 않는다.
+                if ( sPartKeyCondMaxValueStr->length != 0 )
+                {
+                    // ---------------------------------------------------
+                    // 6-2. 분할 기준 값이
+                    //      SrcPart의 PARTITION_MAX_VALUE보다 작아야 한다.
+                    // ---------------------------------------------------
+                    IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                                        sPartCondMaxVal,
+                                        sSplitCondVal ) != 1,
+                                    ERR_SPLIT_COND_VALUE_ON_RANGE_PARTITION );
+                }
+            }
+            break;
             // ---------------------------------------------------
             // 7. 리스트 파티션드 테이블이면
             // ---------------------------------------------------
@@ -13070,6 +13213,7 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
     qcmColumn            * sColumn;
     UInt                   sKeyColumnOrder;
     UInt                   sColumnOrder;
+    UInt                   sHashValue = 0;
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
@@ -13084,7 +13228,7 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
 
     // 범위 파티션드 테이블일 경우에만
     // 해당 Row의 qmsPartCondValList가 필요하다.
-    if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
     {
         // sValueCondVal을 구성한다.
         sValueCondVal.partCondValCount = aPartInfo->partKeyColCount;
@@ -13113,7 +13257,52 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
                 sColumn = sColumn->next;
             }
 
-            IDE_ASSERT( sValue != NULL );
+            IDE_TEST_RAISE( sValue == NULL, ERR_INVALID_VALUE );
+        }
+    }
+    else if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+    {
+        /* BUG-46455 range_using_hash split partition 시 오류 */
+        // sValueCondVal을 구성한다.
+        sValueCondVal.partCondValCount = aPartInfo->partKeyColCount;
+        sValueCondVal.partCondValType = QMS_PARTCONDVAL_NORMAL;
+
+        for ( sColCount = 0;
+              sColCount < aPartInfo->partKeyColCount;
+              sColCount++ )
+        {
+            sKeyColumnOrder = (aPartInfo->partKeyColumns[sColCount].basicInfo->column.id & SMI_COLUMN_ID_MASK);
+
+            sColumn = aColumns;
+            sValue  = NULL;
+            while (sColumn != NULL)
+            {
+                sColumnOrder = (sColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK);
+                if ( sKeyColumnOrder == sColumnOrder )
+                {
+                    sValue = (void *)mtc::value( sColumn->basicInfo,
+                                                 aRow,
+                                                 MTD_OFFSET_USE );
+
+                    IDE_TEST_RAISE( sValue == NULL, ERR_INVALID_VALUE );
+
+                    sHashValue = mtc::hashInitialValue;
+
+                    sHashValue = sColumn->basicInfo->module->hash( mtc::hashInitialValue,
+                                                                   sColumn->basicInfo,
+                                                                   sValue );
+                    sHashValue = sHashValue % QMO_RANGE_USING_HASH_MAX_VALUE;
+                    sValue = &sHashValue;
+                    sValueCondVal.partCondValues[sColCount] = sValue;
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                sColumn = sColumn->next;
+            }
+            IDE_TEST_RAISE( sValue == NULL, ERR_INVALID_VALUE );
         }
     }
     else // QCM_PARTITION_METHOD_LIST
@@ -13138,7 +13327,7 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
             sColumn = sColumn->next;
         }
 
-        IDE_ASSERT( sValue != NULL );
+        IDE_TEST_RAISE( sValue == NULL, ERR_INVALID_VALUE );
     }
 
     // ---------------------------------------------------
@@ -13149,10 +13338,24 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
         case QD_ALTER_PARTITION_LEFT_INPLACE_TYPE:
         case QD_ALTER_PARTITION_OUTPLACE_TYPE:
             {
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
                 {
                     if( qmoPartition::compareRangePartition(
                             aPartInfo->partKeyColumns,
+                            sSplitCondVal,
+                            &sValueCondVal) != 1 )
+                    {
+                        *aIsMoveRow = ID_TRUE;
+                    }
+                    else
+                    {
+                        *aIsMoveRow = ID_FALSE;
+                    }
+                }
+                /* BUG-46065 support range using hash */
+                else if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+                {
+                    if ( qmoPartition::compareRangeUsingHashPartition(
                             sSplitCondVal,
                             &sValueCondVal) != 1 )
                     {
@@ -13183,10 +13386,24 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
 
         case QD_ALTER_PARTITION_RIGHT_INPLACE_TYPE:
             {
-                if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+                if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
                 {
                     if( qmoPartition::compareRangePartition(
                             aPartInfo->partKeyColumns,
+                            sSplitCondVal,
+                            &sValueCondVal) == 1 )
+                    {
+                        *aIsMoveRow = ID_TRUE;
+                    }
+                    else
+                    {
+                        *aIsMoveRow = ID_FALSE;
+                    }
+                }
+                /* BUG-46065 support range using hash */
+                else if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+                {
+                    if ( qmoPartition::compareRangeUsingHashPartition(
                             sSplitCondVal,
                             &sValueCondVal) == 1 )
                     {
@@ -13221,6 +13438,16 @@ IDE_RC qdbCommon::isMoveRowForAlterPartition(
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_VALUE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qdbCommon::isMoveRowForAlterPartition",
+                                  "sValue == NULL" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 void qdbCommon::excludeSplitValFromPartVal(

@@ -19,6 +19,17 @@ then
     exit 255
 fi
 
+HPOS=`echo $OSTYPE | grep hpux | wc -l`
+if [ $HPOS -eq 1 ]
+then
+    JVMLIB=`echo $LD_LIBRARY_PATH | grep jre/lib/IA64W/server | wc -l`
+    if [ $JVMLIB -eq 0 ]
+    then
+        echo "Please set LD_LIBRARY_PATH environment variable."
+        exit 255
+    fi
+fi
+
 # usage print function
 printUsage()
 {

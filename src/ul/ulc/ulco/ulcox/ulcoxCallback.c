@@ -99,23 +99,17 @@ ACI_RC setupSQLGetPrivateProfileString(ulnDbc *aDbc)
                   (sLibFileName != NULL) ? sLibFileName: "NULL",
                   acpDlError(&sLibHandle));
     }
-
     ACI_EXCEPTION(ERR_LD_FN);
     {
         /* BUGBUG-TODO - Message ??*/
-
-        // fix BUG-20582
-        acpDlClose(&sLibHandle);
-		sOpen = ACP_FALSE;
     }
+    ACI_EXCEPTION_END;
 
     // BUG-40316
-	if( sOpen ==  ACP_TRUE )
-	{
+    if( sOpen ==  ACP_TRUE )
+    {
         acpDlClose(&sLibHandle);
-	}
-
-    ACI_EXCEPTION_END;
+    }
 
     return ACI_FAILURE;
 }

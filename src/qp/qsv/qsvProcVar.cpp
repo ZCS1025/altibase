@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsvProcVar.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvProcVar.cpp 84499 2018-12-04 01:47:06Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -565,52 +565,61 @@ IDE_RC qsvProcVar::checkAttributeColType(
     sTableType = smiGetTableFlag(sTableHandle) & SMI_TABLE_TYPE_MASK;
     
     // PROJ-2083 DUAL Table
-    if ( sTableType == SMI_TABLE_FIXED )
+    if ( sTableType != SMI_TABLE_FIXED )
     {
-        sqlInfo.setSourceInfo( aStatement,
-                               & sTypeNode->tableName );
-        IDE_RAISE( ERR_NOT_EXIST_TABLE );
+        // BUG-34492
+        // create procedure시 호출되며 참조만 하므로
+        // validation lock이면 충분하다.
+        IDE_TEST(qcm::lockTableForDDLValidation(
+                     aStatement,
+                     sTableHandle,
+                     sTableSCN)
+                 != IDE_SUCCESS);
+
+        // environment의 기록
+        IDE_TEST( qcgPlan::registerPlanTable(
+                      aStatement,
+                      sTableHandle,
+                      sTableSCN,
+                      sTableInfo->tableOwnerID, /* BUG-45893 */
+                      sTableInfo->name )        /* BUG-45893 */
+                  != IDE_SUCCESS );
+
+        // environment의 기록
+        IDE_TEST( qcgPlan::registerPlanSynonym(
+                      aStatement,
+                      & sSynonymInfo,
+                      sTypeNode->userName,
+                      sTypeNode->tableName,
+                      sTableHandle,
+                      NULL )
+                  != IDE_SUCCESS );
+
+        // make related object list
+        IDE_TEST(qsvProcStmts::makeRelatedObjects(
+                     aStatement,
+                     & sTypeNode->userName,
+                     & sTypeNode->tableName,
+                     & sSynonymInfo,
+                     sTableInfo->tableID,
+                     QS_TABLE)
+                 != IDE_SUCCESS);
     }   
     else
     {
-        /* Nothing to do */
+        // BUG-46214
+        // Fixed table이면 synonym만 처리한다.
+        // Fixed table은 lock을 잡지 않고,
+        // Related object에 추가하지도 않는다.
+        IDE_TEST( qcgPlan::registerPlanSynonym(
+                      aStatement,
+                      & sSynonymInfo,
+                      sTypeNode->userName,
+                      sTypeNode->tableName,
+                      sTableHandle,
+                      NULL )
+                  != IDE_SUCCESS );
     }
-
-    // BUG-34492
-    // create procedure시 호출되며 참조만 하므로
-    // validation lock이면 충분하다.
-    IDE_TEST(qcm::lockTableForDDLValidation(
-                 aStatement,
-                 sTableHandle,
-                 sTableSCN)
-             != IDE_SUCCESS);
-
-    // environment의 기록
-    IDE_TEST( qcgPlan::registerPlanTable(
-                  aStatement,
-                  sTableHandle,
-                  sTableSCN )
-              != IDE_SUCCESS );
-
-    // environment의 기록
-    IDE_TEST( qcgPlan::registerPlanSynonym(
-                  aStatement,
-                  & sSynonymInfo,
-                  sTypeNode->userName,
-                  sTypeNode->tableName,
-                  sTableHandle,
-                  NULL )
-              != IDE_SUCCESS );
-
-    // make related object list
-    IDE_TEST(qsvProcStmts::makeRelatedObjects(
-                 aStatement,
-                 & sTypeNode->userName,
-                 & sTypeNode->tableName,
-                 & sSynonymInfo,
-                 sTableInfo->tableID,
-                 QS_TABLE)
-             != IDE_SUCCESS);
 
     // check column name
     IDE_TEST(qmvQTC::searchColumnInTableInfo(
@@ -858,52 +867,61 @@ IDE_RC qsvProcVar::checkAttributeRowType(
     sTableType = smiGetTableFlag( sTableHandle ) & SMI_TABLE_TYPE_MASK;
     
     // PROJ-2083 DUAL Table
-    if ( sTableType == SMI_TABLE_FIXED )
+    if ( sTableType != SMI_TABLE_FIXED )
     {
-        sqlInfo.setSourceInfo( aStatement,
-                               & sTypeNode->columnName );
-        IDE_RAISE( ERR_NOT_EXIST_TABLE );
+        // BUG-34492
+        // create procedure시 호출되며 참조만 하므로
+        // validation lock이면 충분하다.
+        IDE_TEST( qcm::lockTableForDDLValidation(
+                      aStatement,
+                      sTableHandle,
+                      sTableSCN )
+                  != IDE_SUCCESS );
+
+        // environment의 기록
+        IDE_TEST( qcgPlan::registerPlanTable(
+                      aStatement,
+                      sTableHandle,
+                      sTableSCN,
+                      sTableInfo->tableOwnerID, /* BUG-45893 */
+                      sTableInfo->name )        /* BUG-45893 */
+                  != IDE_SUCCESS );
+
+        // environment의 기록
+        IDE_TEST( qcgPlan::registerPlanSynonym(
+                      aStatement,
+                      & sSynonymInfo,
+                      sTypeNode->tableName,
+                      sTypeNode->columnName,
+                      sTableHandle,
+                      NULL )
+                  != IDE_SUCCESS );
+
+        // make related object list
+        IDE_TEST( qsvProcStmts::makeRelatedObjects(
+                      aStatement,
+                      & sTypeNode->tableName,
+                      & sTypeNode->columnName,
+                      & sSynonymInfo,
+                      sTableInfo->tableID,
+                      QS_TABLE )
+                  != IDE_SUCCESS );
     }
     else
     {
-        /* Nothing to do */
+        // BUG-46214
+        // Fixed table이면 synonym만 처리한다.
+        // Fixed table은 lock을 잡지 않고,
+        // Related object에 추가하지도 않는다.
+        IDE_TEST( qcgPlan::registerPlanSynonym(
+                      aStatement,
+                      & sSynonymInfo,
+                      sTypeNode->tableName,
+                      sTypeNode->columnName,
+                      sTableHandle,
+                      NULL )
+                  != IDE_SUCCESS );
     }
-
-    // BUG-34492
-    // create procedure시 호출되며 참조만 하므로
-    // validation lock이면 충분하다.
-    IDE_TEST( qcm::lockTableForDDLValidation(
-                  aStatement,
-                  sTableHandle,
-                  sTableSCN )
-              != IDE_SUCCESS );
-
-    // environment의 기록
-    IDE_TEST( qcgPlan::registerPlanTable(
-                  aStatement,
-                  sTableHandle,
-                  sTableSCN )
-              != IDE_SUCCESS );
-
-    // environment의 기록
-    IDE_TEST( qcgPlan::registerPlanSynonym(
-                  aStatement,
-                  & sSynonymInfo,
-                  sTypeNode->tableName,
-                  sTypeNode->columnName,
-                  sTableHandle,
-                  NULL )
-              != IDE_SUCCESS );
-
-    // make related object list
-    IDE_TEST( qsvProcStmts::makeRelatedObjects(
-                  aStatement,
-                  & sTypeNode->tableName,
-                  & sTypeNode->columnName,
-                  & sSynonymInfo,
-                  sTableInfo->tableID,
-                  QS_TABLE )
-              != IDE_SUCCESS );
 
     // fix BUG-33916
     if( QC_SHARED_TMPLATE(aStatement)->tmplate.rowCount >=
@@ -930,7 +948,8 @@ IDE_RC qsvProcVar::checkAttributeRowType(
                           aVariable )
                       != IDE_SUCCESS );
             break;
-        case QS_TRIGGER_VARIABLE :
+        case QS_TRIGGER_NEW_VARIABLE :
+        case QS_TRIGGER_OLD_VARIABLE :
             // set data type
             // PROJ-1075 trigger rowtype은 psm rowtype과
             // 호환이 되지 않기 때문에 호환이 되도록
@@ -989,7 +1008,8 @@ IDE_RC qsvProcVar::makeRowTypeVariable(
     qcuSqlSourceInfo sqlInfo;
 
     /* PROJ-1090 Function-based Index */
-    if ( aVariable->common.itemType == QS_TRIGGER_VARIABLE )
+    if ( (aVariable->common.itemType == QS_TRIGGER_NEW_VARIABLE) ||
+         (aVariable->common.itemType == QS_TRIGGER_OLD_VARIABLE) )
     {
         sTriggerVariable = ID_TRUE;
     }
@@ -3497,7 +3517,8 @@ IDE_RC qsvProcVar::searchVariableItems(
           sVariableItem = sVariableItem->next)
     {
         if ( ( sVariableItem->itemType == QS_VARIABLE ) ||
-             ( sVariableItem->itemType == QS_TRIGGER_VARIABLE ) )
+             ( sVariableItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+             ( sVariableItem->itemType == QS_TRIGGER_OLD_VARIABLE ) )
         {
             if (idlOS::strMatch(
                     sVariableItem->name.stmtText + sVariableItem->name.offset,
@@ -3668,7 +3689,8 @@ IDE_RC qsvProcVar::searchFieldOfRecord(
      * (4) |  package |    record |      field |
      * (5) |     user |   package |   variable |
      * (6) |     user |   package |     record | field
-     * (7) |          |           |     record | field
+     * (7) |          |    record |      field |
+     * (8) |          |           |     record | field
      *
      * 위의 표에서 보듯, field에 대한 정보는
      * columnName, pkgName에 존재한다.
@@ -9174,6 +9196,190 @@ IDE_RC qsvProcVar::searchVariableFromPkgForArray( qcStatement      * aStatement,
     {
         IDE_SET( ideSetErrorCode(qpERR_ABORT_QSX_PLAN_INVALID) );
     }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+//BUG-46032
+IDE_RC qsvProcVar::makeInternalArrayVariable( qcStatement      * aStatement,
+                                           qtcNode          * aNode,
+                                           qsVariables      * aParentArray,
+                                           qsVariables     ** aChildArray )
+{
+    qtcNode          * sInnerNode;
+    qtcNode          * sTypeNode[2];
+    qsVariables      * sVariable;
+    qtcModule        * sRowModule;
+    qsTypes          * sType;
+
+    sRowModule = (qtcModule *)aParentArray->typeInfo->columns->next->basicInfo->module;
+    IDE_DASSERT( sRowModule->module.id == MTD_ASSOCIATIVE_ARRAY_ID );
+
+    // 노드 생성
+    IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
+                            qtcNode,
+                            &sInnerNode )
+              != IDE_SUCCESS);
+
+    idlOS::memcpy( sInnerNode, aNode, ID_SIZEOF(qtcNode) );
+ 
+    QTC_NODE_INIT( aNode );
+
+    aNode->node.module    = sInnerNode->node.module;
+    aNode->node.next      = sInnerNode->node.next;
+    aNode->node.orgNode   = (mtcNode *)sInnerNode;
+    aNode->node.arguments = NULL;
+    aNode->position       = sInnerNode->position;
+    aNode->columnName     = sInnerNode->position;
+
+    aNode->lflag = sInnerNode->lflag;
+
+    aNode->lflag &= ~QTC_NODE_SP_NESTED_ARRAY_MASK;
+    aNode->lflag |= QTC_NODE_SP_NESTED_ARRAY_TRUE;
+
+    aNode->lflag &= ~QTC_NODE_PROC_VAR_ESTIMATE_MASK;
+    aNode->lflag |= QTC_NODE_PROC_VAR_ESTIMATE_FALSE;
+
+    aNode->lflag &= ~QTC_NODE_SP_ARRAY_INDEX_VAR_MASK;
+    aNode->lflag |= QTC_NODE_SP_ARRAY_INDEX_VAR_ABSENT;
+
+    // 중간 array variable 만들기
+    // qsTypes 생성
+    IDE_TEST( qsvProcType::makeArrayTypeColumnByModule( QC_QME_MEM(aStatement),
+                                                        sRowModule,
+                                                        &sType)
+              != IDE_SUCCESS);
+
+    // qsVariables 생성
+    IDE_TEST(STRUCT_ALLOC(QC_QME_MEM(aStatement), qsVariables, &sVariable)
+             != IDE_SUCCESS);
+
+    sVariable->common.itemType      = QS_VARIABLE;
+    SET_POSITION( sVariable->common.name,
+                  aNode->position );
+    sVariable->common.table         = ID_USHORT_MAX;
+    sVariable->common.column        = ID_USHORT_MAX;
+    sVariable->common.objectID      = QS_EMPTY_OID;
+    sVariable->common.next          = NULL;
+
+    IDE_TEST( qtc::makeProcVariable( aStatement,
+                                     sTypeNode,
+                                     & aNode->columnName,
+                                     NULL,
+                                     QTC_PROC_VAR_OP_NEXT_COLUMN )
+              != IDE_SUCCESS );
+
+    sVariable->variableTypeNode   = sTypeNode[0];
+    sVariable->defaultValueNode   = NULL;
+    sVariable->variableType       = QS_UD_TYPE;
+    sVariable->inOutType          = QS_INOUT;
+    sVariable->typeInfo           = NULL;
+    sVariable->nocopyType         = QS_NOCOPY;
+
+    IDE_TEST( qsvProcVar::makeArrayVariable( aStatement,
+                                             sType,
+                                             sVariable)
+              != IDE_SUCCESS );
+
+    *aChildArray = sVariable;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qsvProcVar::makeRecordColumnByName( qcStatement      * aStatement,
+                                           qtcNode          * aRecord,
+                                           qcNamePosition   * aFieldName,
+                                           qtcNode         ** aColumn )
+{
+    /****************************************************************
+     * BUG-46174
+     *
+     * 아래의 규칙에 따라 레코드의 필드 이름을 채운다.
+     *
+     *  No | userName | tableName | columnName | pkgName | arguments
+     * --------------------------------------------------------------
+     *  1  |          |           |  record    |         |
+     *  1' |          |  record   |  field     |         |
+     *
+     *  2  |          |  package  |  record    |         |
+     *  2' |  package |  record   |  field     |         |
+     *
+     *  3  |  user    |  package  |  record    |         |
+     *  3' |  user    |  package  |  record    |  field  |
+     *
+     *  4  |          |           |  record    |         |  index
+     *  4' |          |           |  record    |  field  |  index
+     *
+     *  5  |          |  package  |  record    |         |  index
+     *  5' |  package |  record   |  field     |         |  index
+     *
+     *  6  |  user    |  package  |  record    |         |  index
+     *  6' |  user    |  package  |  record    |  field  |  index
+     *
+     *********************************************************/
+
+    IDE_TEST( qtc::makeProcVariable( aStatement,
+                                     aColumn,
+                                     &(aRecord->position),
+                                     NULL,
+                                     QTC_PROC_VAR_OP_NONE )
+              != IDE_SUCCESS);
+
+    if ( aRecord->node.arguments != NULL )
+    {
+        // array의 index 연결
+        aColumn[0]->node.arguments = aRecord->node.arguments;
+
+        aColumn[0]->lflag &= ~QTC_NODE_SP_ARRAY_INDEX_VAR_MASK;
+        aColumn[0]->lflag |= QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST;
+
+        aColumn[0]->node.lflag &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
+        aColumn[0]->node.lflag |= 1;
+    }
+
+    if ( QC_IS_NULL_NAME( aRecord->userName ) == ID_TRUE ) 
+    {
+        if ( QC_IS_NULL_NAME( aRecord->tableName ) == ID_TRUE )
+        {
+            if ( aRecord->node.arguments == NULL )
+            {
+                // 1) C -> T.C ( C is field name position )
+                SET_POSITION( aColumn[0]->tableName, aRecord->columnName );
+                SET_POSITION( aColumn[0]->columnName, *aFieldName );
+            }
+            else
+            {
+                // 4) C[idx] -> C[idx].P ( P is field name position )
+                SET_POSITION( aColumn[0]->columnName, aRecord->columnName );
+                SET_POSITION( aColumn[0]->pkgName, *aFieldName );
+            }
+        }
+        else
+        {
+            // 2) T.C      -> U.T.C ( C is field name position )
+            // 5) T.C[idx] -> U.T[idx].C ( C is field name position )
+            SET_POSITION( aColumn[0]->userName, aRecord->tableName );
+            SET_POSITION( aColumn[0]->tableName, aRecord->columnName );
+            SET_POSITION( aColumn[0]->columnName, *aFieldName );
+        }
+    }
+    else
+    {
+        // 3) U.T.C      -> U.T.C.P ( P is field name position )
+        // 6) U.T.C[idx] -> U.T.C[idx].P ( P is field name position )
+        SET_POSITION( aColumn[0]->userName, aRecord->userName );
+        SET_POSITION( aColumn[0]->tableName, aRecord->tableName );
+        SET_POSITION( aColumn[0]->columnName, aRecord->columnName );
+        SET_POSITION( aColumn[0]->pkgName, *aFieldName );
+    }
+
+    return IDE_SUCCESS;
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmc.h 85317 2019-04-25 00:20:11Z donovan.seo $
  *
  * Description :
  *     Execution에서 사용하는 공통 모듈로
@@ -828,6 +828,7 @@ public:
     static IDE_RC duplicateGroupExpression( qcStatement * aStatement,
                                             qtcNode     * aPredicate );
 
+    static void disableSealTrueFlag( qmcAttrDesc * aResult );
 private :
 
     //-----------------------------------------------------

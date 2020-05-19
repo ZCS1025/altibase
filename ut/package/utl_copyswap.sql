@@ -35,6 +35,12 @@ PROCEDURE finish( replication_name     IN VARCHAR(35),
                   target_table_name    IN VARCHAR(128),
                   print_all_errors     IN BOOLEAN DEFAULT FALSE );
 
+PROCEDURE swap_table_partition( replication_name                  IN VARCHAR(35),
+                                target_user_name                  IN VARCHAR(128),
+                                target_table_name                 IN VARCHAR(128),
+                                source_user_name                  IN VARCHAR(128),
+                                source_table_name                 IN VARCHAR(128),
+                                table_partition_name              IN VARCHAR(128) );
 END utl_copyswap;
 /
 

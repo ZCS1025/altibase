@@ -17,20 +17,27 @@
 package Altibase.jdbc.driver.ex;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import Altibase.jdbc.driver.cm.CmErrorResult;
-import Altibase.jdbc.driver.cm.CmXAResult;
+import Altibase.jdbc.driver.cm.*;
+import Altibase.jdbc.driver.util.StringUtils;
 import Altibase.jdbc.driver.util.WrappedIOException;
 
 public final class Error
 {
+    private static final String  DATA_NODE_SMN_PREFIX    = "Data Node SMN=";
+    private static final String  SHARD_DISCONNECT_PREFIX = "Disconnect=N";
+    private static final String  EXECUTEV2_RESULT_PREFIX = "ExecuteV2Result";
+
     private static String getMessage(Throwable aThrowable)
     {
         return (aThrowable.getMessage() == null) ? aThrowable.toString() : aThrowable.getMessage();
@@ -321,7 +328,9 @@ public final class Error
      */
     public static SQLWarning processServerError(SQLWarning aWarning, CmErrorResult aErrorResult) throws SQLException
     {
-        SQLException sExceptionResult = null;
+        List<SQLException> sExceptionList = new ArrayList<SQLException>();
+        List<SQLWarning> sWarningList = new ArrayList<SQLWarning>();
+
         while (aErrorResult != null)
         {
             int sErrorCode = toClientSideErrorCode(aErrorResult.getErrorCode());
@@ -336,51 +345,226 @@ public final class Error
                     sErrorCode = ErrorDef.INVALID_QUERY_STRING;
                     sErrorMsg = ErrorDef.getErrorMessage(sErrorCode);
                     break;
-                    
+
                 case ErrorDef.PASSWORD_GRACE_PERIOD:
                     // BUG-38496 Notify users when their password expiry date is approaching.
                     sErrorCode = ErrorDef.PASSWORD_EXPIRATION_DATE_IS_COMING;
                     sErrorMsg = Error.buildErrorMessage(sErrorCode, String.valueOf(aErrorResult.getErrorIndex()));
                     sSQLState = SQLStateMap.getSQLState(sErrorCode);
                     break;
-                    
+
                 default:
                 	break;
             }
 
             if (!aErrorResult.isIgnorable())
             {
-                SQLException sException = new SQLException(sErrorMsg, sSQLState, sErrorCode);
-                if (sExceptionResult == null)
+                if (aErrorResult.isInvalidSMNError())
                 {
-                    sExceptionResult = sException;
+                    processInvalidSMNError(aErrorResult, sExceptionList, sWarningList, sErrorCode,
+                                           sErrorMsg, sSQLState);
                 }
                 else
                 {
-                    sExceptionResult.setNextException(sException);
+                    sExceptionList.add(new SQLException(sErrorMsg, sSQLState, sErrorCode));
                 }
             }
             // BUG-44471 내부 구현으로 인한 ignore 에러가 아닐때만 SQLWarning을 생성한다.
             else if (!aErrorResult.canSkipSQLWarning(sErrorCode))
             {
-                SQLWarning sWarning = new SQLWarning(sErrorMsg, sSQLState, sErrorCode);
-                if (aWarning == null)
-                {
-                    aWarning = sWarning;
-                }
-                else
-                {
-                    aWarning.setNextWarning(sWarning);
-                }
+                sWarningList.add(new SQLWarning(sErrorMsg, sSQLState, sErrorCode));
             }
             aErrorResult = aErrorResult.getNextError();
         }
 
+        SQLWarning sWarning = makeSQLWarningFromList(sWarningList);
+        if (aWarning != null)
+        {
+            aWarning.setNextWarning(sWarning);
+        }
+        else
+        {
+            aWarning = sWarning;
+        }
+
+        SQLException sExceptionResult = makeSQLExceptionFromList(sExceptionList);
         if (sExceptionResult != null)
         {
             throw sExceptionResult;
         }
+
         return aWarning;
+    }
+
+    /**
+     * 서버로부터 넘어온 SMN Invalid 에러를 처리한다.
+     * @param aErrorResult 서버에서 받은 에러/경고 정보
+     * @param aExceptionList SQLException 리스트
+     * @param aWarningList SQLWarning 리스트
+     * @param aErrorCode 에러코드
+     * @param aErrorMsg 에러메세지
+     * @param aSQLState SQLState
+     */
+    private static void processInvalidSMNError(CmErrorResult aErrorResult, List<SQLException> aExceptionList,
+                                               List<SQLWarning> aWarningList,
+                                               int aErrorCode, String aErrorMsg, String aSQLState)
+    {
+        // BUG-46513 에러메세지를 파싱해 SMN값과 NeedToDisconnect값을 얻어온다.
+        setShardMetaNumberOfDataNode(aErrorResult, aErrorMsg);
+        boolean sNeedToDisconnect = setShardDisconnectValue(aErrorResult, aErrorMsg);
+
+        switch (aErrorResult.getErrorOp())
+        {
+            case CmOperationDef.DB_OP_SET_PROPERTY :
+                if (sNeedToDisconnect)
+                {
+                    aExceptionList.add(new SQLException(aErrorMsg, aSQLState, aErrorCode));
+                }
+                break;
+            case CmOperationDef.DB_OP_EXECUTE_V2:
+            case CmOperationDef.DB_OP_PARAM_DATA_IN_LIST_V2:
+                if (sNeedToDisconnect)
+                {
+                    aWarningList.add(new SQLWarning(aErrorMsg, aSQLState, aErrorCode));
+                }
+                parseExecuteResults(aErrorResult.getProtocolContext(), aErrorMsg);
+                break;
+            case CmOperationDef.DB_OP_TRANSACTION:
+            case CmOperationDef.DB_OP_SHARD_TRANSACTION:
+                if (sNeedToDisconnect)
+                {
+                    aWarningList.add(new SQLWarning(aErrorMsg, aSQLState, aErrorCode));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * SMN Invalid 에러가 발생했을 때 에러메세지를 파싱하여 executeV2의 결과를 저장한다.<br>
+     * ExecuteV2Result전문 예 : ExecuteV2Result 65536 1 1 18446744073709551615 0 0
+     * @param aContext 프로토콜 컨텍스트 객체
+     * @param aErrorMsg 에러메세지
+     */
+    static void parseExecuteResults(CmProtocolContext aContext, String aErrorMsg)
+    {
+        CmExecutionResult sExecResult = (CmExecutionResult)aContext.getCmResult(CmOperation.DB_OP_EXECUTE_V2_RESULT);
+        int sIndex = aErrorMsg.indexOf(EXECUTEV2_RESULT_PREFIX);
+        sIndex += EXECUTEV2_RESULT_PREFIX.length() + 1;
+        String sRemain = aErrorMsg.substring(sIndex);
+        String[] sValues = sRemain.split(" ");
+
+        sExecResult.setStatementId(Integer.parseInt(sValues[0]));
+        sExecResult.setRowNumber(Integer.parseInt(sValues[1]));
+        sExecResult.setResultSetCount(Integer.parseInt(sValues[2]));
+        String sUpdatedRowCount = sValues[3];
+        // BUG-46513 updatedRowCount는 unsigned long 형태의 text로 넘어 오기 때문에 BigInteger로 처리한다.
+        BigInteger sBigInt = new BigInteger(sUpdatedRowCount);
+        sExecResult.setUpdatedRowCount(sBigInt.longValue());
+    }
+
+    private static SQLWarning makeSQLWarningFromList(List<SQLWarning> aWarningList)
+    {
+        if (aWarningList.size() == 0)
+        {
+            return null;
+        }
+        SQLWarning sResult = aWarningList.get(0);
+        for (int i = 1; i < aWarningList.size(); i++)
+        {
+            sResult.setNextWarning(aWarningList.get(i));
+        }
+
+        return sResult;
+    }
+
+    private static SQLException makeSQLExceptionFromList(List<SQLException> aExceptionList)
+    {
+        if (aExceptionList.size() == 0)
+        {
+            return null;
+        }
+        SQLException sResult = aExceptionList.get(0);
+        for (int i = 1; i < aExceptionList.size(); i++)
+        {
+            sResult.setNextException(aExceptionList.get(i));
+        }
+
+        return sResult;
+    }
+
+    /**
+     * 에러메세지를 파싱하여 Disconnect값을 반영한다.
+     * @param aErrorResult 서버에서 받은 에러/경고 정보
+     * @param aErrorMsg 에러 메세지
+     */
+    private static boolean setShardDisconnectValue(CmErrorResult aErrorResult, String aErrorMsg)
+    {
+        boolean sNeedToDisconnect = getShardDiconnectFromErrorMsg(aErrorMsg);
+        aErrorResult.setNeedToDisconnect(sNeedToDisconnect);
+
+        return sNeedToDisconnect;
+    }
+
+    /**
+     * 에러메세지를 파싱하여 얻은 SMN값을 node 커넥션 및 meta 커넥션에 반영한다.
+     * @param aErrorResult 서버에서 받은 에러/경고 정보
+     * @param aErrorMsg 에러메세지
+     */
+    private static void setShardMetaNumberOfDataNode(CmErrorResult aErrorResult, String aErrorMsg)
+    {
+        long sSMNOfDataNode = getSMNOfDataNodeFromErrorMsg(aErrorMsg);
+        aErrorResult.setSMNOfDataNode(sSMNOfDataNode);
+    }
+
+    /**
+     * 에러메세지를 파싱하여 SMN값을 구한다.
+     * @param aErrorMsg 에러메세지
+     * @return SMN값
+     */
+    public static long getSMNOfDataNodeFromErrorMsg(String aErrorMsg)
+    {
+        if (StringUtils.isEmpty(aErrorMsg)) return 0;
+
+        int sSMNIndex = aErrorMsg.indexOf(DATA_NODE_SMN_PREFIX);
+        if (sSMNIndex < 0)  return 0;
+
+        String sSMNRemainStr = aErrorMsg.substring(sSMNIndex + DATA_NODE_SMN_PREFIX.length());
+        StringBuilder sSb = new StringBuilder();
+        for (char sEach : sSMNRemainStr.toCharArray())
+        {
+            if (Character.isDigit(sEach))
+            {
+                sSb.append(sEach);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return Long.parseLong(sSb.toString());
+    }
+
+    /**
+     * 에러메세지를 파싱하여 ShardDisconnect 값을 구한다.
+     * @param aErrorMsg 에러메세지
+     * @return needToDisconnect여부 <br>
+     *         false  : 이전 SMN을 가진 Connection을 허용(default) <br>
+     *         true   : 이전 SMN을 가진 Connection을 허용하지 않음
+     */
+    public static boolean getShardDiconnectFromErrorMsg(String aErrorMsg)
+    {
+        if (StringUtils.isEmpty(aErrorMsg)) return false;
+
+        boolean sIsDisconnect = true;
+        if (aErrorMsg.contains(SHARD_DISCONNECT_PREFIX))
+        {
+            sIsDisconnect = false;
+        }
+
+        return sIsDisconnect;
     }
 
     public static int toClientSideErrorCode(int aErrorCode)

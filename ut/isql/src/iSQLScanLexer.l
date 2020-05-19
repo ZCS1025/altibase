@@ -218,7 +218,8 @@ BEGIN(INITIAL);
     sTmp = yytext;
     while ( *sTmp )
     {
-        if (isdigit(*sTmp) != 0) // 숫자이면...
+        /* BUG-46048 Codesonar warning */
+        if (isdigit((UChar)*sTmp) != 0) // 숫자이면...
         {
             sVar = sTmp;
             break;
@@ -228,7 +229,8 @@ BEGIN(INITIAL);
     sTmp = yytext + yyleng - 1;
     while ( *sTmp )
     {
-        if (isdigit(*sTmp) != 0) // 숫자이면...
+        /* BUG-46048 Codesonar warning */
+        if (isdigit((UChar)*sTmp) != 0) // 숫자이면...
         {
             sTmp++;
             *sTmp = '\0';

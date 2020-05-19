@@ -41,6 +41,7 @@ lib:
 	$(MAKE) acslib
 	$(MAKE) alalib
 	$(MAKE) shardcli
+	$(MAKE) shardloadercli
 
 #BUG-22936
 ifeq ($(compile64),1)
@@ -58,6 +59,9 @@ odbccli:
 shardcli:
 	$(MAKE) shardcli_static
 	$(MAKE) shardcli_shared
+
+shardloadercli:
+	$(MAKE) shardloadercli_static
 
 acslib:
 	$(MAKE) acslib_static
@@ -122,6 +126,7 @@ shardcli_static:
 	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardcli.$(LIBEXT)
 	$(MAKE) shardcli_static_build
 
+
 shardcli_static_build: $(SHARDCLI_LIB_PATH)
 ifeq "$(OS_TARGET)" "IBM_AIX"
   ifeq ($(compile64),1)
@@ -136,6 +141,28 @@ endif
 	$(Q) -$(RM) *.$(OBJEXT)
 
 $(SHARDCLI_LIB_PATH): $(SHARDCLI_OBJS)
+
+#################
+# static CLI for ShardLoader 빌드
+#################
+shardloadercli_static:
+	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardloadercli.$(LIBEXT)
+	$(MAKE) shardloadercli_static_build
+
+shardloadercli_static_build: $(SHARDLOADERCLI_LIB_PATH)
+ifeq "$(OS_TARGET)" "IBM_AIX"
+  ifeq ($(compile64),1)
+	$(Q) $(AR) -x -X64 $(ALTICORE_LIBDIR)/$(LIBPRE)alticore.$(LIBEXT)
+  else
+	$(Q) $(AR) -x -X32 $(ALTICORE_LIBDIR)/$(LIBPRE)alticore.$(LIBEXT)
+  endif
+else # ifneq "$(OS_TARGET)" "IBM_AIX"
+	$(Q) $(AR) -x $(ALTICORE_LIBDIR)/$(LIBPRE)alticore.$(LIBEXT)
+endif
+	$(Q) $(AR) $(ARFLAGS) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardloadercli.$(LIBEXT) *.$(OBJEXT) > /dev/null
+	$(Q) -$(RM) *.$(OBJEXT)
+
+$(SHARDLOADERCLI_LIB_PATH): $(SHARDLOADERCLI_OBJS)
 
 #################
 # shared CLI for Shard 빌드
@@ -321,6 +348,32 @@ $(TARGET_DIR)/%_sd_aoc.$(OBJEXT): $(DEV_DIR)/%.cpp
 	$(COMPILE_IT_CC_SD_AOC)
 
 # ------------------------------------------------
+#  static shardloadercli
+# ----------------------------------------------*/
+
+quiet_cmd_cc_o_c_sdld_aoc = CC $@
+      cmd_cc_o_c_sdld_aoc = mkdir -p $(dir $@); $(COMPILE.cc) $(DEFOPT)ACP_CFG_DL_STATIC $(DEFOPT)LIB_BUILD $(DEFOPT)COMPILE_SHARDCLI $(DEFOPT)COMPILE_SHARDLOADERCLI $(INCLUDES) $(CCOUT)$@ $<
+
+quiet_cmd_c_o_c_sdld_aoc = CC $@
+      cmd_c_o_c_sdld_aoc = mkdir -p $(dir $@); $(COMPILE.c) $(DEFOPT)ACP_CFG_DL_STATIC $(DEFOPT)LIB_BUILD $(DEFOPT)COMPILE_SHARDCLI $(DEFOPT)COMPILE_SHARDLOADERCLI $(INCLUDES) $(CCOUT)$@ $<
+
+define COMPILE_IT_CC_SDLD_AOC
+  $(Q) $(if $(quiet),echo ' $($(quiet)cmd_cc_o_c_sdld_aoc)')
+  $(Q) $(cmd_cc_o_c_sdld_aoc)
+endef
+
+define COMPILE_IT_C_SDLD_AOC
+  $(Q) $(if $(quiet),echo ' $($(quiet)cmd_c_o_c_sdld_aoc)')
+  $(Q) $(cmd_c_o_c_sdld_aoc)
+endef
+
+$(TARGET_DIR)/%_sdld_aoc.$(OBJEXT): $(DEV_DIR)/%.c
+	$(COMPILE_IT_C_SDLD_AOC)
+
+$(TARGET_DIR)/%_sdld_aoc.$(OBJEXT): $(DEV_DIR)/%.cpp
+	$(COMPILE_IT_CC_SDLD_AOC)
+
+# ------------------------------------------------
 #  dynamic odbccli
 # ----------------------------------------------*/
 
@@ -366,11 +419,11 @@ define COMPILE_IT_C_SD_SOC
   $(Q) $(cmd_c_o_c_sd_soc)
 endef
 
-$(TARGET_DIR)/%_sd_soc.$(OBJEXT): $(DEV_DIR)/%.cpp
-	$(COMPILE_IT_CC_SD_SOC)
-
 $(TARGET_DIR)/%_sd_soc.$(OBJEXT): $(DEV_DIR)/%.c
 	$(COMPILE_IT_C_SD_SOC)
+
+$(TARGET_DIR)/%_sd_soc.$(OBJEXT): $(DEV_DIR)/%.cpp
+	$(COMPILE_IT_CC_SD_SOC)
 
 # ------------------------------------------------
 #  unix odbc build
@@ -453,6 +506,7 @@ clean:
 -include $(ALA_SHOBJS:.$(OBJEXT)=.d)
 
 -include $(SHARDCLI_OBJS:.$(OBJEXT)=.d)
+-include $(SHARDLOADERCLI_OBJS:.$(OBJEXT)=.d)
 -include $(SHARDCLI_SHOBJS:.$(OBJEXT)=.d)
 
 ifeq ($(compile64),1)

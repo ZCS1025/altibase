@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_char.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfTo_char.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -273,6 +273,7 @@ const mtcExecute mtfExecuteFor1Arg = {
     mtf::calculateNA,
     mtfTo_charCalculateFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -284,6 +285,7 @@ const mtcExecute mtfExecuteNcharFor1Arg = {
     mtf::calculateNA,
     mtfTo_charCalculateNcharFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -295,6 +297,7 @@ const mtcExecute mtfExecuteNumberFor2Args = {
     mtf::calculateNA,
     mtfToCharInterface::mtfTo_charCalculateNumberFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -306,6 +309,7 @@ const mtcExecute mtfExecuteDateFor2Args = {
     mtf::calculateNA,
     mtfToCharInterface::mtfTo_charCalculateDateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -2334,6 +2338,163 @@ static IDE_RC applyFMFormat( mtdDateType* /* aDate */,
     return IDE_SUCCESS;
 }
 
+/* BUG-46727 TO_CHAR()에 IYYY 추가 */
+static IDE_RC applyIYYYFormat( mtdDateType * aDate,
+                               SChar       * aBuffer,
+                               SInt        * aBufferCur,
+                               SInt        * aBufferFence,
+                               SChar       * /* aString */,
+                               idBool        aIsFillMode )
+{
+    SShort  sYear     = mtdDateInterface::year( aDate );
+    UChar   sMonth    = mtdDateInterface::month( aDate );
+    SInt    sDay      = mtdDateInterface::day( aDate );
+
+    UInt    sValue    = mtc::yearForStandard( sYear, sMonth, sDay );
+    UInt    sValueLen = 0;
+
+    if ( aIsFillMode == ID_FALSE )
+    {
+        IDE_TEST( (*aBufferFence) - (*aBufferCur) < 4 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 4 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        IDE_TEST( (UInt)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46727 TO_CHAR()에 IYY 추가 */
+static IDE_RC applyIYYFormat( mtdDateType * aDate,
+                              SChar       * aBuffer,
+                              SInt        * aBufferCur,
+                              SInt        * aBufferFence,
+                              SChar       * /* aString */,
+                              idBool        aIsFillMode )
+{
+    SShort  sYear     = mtdDateInterface::year( aDate );
+    UChar   sMonth    = mtdDateInterface::month( aDate );
+    SInt    sDay      = mtdDateInterface::day( aDate );
+
+    UInt    sValue    = mtc::yearForStandard( sYear, sMonth, sDay ) % 1000;
+    UInt    sValueLen = 0;
+
+    if ( aIsFillMode == ID_FALSE )
+    {
+        IDE_TEST( (*aBufferFence) - (*aBufferCur) < 3 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 3 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        IDE_TEST( (UInt)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46727 TO_CHAR()에 IY 추가 */
+static IDE_RC applyIYFormat( mtdDateType * aDate,
+                             SChar       * aBuffer,
+                             SInt        * aBufferCur,
+                             SInt        * aBufferFence,
+                             SChar       * /* aString */,
+                             idBool        aIsFillMode )
+{
+    SShort  sYear     = mtdDateInterface::year( aDate );
+    UChar   sMonth    = mtdDateInterface::month( aDate );
+    SInt    sDay      = mtdDateInterface::day( aDate );
+
+    UInt    sValue    = mtc::yearForStandard( sYear, sMonth, sDay ) % 100;
+    UInt    sValueLen = 0;
+
+    if ( aIsFillMode == ID_FALSE )
+    {
+        IDE_TEST( (*aBufferFence) - (*aBufferCur) < 2 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 2 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        IDE_TEST( (UInt)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+/* BUG-46727 TO_CHAR()에 I 추가 */
+static IDE_RC applyIFormat( mtdDateType * aDate,
+                            SChar       * aBuffer,
+                            SInt        * aBufferCur,
+                            SInt        * aBufferFence,
+                            SChar       * /* aString */,
+                            idBool        aIsFillMode )
+{
+    SShort  sYear     = mtdDateInterface::year( aDate );
+    UChar   sMonth    = mtdDateInterface::month( aDate );
+    SInt    sDay      = mtdDateInterface::day( aDate );
+
+    UInt    sValue    = mtc::yearForStandard( sYear, sMonth, sDay ) % 10;
+    UInt    sValueLen = 0;
+
+    if ( aIsFillMode == ID_FALSE )
+    {
+        IDE_TEST( (*aBufferFence) - (*aBufferCur) < 1 );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur), sValue, 1 );
+    }
+    else
+    {
+        sValueLen = getIntegerLength( sValue );
+
+        IDE_TEST( (UInt)(*aBufferFence) - (*aBufferCur) < sValueLen );
+
+        (*aBufferCur) += mtfFastUInt2Str( aBuffer + (*aBufferCur),
+                                          sValue,
+                                          sValueLen );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 static mtfFormatModuleFunc applySEPARATORFormat = &applyNONEFormat;
 static mtfFormatModuleFunc applyWHITESPACEFormat = &applyNONEFormat;
 
@@ -2357,7 +2518,8 @@ static mtfFormatModuleFunc gFormatFuncSet[MTC_TO_CHAR_MAX_PRECISION] = { NULL,
     &applyYYYFormat,          &applyYYFormat,           &applyYFormat,
     &applyDOUBLE_QUOTE_STRINGFormat, &applyFMFormat,    applySEPARATORFormat,
     &applyIWFormat,           &applyWW2Format,          &applySYYYYFormat,
-    &applySCCFormat,          applyWHITESPACEFormat,
+    &applySCCFormat,          &applyIYYYFormat,         &applyIYYFormat,  
+    &applyIYFormat,           &applyIFormat,            applyWHITESPACEFormat, 
 };
 
 IDE_RC mtfTo_charEstimate( mtcNode     * aNode,

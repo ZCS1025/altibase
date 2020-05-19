@@ -44,7 +44,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     /* PROJ-2598 Shard pilot(shard analyze) */
     acp_uint8_t            sShardSplitMethod;
     acp_uint32_t           sShardKeyDataType;
-    acp_uint16_t           sShardDefaultNodeID;
+    acp_uint32_t           sShardDefaultNodeID;
     acp_uint16_t           sShardNodeInfoCnt;
     acp_uint16_t           sShardNodeCnt;
     ulsdRangeInfo         *sShardRange;
@@ -107,7 +107,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     /* PROJ-2598 Shard pilot(shard analyze) */
     CMI_RD1(aProtocolContext, sShardSplitMethod);
     CMI_RD4(aProtocolContext, &sShardKeyDataType);
-    CMI_RD2(aProtocolContext, &sShardDefaultNodeID);
+    CMI_RD4(aProtocolContext, &sShardDefaultNodeID);
 
     ulsdStmtSetShardSplitMethod( sStmt, sShardSplitMethod );
     ulsdStmtSetShardKeyDataType( sStmt, sShardKeyDataType );
@@ -138,6 +138,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
 
     SHARD_LOG("(Shard Prepare Result) shardIsCanMerge : %d\n",sStmt->mShardStmtCxt.mShardIsCanMerge);
     SHARD_LOG("(Shard Prepare Result) shardValueCount : %d\n",sStmt->mShardStmtCxt.mShardValueCnt);
+
+    if ( sStmt->mShardStmtCxt.mShardValueInfo != NULL )
+    {
+        acpMemFree( sStmt->mShardStmtCxt.mShardValueInfo );
+        sStmt->mShardStmtCxt.mShardValueInfo = NULL;
+    }
 
     if ( sStmt->mShardStmtCxt.mShardValueCnt > 0 )
     {
@@ -178,6 +184,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     else
     {
         /* Nothing to do. */
+    }
+
+    if ( sStmt->mShardStmtCxt.mShardSubValueInfo != NULL )
+    {
+        acpMemFree( sStmt->mShardStmtCxt.mShardSubValueInfo );
+        sStmt->mShardStmtCxt.mShardSubValueInfo = NULL;
     }
 
     if ( sStmt->mShardStmtCxt.mShardIsSubKeyExists == ACP_TRUE )
@@ -244,6 +256,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     CMI_RD2(aProtocolContext, &sShardNodeInfoCnt);
     ulsdStmtSetShardRangeInfoCnt( sStmt, sShardNodeInfoCnt );
     SHARD_LOG("(Shard Prepare Result) shardNodeInfoCnt : %d\n",sStmt->mShardStmtCxt.mShardRangeInfoCnt);
+
+    if ( sStmt->mShardStmtCxt.mShardRangeInfo != NULL )
+    {
+        acpMemFree( sStmt->mShardStmtCxt.mShardRangeInfo );
+        sStmt->mShardStmtCxt.mShardRangeInfo = NULL;
+    }
 
     if ( sStmt->mShardStmtCxt.mShardRangeInfoCnt > 0 )
     {
@@ -323,7 +341,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
                 /* Nothing to do. */
             }
 
-            CMI_RD2(aProtocolContext, &(sShardRange->mShardNodeID));
+            CMI_RD4(aProtocolContext, &(sShardRange->mShardNodeID));
 
             SHARD_LOG("(Shard Prepare Result) shardNodeId[%d] : %d\n",
                       sShardNodeCnt, sStmt->mShardStmtCxt.mShardRangeInfo[sShardNodeCnt].mShardNodeID);
@@ -434,24 +452,22 @@ void ulsdSetCoordQuery(ulnStmt  *aStmt)
     ulsdSetStmtShardModule(aStmt, &gShardModuleCOORD);
 }
 
-SQLRETURN ulsdAnalyze(ulnStmt      *aStmt,
+SQLRETURN ulsdAnalyze(ulnFnContext *aFnContext,
+                      ulnStmt      *aStmt,
                       acp_char_t   *aStatementText,
                       acp_sint32_t  aTextLength)
 {
     acp_bool_t    sNeedExit = ACP_FALSE;
     acp_bool_t    sNeedFinPtContext = ACP_FALSE;
-    ulnFnContext  sFnContext;
     acp_sint32_t  sLength = aTextLength;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_PREPARE, aStmt, ULN_OBJ_TYPE_STMT);
-
-    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    ACI_TEST(ulnEnter(aFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
 
     /* 넘겨진 객체의 validity 체크를 포함한 ODBC 3.0 에서 정의하는 각종 Error 체크 */
-    ACI_TEST(ulnPrepCheckArgs(&sFnContext, aStatementText, aTextLength) != ACI_SUCCESS);
+    ACI_TEST(ulnPrepCheckArgs(aFnContext, aStatementText, aTextLength) != ACI_SUCCESS);
 
-    ACI_TEST( ulnInitializeProtocolContext(&sFnContext,
+    ACI_TEST( ulnInitializeProtocolContext(aFnContext,
                                            &(aStmt->mParentDbc->mPtContext),
                                            &(aStmt->mParentDbc->mSession))
               != ACI_SUCCESS );
@@ -467,13 +483,13 @@ SQLRETURN ulsdAnalyze(ulnStmt      *aStmt,
         /* Nothing to do */
     }
 
-    ACI_TEST(ulsdAnalyzeRequest(&sFnContext,
+    ACI_TEST(ulsdAnalyzeRequest(aFnContext,
                                 &(aStmt->mParentDbc->mPtContext),
                                 aStatementText,
                                 sLength)
              != ACI_SUCCESS);
 
-    ACI_TEST(ulnFlushAndReadProtocol(&sFnContext,
+    ACI_TEST(ulnFlushAndReadProtocol(aFnContext,
                                      &(aStmt->mParentDbc->mPtContext),
                                      aStmt->mParentDbc->mConnTimeoutValue)
              != ACI_SUCCESS);
@@ -481,19 +497,19 @@ SQLRETURN ulsdAnalyze(ulnStmt      *aStmt,
     sNeedFinPtContext = ACP_FALSE;
 
     sNeedExit = ACP_FALSE;
-    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
+    ACI_TEST(ulnExit(aFnContext) != ACI_SUCCESS);
 
-    ULN_TRACE_LOG(&sFnContext, ULN_TRACELOG_LOW, NULL, 0,
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
                   "%-18s|\n [%s]", "ulsdAnalyze", aStatementText);
 
-    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
 
     ACI_EXCEPTION_END;
 
     if (sNeedFinPtContext == ACP_TRUE)
     {
         //fix BUG-17722
-        (void)ulnFinalizeProtocolContext( &sFnContext, &(aStmt->mParentDbc->mPtContext) );
+        (void)ulnFinalizeProtocolContext( aFnContext, &(aStmt->mParentDbc->mPtContext) );
     }
     else
     {
@@ -502,34 +518,62 @@ SQLRETURN ulsdAnalyze(ulnStmt      *aStmt,
 
     if (sNeedExit == ACP_TRUE)
     {
-        (void)ulnExit( &sFnContext );
+        (void)ulnExit( aFnContext );
     }
     else
     {
         /* Nothing to do */
     }
 
-    ULN_TRACE_LOG(&sFnContext, ULN_TRACELOG_LOW, NULL, 0,
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
                   "%-18s| fail\n [%s]", "ulsdAnalyze", aStatementText);
 
-    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
 }
 
-SQLRETURN ulsdPrepare(ulnStmt      *aStmt,
+SQLRETURN ulsdPrepare(ulnFnContext *aFnContext,
+                      ulnStmt      *aStmt,
                       acp_char_t   *aStatementText,
                       acp_sint32_t  aTextLength,
                       acp_char_t   *aAnalyzeText)
 {
     SQLRETURN    sRet = SQL_ERROR;
-    ulnFnContext sFnContext;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_PREPARE, aStmt, ULN_OBJ_TYPE_STMT);
+    /* BUG-46100 Session SMN Update */
+    aStmt->mShardStmtCxt.mShardMetaNumber = 0;
 
-    sRet = ulsdModulePrepare(&sFnContext,
-                             aStmt,
-                             aStatementText,
-                             aTextLength,
-                             aAnalyzeText);
+    sRet = ulsdNodeStmtEnsureAllocOrgPrepareTextBuf( aFnContext,
+                                                     aStmt,
+                                                     aStatementText,
+                                                     aTextLength );
+
+    if ( sRet == SQL_SUCCESS )
+    {
+        /* BUG-46100 Session SMN Update */
+        acpMemCpy( aStmt->mShardStmtCxt.mOrgPrepareTextBuf,
+                   aStatementText,
+                   aStmt->mShardStmtCxt.mOrgPrepareTextBufLen );
+
+        sRet = ulsdModulePrepare(aFnContext,
+                                 aStmt,
+                                 aStatementText,
+                                 aTextLength,
+                                 aAnalyzeText);
+
+        /* BUG-46100 Session SMN Update */
+        if ( SQL_SUCCEEDED( sRet ) )
+        {
+            aStmt->mShardStmtCxt.mShardMetaNumber = ulnDbcGetShardMetaNumber( aStmt->mParentDbc );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return sRet;
 }
@@ -540,11 +584,13 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
                            acp_sint32_t  aTextLength,
                            acp_char_t   *aAnalyzeText)
 {
-    SQLRETURN          sRet = SQL_ERROR;
+    SQLRETURN          sNodeResult    = SQL_ERROR;
+    SQLRETURN          sSuccessResult = SQL_SUCCESS;
+    SQLRETURN          sErrorResult   = SQL_ERROR;
+    acp_bool_t         sSuccess       = ACP_TRUE;
     ulsdDbc           *sShard;
     ulnStmt           *sNodeStmt;
     acp_bool_t         sNodeDbcFlags[ULSD_SD_NODE_MAX_COUNT] = { 0, }; /* ACP_FALSE */
-    acp_bool_t         sShardNodeFailRetryAvailableError = ACP_FALSE;
     acp_uint16_t       sNodeDbcIndex;
     ulsdFuncCallback  *sCallback = NULL;
     acp_uint16_t       i;
@@ -556,26 +602,26 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
     /* mShardRangeInfo의 모든 노드에 prepare를 수행한다. */
     for (i = 0; i < aStmt->mShardStmtCxt.mShardRangeInfoCnt; i++)
     {
-        ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
-                     aStmt,
-                     aStmt->mShardStmtCxt.mShardRangeInfo[i].mShardNodeID,
-                     &sNodeDbcIndex,
-                     ULN_FID_PREPARE)
-                 != SQL_SUCCESS);
+        sErrorResult = ulsdConvertNodeIdToNodeDbcIndex(
+                            aStmt,
+                            aStmt->mShardStmtCxt.mShardRangeInfo[i].mShardNodeID,
+                            &sNodeDbcIndex,
+                            ULN_FID_PREPARE );
+        ACI_TEST( sErrorResult != SQL_SUCCESS );
 
         /* 기록 */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
     }
 
     /* default node 기록 */
-    if ( aStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT16_MAX )
+    if ( aStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT32_MAX )
     {
-        ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
-                     aStmt,
-                     aStmt->mShardStmtCxt.mShardDefaultNodeID,
-                     &sNodeDbcIndex,
-                     ULN_FID_PREPARE)
-                 != SQL_SUCCESS);
+        sErrorResult = ulsdConvertNodeIdToNodeDbcIndex(
+                            aStmt,
+                            aStmt->mShardStmtCxt.mShardDefaultNodeID,
+                            &sNodeDbcIndex,
+                            ULN_FID_PREPARE );
+        ACI_TEST( sErrorResult != SQL_SUCCESS );
 
         /* 기록 */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
@@ -591,12 +637,12 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
         {
             sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
 
-            ACI_TEST( ulsdPrepareAddCallback( i,
-                                              sNodeStmt,
-                                              aStatementText,
-                                              aTextLength,
-                                              &sCallback )
-                      != SQL_SUCCESS );
+            sErrorResult = ulsdPrepareAddCallback( i,
+                                                   sNodeStmt,
+                                                   aStatementText,
+                                                   aTextLength,
+                                                   &sCallback );
+            ACI_TEST( sErrorResult != SQL_SUCCESS );
         }
         else
         {
@@ -611,26 +657,28 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
     {
         if (sNodeDbcFlags[i] == ACP_TRUE)
         {
-            sRet = ulsdGetResultCallback( i, sCallback, (acp_uint8_t)0 );
+            sNodeResult = ulsdGetResultCallback( i, sCallback, (acp_uint8_t)0 );
 
-            if ( !SQL_SUCCEEDED( sRet ) )
+            if ( sNodeResult == SQL_SUCCESS )
             {
-                sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
-
-                if ( ulsdNodeFailRetryAvailable( SQL_HANDLE_STMT,
-                                                 (ulnObject *)sNodeStmt ) == ACP_TRUE )
-                {
-                    sShardNodeFailRetryAvailableError = ACP_TRUE;
-                }
-                else
-                {
-                    ACI_TEST_RAISE(sRet != SQL_SUCCESS,
-                                   LABEL_NODE_PREPARE_FAIL);
-                }
+                /* Nothing to do */
+            }
+            else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+            {
+                sSuccessResult = sNodeResult;
             }
             else
             {
-                /* Do Nothing */
+                sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
+
+                ulsdNativeErrorToUlnError( aFnContext,
+                                           SQL_HANDLE_STMT,
+                                           (ulnObject *)sNodeStmt,
+                                           sShard->mNodeInfo[i],
+                                           (acp_char_t *)"Prepare" );
+
+                sErrorResult = sNodeResult;
+                sSuccess = ACP_FALSE;
             }
 
             SHARD_LOG("(Prepare) NodeId=%d, Server=%s:%d, Stmt=%s\n",
@@ -645,28 +693,15 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
         }
     }
 
-    ACI_TEST_RAISE(sShardNodeFailRetryAvailableError == ACP_TRUE,
-                   LABEL_NODE_PREPARE_FAIL_RETRY_AVAILABLE);
+    ACI_TEST( sSuccess == ACP_FALSE );
 
     ulsdRemoveCallback( sCallback );
 
-    return SQL_SUCCESS;
+    return sSuccessResult;
 
-    ACI_EXCEPTION(LABEL_NODE_PREPARE_FAIL)
-    {
-        ulsdNativeErrorToUlnError(aFnContext,
-                                  SQL_HANDLE_STMT,
-                                  (ulnObject *)sNodeStmt,
-                                  sShard->mNodeInfo[i],
-                                  (acp_char_t *)"Prepare");
-    }
-    ACI_EXCEPTION(LABEL_NODE_PREPARE_FAIL_RETRY_AVAILABLE)
-    {
-        ulnError(aFnContext, ulERR_ABORT_SHARD_NODE_FAIL_RETRY_AVAILABLE);
-    }
     ACI_EXCEPTION_END;
 
     ulsdRemoveCallback( sCallback );
 
-    return SQL_ERROR;
+    return sErrorResult;
 }

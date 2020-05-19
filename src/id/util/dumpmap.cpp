@@ -125,7 +125,6 @@ SInt main(SInt aArgc, SChar** aArgv)
         }
 
 #if defined(ALTI_CFG_OS_LINUX)
-# if defined(ALTI_CFG_CPU_POWERPC)
         sAddress = idlOS::strtoul(sRet, &sTemp, 16);
         if(sAddress == 0)
         {
@@ -136,16 +135,25 @@ SInt main(SInt aArgc, SChar** aArgv)
             /* fall through */
         }
 
-        if(idlOS::strncmp(sTemp, " <.", 3) != 0)
+        if ( idlOS::strncmp(sTemp, " <.", 3) == 0 )
         {
-            continue;
+            /* CPU_POWERPC */
+            sTemp += 3;
+            sRet[sLineLength - 3] = '\0';
+        }
+        else if ( ( idlOS::strncmp(sTemp, " T ", 3) == 0 ) || 
+                  ( idlOS::strncmp(sTemp, " t ", 3) == 0 ) )
+        {
+            sTemp += 3;
         }
         else
         {
-            sTemp += 3;
-            sRet[sLineLength - 3] = '\0';
-            sFunctionName = abi::__cxa_demangle(sTemp, 0, 0, &sStatus);
+            continue;
         }
+
+        sFunctionName = abi::__cxa_demangle(sTemp, 0, 0, &sStatus);
+
+
         if(sFunctionName == NULL)
         {
             sFunctionName = sTemp;
@@ -157,40 +165,6 @@ SInt main(SInt aArgc, SChar** aArgv)
 
         sFunctions[sNoFunctions].mAddress = sAddress;
         idlOS::strcpy(sFunctions[sNoFunctions].mName, sFunctionName);
-# else
-        sAddress = idlOS::strtoul(sRet, &sTemp, 16);
-        if( sAddress == 0 )
-        {
-            continue;
-        }
-        else
-        {
-            /* fall through */
-        }
-
-        if( (idlOS::strncmp(sTemp, " T ", 3) != 0) &&
-                (idlOS::strncmp(sTemp, " t ", 3) != 0) )
-        {
-            continue;
-        }
-        else
-        {
-            sTemp += 3;
-            sFunctionName = abi::__cxa_demangle(sTemp, 0, 0, &sStatus);
-        }
-
-        if( sFunctionName == NULL )
-        {
-            sFunctionName = sTemp;
-        }
-        else
-        {
-            /* fall through */
-        }
-
-        sFunctions[sNoFunctions].mAddress = sAddress;
-        idlOS::strcpy(sFunctions[sNoFunctions].mName, sFunctionName);
-# endif
 #elif defined(ALTI_CFG_OS_SOLARIS)
         {
             SChar*  sAddrStr;

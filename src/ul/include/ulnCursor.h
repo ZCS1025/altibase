@@ -201,4 +201,7 @@ ACP_INLINE void ulnCursorSetRowsetPosition(ulnCursor *aCursor, acp_uint16_t aRow
     aCursor->mRowsetPos = aRowsetPos;
 }
 
+/* BUG-46100 Session SMN Update */
+acp_bool_t ulnCursorHasNoData(ulnCursor *aCursor);
+
 #endif /* _O_ULN_CURSOR_H_ */

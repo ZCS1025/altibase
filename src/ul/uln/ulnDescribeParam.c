@@ -63,7 +63,8 @@ ACI_RC ulnDescribeParamGetIpdInfoFromServer(ulnFnContext *aFnContext, ulnPtConte
 {
     ulnDbc       *sDbc;
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST(sDbc == NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnWriteParamInfoGetREQ(aFnContext, aPtContext, 0) != ACI_SUCCESS);
 
@@ -75,6 +76,11 @@ ACI_RC ulnDescribeParamGetIpdInfoFromServer(ulnFnContext *aFnContext, ulnPtConte
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -201,15 +207,11 @@ SQLRETURN ulnDescribeParam(ulnStmt      *aStmt,
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
 
-   /* PROJ-1891 Deferred Prepare 
-     * If the Defer Prepares is enabled, send the deferred prepare first */
-    if( aStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON )
-    {   
-        ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,
-               &(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
-
-        ulnUpdateDeferredState(&sFnContext, aStmt);
-    }   
+    /* PROJ-1891, BUG-46011 If deferred prepare is exists, process it first */
+    if (ulnStmtIsSetDeferredQstr(aStmt) == ACP_TRUE)
+    {
+        ACI_TEST( ulnPrepareDeferComplete(&sFnContext, ACP_TRUE) );
+    }
 
     /*
      * 넘겨받은 인자들 체크

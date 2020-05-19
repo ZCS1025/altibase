@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpuProperty.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpuProperty.cpp 84487 2018-11-30 13:31:47Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h> // to remove win32 compile warning
@@ -95,6 +95,15 @@ UInt   rpuProperty::mSqlApplyEnable;
 UInt   rpuProperty::mSetRestartSN;
 UInt   rpuProperty::mSenderRetryCount;
 UInt   rpuProperty::mAllowQueue;
+UInt   rpuProperty::mReplicationDDLSync;
+UInt   rpuProperty::mReplicationDDLSyncTimeout;
+UInt   rpuProperty::mReceiverApplierYieldCount;
+
+UInt   rpuProperty::mIBEnable;
+UInt   rpuProperty::mIBPortNo;
+UInt   rpuProperty::mIBLatency;
+
+ULong  rpuProperty::mGapUnit;
 
 IDE_RC
 rpuProperty::load()
@@ -385,6 +394,36 @@ rpuProperty::load()
                            &mAllowQueue )
                 == IDE_SUCCESS);
 
+    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_DDL_SYNC",
+                           &mReplicationDDLSync )
+                == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_DDL_SYNC_TIMEOUT",
+                           &mReplicationDDLSyncTimeout )
+                == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_RECEIVER_APPLIER_YIELD_COUNT",
+                           &mReceiverApplierYieldCount )
+                == IDE_SUCCESS );
+
+
+    IDE_ASSERT( idp::read( (SChar *)"IB_ENABLE", 
+                           &mIBEnable ) 
+                == IDE_SUCCESS );
+    
+    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_IB_PORT_NO",
+                           &mIBPortNo )
+                == IDE_SUCCESS);
+
+    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_IB_LATENCY",
+                           &mIBLatency )
+                == IDE_SUCCESS);
+
+    IDE_ASSERT(idp::read( (SChar *)"REPLICATION_GAP_UNIT",
+                          &mGapUnit )
+               == IDE_SUCCESS);
+
+
     /*******************************************************************
      * Update Callback을 설정한다.
      *******************************************************************/
@@ -619,6 +658,16 @@ rpuProperty::load()
                   (const SChar*)"REPLICATION_ALLOW_QUEUE",
                   rpuProperty::notifyREPLICATION_ALLOW_QUEUE )
               != IDE_SUCCESS);
+
+    IDE_TEST( idp::setupAfterUpdateCallback(
+                  (const SChar*)"REPLICATION_RECEIVER_APPLIER_YIELD_COUNT",
+                  rpuProperty::notifyREPLICATION_RECEIVER_APPLIER_YIELD_COUNT )
+              != IDE_SUCCESS ); 
+
+    IDE_TEST( idp::setupAfterUpdateCallback(
+                  (const SChar*)"REPLICATION_GAP_UNIT",
+                  rpuProperty::notifyREPLICATION_GAP_UNIT )
+              != IDE_SUCCESS ); 
 
     /*******************************************************************
      * 프라퍼티 사이의 충돌을 검사한다.
@@ -1303,3 +1352,32 @@ rpuProperty::notifyREPLICATION_ALLOW_QUEUE( idvSQL* /* aStatistics */,
 
     return IDE_SUCCESS;
 }
+
+IDE_RC 
+rpuProperty::notifyREPLICATION_RECEIVER_APPLIER_YIELD_COUNT( idvSQL* /* aStatistics */,
+                                                             SChar * /* aName */,
+                                                             void  * /* aOldValue */,
+                                                             void  * aNewValue,
+                                                             void  * /* aArg */ )
+{
+    idlOS::memcpy( &mReceiverApplierYieldCount,
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC 
+rpuProperty::notifyREPLICATION_GAP_UNIT( idvSQL* /* aStatistics */,
+                                         SChar * /* aName */,
+                                         void  * /* aOldValue */,
+                                         void  * aNewValue,
+                                         void  * /* aArg */ )
+{
+    idlOS::memcpy( &mGapUnit,
+                   aNewValue,
+                   ID_SIZEOF( ULong ) );
+
+    return IDE_SUCCESS;
+}
+

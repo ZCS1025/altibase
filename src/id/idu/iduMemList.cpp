@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemList.cpp 82216 2018-02-08 01:44:12Z kclee $
+ * $Id: iduMemList.cpp 84587 2018-12-12 03:47:17Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -30,6 +30,9 @@ ID_ULONG(0xDEADBEEFDEADBEEF);
 
 #undef IDU_ALIGN
 #define IDU_ALIGN(x)          idlOS::align(x,mP->mAlignByte)
+
+//get chunk address in the type TIGHT.
+#define IDU_GET_CHUNK_FOR_TIGHT(addr) (iduMemChunk *)( (ULong)addr - mP->mChunkSize )
 
 void iduCheckMemConsistency(iduMemList * aMemList)
 {
@@ -181,6 +184,31 @@ iduMemList::~iduMemList(void)
               ('alignByte로 align up된 SIZEOF(slot)' * 'slot의 개수')
   이다.
  * ---------------------------------------------------------*/
+
+/****************************************************** 
+ BUG-46165 
+
+ S:Slot  
+ H:chunk Header    
+ A:chunk header Address:8byte , the rest: waste 
+
+ When slot size is 8k ,alignment size is 8k,and count is 8,
+
+ in IDU_MEMPOOL_TYPE_TIGHT, 
+
+  8k 8k 8k 8k 8k 8k 8k 8k
+ +--+--+--+--+--+--+--+--+-+
+ |S |S |S |S |S |S |S |S |H|
+ +--+--+--+--+--+--+--+--+-+
+
+ in IDU_MEMPOOL_TYPE_LEGACY,
+
+    8k 8k 8k 8k 8k 8k 8k 8k 8k 8k 8k 8k 8k 8k 8k 8k     
+ +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ |H|S |A |S |A |S |A |S |A |S |A |S |A |S |A |S |A |
+ +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+******************************************************/
 /*-----------------------------------------------------------
  * Description: iduMemList를 초기화 한다.
  *
@@ -288,7 +316,18 @@ IDE_RC iduMemList::destroy(idBool aBCheck)
 
         unlink(sCur);
 
-        IDE_TEST(iduMemMgr::free(sCur) != IDE_SUCCESS);
+        if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+        {
+            sCur  = IDU_GET_CHUNK_FOR_TIGHT(sCur);
+            IDE_TEST( iduMemMgr::free4malign(sCur, 
+                                             mP->mIndex, 
+                                             mP->mChunkSize + ID_SIZEOF(iduMemChunk))
+                                     != IDE_SUCCESS);
+        }
+        else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+        {
+            IDE_TEST( iduMemMgr::free(sCur) != IDE_SUCCESS);
+        }
     }
 
 /* BUG-45749 */
@@ -300,20 +339,20 @@ IDE_RC iduMemList::destroy(idBool aBCheck)
             ideLog::log(IDE_SERVER_0,ID_TRC_MEMLIST_WRONG_FULL_CHUNK_COUNT,
                         (UInt)mFullChunkCnt);
         }
-	else
-	{
-	    /* do nothing */
-	}
+        else
+        {
+            /* do nothing */
+        }
 
         if( mPartialChunkCnt != 0 )
         {
             ideLog::log(IDE_SERVER_0,ID_TRC_MEMLIST_WRONG_PARTIAL_CHUNK_COUNT,
                         (UInt)mPartialChunkCnt);
         }
-	else
-	{
-	    /* do nothing */
-	}
+        else
+        {
+            /* do nothing */
+        }
     }
 #endif
 
@@ -336,7 +375,18 @@ IDE_RC iduMemList::destroy(idBool aBCheck)
 
         unlink(sCur);
 
-        IDE_TEST(iduMemMgr::free(sCur) != IDE_SUCCESS);
+        if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+        {
+            sCur  = IDU_GET_CHUNK_FOR_TIGHT(sCur);
+            IDE_TEST( iduMemMgr::free4malign(sCur, 
+                                             mP->mIndex, 
+                                             mP->mChunkSize + ID_SIZEOF(iduMemChunk) )
+                                     != IDE_SUCCESS);
+        }
+        else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+        {
+            IDE_TEST( iduMemMgr::free(sCur) != IDE_SUCCESS);
+        }
     }
 
     // BUG-19253
@@ -348,7 +398,18 @@ IDE_RC iduMemList::destroy(idBool aBCheck)
 
         unlink(sCur);
 
-        IDE_TEST(iduMemMgr::free(sCur) != IDE_SUCCESS);
+        if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+        {
+            sCur  = IDU_GET_CHUNK_FOR_TIGHT(sCur);
+            IDE_TEST( iduMemMgr::free4malign(sCur, 
+                                             mP->mIndex, 
+                                             mP->mChunkSize + ID_SIZEOF(iduMemChunk))
+                                     != IDE_SUCCESS);
+        }
+        else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+        {
+            IDE_TEST( iduMemMgr::free(sCur) != IDE_SUCCESS);
+        }
     }
 
     if (mP->mFlag & IDU_MEMPOOL_USE_MUTEX)
@@ -396,11 +457,38 @@ IDE_RC iduMemList::grow(void)
     iduMemSlot  *sFirstSlot;
 
 
+
+#ifdef MEMORY_ASSERT
     IDE_TEST(iduMemMgr::malloc(mP->mIndex,
                                mP->mChunkSize,
                                (void**)&sChunk,
                                IDU_MEM_FORCE)
              != IDE_SUCCESS);
+
+#else
+    if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+    {
+        IDE_TEST(iduMemMgr::malign(mP->mIndex,
+                                   mP->mChunkSize + ID_SIZEOF(iduMemChunk),
+                                   mP->mChunkSize,
+                                   (void**)&sChunk,
+                                   IDU_MEM_FORCE)
+                 != IDE_SUCCESS);
+
+        IDE_DASSERT( ((ULong)sChunk & (ULong)(mP->mChunkSize - 1) ) == 0 );
+
+        sChunk         = (iduMemChunk *)( (ULong)sChunk + mP->mChunkSize );
+    }
+    else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+    {
+        IDE_TEST(iduMemMgr::malloc(mP->mIndex,
+                                   mP->mChunkSize,
+                                   (void**)&sChunk,
+                                   IDU_MEM_FORCE)
+                 != IDE_SUCCESS);
+    }
+#endif
+
 
     IDE_ASSERT( sChunk != NULL ); 
 
@@ -412,7 +500,15 @@ IDE_RC iduMemList::grow(void)
 
     /*chunk내의 각 slot을 mNext로 연결한다. 가장 마지막에 있는 slot이 sChunk->mTop에 연결된다.
      * mNext는 사용자에게 할당될때는 실제 사용하는 영역으로 쓰인다.*/
-    sFirstSlot = (iduMemSlot*)( (UChar*)sChunk + CHUNK_HDR_SIZE );
+    if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+    {
+        sFirstSlot = (iduMemSlot*)( (ULong)sChunk - mP->mChunkSize );
+    }
+    else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+    {
+        sFirstSlot = (iduMemSlot*)( (UChar*)sChunk + CHUNK_HDR_SIZE );
+
+    }
 
     sFirstSlot = (iduMemSlot*) IDU_ALIGN(sFirstSlot);
     for (i = 0; i < mP->mElemCnt; i++)
@@ -430,7 +526,14 @@ IDE_RC iduMemList::grow(void)
                      ID_SIZEOF(gFence)  +
                      ID_SIZEOF(iduMemChunk *))) = gFence;
 #else
-        *((iduMemChunk **)((UChar *)sSlot + mP->mElemSize)) = sChunk;
+        if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+        {
+                *((iduMemChunk **)((UChar *)sSlot + mP->mElemSize)) = sChunk;
+        }
+        else if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+        {
+            /*we don't need to do anything here */
+        }
 #endif
     }
 
@@ -459,19 +562,10 @@ IDE_RC iduMemList::alloc(void **aMem)
 
 
 #if defined(ALTIBASE_MEMORY_CHECK)
-    /*valgrind로 테스트할 때, 에러가 나타나는 것을 방지하기 위해서
-     * valgrind사용시에는 memory를 할당해서 사용함    */
-    /* BUG-45616 */
-#if defined(ALTI_CFG_OS_WINDOWS)
-    *aMem = _aligned_malloc( IDU_ALIGN( mP->mElemSize ) + ID_SIZEOF(void*) , mP->mAlignByte );
-#elif defined(ALTI_CFG_OS_AIX)
-    *aMem = single_posixmemalign( mP->mAlignByte, IDU_ALIGN( mP->mElemSize ) + ID_SIZEOF(void*) );
-#else
-    *aMem = memalign( mP->mAlignByte, IDU_ALIGN( mP->mElemSize ) + ID_SIZEOF(void*) );
-#endif
+    IDE_TEST( iduMemMgr::malign(mP->mIndex,mP->mElemSize,mP->mAlignByte, aMem)
+              != IDE_SUCCESS);
 
     IDE_ASSERT(*aMem != NULL);
-
 #else /* normal case : not memory check */
     
     iduCheckMemConsistency(this);
@@ -537,8 +631,8 @@ IDE_RC iduMemList::memfree(void *aFreeElem)
     IDE_ASSERT(aFreeElem != NULL);
 
 #if defined(ALTIBASE_MEMORY_CHECK)
-    idlOS::free( aFreeElem );
-
+    IDE_TEST( iduMemMgr::free4malign( aFreeElem, mP->mIndex,mP->mElemSize ) 
+              != IDE_SUCCESS);
 #else /* normal case : not memory check */
 
 
@@ -552,7 +646,15 @@ IDE_RC iduMemList::memfree(void *aFreeElem)
     sCur         = *((iduMemChunk **)((UChar *)aFreeElem + mP->mElemSize +
                                            ID_SIZEOF(gFence)));
 #  else
-    sCur         = *((iduMemChunk **)((UChar *)aFreeElem + mP->mElemSize));
+    if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+    {
+        sCur   = (iduMemChunk *)( ( (ULong)aFreeElem & (ULong)~(mP->mChunkSize - 1 )) 
+                                    + mP->mChunkSize ); 
+    }
+    else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+    {
+        sCur   = *((iduMemChunk **)((UChar *)aFreeElem + mP->mElemSize));
+    }
 #endif
 
     sFreeElem        = (iduMemSlot*)aFreeElem;
@@ -577,7 +679,18 @@ IDE_RC iduMemList::memfree(void *aFreeElem)
         }
         else
         {
-            IDE_TEST(iduMemMgr::free(sCur) != IDE_SUCCESS);
+            if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+            {
+                sCur  = IDU_GET_CHUNK_FOR_TIGHT(sCur);
+                IDE_TEST( iduMemMgr::free4malign(sCur, 
+                                                 mP->mIndex, 
+                                                 mP->mChunkSize + ID_SIZEOF(iduMemChunk))
+                                         != IDE_SUCCESS);
+            }
+            else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+            {
+                IDE_TEST( iduMemMgr::free(sCur) != IDE_SUCCESS);
+            }
         }
     }
     else // Full list -> Partial list
@@ -632,7 +745,19 @@ IDE_RC iduMemList::shrink( UInt *aSize)
         sNxt = sCur->mNext;
         unlink(sCur);
         mFreeChunkCnt--;
-        IDE_TEST(iduMemMgr::free(sCur) != IDE_SUCCESS);
+        if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
+        {
+            sCur  = IDU_GET_CHUNK_FOR_TIGHT(sCur);
+            IDE_TEST( iduMemMgr::free4malign(sCur, 
+                                             mP->mIndex, 
+                                             mP->mChunkSize + ID_SIZEOF(iduMemChunk))
+                                     != IDE_SUCCESS);
+        }
+        else if( mP->mType == IDU_MEMPOOL_TYPE_LEGACY )
+        {
+            IDE_TEST( iduMemMgr::free(sCur) != IDE_SUCCESS);
+        }
+
         sCur = sNxt;
     }
 

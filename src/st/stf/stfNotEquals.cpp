@@ -68,6 +68,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfNotEqualsCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

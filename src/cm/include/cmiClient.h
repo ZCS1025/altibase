@@ -31,6 +31,7 @@
 #define CMI_DISPATCHER_IMPL_UNIX            CMN_DISPATCHER_IMPL_SOCK
 #define CMI_DISPATCHER_IMPL_IPC             CMN_DISPATCHER_IMPL_IPC
 #define CMI_DISPATCHER_IMPL_IPCDA           CMN_DISPATCHER_IMPL_IPCDA
+#define CMI_DISPATCHER_IMPL_IB              CMN_DISPATCHER_IMPL_IB
 #define CMI_DISPATCHER_IMPL_BASE            CMN_DISPATCHER_IMPL_BASE
 #define CMI_DISPATCHER_IMPL_MAX             CMN_DISPATCHER_IMPL_MAX
 #define CMI_DISPATCHER_IMPL_INVALID         CMN_DISPATCHER_IMPL_INVALID
@@ -47,8 +48,9 @@
 #define CMI_LINK_IMPL_TCP                   CMN_LINK_IMPL_TCP
 #define CMI_LINK_IMPL_UNIX                  CMN_LINK_IMPL_UNIX
 #define CMI_LINK_IMPL_IPC                   CMN_LINK_IMPL_IPC
-#define CMI_LINK_IMPL_IPCDA                 CMN_LINK_IMPL_IPCDA /*PROJ-2616*/
+#define CMI_LINK_IMPL_IPCDA                 CMN_LINK_IMPL_IPCDA  /* PROJ-2616 */
 #define CMI_LINK_IMPL_SSL                   CMN_LINK_IMPL_SSL    /* PROJ-2474 SSL/TLS */
+#define CMI_LINK_IMPL_IB                    CMN_LINK_IMPL_IB     /* PROJ-2681 */
 
 #define CMI_LINK_IMPL_BASE                  CMN_LINK_IMPL_BASE
 #define CMI_LINK_IMPL_MAX                   CMN_LINK_IMPL_MAX
@@ -56,13 +58,13 @@
 
 #define CMI_LINK_INFO_ALL                   CMN_LINK_INFO_ALL
 #define CMI_LINK_INFO_IMPL                  CMN_LINK_INFO_IMPL
-#define CMI_LINK_INFO_TCP_LOCAL_ADDRESS     CMN_LINK_INFO_TCP_LOCAL_ADDRESS
-#define CMI_LINK_INFO_TCP_LOCAL_IP_ADDRESS  CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS
-#define CMI_LINK_INFO_TCP_LOCAL_PORT        CMN_LINK_INFO_TCP_LOCAL_PORT
-#define CMI_LINK_INFO_TCP_REMOTE_ADDRESS    CMN_LINK_INFO_TCP_REMOTE_ADDRESS
-#define CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS
-#define CMI_LINK_INFO_TCP_REMOTE_PORT       CMN_LINK_INFO_TCP_REMOTE_PORT
-#define CMI_LINK_INFO_TCP_REMOTE_SOCKADDR   CMN_LINK_INFO_TCP_REMOTE_SOCKADDR
+#define CMI_LINK_INFO_LOCAL_ADDRESS         CMN_LINK_INFO_LOCAL_ADDRESS
+#define CMI_LINK_INFO_LOCAL_IP_ADDRESS      CMN_LINK_INFO_LOCAL_IP_ADDRESS
+#define CMI_LINK_INFO_LOCAL_PORT            CMN_LINK_INFO_LOCAL_PORT
+#define CMI_LINK_INFO_REMOTE_ADDRESS        CMN_LINK_INFO_REMOTE_ADDRESS
+#define CMI_LINK_INFO_REMOTE_IP_ADDRESS     CMN_LINK_INFO_REMOTE_IP_ADDRESS
+#define CMI_LINK_INFO_REMOTE_PORT           CMN_LINK_INFO_REMOTE_PORT
+#define CMI_LINK_INFO_REMOTE_SOCKADDR       CMN_LINK_INFO_REMOTE_SOCKADDR
 #define CMI_LINK_INFO_UNIX_PATH             CMN_LINK_INFO_UNIX_PATH
 #define CMI_LINK_INFO_IPC_KEY               CMN_LINK_INFO_IPC_KEY
 #define CMI_LINK_INFO_IPCDA_KEY             CMN_LINK_INFO_IPCDA_KEY
@@ -305,7 +307,7 @@ cmiLinkImpl cmiGetLinkImpl(cmiProtocolContext *aProtocolContext);
 acp_bool_t cmiIsRemoteAccess(cmiLink* aLink);
 
 ACI_RC cmiIPCDACheckReadFlag(void *aCtx, void *aBlock, acp_uint32_t aMicroSleepTime, acp_uint32_t  aExpireCount);
-void   cmiLinkPeerFinalizeCliReadForIPCDA(void *aCtx);
+void   cmiLinkPeerFinalizeCliReadForIPCDA(cmiProtocolContext *aCtx);
 
 /***********************************************************
  * proj_2160 cm_type removal
@@ -642,6 +644,15 @@ ACI_RC cmiSplitWrite( cmiProtocolContext *aCtx,
 void cmiEnableCompress( cmiProtocolContext * aCtx );
 void cmiDisableCompress( cmiProtocolContext * aCtx );
 
+/* PROJ-2616*/
+ACP_INLINE void cmiIPCDAIncDataCount( cmiProtocolContext *aCtx )
+{
+    /* 현재의 데이터 커서의 위치를 데이터 사이즈로 갱신*/
+    aCtx->mWriteBlock->mDataSize = aCtx->mWriteBlock->mCursor;
+    /* BUG-46502 atomic 함수 적용  atomic에 mem_barrier가 포함되어 있다. */
+    acpAtomicInc32( &(((cmbBlockIPCDA*)aCtx->mWriteBlock)->mOperationCount) );
+}
+
 /*********************************************************
  * PROJ-2616
  * cmiLinkPeerInitCliWriteForIPCDA
@@ -652,35 +663,31 @@ void cmiDisableCompress( cmiProtocolContext * aCtx );
  *********************************************************/
 ACP_INLINE ACI_RC cmiLinkPeerInitCliWriteForIPCDA(void *aCtx)
 {
-    cmiProtocolContext *sCtx       = (cmiProtocolContext *)aCtx;
-    cmbBlockIPCDA      *sBlock     = (cmbBlockIPCDA*)sCtx->mWriteBlock;
-    cmnLinkPeer        *sLink      = sCtx->mLink;
-    acp_bool_t          sConClosed = ACP_FALSE;
+    cmiProtocolContext *sCtx        = (cmiProtocolContext *)aCtx;
+    cmbBlockIPCDA      *sWriteBlock = (cmbBlockIPCDA*)sCtx->mWriteBlock;
+    cmnLinkPeer        *sLink       = sCtx->mLink;
+    acp_bool_t          sConClosed  = ACP_FALSE;
 
-    ACI_TEST_RAISE(sBlock->mWFlag == CMB_IPCDA_SHM_ACTIVATED, ContInitCliWriteForIPCDA);
+    /* BUG-46502 atomic 함수 적용 atomic에 mem_barrier가 포함되어 있다. */
+    ACI_TEST_RAISE(acpAtomicGet32(&sWriteBlock->mWFlag) == CMB_IPCDA_SHM_ACTIVATED, ContInitCliWriteForIPCDA);
 
     /* 다른 쓰레드에서 데이터를 읽고 있는 상태에서는 대기 한다. */
-    while (sBlock->mRFlag == CMB_IPCDA_SHM_ACTIVATED)
+    while (acpAtomicGet32(&sWriteBlock->mRFlag) == CMB_IPCDA_SHM_ACTIVATED)
     {
         sLink->mPeerOp->mCheck(sLink, &sConClosed);
         ACI_TEST_RAISE(sConClosed == ACP_TRUE, err_disconnect);
         acpThrYield();
     }
-    sBlock->mWFlag                  = CMB_IPCDA_SHM_ACTIVATED;
-    /* BUG-44705 메모리 배리어 추가!!
-     * mData, mBlockSize, mCursor, mOperationCount
-     * 와 같은 변수들은 mWFlag값이 변경된 후에 설정되어야 한다.*/
-    acpMemBarrier();
-    sBlock->mOperationCount         = 0;
-    sBlock->mBlock.mData            = &sBlock->mData;
-    sBlock->mBlock.mCursor          = CMP_HEADER_SIZE;
-    sBlock->mBlock.mDataSize        = CMP_HEADER_SIZE;
-    sBlock->mBlock.mBlockSize       = CMB_BLOCK_DEFAULT_SIZE - sizeof(cmbBlockIPCDA);
-    /* BUG-44705 메모리 배리어 추가!!
-     * mData, mBlockSize, mCursor, mOperationCount
-     * 의 변수값이 설정이 끝난후에 mRFlag값이 변경되어야 한다.*/
-    acpMemBarrier();
-    sBlock->mRFlag                  = CMB_IPCDA_SHM_ACTIVATED;
+
+    /* BUG-46502 atomic 함수 적용 atomic에 mem_barrier가 포함되어 있다. */
+    acpAtomicSet32(&sWriteBlock->mWFlag, CMB_IPCDA_SHM_ACTIVATED);
+
+    sWriteBlock->mBlock.mData      = &sWriteBlock->mData;
+    sWriteBlock->mBlock.mCursor    = CMP_HEADER_SIZE;
+    sWriteBlock->mBlock.mDataSize  = CMP_HEADER_SIZE;
+    sWriteBlock->mBlock.mBlockSize = CMB_BLOCK_DEFAULT_SIZE - sizeof(cmbBlockIPCDA);
+
+    acpAtomicSet32(&sWriteBlock->mRFlag, CMB_IPCDA_SHM_ACTIVATED);
 
     ACI_EXCEPTION_CONT(ContInitCliWriteForIPCDA);
 
@@ -706,34 +713,24 @@ ACP_INLINE ACI_RC cmiLinkPeerInitCliWriteForIPCDA(void *aCtx)
 ACP_INLINE void cmiFinalizeSendBufferForIPCDA(cmiProtocolContext *aCtx)
 {
     cmiProtocolContext *sCtx  = (cmiProtocolContext *)aCtx;
-    if (cmiGetLinkImpl(aCtx) == CMN_LINK_IMPL_IPCDA)
-    {
-        /* Write marking for end of protocol. */
-        CMI_WR1(sCtx, CMP_OP_DB_IPCDALastOpEnded);
-        acpMemBarrier();
-        /* Increase data count. */
-        ((cmbBlockIPCDA*)sCtx->mWriteBlock)->mOperationCount++;
-        acpMemBarrier();
-        ((cmbBlockIPCDA*)sCtx->mWriteBlock)->mWFlag = CMB_IPCDA_SHM_DEACTIVATED;
-    }
-    else
-    {
-        /* do nothing. */
-    }
+    cmbBlockIPCDA      *sWriteBlock = (cmbBlockIPCDA *)sCtx->mWriteBlock;
+
+    /* Write marking for end of protocol. */
+    CMI_WR1(sCtx, CMP_OP_DB_IPCDALastOpEnded);
+
+    /* BUG-46502 */
+    cmiIPCDAIncDataCount(sCtx);
+
+    acpAtomicSet32(&sWriteBlock->mWFlag, CMB_IPCDA_SHM_DEACTIVATED);
 }
 
 ACP_INLINE ACI_RC cmiReadyToWriteBufferIPCDA(cmiProtocolContext *aCtx)
 {
     ACI_RC sRC = ACI_SUCCESS;
-    if( ((cmbBlockIPCDA*)aCtx->mWriteBlock)->mWFlag == CMB_IPCDA_SHM_DEACTIVATED )
+    if( acpAtomicGet32(&(((cmbBlockIPCDA*)aCtx->mWriteBlock)->mWFlag)), CMB_IPCDA_SHM_DEACTIVATED )
     {
         sRC = cmiLinkPeerInitCliWriteForIPCDA((void*)aCtx);
     }
-    else
-    {
-        /* do nothing. */
-    }
-
     return sRC;
 }
 
@@ -769,19 +766,6 @@ ACP_INLINE ACI_RC cmiSplitReadIPCDA(cmiProtocolContext *aCtx,
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
-}
-
-/* PROJ-2616*/
-ACP_INLINE void cmiIPCDAIncDataCount( cmiProtocolContext *aCtx)
-{
-    /* BUG-44275 "IPCDA select test 에서 fetch 이상"
-     * mDataSize, mOperationCount 값을 보장하기 위하여
-     * mem barrier 위치 조정 */
-    /*현재의 데이터 커서의 위치를 데이터 사이즈로 갱신*/
-    ((cmbBlockIPCDA*)aCtx->mWriteBlock)->mBlock.mDataSize = ((cmbBlockIPCDA*)aCtx->mWriteBlock)->mBlock.mCursor;
-    acpMemBarrier();
-    /* Increase data count. */
-    ((cmbBlockIPCDA*)aCtx->mWriteBlock)->mOperationCount++;
 }
 
 #endif

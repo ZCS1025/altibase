@@ -55,6 +55,16 @@
 # define QMNC_DETE_VIEW_FALSE               (0x00000000)
 # define QMNC_DETE_VIEW_TRUE                (0x00000004)
 
+// qmncDETE.flag
+// VIEW에 대한 update key preserved property
+# define QMNC_DETE_VIEW_KEY_PRESERVED_MASK  (0x00000008)
+# define QMNC_DETE_VIEW_KEY_PRESERVED_FALSE (0x00000000)
+# define QMNC_DETE_VIEW_KEY_PRESERVED_TRUE  (0x00000008)
+
+# define QMNC_DETE_PARTITIONED_MASK         (0x00000010)
+# define QMNC_DETE_PARTITIONED_FALSE        (0x00000000)
+# define QMNC_DETE_PARTITIONED_TRUE         (0x00000010)
+
 //-----------------
 // Data Node Flags
 //-----------------

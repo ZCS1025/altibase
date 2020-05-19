@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: ideLogEntry.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: ideLogEntry.h 83474 2018-07-13 08:21:28Z hykim $
  **********************************************************************/
 
 /***********************************************************************
@@ -452,6 +452,80 @@
 #define IDE_QP_32   IDE_TRC_QP_32, IDE_QP, 32
 
 /* ------------------------------------------------
+ *  SD  BUG-46138
+ *  Macro: IDE_*_LEV   ==> DO_FLAG,MODULE,LEVEL
+ * ----------------------------------------------*/
+
+#define IDE_TRC_SD_0   1           /* always do */
+#define IDE_TRC_SD_1   (iduProperty::getSdTrcFlag() & 0x00000001)
+#define IDE_TRC_SD_2   (iduProperty::getSdTrcFlag() & 0x00000002)
+#define IDE_TRC_SD_3   (iduProperty::getSdTrcFlag() & 0x00000004)
+#define IDE_TRC_SD_4   (iduProperty::getSdTrcFlag() & 0x00000008)
+#define IDE_TRC_SD_5   (iduProperty::getSdTrcFlag() & 0x00000010)
+#define IDE_TRC_SD_6   (iduProperty::getSdTrcFlag() & 0x00000020)
+#define IDE_TRC_SD_7   (iduProperty::getSdTrcFlag() & 0x00000040)
+#define IDE_TRC_SD_8   (iduProperty::getSdTrcFlag() & 0x00000080)
+#define IDE_TRC_SD_9   (iduProperty::getSdTrcFlag() & 0x00000100)
+#define IDE_TRC_SD_10  (iduProperty::getSdTrcFlag() & 0x00000200)
+#define IDE_TRC_SD_11  (iduProperty::getSdTrcFlag() & 0x00000400)
+#define IDE_TRC_SD_12  (iduProperty::getSdTrcFlag() & 0x00000800)
+#define IDE_TRC_SD_13  (iduProperty::getSdTrcFlag() & 0x00001000)
+#define IDE_TRC_SD_14  (iduProperty::getSdTrcFlag() & 0x00002000)
+#define IDE_TRC_SD_15  (iduProperty::getSdTrcFlag() & 0x00004000)
+#define IDE_TRC_SD_16  (iduProperty::getSdTrcFlag() & 0x00008000)
+#define IDE_TRC_SD_17  (iduProperty::getSdTrcFlag() & 0x00010000)
+#define IDE_TRC_SD_18  (iduProperty::getSdTrcFlag() & 0x00020000)
+#define IDE_TRC_SD_19  (iduProperty::getSdTrcFlag() & 0x00040000)
+#define IDE_TRC_SD_20  (iduProperty::getSdTrcFlag() & 0x00080000)
+#define IDE_TRC_SD_21  (iduProperty::getSdTrcFlag() & 0x00100000)
+#define IDE_TRC_SD_22  (iduProperty::getSdTrcFlag() & 0x00200000)
+#define IDE_TRC_SD_23  (iduProperty::getSdTrcFlag() & 0x00400000)
+#define IDE_TRC_SD_24  (iduProperty::getSdTrcFlag() & 0x00800000)
+#define IDE_TRC_SD_25  (iduProperty::getSdTrcFlag() & 0x01000000)
+#define IDE_TRC_SD_26  (iduProperty::getSdTrcFlag() & 0x02000000)
+#define IDE_TRC_SD_27  (iduProperty::getSdTrcFlag() & 0x04000000)
+#define IDE_TRC_SD_28  (iduProperty::getSdTrcFlag() & 0x08000000)
+#define IDE_TRC_SD_29  (iduProperty::getSdTrcFlag() & 0x10000000)
+#define IDE_TRC_SD_30  (iduProperty::getSdTrcFlag() & 0x20000000)
+#define IDE_TRC_SD_31  (iduProperty::getSdTrcFlag() & 0x40000000)
+#define IDE_TRC_SD_32  (iduProperty::getSdTrcFlag() & 0x80000000)
+
+
+#define IDE_SD_0    IDE_TRC_SD_0,  IDE_SD, 0
+#define IDE_SD_1    IDE_TRC_SD_1,  IDE_SD, 1
+#define IDE_SD_2    IDE_TRC_SD_2,  IDE_SD, 2
+#define IDE_SD_3    IDE_TRC_SD_3,  IDE_SD, 3
+#define IDE_SD_4    IDE_TRC_SD_4,  IDE_SD, 4
+#define IDE_SD_5    IDE_TRC_SD_5,  IDE_SD, 5
+#define IDE_SD_6    IDE_TRC_SD_6,  IDE_SD, 6
+#define IDE_SD_7    IDE_TRC_SD_7,  IDE_SD, 7
+#define IDE_SD_8    IDE_TRC_SD_8,  IDE_SD, 8
+#define IDE_SD_9    IDE_TRC_SD_9,  IDE_SD, 9
+#define IDE_SD_10   IDE_TRC_SD_10, IDE_SD, 10
+#define IDE_SD_11   IDE_TRC_SD_11, IDE_SD, 11
+#define IDE_SD_12   IDE_TRC_SD_12, IDE_SD, 12
+#define IDE_SD_13   IDE_TRC_SD_13, IDE_SD, 13
+#define IDE_SD_14   IDE_TRC_SD_14, IDE_SD, 14
+#define IDE_SD_15   IDE_TRC_SD_15, IDE_SD, 15
+#define IDE_SD_16   IDE_TRC_SD_16, IDE_SD, 16
+#define IDE_SD_17   IDE_TRC_SD_17, IDE_SD, 17
+#define IDE_SD_18   IDE_TRC_SD_18, IDE_SD, 18
+#define IDE_SD_19   IDE_TRC_SD_19, IDE_SD, 19
+#define IDE_SD_20   IDE_TRC_SD_20, IDE_SD, 20
+#define IDE_SD_21   IDE_TRC_SD_21, IDE_SD, 21
+#define IDE_SD_22   IDE_TRC_SD_22, IDE_SD, 22
+#define IDE_SD_23   IDE_TRC_SD_23, IDE_SD, 23
+#define IDE_SD_24   IDE_TRC_SD_24, IDE_SD, 24
+#define IDE_SD_25   IDE_TRC_SD_25, IDE_SD, 25
+#define IDE_SD_26   IDE_TRC_SD_26, IDE_SD, 26
+#define IDE_SD_27   IDE_TRC_SD_27, IDE_SD, 27
+#define IDE_SD_28   IDE_TRC_SD_28, IDE_SD, 28
+#define IDE_SD_29   IDE_TRC_SD_29, IDE_SD, 29
+#define IDE_SD_30   IDE_TRC_SD_30, IDE_SD, 30
+#define IDE_SD_31   IDE_TRC_SD_31, IDE_SD, 31
+#define IDE_SD_32   IDE_TRC_SD_32, IDE_SD, 32
+
+/* ------------------------------------------------
  *  DK(Database Link)
  *  Macro: IDE_*_LEV   ==> DO_FLAG,MODULE,LEVEL
  *
@@ -652,6 +726,7 @@ typedef enum ideLogModule
     IDE_SM,
     IDE_RP,
     IDE_QP,
+    IDE_SD, /* BUG-46138 */
     IDE_DK,
     IDE_XA,
     IDE_MM, /* BUG-28866 */

@@ -47,7 +47,7 @@ typedef struct cmbBlock
 typedef struct cmbBlockIPCDA
 {
     cmbBlock                       mBlock;
-    UInt                           mOperationCount;              /* 데이터 영역에 있는 Protocol_Block의 수 */
+    volatile UInt                  mOperationCount;              /* 데이터 영역에 있는 Protocol_Block의 수 */
     volatile cmbIPCDAChannelState  mWFlag;                       /* Write lock flag */
     volatile cmbIPCDAChannelState  mRFlag;                       /* Read lock flag */
     UChar                          mData;                        /* 실제 데이터 영역 */

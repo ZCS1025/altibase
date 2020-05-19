@@ -67,7 +67,23 @@ public class CmProtocol
         }
     }
 
-    // Logical Connection
+    /**
+     * Meta 서버와 Data 노드에 shard handshake 프로토콜을 보낸다.
+     * @param aContext ContextConnect 객체
+     * @throws SQLException shardHandshake 도중 에러가 발생했을 때
+     */
+    public static void shardHandshake(CmProtocolContextConnect aContext) throws SQLException
+    {
+        aContext.clearError();
+        synchronized (aContext.channel())
+        {
+            CmOperation.writeShardHandshake(aContext.channel());
+            aContext.channel().sendAndReceive();
+            CmOperation.readShardHandshake(aContext.channel(), aContext.getShardHandshakeResult());
+        }
+    }
+
+        // Logical Connection
     public static void connect(CmProtocolContextConnect aContext, String aDBName, String aUser, String aPassword, short aConnectMode) throws SQLException
     {
         aContext.clearError();
@@ -395,10 +411,18 @@ public class CmProtocol
                 CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
             }
             CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
-            CmOperation.writeBindParamDataIn(aContext.channel(), aContext.getStatementId(), aParams);
-            CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(),
-                                     CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL);
-            
+
+            // BUG-46443 List protocol 전송을 위해 채널에 있는 버퍼에 바인드 파라메터를 write한다.
+            ListBufferHandle sListBufferHandle = aContext.channel().getTempListBufferHandle();
+            sListBufferHandle.setColumns(aParams);
+            sListBufferHandle.initToStore();
+            sListBufferHandle.store();
+            aContext.setListBufferHandle(sListBufferHandle);
+
+            // BUG-46443 DB_OP_PARAM_DATA_IN_LIST_V2은 따로 execute를 보내지 않아도 된다.
+            CmOperation.writeBindParamDataInListV2(aContext.channel(), aContext.getStatementId(),
+                                                   aContext.getListBufferHandle(), false, false);  // normal execute mode
+
             // To distinguish CallableStatement and PreparedStatement
             if (aContext.getGetColumnInfoResult().getColumns()==null && hasResultSet(aContext))
             {
@@ -505,7 +529,8 @@ public class CmProtocol
                                      (aIsAtomic)? CmOperation.EXECUTION_MODE_BEGIN_ATOMIC : CmOperation.EXECUTION_MODE_BEGIN_ARRAY);
 
             CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
-            CmOperation.writeBindParamDataInListV2(aContext.channel(), aContext.getStatementId(), aBufferHandle, aIsAtomic);            
+            CmOperation.writeBindParamDataInListV2(aContext.channel(), aContext.getStatementId(),
+                                                   aBufferHandle, aIsAtomic, true); // array execute mode
             CmOperation.writeExecuteV2(aContext.channel(),
                                      aContext.getStatementId(),
                                      CmOperation.EXECUTION_ARRAY_INDEX_NONE,
@@ -992,7 +1017,7 @@ public class CmProtocol
      * @param aContext Protocol context
      * @throws SQLException 수신 도중 에러가 발생하였을 경우
      */
-    private static void readProtocolResult(CmProtocolContext aContext) throws SQLException
+    protected static void readProtocolResult(CmProtocolContext aContext) throws SQLException
     {
         if (aContext.channel().isAsyncSent())
         {

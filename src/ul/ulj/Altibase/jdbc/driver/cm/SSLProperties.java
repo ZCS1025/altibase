@@ -40,7 +40,6 @@ public class SSLProperties
     private static final String SYSTEM_TRUST_STORE          = "javax.net.ssl.trustStore";
     private static final String SYSTEM_TRUST_STORE_PASSWORD = "javax.net.ssl.trustStorePassword";
     private static final String SPRIT_CHAR                  = ":";
-    private boolean             mSslEnable;
     private String              mKeyStoreUrl;
     private String              mKeyStoreType;
     private String              mKeyStorePassword;
@@ -60,7 +59,6 @@ public class SSLProperties
         this.mTrustStorePassword = aProps.getProperty(TRUSTSTORE_PASSWORD);
         this.mCipherSuiteList = aProps.getProperty(CIPHERSUITE_LIST);
         this.mVerifyServerCertificate = aProps.getBooleanProperty(VERIFY_SERVER_CERTIFICATE, true);
-        this.mSslEnable = aProps.getBooleanProperty(SSL_ENABLE, false);
     }
     
     /**
@@ -148,11 +146,6 @@ public class SSLProperties
     public void setVerifyServerCertificate(boolean aVerifyServerCertificate)
     {
         this.mVerifyServerCertificate = aVerifyServerCertificate;
-    }
-    
-    public boolean isSslEnabled()
-    {
-        return mSslEnable;
     }
 
     public String[] getCipherSuiteList()

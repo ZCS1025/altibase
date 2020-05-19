@@ -87,6 +87,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_SetColumnStats,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -204,6 +205,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     UChar                * sSetMaxValue;
     ULong                  sMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)];
     ULong                  sMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)];
+    mtcColumn              sDecodeColumn;
 
     sStatement = ((qcTemplate*)aTemplate)->stmt;
     sMmSession = sStatement->session->mMmSession;
@@ -337,8 +339,13 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     sColumnIdx  = sColumnInfo->basicInfo->column.id;
     sDecodeFunc = sColumnInfo->basicInfo->module->decode;
 
+    // BUG-46508
+    idlOS::memcpy( &sDecodeColumn,
+                   sColumnInfo->basicInfo,
+                   ID_SIZEOF(mtcColumn) );
+
     // BUG-40290 SET_COLUMN_STATS min, max 지원
-    if ( ((sColumnInfo->basicInfo->module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
+    if ( ((sDecodeColumn.module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
          (sMinValuePtr != NULL) )
     {
         sValueLen = SMI_MAX_MINMAX_VALUE_SIZE;
@@ -351,7 +358,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
         // 모자랄 때는 잘라서 저장한다.
 
         IDE_TEST( sDecodeFunc( aTemplate,
-                               sColumnInfo->basicInfo,
+                               &sDecodeColumn,
                                sMinValue,
                                &sValueLen,
                                (UChar*)"YYYY-MM-DD HH:MI:SS",
@@ -368,7 +375,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     }
 
     // BUG-40290 SET_COLUMN_STATS min, max 지원
-    if ( ((sColumnInfo->basicInfo->module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
+    if ( ((sDecodeColumn.module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
          (sMaxValuePtr != NULL) )
     {
         sValueLen = SMI_MAX_MINMAX_VALUE_SIZE;
@@ -381,7 +388,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
         // 모자랄 때는 잘라서 저장한다.
 
         IDE_TEST( sDecodeFunc( aTemplate,
-                               sColumnInfo->basicInfo,
+                               &sDecodeColumn,
                                sMaxValue,
                                &sValueLen,
                                (UChar*)"YYYY-MM-DD HH:MI:SS",

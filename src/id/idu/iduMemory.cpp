@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemory.cpp 79293 2017-03-10 06:45:11Z yoonhee.kim $
+ * $Id: iduMemory.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
  **********************************************************************/
 
 /***********************************************************************
@@ -319,7 +319,9 @@ IDE_RC iduMemory::extend( ULong aChunkSize)
         sSize = mChunkSize;
     }
 
-    IDE_TEST( checkMemoryMaximumLimit() != IDE_SUCCESS );
+    /* The requested size is checked 
+       because users are not interested in the inner structure */
+    IDE_TEST( checkMemoryMaximumLimit(aChunkSize) != IDE_SUCCESS );
 
     IDE_TEST(malloc(sSize,
                     (void**)&mCurHead)
@@ -436,12 +438,13 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
     if( mHead == NULL && mCurHead == NULL )
     {
         IDE_TEST_RAISE( aStatus->mSavedCurr != NULL ||
-                        aStatus->mSavedCursor != 0, ERR_INVALID_STATUS );
+                        aStatus->mSavedCursor != 0,
+                        ERR_NOT_SAME_BUFFER_POSITION );
     }
     else
     {
         IDE_TEST_RAISE( mHead == NULL || mCurHead == NULL,
-                        ERR_INVALID_STATUS );
+                        ERR_NOT_SAME_HEADER );
 
         if( aStatus->mSavedCurr == NULL && aStatus->mSavedCursor == 0 )
         {
@@ -475,14 +478,14 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
 #if !defined(ALTIBASE_MEMORY_CHECK)
         IDE_TEST_RAISE( aStatus->mSavedCursor !=
                         idlOS::align8((UInt)aStatus->mSavedCursor),
-                        ERR_INVALID_STATUS );
+                        ERR_INCORRECT_BUFFER_ALIGN );
 
         IDE_TEST_RAISE( aStatus->mSavedCursor <
                         idlOS::align8((UInt)sizeof(iduMemoryHeader)),
-                        ERR_INVALID_STATUS );
+                        ERR_LESS_THAN_BUFFER );
 #endif
         IDE_TEST_RAISE( aStatus->mSavedCursor > sHeader->mCursor,
-                        ERR_INVALID_STATUS );
+                        ERR_NOT_SMAE_OBJECT_BUFFER_POSITIION );
 
 #if defined(ALTIBASE_MEMORY_CHECK)
         /* BUG-18098 [valgrind] 12,672 bytes in 72 blocks are indirectly
@@ -522,9 +525,31 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_INVALID_STATUS );
-    IDE_SET(ideSetErrorCode(idERR_ABORT_IDU_MEMORY_INVALID_STATUS));
-
+    IDE_EXCEPTION( ERR_NOT_SAME_BUFFER_POSITION )
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_IDU_MEMORY_INVALID_SET_STATUS,
+                                "not same buffer position"));
+    } 
+    IDE_EXCEPTION( ERR_NOT_SAME_HEADER )
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_IDU_MEMORY_INVALID_SET_STATUS,
+                                "not same Header"));
+    } 
+    IDE_EXCEPTION( ERR_INCORRECT_BUFFER_ALIGN )
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_IDU_MEMORY_INVALID_SET_STATUS,
+                                "incorrect buffer align"));
+    } 
+    IDE_EXCEPTION( ERR_LESS_THAN_BUFFER )
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_IDU_MEMORY_INVALID_SET_STATUS,
+                                "iduMemoryHeader less than buffer"));
+    } 
+    IDE_EXCEPTION( ERR_NOT_SMAE_OBJECT_BUFFER_POSITIION )
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_IDU_MEMORY_INVALID_SET_STATUS,
+                                "not same object buffer position"));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -653,6 +678,8 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
 #define IDE_FN "iduMemory::checkMemoryMaximum"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(IDE_FN));
 
+    ULong sTargetSize = 0;
+
 #if defined(ALTIBASE_MEMORY_CHECK)
     switch( mIndex )
     {
@@ -671,19 +698,26 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
             break;
     }
 #else
-    PDL_UNUSED_ARG(aSize);
+
+    if( IDU_USE_REQUESTED_SIZE  == ID_TRUE )
+    {
+        sTargetSize = (mChunkSize * (mChunkCount + 1)) + aSize;
+    }
+    else
+    {
+        sTargetSize = (mChunkSize * (mChunkCount + 1));
+    }
+
     switch( mIndex )
     {
         case IDU_MEM_QMP:
             IDE_TEST_RAISE(
-                (mChunkSize * (mChunkCount + 1)) >
-                iduProperty::getPrepareMemoryMax(),
+                sTargetSize > iduProperty::getPrepareMemoryMax(),
                 err_prep_mem_alloc );
             break;
         case IDU_MEM_QMX:
             IDE_TEST_RAISE(
-                (mChunkSize * (mChunkCount + 1)) >
-                iduProperty::getExecuteMemoryMax(),
+                sTargetSize > iduProperty::getExecuteMemoryMax(),
                 err_exec_mem_alloc );
             break;
 
@@ -698,14 +732,16 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
     {
         IDE_SET( ideSetErrorCode(idERR_ABORT_MAX_MEM_SIZE_EXCEED,
                                  iduMemMgr::mClientInfo[mIndex].mName,
-                                 (mChunkSize * (mChunkCount + 1)),
+                                 IDU_USE_REQUESTED_SIZE == ID_TRUE ?  aSize : 
+                                     (mChunkSize * (mChunkCount + 1)),
                                  iduProperty::getPrepareMemoryMax() ) );
     }
     IDE_EXCEPTION( err_exec_mem_alloc );
     {
         IDE_SET( ideSetErrorCode(idERR_ABORT_MAX_MEM_SIZE_EXCEED,
                                  iduMemMgr::mClientInfo[mIndex].mName,
-                                 (mChunkSize * (mChunkCount + 1)),
+                                 IDU_USE_REQUESTED_SIZE == ID_TRUE ?  aSize : 
+                                     (mChunkSize * (mChunkCount + 1)),
                                  iduProperty::getExecuteMemoryMax() ) );
     }
     IDE_EXCEPTION_END;

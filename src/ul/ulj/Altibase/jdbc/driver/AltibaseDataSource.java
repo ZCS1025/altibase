@@ -56,7 +56,7 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
         setDataSourceName(aDataSourceName);
     }
 
-    AltibaseDataSource(AltibaseProperties aProp)
+    public AltibaseDataSource(AltibaseProperties aProp)
     {
         mProperties = aProp;
     }
@@ -83,7 +83,7 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
         sProp.setUser(aUserName);
         sProp.setPassword(aPassword);
         
-        Connection conn = null;
+        Connection conn;
         
         try 
         {

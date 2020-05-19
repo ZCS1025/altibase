@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfListagg.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfListagg.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -73,11 +73,13 @@ typedef struct mtfListaggSortStack
 #define MTF_LISTAGG_GET( aListaggFuncData, aIndex, aElement )  \
     *(aElement) = (void**)((aListaggFuncData)->index + (aIndex));
     
-static IDE_RC makeListaggFuncData( mtfFuncDataBasicInfo  * aFuncDataInfo,
+static IDE_RC makeListaggFuncData( mtcTemplate           * aTemplate,
+                                   mtfFuncDataBasicInfo  * aFuncDataInfo,
                                    mtcNode               * aNode,
                                    mtfListaggFuncData   ** aListaggFuncData );
 
-static IDE_RC allocListaggFuncDataBuffer( mtfFuncDataBasicInfo  * aFuncDataInfo,
+static IDE_RC allocListaggFuncDataBuffer( mtcTemplate           * aTemplate,
+                                          mtfFuncDataBasicInfo  * aFuncDataInfo,
                                           mtcStack              * aStack,
                                           mtfListaggFuncData    * aListaggFuncData );
 
@@ -153,6 +155,7 @@ static const mtcExecute mtfExecute = {
     mtfListaggFinalize,
     mtfListaggCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -319,14 +322,23 @@ IDE_RC mtfListaggInitialize( mtcNode     * aNode,
 
         // 등록
         aTemplate->funcData[aNode->info] = sFuncData;
+
+        /* BUG-46906 */
+        IDE_TEST( sFuncData->memoryMgr->getStatus( &( sFuncData->mMemStatus ) )
+                  != IDE_SUCCESS);
     }
     else
     {
         sFuncData = aTemplate->funcData[aNode->info];
+
+        /* BUG-46906 */
+        IDE_TEST( sFuncData->memoryMgr->setStatus( &( sFuncData->mMemStatus ) )
+                  != IDE_SUCCESS);
     }
 
     // make listagg function data
-    IDE_TEST( makeListaggFuncData( sFuncData,
+    IDE_TEST( makeListaggFuncData( aTemplate,
+                                   sFuncData,
                                    aNode,
                                    & sListaggFuncData )
               != IDE_SUCCESS );
@@ -429,7 +441,8 @@ IDE_RC mtfListaggAggregate( mtcNode     * aNode,
         // alloc data
         if ( sListaggFuncData->idx == 0 )
         {
-            IDE_TEST( allocListaggFuncDataBuffer( sFuncData,
+            IDE_TEST( allocListaggFuncDataBuffer( aTemplate,
+                                                  sFuncData,
                                                   aStack,
                                                   sListaggFuncData )
                       != IDE_SUCCESS );
@@ -567,7 +580,8 @@ IDE_RC mtfListaggCalculate( mtcNode     * aNode,
     return IDE_SUCCESS;
 }
 
-IDE_RC makeListaggFuncData( mtfFuncDataBasicInfo  * aFuncDataInfo,
+IDE_RC makeListaggFuncData( mtcTemplate           * aTemplate,
+                            mtfFuncDataBasicInfo  * aFuncDataInfo,
                             mtcNode               * aNode,
                             mtfListaggFuncData   ** aListaggFuncData )
 {
@@ -596,7 +610,13 @@ IDE_RC makeListaggFuncData( mtfFuncDataBasicInfo  * aFuncDataInfo,
     mtcNode             * sNode;
     UInt                  sKeyCount = 0;
     UInt                  sIndex;  // stack index
-    
+
+    /* BUG-46892 */
+    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
+                                          aFuncDataInfo->memoryMgr,
+                                          ID_SIZEOF( mtfListaggFuncData ) )
+              != IDE_SUCCESS );
+
     // listagg function date alloc
     IDU_FIT_POINT_RAISE( "makeListaggFuncData::cralloc::sListaggFuncData",
                          ERR_MEMORY_ALLOCATION );
@@ -663,7 +683,8 @@ IDE_RC makeListaggFuncData( mtfFuncDataBasicInfo  * aFuncDataInfo,
     return IDE_FAILURE;
 }
 
-IDE_RC allocListaggFuncDataBuffer( mtfFuncDataBasicInfo  * aFuncDataInfo,
+IDE_RC allocListaggFuncDataBuffer( mtcTemplate           * aTemplate,
+                                   mtfFuncDataBasicInfo  * aFuncDataInfo,
                                    mtcStack              * aStack,
                                    mtfListaggFuncData    * aListaggFuncData )
 {    
@@ -701,6 +722,12 @@ IDE_RC allocListaggFuncDataBuffer( mtfFuncDataBasicInfo  * aFuncDataInfo,
     // alloc
     //---------------------------------------
 
+    /* BUG-46892 */
+    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
+                                          aFuncDataInfo->memoryMgr,
+                                          ( ID_SIZEOF(void*) * 4000 ) )
+              != IDE_SUCCESS );
+
     // null을 제외하고 최소 1byte를 가정하면 최대 4000개를 저장할 수 있다.
     IDU_FIT_POINT_RAISE( "allocListaggFuncDataBuffer::alloc::index",
                          ERR_MEMORY_ALLOCATION );
@@ -708,6 +735,12 @@ IDE_RC allocListaggFuncDataBuffer( mtfFuncDataBasicInfo  * aFuncDataInfo,
                         ID_SIZEOF(void*) * 4000,
                         (void**)&(aListaggFuncData->index) )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOCATION );
+
+    /* BUG-46892 */
+    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
+                                          aFuncDataInfo->memoryMgr,
+                                          ( aListaggFuncData->rowSize * 4000 ) )
+              != IDE_SUCCESS );
 
     IDU_FIT_POINT_RAISE( "allocListaggFuncDataBuffer::alloc::data",
                          ERR_MEMORY_ALLOCATION );
@@ -797,12 +830,12 @@ IDE_RC sortListaggFuncDataBuffer( mtcTemplate          * aTemplate,
     mtfListaggSortStack  * sSortStack = NULL;
     mtfListaggSortStack  * sStack = NULL;
     idBool                 sAllEqual;
-    iduMemoryStatus        sMemStatus;
-    UInt                   sStage = 0;
-    
-    IDE_TEST( aFuncDataInfo->memoryMgr->getStatus( &sMemStatus )
-              != IDE_SUCCESS);
-    sStage = 1;
+
+    /* BUG-46892 */
+    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
+                                          aFuncDataInfo->memoryMgr,
+                                          ID_SIZEOF(mtfListaggSortStack) * aListaggFuncData->idx )
+              != IDE_SUCCESS );
 
     IDU_FIT_POINT_RAISE( "sortListaggFuncDataBuffer::alloc::sSortStack",
                          ERR_MEMORY_ALLOCATION );
@@ -850,10 +883,6 @@ IDE_RC sortListaggFuncDataBuffer( mtcTemplate          * aTemplate,
         sHigh = sStack->high;
     }
 
-    sStage = 0;
-    IDE_TEST( aFuncDataInfo->memoryMgr->setStatus( &sMemStatus )
-              != IDE_SUCCESS );
-    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MEMORY_ALLOCATION )
@@ -861,15 +890,6 @@ IDE_RC sortListaggFuncDataBuffer( mtcTemplate          * aTemplate,
         IDE_SET( ideSetErrorCode( mtERR_ABORT_MEMORY_ALLOCATION ) );
     }
     IDE_EXCEPTION_END;
-
-    if ( sStage == 1 )
-    {
-        (void) aFuncDataInfo->memoryMgr->setStatus( &sMemStatus );
-    }
-    else
-    {
-        // nothing to do
-    }
 
     return IDE_FAILURE;
 }

@@ -304,14 +304,10 @@ static IDE_RC dkiOpenShardConnection( void * aDataNode )
 static void dkiCloseShardConnection( void * aDataNode )
 {
     sdiConnectInfo * sDataNode = (sdiConnectInfo*)aDataNode;
-    dkmSession     * sSession  = NULL;
 
     IDE_DASSERT( sDataNode != NULL );
-    IDE_DASSERT( sDataNode->mDkiSession != NULL );
 
-    sSession = dkiSessionGetDkmSession( (dkiSession*)sDataNode->mDkiSession );
-
-    dkmCloseShardConnection( sSession, sDataNode );
+    dkmCloseShardConnection( sDataNode );
 }
 
 static IDE_RC dkiAddShardTransaction( idvSQL  * aStatistics,
@@ -354,6 +350,27 @@ static void dkiDelShardTransaction( void * aDataNode )
     dkmDelShardTransaction( sSession, sDataNode );
 }
 
+static IDE_RC dkiSetTransactionBrokenOnGlobalCoordinator( void  * aDkiSession,
+                                                          smTID   aTransID )
+{
+    dkmSession * sSession  = NULL;
+
+    IDE_DASSERT( aDkiSession != NULL );
+
+    sSession = dkiSessionGetDkmSession( (dkiSession*)aDkiSession );
+
+    IDE_TEST( dkmSetTransactionBrokenOnGlobalCoordinator( sSession, aTransID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_ERRLOG( DK_TRC_LOG_ERROR );
+
+    return IDE_FAILURE;
+}
+
 static qciDatabaseLinkCallback gDatabaseLinkCallack =
 {
     dkiqStartDatabaseLinker,
@@ -375,7 +392,9 @@ static qciDatabaseLinkCallback gDatabaseLinkCallack =
     dkiCloseShardConnection,
 
     dkiAddShardTransaction,
-    dkiDelShardTransaction
+    dkiDelShardTransaction,
+
+    dkiSetTransactionBrokenOnGlobalCoordinator,
 };
 
 /*

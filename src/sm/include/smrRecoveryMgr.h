@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrRecoveryMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrRecoveryMgr.h 84872 2019-02-08 09:51:54Z donghyun $
  **********************************************************************/
 
 /***********************************************************************
@@ -686,7 +686,8 @@ private:
                                       smLSN * aRedoLSN,
                                       smLSN   aDiskRedoLSN,
                                       smLSN   aEndLSN,
-                                      smLSN * aBeginChkptLSN );
+                                      smLSN * aBeginChkptLSN,
+                                      smLSN * aDtxMinLSN );
 
 
     // End Checkpoint Log를 기록한다.
@@ -714,7 +715,8 @@ private:
                                          smLSN            * aEndChkptLSN,
                                          smLSN            * aDiskRedoLSN,
                                          smLSN            * aRedoLSN,
-                                         smLSN            * aSyncLstLSN );
+                                         smLSN            * aSyncLstLSN,
+                                         smLSN            * aDtxMinLSN );
 
     // BUG-20229
     static IDE_RC resizeLogFile(SChar    *aLogFileName,

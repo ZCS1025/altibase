@@ -34,7 +34,7 @@ public class AltibaseUrlParser
     public static final String   URL_PREFIX              = "jdbc:Altibase_" + AltibaseVersion.CM_VERSION_STRING + "://";
 
     // URL PATTERN GROUPS
-    //
+    // 1: Shard Prefix
     // 2: Server or DSN
     // 3: WRAPPER for Port
     // 4: Port
@@ -42,10 +42,11 @@ public class AltibaseUrlParser
     // 6: DBName
     // 7: WRAPPER for Properties
     // 8: Properties
-    private static final int     URL_GRP_SERVER_DSN      = 2;
-    private static final int     URL_GRP_PORT            = 4;
-    private static final int     URL_GRP_DBNAME          = 6;
-    private static final int     URL_GRP_PROPERTIES      = 8;
+    private static final int     URL_GRP_SHARD_PREFIX    = 1;
+    private static final int     URL_GRP_SERVER_DSN      = 3;
+    private static final int     URL_GRP_PORT            = 5;
+    private static final int     URL_GRP_DBNAME          = 7;
+    private static final int     URL_GRP_PROPERTIES      = 9;
 
     private static final String  URL_PATTERN_IP4         = "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
     private static final String  URL_PATTERN_IP6         = "\\[[^\\]]+\\]";
@@ -57,7 +58,7 @@ public class AltibaseUrlParser
     private static final String  URL_PATTERN_PROPS       = "(\\?([a-zA-Z_][\\w]*=[^&]*(&[a-zA-Z_][\\w]*=[^&]*)*))?";
     private static final String  URL_PATTERN_ALT_SERVER  = "(" + URL_PATTERN_IP4 + "|" + URL_PATTERN_IP6 + "|" + URL_PATTERN_DOMAIN + "):[\\d]+" + URL_PATTERN_DBNAME;
 
-    private static final Pattern URL_PATTERN_4PARSE      = Pattern.compile("^jdbc:Altibase(_" + AltibaseVersion.CM_VERSION_STRING + ")?://("
+    private static final Pattern URL_PATTERN_4PARSE      = Pattern.compile("^jdbc(:sharding)?:Altibase(_" + AltibaseVersion.CM_VERSION_STRING + ")?://("
                                                                            + URL_PATTERN_IP4 + "|"
                                                                            + URL_PATTERN_IP6 + "|"
                                                                            + URL_PATTERN_DOMAIN + "|"
@@ -65,7 +66,7 @@ public class AltibaseUrlParser
                                                                            + URL_PATTERN_PORT
                                                                            + URL_PATTERN_DBNAME
                                                                            + URL_PATTERN_PROPS + "$");
-    private static final Pattern URL_PATTERN_4ACCEPTS    = Pattern.compile("^jdbc:Altibase(_" + AltibaseVersion.CM_VERSION_STRING + ")?://.*$");
+    private static final Pattern URL_PATTERN_4ACCEPTS    = Pattern.compile("^jdbc(:sharding)?:Altibase(_" + AltibaseVersion.CM_VERSION_STRING + ")?://.*$");
     private static final Pattern URL_PATTERN_4VARNAME    = Pattern.compile("^" + URL_PATTERN_DSN + "$");
     private static final Pattern URL_PATTERN_ALT_SERVERS = Pattern.compile("^\\s*\\(\\s*" + URL_PATTERN_ALT_SERVER + "(\\s*,\\s*" + URL_PATTERN_ALT_SERVER + ")*\\s*\\)\\s*$");
 
@@ -79,7 +80,8 @@ public class AltibaseUrlParser
     }
 
     /**
-     * URL을 파싱해 aDestProp에 property로 설정한다.
+     * URL을 파싱해 aDestProp에 property로 설정한다. <br>
+     * 이때 URL에 shard prefix가 포함되어 있는 경우 true를 리턴하고 그렇지 않은 경우 false를 리턴한다.
      * <p>
      * 유효한 URL 포맷은 다음과 같다:
      * <ul>
@@ -92,6 +94,7 @@ public class AltibaseUrlParser
      * <li>jdbc:Altibase://DataSourceName</li>
      * <li>jdbc:Altibase://DataSourceName:20300</li>
      * <li>jdbc:Altibase://DataSourceName:20300?prop1=val1&prop2=val2</li>
+     * <li>jdbc:sharding:Altibase://123.123.123.123:20300/mydb</li>
      * </ul>
      * <p>
      * 연결 속성은 connection url에 따라 총 3가지의 설정이 충돌할 수 있는데, 그 때 설정값의 우선순위는 다음과 같다:
@@ -103,9 +106,10 @@ public class AltibaseUrlParser
      *
      * @param aURL connection url
      * @param aDestProp 파싱 결과를 담을 Property
+     * @return shard prefix가 포함되어 있는지 여부
      * @throws SQLException URL 구성이 올바르지 않은 경우
      */
-    public static void parseURL(String aURL, AltibaseProperties aDestProp) throws SQLException
+    public static boolean parseURL(String aURL, AltibaseProperties aDestProp) throws SQLException
     {
         Matcher sMatcher = URL_PATTERN_4PARSE.matcher(aURL);
         throwErrorForInvalidConnectionUrl(!sMatcher.matches(), aURL);
@@ -136,6 +140,9 @@ public class AltibaseUrlParser
             aDestProp.setProperty(AltibaseProperties.PROP_DBNAME, sDbName);
             aDestProp.setServer(sServerOrDSN);
         }
+
+        // PROJ-2690 sharding prefix가 포함되어 있는 경우 true를 리턴한다.
+        return sMatcher.group(URL_GRP_SHARD_PREFIX) != null;
     }
 
     /**

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: utString.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: utString.cpp 84392 2018-11-21 00:08:16Z bethy $
  **********************************************************************/
 
 #include <ide.h>
@@ -428,5 +428,29 @@ IDE_RC utString::AppendConnStrAttr( uteErrorMgr *aErrorMgr,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/* BUG-46396 Need to rtrim the last parse */
+void utString::rtrim(SChar *aStr)
+{
+    SInt i, len;
+
+    len = idlOS::strlen(aStr);
+    if( len <= 0 )
+    {
+        return;
+    }
+
+    for (i = len-1; i >= 0; i--)
+    {
+        if ( acpCharIsSpace((UChar)aStr[i]) == ACP_TRUE )
+        {
+            aStr[i] = 0;
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 

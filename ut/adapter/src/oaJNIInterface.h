@@ -26,6 +26,8 @@
 #include <acp.h>
 #include <jni.h>
 
+#define SQLSTATE_STR_LEN ( 5 )
+
 typedef struct oaJNIMethodDesc
 {
     jclass          mClass;
@@ -47,13 +49,17 @@ typedef struct oaJNIInterfaceHandle
     acp_uint32_t        mConflictLoggingLevel;
     acp_uint32_t        mXmxOpt; 
     acp_str_t          *mJVMOpt;
+    acp_list_t          mSkipErrorList;
     
     JNIEnv             *mEnv;
     JavaVM             *mJvm;
     
     jintArray           mParamStatusArray;
  
-    jobject             mConnectionObject;    
+    jobject             mConnectionObject;  
+    jobject             mStatement;
+    
+    jthrowable          mThrowable; 
 } oaJNIInterfaceHandle;
 
 typedef enum oaJNIMethodType
@@ -79,11 +85,15 @@ typedef enum oaJNIMethodType
     JNI_METHOD_CONNECTION_PREPARESTATEMENT,
     JNI_METHOD_CONNECTION_COMMIT,
     JNI_METHOD_CONNECTION_ROLLBACK,
-    JNI_METHOD_CONNECTION_CLOSE,
-    JNI_METHOD_CHARSET_FORNAME,             // 20
+    JNI_METHOD_CONNECTION_CLOSE,             // 20
+    JNI_METHOD_CONNECTION_CREATESTATEMENT,
+    JNI_METHOD_STATEMENT_EXECUTE,
+    JNI_METHOD_STATEMENT_CLOSE,
+    JNI_METHOD_CHARSET_FORNAME,
     JNI_METHOD_STRING_INIT, 
     JNI_METHOD_TROWABLE_TOSTRING,
     JNI_METHOD_BATCHUPDATEEXCEPTION_GETUPDATECOUNTS,
+    JNI_METHOD_SQLEXCEPTION_GETSQLSTATE,
     JNI_METHOD_MAX
 } oaJNIMethodType;
 
@@ -152,5 +162,17 @@ jint *oaJNIGetDMLStatusArray( oaJNIInterfaceHandle * aHandle );
 void oaJNIReleaseDMLStatusArray( oaJNIInterfaceHandle * aHandle, jint * aParamStatusArray );
 
 void oaJNIDestroyJAVAVM();
+
+ace_rc_t oaJNICreateStatement( oaContext            * aContext, 
+                               oaJNIInterfaceHandle * aHandle );
+
+ace_rc_t oaJNIStatementClose( oaContext            * aContext, 
+                              oaJNIInterfaceHandle * aHandle );
+
+ace_rc_t oaJNIStmtExecute( oaContext            * aContext, 
+                           oaJNIInterfaceHandle * aHandle,
+                           acp_str_t            * aQueryStr );  
+
+acp_bool_t oaJNIIsSkipList( oaJNIInterfaceHandle * aHandle );
 
 #endif /* OAJNIINTERFACE_H_ */

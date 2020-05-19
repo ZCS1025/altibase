@@ -169,7 +169,8 @@ ACI_RC ulnInitializeCancelContext(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST(sDbc == NULL); /* cpptest warning */
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     // proj_2160 cm_type removal: set cmbBlock-ptr NULL
     ACI_TEST(cmiMakeCmBlockNull( &(aPtContext->mCmiPtContext) ) != ACI_SUCCESS);
@@ -204,6 +205,11 @@ ACI_RC ulnInitializeCancelContext(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnInitializeCancelContext");
@@ -425,12 +431,12 @@ SQLRETURN ulnCancel(ulnStmt *aStmt)
 
     ULN_FLAG(sNeedExit);
 
-    sRowsetStmt = aStmt->mRowsetStmt;
-
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_CANCEL, aStmt, ULN_OBJ_TYPE_STMT);
 
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
+
+    sRowsetStmt = aStmt->mRowsetStmt;  /* BUG-46885 */
 
     if (sRowsetStmt != SQL_NULL_HSTMT)
     {

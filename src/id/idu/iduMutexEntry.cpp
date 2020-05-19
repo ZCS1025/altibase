@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutexEntry.cpp 77670 2016-10-18 06:17:00Z yoonhee.kim $
+ * $Id: iduMutexEntry.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -41,7 +41,7 @@ iduMutexEntry::initialize(const SChar      *aName,
     mStat.mBusyValue        = (aBusyValue == 0 ? 1 : aBusyValue);
     mStat.mAccLockCount     = 0;
     mStat.mOwner            = (ULong)PDL_INVALID_HANDLE;
-
+    mRecursiveCount         = 0;
     idlOS::memset( &mWeArgs, 0x00, ID_SIZEOF(idvWeArgs) );
     mWeArgs.mWaitEventID = aWEID;
 

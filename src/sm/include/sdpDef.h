@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdpDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpDef.h 84847 2019-01-31 05:18:28Z jiwon.kim $
  *
  * Description :
  *      본 파일은 page layer의 자료구조를 정의한 헤더파일이다.
@@ -214,6 +214,9 @@ typedef enum
     SDP_EXT_NO_INSERTABLE_FREE
 
 } sdpExtState;
+
+// BUG-45598: checksum 초기값
+#define SDP_CHECKSUM_INIT_VAL 0
 
 /* --------------------------------------------------------------------
  * checksum 방법을 표시한다.

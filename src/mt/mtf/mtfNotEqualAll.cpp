@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNotEqualAll.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfNotEqualAll.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -107,6 +107,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfNotEqualAllCalculateSelect,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -118,6 +119,7 @@ static const mtcExecute mtfExecuteList = {
     mtf::calculateNA,
     mtfNotEqualAllCalculateList,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -129,6 +131,7 @@ static const mtcExecute mtfExecuteSubquery = {
     mtf::calculateNA,
     mtfNotEqualAllCalculateSubquery,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -140,6 +143,7 @@ static const mtcExecute mtfExecuteSubqueryList = {
     mtf::calculateNA,
     mtfNotEqualAllCalculateSubqueryList,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

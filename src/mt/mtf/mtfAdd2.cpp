@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfAdd2.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfAdd2.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -29,6 +29,8 @@
 #include <mtdTypes.h>
 
 extern mtfModule mtfAdd2;
+
+extern mtxModule mtxAdd; /* PROJ-2632 */
 
 static mtcName mtfAdd2FunctionName[1] = {
     { NULL, 1, (void*)"+" }
@@ -177,8 +179,25 @@ static mtfSubModule* mtfGroupTableHighPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAX
 /* INTERVAL */ { mtfXX, mtfID, mtfII, mtfID, mtfII }
 };
 
+/* BUG-46195 */
+static mtfSubModule mtfNF[1] = {
+    { NULL, mtfAdd2EstimateFloat }
+};
+
+static mtfSubModule * mtfGroupTableMaxPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
+/*               MISC   TEXT   NUMBE  DATE   INTER */
+/* MISC     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* TEXT     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* NUMBER   */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* DATE     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* INTERVAL */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF }
+};
+
 static mtfSubModule*** mtfTable = NULL;
 static mtfSubModule*** mtfTableHighPrecision = NULL;
+
+/* BUG-46195 */
+static mtfSubModule*** mtfTableMaxPrecision = NULL;
 
 IDE_RC mtfAdd2Initialize( void )
 {
@@ -191,7 +210,13 @@ IDE_RC mtfAdd2Initialize( void )
                                                  mtfGroupTableHighPrecision,
                                                  mtfXX )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::initializeComparisonTemplate( &mtfTableMaxPrecision,
+                                                 mtfGroupTableMaxPrecision,
+                                                 mtfXX )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -203,10 +228,14 @@ IDE_RC mtfAdd2Finalize( void )
 {
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTable )
               != IDE_SUCCESS );
-    
+
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableHighPrecision )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableMaxPrecision )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -238,11 +267,16 @@ IDE_RC mtfAdd2Estimate( mtcNode*     aNode,
     {
         sTable = mtfTableHighPrecision;
     }
+    /* BUG-46195 */
+    else if ( aTemplate->arithmeticOpMode == MTC_ARITHMETIC_OPERATION_MAX_PRECISION )
+    {
+        sTable = mtfTableMaxPrecision;
+    }
     else
     {
         sTable = mtfTable;
     }
-    
+
     IDE_TEST( mtf::getSubModule2Args( &sSubModule,
                                       sTable,
                                       aStack[1].column->module->no,
@@ -286,6 +320,7 @@ static const mtcExecute mtfAdd2ExecuteInteger = {
     mtf::calculateNA,
     mtfAdd2CalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -310,7 +345,11 @@ IDE_RC mtfAdd2EstimateInteger( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteInteger;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdInteger.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -476,6 +515,7 @@ static const mtcExecute mtfAdd2ExecuteBigint = {
     mtf::calculateNA,
     mtfAdd2CalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -500,7 +540,11 @@ IDE_RC mtfAdd2EstimateBigint( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteBigint;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdBigint.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -592,6 +636,7 @@ static const mtcExecute mtfAdd2ExecuteFloat = {
     mtf::calculateNA,
     mtfAdd2CalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -616,7 +661,11 @@ IDE_RC mtfAdd2EstimateFloat( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteFloat;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdFloat.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -699,6 +748,7 @@ static const mtcExecute mtfAdd2ExecuteReal = {
     mtf::calculateNA,
     mtfAdd2CalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -723,7 +773,11 @@ IDE_RC mtfAdd2EstimateReal( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteReal;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdReal.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -791,6 +845,7 @@ static const mtcExecute mtfAdd2ExecuteDouble = {
     mtf::calculateNA,
     mtfAdd2CalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -815,7 +870,11 @@ IDE_RC mtfAdd2EstimateDouble( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteDouble;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdDouble.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -884,6 +943,7 @@ static const mtcExecute mtfAdd2ExecuteDateInterval = {
     mtf::calculateNA,
     mtfAdd2CalculateDateInterval,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -908,7 +968,11 @@ IDE_RC mtfAdd2EstimateDateInterval( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteDateInterval;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdDate.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -1029,6 +1093,7 @@ static const mtcExecute mtfAdd2ExecuteIntervalDate = {
     mtf::calculateNA,
     mtfAdd2CalculateIntervalDate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1053,7 +1118,11 @@ IDE_RC mtfAdd2EstimateIntervalDate( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteIntervalDate;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdDate.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -1170,6 +1239,7 @@ static const mtcExecute mtfAdd2ExecuteIntervalInterval = {
     mtf::calculateNA,
     mtfAdd2CalculateIntervalInterval,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1194,7 +1264,11 @@ IDE_RC mtfAdd2EstimateIntervalInterval( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfAdd2ExecuteIntervalInterval;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxAdd.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdInterval,
                                      0,

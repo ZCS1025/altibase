@@ -18,6 +18,7 @@
 #include <mmdXidManager.h>
 #include <ida.h>
 #include <mmuProperty.h>
+#include <mmcTrans.h>
 
 
 iduMemPool         mmdXidManager::mPool;
@@ -44,7 +45,9 @@ IDE_RC mmdXidManager::initialize()
                               IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                               ID_FALSE,							/* ForcePooling */
                               ID_TRUE,							/* GarbageCollection */
-                              ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                              ID_TRUE,                          /* HWCacheLine */
+                              IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+                  != IDE_SUCCESS);			
     IDE_TEST(mPool4IdXidNode.initialize(IDU_MEM_MMD,
                               (SChar *)"MMD_POOL4_IDXID_NODE",
                               ID_SCALABILITY_SYS,
@@ -55,7 +58,9 @@ IDE_RC mmdXidManager::initialize()
                               IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                               ID_FALSE,							/* ForcePooling */
                               ID_TRUE,							/* GarbageCollection */
-                              ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                              ID_TRUE,                          /* HWCacheLine */
+                              IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+              != IDE_SUCCESS);			
 
     // bug-35382: mutex optimization during alloc and dealloc
     // 최종 pool size 는 XaHashSize * XidMutexPoolSize
@@ -69,7 +74,9 @@ IDE_RC mmdXidManager::initialize()
                               IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                               ID_FALSE,							/* ForcePooling */
                               ID_TRUE,							/* GarbageCollection */
-                              ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                              ID_TRUE,                          /* HWCacheLine */
+                              IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
 
 /* fix BUG-35374 To improve scalability about XA, latch granularity of XID hash should be more better than now.
   that is to say , chanage the granularity from global to bucket level.
@@ -130,7 +137,7 @@ IDE_RC  mmdXidManager::initBucket(mmdXidHashBucket* aBucket)
 
 IDE_RC mmdXidManager::finalize()
 {
-    UInt i = 0;
+    UInt           i = 0;
     iduListNode   *sIterator;
     iduListNode   *sNodeNext;
     mmdXidMutex   *sMutex = NULL;
@@ -213,9 +220,9 @@ void   mmdXidManager::freeBucketChain(iduList*  aChain)
 
 
 /* BUG-18981 */
-IDE_RC mmdXidManager::alloc(mmdXid  **aXid,
-                            ID_XID   *aUserXid,
-                            smiTrans *aTrans)
+IDE_RC mmdXidManager::alloc(mmdXid     **aXid,
+                            ID_XID      *aUserXid,
+                            mmcTransObj *aTrans)
 {
     mmdXid            *sXid = NULL;
     UInt               sBucketIdx;
@@ -375,7 +382,7 @@ IDE_RC  mmdXidManager::buildRecordForXID(idvSQL               * /* aStatistics *
     mmdXid             *sXid = NULL;
     UInt               sState = 0;
     UInt               i;
-    smiTrans           *sTrans;
+    mmcTransObj       *sTrans;
     mmdXidInfo4PerfV   sXidInfo;
     iduListNode       *sIterator;
     
@@ -394,10 +401,10 @@ IDE_RC  mmdXidManager::buildRecordForXID(idvSQL               * /* aStatistics *
             //fix BUG-23656 session,xid ,transaction을 연계한 performance view를 제공하고,
             //그들간의 관계를 정확히 유지해야 함.
             // build record에서 XID의 트랜잭션 ID를 assign함.
-            sTrans = sXid->getTrans();
+            sTrans = sXid->getTransPtr();
             if(sTrans != NULL)
             {
-                sXidInfo.mTransID = sTrans->getTransID();
+                sXidInfo.mTransID = mmcTrans::getTransID(sTrans);
             }
             else
             {

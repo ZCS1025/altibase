@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxUtil.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxUtil.h 83113 2018-05-29 02:04:30Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QSX_UTIL_H_
@@ -207,6 +207,37 @@ class qsxUtil
 
     /* PROJ-2586 PSM Parameters and return without precision */
     static IDE_RC finalizeParamAndReturnColumnInfo( mtcColumn   * aColumn );
+
+    // BUG-46032
+    static IDE_RC preCalculateArray ( qcStatement * aQcStmt,                          
+                                      qtcNode     * aQtcNode ) ;   
+
+    // BUG-45701
+    static inline UShort reverseEndian( UShort Value )
+    {
+        return (((Value&0xFF00)>>8)|((Value&0x00FF)<<8));
+    }
+    static inline UInt reverseEndian( UInt Value )
+    {
+        return (UInt)(((Value&ID_ULONG(0xFF000000))>>24)|((Value&ID_ULONG(0x00FF0000))>>8)|
+               ((Value&ID_ULONG(0x0000FF00))<<8)|((Value&ID_ULONG(0x000000FF))<<24));
+    }
+    static inline SInt reverseEndian( SInt Value )
+    {
+        return (UInt)(((Value&ID_ULONG(0xFF000000))>>24)|((Value&ID_ULONG(0x00FF0000))>>8)|
+               ((Value&ID_ULONG(0x0000FF00))<<8)|((Value&ID_ULONG(0x000000FF))<<24));
+    }
+    static inline ULong reverseEndian( ULong Value )
+    {
+        return (((Value&ID_ULONG(0xFF00000000000000))>>56)|
+               ((Value&ID_ULONG(0x00FF000000000000))>>40)|
+               ((Value&ID_ULONG(0x0000FF0000000000))>>24)|
+               ((Value&ID_ULONG(0x000000FF00000000))>>8)|
+               ((Value&ID_ULONG(0x00000000FF000000))<<8)|
+               ((Value&ID_ULONG(0x0000000000FF0000))<<24)|
+               ((Value&ID_ULONG(0x000000000000FF00))<<40)|
+               ((Value&ID_ULONG(0x00000000000000FF))<<56));
+    }
 };
 
 #endif

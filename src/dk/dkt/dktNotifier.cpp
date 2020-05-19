@@ -394,6 +394,15 @@ IDE_RC dktNotifier::notifyXaResultForShard( dktDtxInfo    * aDtxInfo,
         sDataNode.mNodeInfo.mPortNo = sDtxBranchTxInfo->mData.mNode.mPortNo;
         sDataNode.mConnectType = sDtxBranchTxInfo->mData.mNode.mConnectType;
 
+        sDataNode.mFlag &= ~SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK;
+        sDataNode.mFlag |= SDI_CONNECT_INITIAL_BY_NOTIFIER_TRUE;
+
+        sDataNode.mFlag &= ~SDI_CONNECT_USER_AUTOCOMMIT_MODE_MASK;
+        sDataNode.mFlag |= SDI_CONNECT_USER_AUTOCOMMIT_MODE_OFF;
+
+        sDataNode.mFlag &= ~SDI_CONNECT_COORD_AUTOCOMMIT_MODE_MASK;
+        sDataNode.mFlag |= SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF;
+
         // BUG-45411
         IDE_TEST( sdi::allocConnect( &sDataNode ) != IDE_SUCCESS );
 

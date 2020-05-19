@@ -140,6 +140,8 @@ IDE_RC smlFT::buildRecordForLockTBL(idvSQL              * /*aStatistics*/,
 
             while(sIterator != sLockNode)
             {
+                IDU_FIT_POINT( "BUG-46726@smlFT::buildRecordForLockTBL::lockNode" );
+
                 sLockInfo.getInfo(sIterator);
                 IDE_TEST(iduFixedTable::buildRecord(aHeader,
                                                     aMemory,
@@ -147,6 +149,16 @@ IDE_RC smlFT::buildRecordForLockTBL(idvSQL              * /*aStatistics*/,
                         != IDE_SUCCESS);
 
                 sIterator = sIterator->mNxtTransLockNode;
+
+                if ( sIterator == NULL )
+                {
+                    /* BUG-46726 : SPIN LOCK
+                     * 현재 보고있는 lock node 가 삭제된 경우 next가 NULL 이 될수있다.
+                     * 이경우 더이상 lock node를 탐색하지 다음 tx로 넘어간다.
+                     * => 따라서, x$lock 쿼리결과에 유실이 발생할수있다. 
+                     */
+                    break;
+                }
             }
         }
         break;
@@ -424,7 +436,6 @@ IDE_RC smlFT::buildRecordForLockWait(idvSQL              * /*aStatistics*/,
     SInt            i;
     SInt            j;
     SInt            k; /* for preventing from infinite loop */
-    SInt            sPendingSlot;
     smlLockWaitStat sStat;
 
     IDE_ERROR( aHeader != NULL );
@@ -463,15 +474,13 @@ IDE_RC smlFT::buildRecordForLockWait(idvSQL              * /*aStatistics*/,
         {
             if ( smLayerCallback::isActiveBySID( i ) == ID_TRUE )
             {
-                for(j = 0; j < smlLockMgr::mPendingCount[i]; j++)
+                for(j = 0; j < smlLockMgr::mTransCnt ; j++)
                 {
-                    sPendingSlot = smlLockMgr::mPendingMatrix[i][j];
 
-                    if((i != sPendingSlot) &&
-                       (sPendingSlot != -1))
+                    if ( smlLockMgr::mPendingMatrix[i][j] != -1 )
                     {
-                        sStat.mTID        = smLayerCallback::getTIDBySID( sPendingSlot );
-                        sStat.mWaitForTID = smLayerCallback::getTIDBySID( i );
+                        sStat.mTID        = smLayerCallback::getTIDBySID( i );
+                        sStat.mWaitForTID = smLayerCallback::getTIDBySID( j );
 
                         IDE_TEST(iduFixedTable::buildRecord(aHeader,
                                     aMemory,

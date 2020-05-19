@@ -41,7 +41,14 @@ void ulsdSilentDisconnect(ulnDbc *aDbc)
 
     ulsdNodeSilentDisconnect(aDbc->mShardDbcCxt.mShardDbc);
  
-    sRet = ulnDisconnect(aDbc);
+    if ( ulnDbcIsConnected( aDbc ) == ACP_TRUE )
+    {
+        sRet = ulnDisconnect( aDbc );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     ACP_UNUSED(sRet);
 }

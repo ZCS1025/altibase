@@ -53,7 +53,8 @@ const SChar gUlpKeywords4C[][MAX_KEYWORD_LEN] =
     "SQL_TIMESTAMP_STRUCT",
     "SQL_TIME_STRUCT",
     "SQL_DATE_STRUCT",
-    "VARCHAR"
+    "VARCHAR",
+    "APRE_BINARY2"  /* BUG-46418 */
 };
 
 /* 내장SQL구문안에 테이블명, 칼럼명으로 사용되면 안되는 keywords */

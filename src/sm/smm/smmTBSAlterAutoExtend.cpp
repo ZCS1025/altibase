@@ -95,7 +95,6 @@ IDE_RC smmTBSAlterAutoExtend::alterTBSsetAutoExtend( void      * aTrans,
     UInt                sState = 0;
     
     IDE_DASSERT( aTrans != NULL );
-
     IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace( aTableSpaceID )
                  == ID_TRUE );
 

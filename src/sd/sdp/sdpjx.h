@@ -21,8 +21,8 @@ typedef struct sdpjx
 {
     sdpjLexer    * mLexer;
     SChar        * mParseBuffer;
-    SInt           mParseBufferLength;
-    SInt           mAllocCount;
+    UInt           mParseBufferLength;
+    UInt           mAllocCount;
     SChar        * mText;
     sdpjObject   * mObject;  /* out */
 } sdpjx;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qciStmtType.h 82152 2018-01-29 09:32:47Z khkwak $
+ * $Id: qciStmtType.h 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #ifndef _O_QCI_STMT_TYPE_H_
@@ -150,8 +150,12 @@ enum qciStmtType
     /* PROJ-2624 ACCESS LIST */
     QCI_STMT_RELOAD_ACCESS_LIST,
 
-    // PROJ-2638
-    QCI_STMT_SET_SHARD_LINKER_ON,
+    //BUG-45915
+    QCI_STMT_ALT_SYS_DUMP_CALLSTACKS,
+
+    /* PROJ-2701 Sharding online data rebuild */
+    QCI_STMT_RELOAD_SHARD_META_NUMBER,
+    QCI_STMT_RELOAD_SHARD_META_NUMBER_LOCAL,
 
     //----------------------------------------------------
     //  SP
@@ -160,6 +164,7 @@ enum qciStmtType
     QCI_STMT_EXEC_FUNC = QCI_STMT_MASK_SP,
     QCI_STMT_EXEC_PROC,
     QCI_STMT_EXEC_TEST_REC,  // PROJ-1552
+    QCI_STMT_EXEC_AB,
 
     //----------------------------------------------------
     //  DB

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloTableInfo.cpp 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloTableInfo.cpp 84290 2018-11-05 07:37:51Z bethy $
  **********************************************************************/
 
 #include <ilo.h>
@@ -633,15 +633,11 @@ SInt iloTableInfo::AllocTableAttr( ALTIBASE_ILOADER_HANDLE aHandle,
         case ISP_ATTR_INTEGER:
         case ISP_ATTR_BIGINT:
         case ISP_ATTR_REAL:
+        case ISP_ATTR_DOUBLE: // BUG-46485
             /* BUG - 18804 */
             mAttrCValEltLen[i] = MAX_NUMBER_SIZE + 1 ; 
             mAttrValEltLen[i] = 0;
             break;    
-        case ISP_ATTR_DOUBLE:
-            /* BUG - 18804 */
-            mAttrCValEltLen[i] = MAX_NUMBER_SIZE + 1 ;
-            mAttrValEltLen[i] = ID_SIZEOF(double);
-            break;
         case ISP_ATTR_BIT:
             mAttrCValEltLen[i] = 60704 + 1;
             if (mPrecision[i] == 0)
@@ -840,6 +836,7 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
         case ISP_ATTR_INTEGER:
         case ISP_ATTR_BIGINT:
         case ISP_ATTR_REAL:
+        case ISP_ATTR_DOUBLE: // BUG-46485
             if ( aLen >= mAttrCValEltLen[nAttr] )
             {
                 /* Truncate Heading Zeros & Trailing Zeros */
@@ -952,21 +949,6 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
                 }
             }
             break;
-        case ISP_ATTR_DOUBLE:
-            sVal = (SChar *)mAttrVal[nAttr]
-                + (UInt)aArrayCount * mAttrValEltLen[nAttr];
-            if (sCVal[0] != '\0')
-            {
-                mAttrInd[nAttr][aArrayCount] = SQL_NTS;
-                IDE_TEST_RAISE(StrToD(sCVal, (double *)sVal) != IDE_SUCCESS,
-                               StrToDFailed);
-            }
-            else
-            {
-                mAttrInd[nAttr][aArrayCount] = SQL_NULL_DATA;
-                *(double *)sVal = 0.;
-            }
-            break;
         /* TASK-2657 */
         /* to insert binary data(0x00) in char, varchar types */
         case ISP_ATTR_CHAR:
@@ -986,13 +968,6 @@ IDE_RC iloTableInfo::SetAttrValue( ALTIBASE_ILOADER_HANDLE  aHandle,
     IDE_EXCEPTION_CONT(SET_ATTR_SUCCESS);
     return IDE_SUCCESS;
 
-    /* BUG-31395 */
-    IDE_EXCEPTION ( StrToDFailed );
-    {
-        uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Invalid_Value_errno,
-                        errno);
-        SetReadCount( nAttr, aArrayCount );
-    }
     /* BUG - 18804 */
     IDE_EXCEPTION ( OverflowLengthError );
     {

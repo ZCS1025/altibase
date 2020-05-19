@@ -227,7 +227,7 @@ public:
                                  const SChar * aFileName,
                                  const UInt    aLineNum,
                                  const SChar * aFormat,
-                                 ... );
+                                 va_list       ap );
 
     static void writeErrorTraceInternal( UInt          aChkFlag,
                                          ideLogModule  aModule,

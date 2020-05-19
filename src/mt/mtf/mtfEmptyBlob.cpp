@@ -65,6 +65,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfEmptyBlobCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

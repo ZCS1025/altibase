@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcpUtil.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcpUtil.cpp 82992 2018-05-08 06:30:01Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -286,6 +286,7 @@ static qcpUtilReservedWordTables reservedWordTables[] =
     {"VARIABLE_LARGE", 14, 0},
     {"SHRINK_MEMPOOL", 14, 0},
     {"CONNECT_BY_ROOT", 15, 0},
+    {"DUMP_CALLSTACKS", 15, 0},
     {"REMOTE_TABLE_STORE", 18, 0},
     {"KEEP", 4, 0},
     {NULL, 0, 0}

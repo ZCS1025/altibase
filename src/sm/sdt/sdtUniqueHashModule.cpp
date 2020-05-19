@@ -511,12 +511,13 @@ IDE_RC sdtUniqueHashModule::compareRowAndValue( idBool         * aResult,
                                                 const scGRID    , /* aGRID */
                                                 void         * aData )
 {
-    sdtTempCompData   * sData      = (sdtTempCompData*)aData;
+    sdtTempCompData    * sData      = (sdtTempCompData*)aData;
     smiTempTableHeader * sHeader    = sData->mHeader;
     const smiValue     * sValueList = sData->mValueList;
     smiTempColumn      * sKeyColumn = NULL;
     smiValueInfo         sValue1;
     smiValueInfo         sValue2;
+    UInt                 sColumnCount = 0;
 
     *aResult = ID_TRUE;
     sKeyColumn = sHeader->mKeyColumnList;
@@ -524,7 +525,8 @@ IDE_RC sdtUniqueHashModule::compareRowAndValue( idBool         * aResult,
     IDE_ERROR( sKeyColumn != NULL );
     while( sKeyColumn != NULL )
     {
-        IDE_ERROR( sKeyColumn->mIdx < sHeader->mColumnCount );
+        IDE_ERROR( ++sColumnCount   <= sHeader->mColumnCount );
+        IDE_ERROR( sKeyColumn->mIdx <  sHeader->mColumnCount );
 
         /* PROJ-2180 valueForModule
            SMI_OFFSET_USELESS 로 비교하는 컬럼은 mBlankColumn 을 사용해야 한다.

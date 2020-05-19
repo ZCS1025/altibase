@@ -5,6 +5,7 @@ cd $ALTIBASE_HOME/altiMon
 #JAVA_HOME=/usr/java/jdk1.5.0_22
 
 JAVA_OPTIONS="-Xss200k -Xms25m -Xmx25m -XX:NewSize=20m"
+#PICL_LIB=-Dpicl="picl-lib.so"
 
 PID_FILE=altimon.pid
 
@@ -20,7 +21,7 @@ case "$1" in
     GET_PID=`ps -ef|grep altimon.jar|grep -v grep | grep $USER | awk '{print $2}'`
 
     if [ "$GET_PID" = "" ]; then
-      nohup $JAVA_HOME/bin/java $JAVA_OPTIONS -jar altimon.jar 1> /dev/null 2>> altimon_stderr.log &    
+      nohup $JAVA_HOME/bin/java $JAVA_OPTIONS $PICL_LIB -jar altimon.jar 1> /dev/null 2>> altimon_stderr.log &    
       ALTIMON_PID=$!
       echo "$ALTIMON_PID" > "$PID_FILE"
       sleep 3

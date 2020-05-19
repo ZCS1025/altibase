@@ -480,6 +480,15 @@ PDL_Time_Value::msec (void) const
   return this->tv_.tv_sec * 1000 + this->tv_.tv_usec / 1000;
 }
 
+// Converts from <Time_Value> format into micro-seconds format.
+
+PDL_INLINE long
+PDL_Time_Value::microsec (void) const  /* BUG-46183 */
+{
+  PDL_TRACE ("PDL_Time_Value::microsec");
+  return this->tv_.tv_sec * PDL_U_ONE_SECOND_IN_USECS + this->tv_.tv_usec;
+}
+
 // Converts from milli-seconds format into Time_Value format.
 
 PDL_INLINE void

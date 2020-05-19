@@ -16,8 +16,12 @@
 
 package Altibase.jdbc.driver.cm;
 
+import Altibase.jdbc.driver.datatype.ListBufferHandle;
+
 public class CmProtocolContextPrepExec extends CmProtocolContextDirExec
 {
+    private ListBufferHandle mListBufferHandle;
+
     public CmProtocolContextPrepExec(CmChannel aChannel)
     {
         super(aChannel);
@@ -32,4 +36,15 @@ public class CmProtocolContextPrepExec extends CmProtocolContextDirExec
     {
         return (CmBindParamDataOutResult)getCmResult(CmBindParamDataOutResult.MY_OP);
     }
+
+    public ListBufferHandle getListBufferHandle()
+    {
+        return mListBufferHandle;
+    }
+
+    public void setListBufferHandle(ListBufferHandle aListBufferHandle)
+    {
+        this.mListBufferHandle = aListBufferHandle;
+    }
+
 }

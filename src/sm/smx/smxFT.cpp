@@ -1018,6 +1018,14 @@ static iduFixedTableColDesc gLegacyTxListTableColDesc[] =
         0, 0,NULL // for internal use
     },
     {
+        (SChar*)"IS_MADE_BY_COMMIT/ROLLBACK",
+        IDU_FT_OFFSETOF( smxLegacyTrans, mMadeType ),
+        IDU_FT_SIZEOF( smxLegacyTrans, mMadeType ),
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+    {
         NULL,
         0,
         0,

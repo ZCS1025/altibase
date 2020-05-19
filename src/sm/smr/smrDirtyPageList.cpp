@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrDirtyPageList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrDirtyPageList.cpp 84434 2018-11-27 00:10:34Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -598,11 +598,11 @@ IDE_RC smrDirtyPageList::writeDirtyPages(
    Page Image를 Checkpoint Image에 기록한다.
    
    [IN] aTBSNode - Page가 속한 Tablespace
-   [IN] aWhichDB - 0 or 1 => Page Image를 기록할 Ping Pong번호 
+   [IN] aUnstableDBNum - 0 or 1 => Page Image를 기록할 Ping Pong번호 
    [IN] aPageID  - 기록하려는 PageID
  */
 IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
-                                         SInt         aWhichDB,
+                                         SInt         aUnstableDBNum,
                                          scPageID     aPageID )
 {
     UInt                        sDBFileNo;
@@ -618,7 +618,7 @@ IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
 
 
     IDE_DASSERT( aTBSNode != NULL );
-    IDE_DASSERT( ( aWhichDB == 0 ) || ( aWhichDB == 1 ));
+    IDE_DASSERT( ( aUnstableDBNum == 0 ) || ( aUnstableDBNum == 1 ));
     
     /* --------------------------------------------
      * (010) get memory object of that database file
@@ -626,7 +626,7 @@ IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
     sDBFileNo = smmManager::getDbFileNo(aTBSNode, aPageID);
     
     IDE_TEST( smmManager::getDBFile( aTBSNode,
-                                     aWhichDB,
+                                     aUnstableDBNum,
                                      sDBFileNo,
                                      SMM_GETDBFILEOP_NONE,
                                      &sDBFilePtr )
@@ -637,11 +637,11 @@ IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
      * ------------------------------------------------ */
 
     if( smmManager::getCreateDBFileOnDisk( aTBSNode,
-                                           aWhichDB,
+                                           aUnstableDBNum,
                                            sDBFileNo ) == ID_FALSE )
     {
         // 생성하지 않았으면 open되었을 리 없다.
-        IDE_ASSERT( sDBFilePtr->isOpen() == ID_FALSE );
+        IDE_ERROR_RAISE( sDBFilePtr->isOpen() == ID_FALSE, ERR_EXIST_FILE );
 
         if ( sDBFileNo > aTBSNode->mLstCreatedDBFile )
         {
@@ -650,7 +650,7 @@ IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
 
         // 파일이 생성되면서 DBF Hdr가 기록된다. 
         IDE_TEST( sDBFilePtr->createDbFile( aTBSNode,
-                                            aWhichDB,
+                                            aUnstableDBNum,
                                             sDBFileNo,
                                             0/* DB File Header만 기록*/)
                   != IDE_SUCCESS);
@@ -698,9 +698,9 @@ IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
             /* chkptImage에 대한 DataFileDescSlot의 재할당은 restart
              * recovery시에만 수행된다. restart recovery시 checkpoint는
              * nextStableDB에 수행되고 media recovery시 checkpoint는 currentDB에
-             * 수행된다. 즉,sCurrentDB와 aWhichDB가 달라야한다.
+             * 수행된다. 즉,sCurrentDB와 aUnstableDBNum가 달라야한다.
              */
-            IDE_DASSERT( sCurrentDB != aWhichDB );
+            IDE_DASSERT( sCurrentDB != aUnstableDBNum );
 
             IDE_TEST( smmManager::getDBFile( aTBSNode,
                                              sCurrentDB,
@@ -735,6 +735,10 @@ IDE_RC smrDirtyPageList::writePageImage( smmTBSNode * aTBSNode,
 
     return IDE_SUCCESS ;
     
+    IDE_EXCEPTION( ERR_EXIST_FILE );
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_AlreadyExistFile, sDBFilePtr->getFileName() ) );
+    }
     IDE_EXCEPTION_END;
     
     return IDE_FAILURE;

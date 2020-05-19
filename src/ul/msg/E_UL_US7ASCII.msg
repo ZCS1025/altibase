@@ -22,7 +22,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 537
+# Last Number = 544
 
 SECTION = 5
 
@@ -719,6 +719,10 @@ SECTION = 5
 # *Cause:  The port values used in the AlternateServers connection attribute are not numbers or out of available range.
 # *Action: Make sure the port values used in the AlternateServers connection attribute are valid.
 
+406, HY024, ulERR_ABORT_ALTERNATE_SERVER_NOT_SET = The AlternateServers is not set.
+# *Cause: The AlternateServers is not set.
+# *Action: Set up the value of AlternateServers connection.
+
 #########################
 # ACS Error Code
 # ID, N/A, Error Code
@@ -844,6 +848,14 @@ SECTION = 5
 # *Cause: Other statement is performing asynchronous prefetch.
 # *Action: Retry asynchronous prefetch after closing the cursor of statement.
 
+541, HY024, ulERR_ABORT_INVALID_ALTIBASE_SSL_PORT_NO = Connection string does not have PORT_NO, and environment variable ALTIBASE_SSL_PORT_NO does not have a valid value : <0%s>.
+# *Cause: The connection type is SSL, but the connection string does not specify a PORT_NO. Further, the environment variable ALTIBASE_SSL_PORT_NO is not valid.
+# *Action: Set the ALTIBASE_SSL_PORT_NO environment variable correctly. Or specify PORT_NO in the connection string.
+
+542, HY000, ulERR_ABORT_PORT_NO_ALTIBASE_SSL_PORT_NO_NOT_SET = Neither PORT_NO in the connection string nor the ALTIBASE_SSL_PORT_NO environment variable has been set.
+# *Cause: A port has not been set.
+# *Action: Set the port with a connection string or the ALTIBASE_SSL_PORT_NO environment variable.
+
 #############################
 # IPCDA
 #############################
@@ -874,9 +886,9 @@ SECTION = 5
 # *Cause: The operation of shard data node failed.
 # *Action: Take an appropriate measure for the error.
 
-534, HY000, ulERR_ABORT_SHARD_NODE_FAIL_RETRY_AVAILABLE = The connection of shard data node operation failed.
-# *Cause: The connection of shard data node failed.
-# *Action: Retry PREPARE if re-connection of shard data node is required.
+534, HY000, ulERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE = Failover is not available.
+# *Cause: Failed to connect to shard library or coordinates.
+# *Action: Check the shard node status or network.
 
 535, HY000, ulERR_ABORT_SHARD_NODE_INVALID_TOUCH = This is an invalid transaction performing on multiple nodes.(The previous access node[<0%s>,<1%s>:<2%d>], the current access node[<3%s>,<4%s>:<5%d>])
 # *Cause: Each transaction is performed only on a single shard data node.
@@ -889,3 +901,27 @@ SECTION = 5
 537, HY000, ulERR_ABORT_SHARD_DATA_NODE_CONNECTION_FAILURE = <0%s>
 # *Cause: An error occurred during the data node connection.
 # *Action: Take appropriate measures after verifying the data node and error number.
+
+543, HY000, ulERR_ABORT_SHARD_META_CHANGED = The shard meta information was changed.
+# *Cause: The shard meta information was changed.
+# *Action: Re-execute application logic.
+
+544, HY000, ulERR_ABORT_SHARD_INTERNAL_ERROR = The shard internal server error (<0%s>).
+# *Cause: Unexepected error.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+#############################
+# IB
+#############################
+
+538, HY024, ulERR_ABORT_INVALID_ALTIBASE_IB_PORT_NO = Connection string does not have PORT_NO, and environment variable ALTIBASE_IB_PORT_NO does not have a valid value : <0%s>.
+# *Cause: The connection type is IB, but the connection string does not specify a PORT_NO. Further, the environment variable ALTIBASE_IB_PORT_NO is not valid.
+# *Action: Set the ALTIBASE_IB_PORT_NO environment variable correctly. Or specify PORT_NO in the connection string.
+
+539, HY000, ulERR_ABORT_PORT_NO_ALTIBASE_IB_PORT_NO_NOT_SET = Neither PORT_NO in the connection string nor the ALTIBASE_IB_PORT_NO environment variable has been set.
+# *Cause: A port has not been set.
+# *Action: Set the port with a connection string or the ALTIBASE_IB_PORT_NO environment variable.
+
+540, HY024, ulERR_ABORT_IB_RCONNECT_INVALIDARG = Invalid rconnect() argument.
+# *Cause: An argument for the rconnect() function was invalid.
+# *Action: Check the IP and host name.

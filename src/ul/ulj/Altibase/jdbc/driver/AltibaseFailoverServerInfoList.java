@@ -17,6 +17,7 @@
 package Altibase.jdbc.driver;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * {@link AltibaseFailoverServerInfo}를 위한 클래스.
@@ -43,6 +44,11 @@ final class AltibaseFailoverServerInfoList extends ArrayList<AltibaseFailoverSer
         sBuf.append(')');
 
         return sBuf.toString();
+    }
+
+    public AltibaseFailoverServerInfo getRandom()
+    {
+        return get(new Random().nextInt(size()));
     }
 
     public boolean add(String aServer, int aPort, String aDbName)

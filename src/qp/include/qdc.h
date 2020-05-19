@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdc.h 82992 2018-05-08 06:30:01Z kclee $
  **********************************************************************/
 #ifndef _O_QDC_H_
 #define _O_QDC_H_  1
@@ -69,6 +69,8 @@ public:
     static IDE_RC checkpoint( qcStatement * aStatement );
 
     static IDE_RC shrinkMemPool( qcStatement * aStatement );
+
+    static IDE_RC dumpAllCallstacks( qcStatement * aStatement );
 
     static IDE_RC reorganize( qcStatement * aStatement );
 

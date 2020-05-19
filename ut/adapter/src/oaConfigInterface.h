@@ -143,6 +143,11 @@ typedef struct oaConfigHandleForAlti
 #elif JDBCADAPTER
 #define OA_ADAPTER_HOME_ENVIRONMENT_VARIABLE "JDBC_ADAPTER_HOME"
 #define OA_ADAPTER_CONFIG_FILE_NAME "jdbcAdapter.conf"
+#define OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME "dbms_skip_error_include.list"
+#define OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME "dbms_skip_error_exclude.list"
+#define OA_ADAPTER_LOGIN_SQL_FILE_NAME "oalogin.sql"
+#define OA_ADAPTER_SQL_READ_BUFF_SIZE   (512 * 1024)
+#define OA_ADAPTER_SKIP_ERROR_BUFF_SIZE (32 * 1024)
 
 #define OA_CONFIG_LOG_FILE_NAME_DEFAULT ("jdbcAdapter.trc")
 
@@ -262,8 +267,11 @@ typedef struct oaConfigHandleForJDBC
 #else
 #define OA_ADAPTER_HOME_ENVIRONMENT_VARIABLE "ORA_ADAPTER_HOME"
 #define OA_ADAPTER_CONFIG_FILE_NAME "oraAdapter.conf"
+#define OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME "dbms_skip_error_include.list"
+#define OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME "dbms_skip_error_exclude.list"
 #define OA_ADAPTER_LOGIN_SQL_FILE_NAME "oalogin.sql"
 #define OA_ADAPTER_SQL_READ_BUFF_SIZE   (512 * 1024)
+#define OA_ADAPTER_SKIP_ERROR_BUFF_SIZE (32 * 1024)
 
 #define OA_CONFIG_LOG_FILE_NAME_DEFAULT ("oraAdapter.trc")
 

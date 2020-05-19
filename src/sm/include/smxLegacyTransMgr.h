@@ -34,7 +34,8 @@ public:
 
     static IDE_RC addLegacyTrans( smxTrans *  aSmxTrans,
                                   smLSN       aCommitEndLSN,
-                                  void     ** aLegacyTrans );
+                                  void     ** aLegacyTrans,
+                                  idBool      aIsCommit );
 
     static IDE_RC removeLegacyTrans( smuList * aLegacyTransNode,
                                      smTID     aTID );

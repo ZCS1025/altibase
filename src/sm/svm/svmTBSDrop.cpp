@@ -216,9 +216,8 @@ IDE_RC svmTBSDrop::dropTableSpacePending( idvSQL*             /*aStatistics*/,
 {
     IDE_DASSERT( aTBSNode   != NULL );
 
-    // 여기 들어오는 Tablespace는 항상 Memory Tablespace여야 한다.
-    IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( aTBSNode->mID )
-                == ID_TRUE );
+    // 여기 들어오는 Tablespace는 항상 Volatile Tablespace여야 한다.
+    IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( aTBSNode->mID ) == ID_TRUE );
     // Tablespace의 상태를 DROPPED로 상태변경
     //
     // To Fix BUG-17323 존재하지 않는 Checkpoint Path지정하여

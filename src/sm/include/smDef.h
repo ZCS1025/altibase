@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smDef.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smDef.h 83657 2018-08-09 01:19:06Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SM_DEF_H_
@@ -116,6 +116,10 @@ typedef void   ( *smSendXLog )( const SChar  * aLogPtr );
 /* PROJ-1442 Replication Online 중 DDL 허용 */
 /* QC_MAX_OBJECT_NAME_LEN --> 128 BUG-39579 */
 #define SM_MAX_NAME_LEN ( 128 )
+
+/* QC_MAX_PARTKEY_COND_VALUE_LEN BUG-45943 */
+#define SM_MAX_PARTKEY_COND_VALUE_LEN  ( 4000 )
+
 typedef IDE_RC (*smGetTbl4ReplFunc)( const void   * aMeta,
                                      ULong          aTableOID,
                                      const void  ** aTable);

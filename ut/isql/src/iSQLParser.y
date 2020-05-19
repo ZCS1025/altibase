@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLParser.y 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: iSQLParser.y 84891 2019-02-15 05:17:06Z bethy $
  **********************************************************************/
 
 /* ======================================================
@@ -155,7 +155,7 @@ void chkID();
 
 %token ISQL_T_PARTITIONS // BUG-43516
 
-%token <str> ISQL_T_ALTER ISQL_T_CRT_PROC
+%token <str> ISQL_T_ALTER ISQL_T_CRT_PROC ISQL_T_ANONYM_BLOCK
 %token <str> ISQL_T_EXEC_NULL ISQL_T_EXEC_FUNC ISQL_T_EXEC_PROC
 %token <str> ISQL_T_PREPARE
 %token <str> ISQL_T_SELECT ISQL_T_TABLES ISQL_T_SEQUENCE ISQL_T_TRANSACTION
@@ -167,7 +167,7 @@ void chkID();
 %token <str> ISQL_T_CONSTSTR ISQL_T_FILENAME ISQL_T_HOSTVAR
 %token <str> ISQL_T_IDENTIFIER ISQL_T_QUOTED_IDENTIFIER ISQL_T_NATURALNUM ISQL_T_REALNUM
 
-%token <str> ISQL_T_XTABLES ISQL_T_DTABLES ISQL_T_VTABLES ISQL_T_DOLLAR_ID
+%token <str> ISQL_T_XTABLES ISQL_T_DTABLES ISQL_T_VTABLES ISQL_T_STABLES ISQL_T_DOLLAR_ID
 %token <str> ISQL_T_DESC_COMMAND
 %token <str> ISQL_T_START_COMMAND ISQL_T_AT_COMMAND ISQL_T_ATAT_COMMAND
 
@@ -264,6 +264,7 @@ ISQL_STATEMENT
     | XTABLES_STAT
     | DTABLES_STAT
     | VTABLES_STAT
+    | STABLES_STAT  /* BUG-45646 */
     | COLUMN_STAT
     | CLEAR_STAT
     ;
@@ -744,6 +745,32 @@ CRT_PROC_STAT
         {
             gCommand->mExecutor = iSQLCommand::executeDDL;
             gCommand->SetCommandKind(CRT_PROC_COM);
+            gCommand->SetCommandStr($<str>1);
+            if ( gCommand->SetQuery($<str>1) != IDE_SUCCESS )
+            {
+                return ISQL_UNTERMINATED;
+            }
+        }
+        else
+        {
+            return ISQL_UNTERMINATED;
+        }
+    }
+    /* BUG-46733 Need to support Anomymous Block */
+    | ISQL_T_ANONYM_BLOCK
+    {
+        SInt    len;
+
+        idlOS::strcpy(gTmpBuf, $<str>1);
+        len = idlOS::strlen(gTmpBuf);
+        *(gTmpBuf + len - 1) = '\0';
+        utString::eraseWhiteSpace(gTmpBuf);
+        len = idlOS::strlen(gTmpBuf);
+
+        if ( *(gTmpBuf + len - 1) == '/' )
+        {
+            gCommand->mExecutor = iSQLCommand::executeAnonymBlock;
+            gCommand->SetCommandKind(ANONYM_BLOCK_COM);
             gCommand->SetCommandStr($<str>1);
             if ( gCommand->SetQuery($<str>1) != IDE_SUCCESS )
             {
@@ -2554,6 +2581,16 @@ VTABLES_STAT
     {
         gCommand->mExecutor = iSQLCommand::executeShowPerfViews;
         gCommand->SetCommandKind(VTABLES_COM);
+        gCommand->SetCommandStr($<str>1);
+    }
+    ;
+
+STABLES_STAT
+    : ISQL_T_STABLES
+    {
+        /* BUG-45646 */
+        gCommand->mExecutor = iSQLCommand::executeShowShardPerfViews;
+        gCommand->SetCommandKind(STABLES_COM);
         gCommand->SetCommandStr($<str>1);
     }
     ;

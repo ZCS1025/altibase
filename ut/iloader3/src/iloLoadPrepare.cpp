@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoadPrepare.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iloLoadPrepare.cpp 82972 2018-05-04 00:48:21Z bethy $
  **********************************************************************/
 
 #include <ilo.h>
@@ -515,8 +515,9 @@ IDE_RC iloLoad::FiniStmts(iloaderHandle * /* sHandle */)
     //Connection 해제
     for ( i = 0; i < m_pProgOption->m_ParallelCount; i++)
     {
-        m_pISPApiUp[i].StmtInit();
-        DisconnectDBForUpload(&m_pISPApiUp[i]);
+        /* BUG-46048 Codesonar warning */
+        (void) m_pISPApiUp[i].StmtInit();
+        (void) DisconnectDBForUpload(&m_pISPApiUp[i]);
     }
     delete[] m_pISPApiUp;
     m_pISPApiUp = NULL;

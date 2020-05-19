@@ -331,6 +331,50 @@ BEGIN
     END;
 END finish;
 
+--  Swap Table
+--  Input parameters:
+--    replication_name  : the local replication name
+--    target_user_name  : the owner name of the copy table
+--    target_table_name : the copy table name
+--    source_user_name  : the owner name of the original table
+--    source_table_name : the original table name
+--    table_partition_name : table partition name
+
+PROCEDURE swap_table_partition( replication_name                  IN VARCHAR(35),
+                                target_user_name                  IN VARCHAR(128),
+                                target_table_name                 IN VARCHAR(128),
+                                source_user_name                  IN VARCHAR(128),
+                                source_table_name                 IN VARCHAR(128),
+                                table_partition_name              IN VARCHAR(128) )
+AS
+    sql_buffer      VARCHAR(1024);
+    sql_buffer_temp VARCHAR(1024);
+    code            INTEGER;
+    errm            VARCHAR(1024);
+BEGIN
+    sql_buffer := 'ALTER REPLICATION "' || replication_name || '" FLUSH';
+    EXECUTE IMMEDIATE sql_buffer;
+
+    -- 마지막으로 남은 DML을 반영하고 원본과 교체하기 전에, X Lock을 획득한다.
+    sql_buffer := 'LOCK TABLE "' || source_user_name || '"."' || source_table_name || '" IN EXCLUSIVE MODE UNTIL NEXT DDL';
+    EXECUTE IMMEDIATE sql_buffer;
+
+    sql_buffer := 'ALTER REPLICATION "' || replication_name || '" FLUSH';
+    EXECUTE IMMEDIATE sql_buffer;
+
+    sql_buffer := 'ALTER TABLE "' || target_user_name || '"."' || target_table_name || '" REPLACE "' ||
+                                     source_user_name || '"."' || source_table_name || '" PARTITION ' || table_partition_name;
+
+    EXECUTE IMMEDIATE sql_buffer;
+EXCEPTION WHEN OTHERS THEN
+    code := SQLCODE;
+    errm := SUBSTRING( SQLERRM, 1, 1024 );
+    PRINTLN( 'SQLCODE : ' || code );
+    PRINTLN( 'SQLERRM : ' || errm );
+    PRINTLN( 'Check the error, and retry swap_table_partition().' );
+END swap_table_partition;
+
 END utl_copyswap;
 /
+
 

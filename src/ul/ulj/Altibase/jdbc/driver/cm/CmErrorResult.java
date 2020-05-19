@@ -24,18 +24,21 @@ public class CmErrorResult
 {
     private static final int ERROR_ACTION_IGNORE = 0x02000000;
 
-    private byte mOp;
-    private int mErrorIndex;
-    private int mErrorCode;
-    private String mErrorMessage;
-    private boolean mIsBatchError;
-    private CmErrorResult mNext;
+    private byte              mOp;
+    private int               mErrorIndex;
+    private int               mErrorCode;
+    private String            mErrorMessage;
+    private boolean           mIsBatchError;
+    private CmErrorResult     mNext;
+    private CmProtocolContext mProtocolContext;         // BUG-46513 에러결과로부터 execute결과를 셋팅하기 위한 컨텍스트 객체
+    private long              mSMNOfDataNode;           // BUG-46513 DataNode에 새로 저장할 SMN 값
+    private boolean           mIsNeedToDisconnect;      // BUG-46513 SMN 오류가 발생했을 때 Disconnect 해야하는지 여부
 
     CmErrorResult()
     {
     }
 
-    CmErrorResult(byte aOp, int aErrorIndex, int aErrorCode, String aErrorMessage, boolean aIsBatchError)
+    public CmErrorResult(byte aOp, int aErrorIndex, int aErrorCode, String aErrorMessage, boolean aIsBatchError)
     {
         mOp = aOp;
         mErrorIndex = aErrorIndex;
@@ -118,6 +121,15 @@ public class CmErrorResult
     }
 
     /**
+     * SESSION_WITH_INVALID_SMN 에러인지 여부를 리턴한다.
+     * @return smn invalid 여부
+     */
+    public boolean isInvalidSMNError()
+    {
+        return (getErrorCode() >>> 12) == ErrorDef.SHARD_META_NUMBER_INVALID;
+    }
+
+    /**
      * ignorable 에러 중 실제로 SQLWarning을 생성시켜야 하는지 확인한다.
      * @param aErrorCode 에러코드
      * @return true 내부 구현으로 인한 ignore이기 때문에 SQLWarning을 무시할 수 있다.
@@ -151,14 +163,50 @@ public class CmErrorResult
         return mNext;
     }
 
+    @Override
     public String toString()
     {
-        return "CmErrorResult"
-                + " [Op=" + CmOperation.getOperationName(mOp, true)
-                + ", ErrorIndex=" + mErrorIndex
-                + ", ErrorCode=" + mErrorCode
-                + ", ErrorMessage=" + mErrorMessage
-                + ", Next=" + mNext
-                + "]";
+        final StringBuilder sSb = new StringBuilder("CmErrorResult{");
+        sSb.append("mOp=").append(CmOperation.getOperationName(mOp, true));
+        sSb.append(", mErrorIndex=").append(mErrorIndex);
+        sSb.append(", mErrorCode=").append(mErrorCode);
+        sSb.append(", mErrorMessage='").append(mErrorMessage).append('\'');
+        sSb.append(", mIsBatchError=").append(mIsBatchError);
+        sSb.append(", mNext=").append(mNext);
+        sSb.append(", mProtocolContext=").append(mProtocolContext);
+        sSb.append(", mSMNOfDataNode=").append(mSMNOfDataNode);
+        sSb.append(", mIsNeedToDisconnect=").append(mIsNeedToDisconnect);
+        sSb.append('}');
+        return sSb.toString();
+    }
+
+    public void setContext(CmProtocolContext aProtocolContext)
+    {
+        mProtocolContext = aProtocolContext;
+    }
+
+    public CmProtocolContext getProtocolContext()
+    {
+        return mProtocolContext;
+    }
+
+    public void setSMNOfDataNode(long aSMNOfDataNode)
+    {
+        mSMNOfDataNode = aSMNOfDataNode;
+    }
+
+    public long getSMNOfDataNode()
+    {
+        return mSMNOfDataNode;
+    }
+
+    public void setNeedToDisconnect(boolean aNeedToDisconnect)
+    {
+        mIsNeedToDisconnect = aNeedToDisconnect;
+    }
+
+    public boolean isNeedToDisconnect()
+    {
+        return mIsNeedToDisconnect;
     }
 }

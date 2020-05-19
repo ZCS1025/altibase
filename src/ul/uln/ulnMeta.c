@@ -545,9 +545,9 @@ void ulnMetaAdjustIpdByStmt(ulnDbc       *aDbc,
         sMetaMTYPE = ulnMetaGetMTYPE(&sDescRecIpd->mMeta);
 
         ulnMetaAdjustIpdByMeta( aDbc,
-                        &sDescRecIpd->mMeta,
-                        aPrecision,
-                        sMetaMTYPE );
+                                &sDescRecIpd->mMeta,
+                                aPrecision,
+                                sMetaMTYPE );
     }
 }
 

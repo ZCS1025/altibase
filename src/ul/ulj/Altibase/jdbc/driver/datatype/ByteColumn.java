@@ -23,16 +23,13 @@ public class ByteColumn extends CommonBinaryColumn
     ByteColumn()
     {
         super(LENGTH_SIZE_INT16);
+        addMappedJdbcTypeSet(AltibaseTypes.BYTE);
+        addMappedJdbcTypeSet(AltibaseTypes.BINARY);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.BYTE;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.BYTE, AltibaseTypes.BINARY };
     }
 
     public String getDBColumnTypeName()

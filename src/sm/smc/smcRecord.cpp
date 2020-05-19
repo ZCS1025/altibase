@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcRecord.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcRecord.cpp 84802 2019-01-25 05:01:12Z justin.kwon $
  **********************************************************************/
 
 #include <idl.h>
@@ -230,12 +230,7 @@ IDE_RC smcRecord::insertVersion( idvSQL*          /*aStatistics*/,
                     sCurLobDesc = (smcLobDesc*)(sNewFixRowPtr + sCurColumn->offset);
 
                     // prepare에서 기존 LobDesc를 old version으로 인식하기 때문에 초기화
-                    sCurLobDesc->flag        = SM_VCDESC_MODE_IN;
-                    sCurLobDesc->length      = 0;
-                    sCurLobDesc->fstPieceOID = SM_NULL_OID;
-                    sCurLobDesc->mLPCHCount  = 0;
-                    sCurLobDesc->mLobVersion = 0;
-                    sCurLobDesc->mFirstLPCH  = NULL;
+                    SMC_LOB_DESC_INIT( sCurLobDesc );
 
                     if(sCurValue->length > 0)
                     {
@@ -3120,10 +3115,9 @@ IDE_RC smcRecord::insertLargeVarColumn( void            * aTrans,
     }
     else
     {
-        IDE_ASSERT( aFstPieceOID != NULL );
-
         /* Store Value In Out-Mode */
-        sValuePartLength = aLength;
+
+        IDE_ASSERT( aFstPieceOID != NULL );
 
         /* =================================================================
          * Value가 SMP_VC_PIECE_MAX_SIZE를 넘는 경우 여러 페이지에 걸쳐 저장하고 넘지
@@ -4160,8 +4154,10 @@ idBool smcRecord::isSameColumnValue( scSpaceID               aSpaceID,
     smpSlotHeader * sSlotHeader;
     idBool          sIsError = ID_FALSE;
     void          * sLogSlotPtr;
+    smxTrans      * sTrans = (smxTrans*)aTrans;
 
     sSlotHeader = (smpSlotHeader *)aRowPtr;
+
     /* BUG-21950: smcRecord::validateUpdateTargeRow에서 In-Memory Commit
      * 상태를 고려해야 함. */
     SMX_GET_SCN_AND_TID( sSlotHeader->mCreateSCN, sRowSCN, sRowTID );
@@ -4199,6 +4195,17 @@ idBool smcRecord::isSameColumnValue( scSpaceID               aSpaceID,
                 sIsError = ID_TRUE;
                 ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                             "[##WARNING ##WARNING!!] The Row is invalid target row\n");
+            }
+            else
+            {
+                /* PROJ-2694 Fetch Across Rollback */
+                if ( ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
+                     ( SM_SCN_IS_LT( &sRowSCN, &(sTrans->mCursorOpenInfSCN) ) == ID_TRUE ) )
+                {
+                    /* holdable cursor open 이전 자신이 생성한 row에 접근했을 경우
+                     * 해당 Tx를 rollback시 cursor를 재활용할 수 없다. */
+                    sTrans->mIsReusableRollback = ID_FALSE;
+                }
             }
         }
         else

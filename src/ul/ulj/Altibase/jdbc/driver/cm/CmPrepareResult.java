@@ -43,10 +43,10 @@ public class CmPrepareResult extends CmStatementIdResult
     public static final int STATEMENT_TYPE_FUNCTION          = STATEMENT_TYPE_SP + 0;
     public static final int STATEMENT_TYPE_PROCEDURE         = STATEMENT_TYPE_SP + 1;
 
-    private int mStatementType;
-    private int mParameterCount;
-    private int mResultSetCount;
-    private boolean mDataArrived;    // BUG-42424 데이터가 서버로부터 전달되었는지 여부를 나타낸다.
+    private int     mStatementType;
+    private int     mParameterCount;
+    private int     mResultSetCount;
+    private boolean mIsPrepared;    // BUG-42424 데이터가 서버로부터 전달되었는지 여부를 나타낸다.
     
     public CmPrepareResult()
     {
@@ -97,7 +97,7 @@ public class CmPrepareResult extends CmStatementIdResult
         return (mStatementType == STATEMENT_TYPE_INSERT);
     }
 
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }
@@ -117,13 +117,25 @@ public class CmPrepareResult extends CmStatementIdResult
         mResultSetCount = aResultSetCount;
     }
 
-    public boolean isDataArrived()
+    public boolean isPrepared()
     {
-        return mDataArrived;
+        return mIsPrepared;
     }
 
-    public void setDataArrived(boolean aNewValue)
+    public void setPrepared(boolean aIsPrepared)
     {
-        this.mDataArrived = aNewValue;
+        mIsPrepared = aIsPrepared;
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuilder sSb = new StringBuilder("CmPrepareResult{");
+        sSb.append("mStatementType=").append(mStatementType);
+        sSb.append(", mParameterCount=").append(mParameterCount);
+        sSb.append(", mResultSetCount=").append(mResultSetCount);
+        sSb.append(", mIsPrepared=").append(mIsPrepared);
+        sSb.append('}');
+        return sSb.toString();
     }
 }

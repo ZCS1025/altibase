@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdd.cpp 82209 2018-02-07 07:33:37Z returns $
+ * $Id: qdd.cpp 83203 2018-06-07 01:43:19Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -581,6 +581,18 @@ IDE_RC qdd::validateDropIndex(qcStatement * aStatement )
         // Nothing to do.
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_CANNOT_DROP_SYSTEM_INDEX);
@@ -880,10 +892,15 @@ IDE_RC qdd::validateTruncateTable(qcStatement * aStatement)
                 /* Nothing to do */
             }
         }
+    
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
     }
     else
     {
-        /* Nothing to do */
+        // Nothing to do.
     }
 
     return IDE_SUCCESS;

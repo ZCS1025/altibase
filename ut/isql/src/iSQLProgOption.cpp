@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProgOption.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLProgOption.cpp 82803 2018-04-17 00:20:32Z reznoa $
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -704,6 +704,10 @@ IDE_RC iSQLProgOption::ReadEnvironment()
         if (sConnType == ISQL_CONNTYPE_SSL)
         {
             sCharData = idlOS::getenv(ENV_ALTIBASE_SSL_PORT_NO);
+        }
+        else if (sConnType == ISQL_CONNTYPE_IB) /* PROJ-2681 */
+        {
+            sCharData = idlOS::getenv(ENV_ALTIBASE_IB_PORT_NO);
         }
         else
         {

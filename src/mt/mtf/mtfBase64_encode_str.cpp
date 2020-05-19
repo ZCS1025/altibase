@@ -105,6 +105,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfBase64_encodeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -21,7 +21,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smxTrans.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTrans.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -80,8 +80,9 @@ IDE_RC smxTrans::initializeStatic()
                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                   ID_FALSE,							/* ForcePooling */
                   ID_TRUE,							/* GarbageCollection */
-                  ID_TRUE)							/* HWCacheLine */
-              != IDE_SUCCESS );
+                  ID_TRUE,                          /* HWCacheLine */
+                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type */) 
+              != IDE_SUCCESS);			
 
     IDE_TEST( mLobCursorPool.initialize(
                   IDU_MEM_SM_SMX,
@@ -94,8 +95,9 @@ IDE_RC smxTrans::initializeStatic()
                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                   ID_FALSE,							/* ForcePooling */
                   ID_TRUE,							/* GarbageCollection */
-                  ID_TRUE)							/* HWCacheLine */
-              != IDE_SUCCESS );
+                  ID_TRUE,                          /* HWCacheLine */
+                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+               != IDE_SUCCESS);			
 
     IDE_TEST( mLobColBufPool.initialize(
                   IDU_MEM_SM_SMX,
@@ -108,8 +110,9 @@ IDE_RC smxTrans::initializeStatic()
                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                   ID_FALSE,							/* ForcePooling */
                   ID_TRUE,							/* GarbageCollection */
-                  ID_TRUE)							/* HwCacheLine */
-              != IDE_SUCCESS );
+                  ID_TRUE,							/* HwCacheLine */
+                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+               != IDE_SUCCESS);			
 
     smcLob::initializeFixedTableArea();
     sdcLob::initializeFixedTableArea();
@@ -283,8 +286,9 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
                                      IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,			 // AlignByte
                                      ID_FALSE,									 // ForcePooling 
                                      ID_TRUE,									 // GarbageCollection
-                                     ID_TRUE)									 // HWCacheLine
-             != IDE_SUCCESS );
+                                     ID_TRUE,                                    /* HWCacheLine */
+                                     IDU_MEMPOOL_TYPE_LEGACY                     /* mempool type*/) 
+              != IDE_SUCCESS);			
 
     IDE_TEST( mVolPrivatePageListMemPool.initialize(
                                      IDU_MEM_SM_SMX,
@@ -297,8 +301,9 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
                                      IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,			 // AlignByte
                                      ID_FALSE,									 // ForcePooling
                                      ID_TRUE,									 // GarbageCollection
-                                     ID_TRUE)									 // HWCacheLine
-             != IDE_SUCCESS );
+                                     ID_TRUE,                                    /* HWCacheLine */
+                                     IDU_MEMPOOL_TYPE_LEGACY                     /* mempool type */) 
+              != IDE_SUCCESS);			
 
     //PROJ-1362
     //fix BUG-21311
@@ -531,6 +536,9 @@ IDE_RC smxTrans::init()
         SM_SET_SCN_INFINITE( &mMinDskViewSCN );
         SM_SET_SCN_INFINITE( &mFstDskViewSCN );
 
+        /* 해당 Tx에서 holdable cursor가 열렸을때의 infinite SCN */
+        SM_INIT_SCN( &mCursorOpenInfSCN ); 
+
         // BUG-26881 잘못된 CTS stamping으로 access할 수 없는 row를 접근함
         SM_SET_SCN_INFINITE( &mOldestFstViewSCN );
 
@@ -589,6 +597,9 @@ IDE_RC smxTrans::init()
     mDiskTBSAccessed   = ID_FALSE;
     mMemoryTBSAccessed = ID_FALSE;
     mMetaTableModified = ID_FALSE;
+
+    mIsReusableRollback = ID_TRUE;
+    mIsCursorHoldable   = ID_FALSE;
 
     // PROJ-2068
     mDPathEntry = NULL;
@@ -909,7 +920,7 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
 
     SM_SET_SCN_INFINITE_AND_TID( &mInfinite, mTransID );
 
-    IDE_ASSERT( mCommitState == SMX_XA_COMPLETE );
+    IDE_TEST( mCommitState != SMX_XA_COMPLETE );
 
     /* PROJ-1381 Fetch Across Commits
      * SMX_TX_END가 아닌 TX의 MinViewSCN 중 가장 작은 값으로 aging하므로,
@@ -918,12 +929,12 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
      * aging 대상이 되어 사라질 수 있다. */
     if ( mLegacyTransCnt == 0 )
     {
-        IDE_ASSERT( mStatus == SMX_TX_END );
+        IDE_TEST( mStatus != SMX_TX_END );
     }
-
+#ifdef DEBUG
     // PROJ-2068 Begin시 DPathEntry는 NULL이어야 한다.
-    IDE_DASSERT( mDPathEntry == NULL );
-
+    IDE_TEST( mDPathEntry != NULL );
+#endif
     /*
      * BUG-42927
      * mEnabledTransBegin == ID_FALSE 이면, smxTrans::begin()도 대기하도록 한다.
@@ -946,7 +957,6 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
 
     mOIDList->init();
     mOIDFreeSlotList.init();
-
 
     mSvpMgr.initialize( this );
     mStatistics = aStatistics;
@@ -1026,6 +1036,21 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+    /* BUG-46782 Begin transaction 디버깅 정보 추가.
+     * 기존에 ASSERT 였던 검증 값을 TEST로 올리고
+     * 상위에서 ASSERT 여부를 판단하도록 수정*/
+    smxTrans::dumpTransInfo();
+
+    ideLog::log( IDE_ERR_0,
+                 "begin Transaction error :\n"
+                 "CommitState : %"ID_UINT32_FMT"\n"
+                 "Status      : %"ID_UINT32_FMT"\n"
+                 "CompResPtr  : %"ID_xPOINTER_FMT"\n"
+                 "DPathEntry  : %"ID_xPOINTER_FMT"\n",
+                 mCommitState,
+                 mStatus,
+                 mCompRes,
+                 mDPathEntry );
 
     if ( sState != 0 )
     {
@@ -1264,7 +1289,8 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
     {
         IDE_TEST( smxLegacyTransMgr::addLegacyTrans( this,  
                                                      sCommitEndLSN,
-                                                     aLegacyTrans )
+                                                     aLegacyTrans,
+                                                     ID_TRUE /* aIsCommit */ )
                   != IDE_SUCCESS );
 
         /* PROJ-1381 Fetch Across Commits
@@ -1397,7 +1423,8 @@ IDE_RC smxTrans::addPrivatePageListToTableOnPartialAbort()
     return IDE_FAILURE;
 }
 
-IDE_RC smxTrans::abort()
+IDE_RC smxTrans::abort( idBool    aIsLegacyTrans, 
+                        void   ** aLegacyTrans )
 {
     smLSN      sAbortEndLSN = {0,0};
     smSCN      sDummySCN;
@@ -1524,6 +1551,23 @@ IDE_RC smxTrans::abort()
      * [3] 디스크 관리자를 위한 pending operation들을 수행
      * ================================================================ */
     IDE_TEST( executePendingList( ID_FALSE ) != IDE_SUCCESS );
+
+    /* PROJ-2694 Fetch Across Rollback */
+    if ( aIsLegacyTrans == ID_TRUE )
+    {
+        /* rollback시에는 OID list를 모두 정리하므로 OID list를 달아줄 필요가 없다. */
+        IDE_TEST( smxLegacyTransMgr::addLegacyTrans( this,
+                                                     sAbortEndLSN,
+                                                     aLegacyTrans,
+                                                     ID_FALSE /* aIsCommit*/ )
+                  != IDE_SUCCESS );
+
+        mLegacyTransCnt++;
+    }
+    else
+    {
+        /* do nothing... */
+    }
 
     sTempStatistics    = mStatistics;
     sTempTransID       = mTransID;
@@ -3161,10 +3205,10 @@ IDE_RC smxTrans::begin4LayerCall(void   * aTrans,
 {
     IDE_ASSERT( aTrans != NULL );
 
-    return  ((smxTrans*)aTrans)->begin(aStatistics,
-                                       aFlag,
-                                       SMX_NOT_REPL_TX_ID);
-
+    IDE_ASSERT(((smxTrans*)aTrans)->begin( aStatistics,
+                                           aFlag,
+                                           SMX_NOT_REPL_TX_ID ) == IDE_SUCCESS );
+    return  IDE_SUCCESS;
 }
 // for  fix bug-8084
 IDE_RC smxTrans::abort4LayerCall(void* aTrans)
@@ -3172,7 +3216,8 @@ IDE_RC smxTrans::abort4LayerCall(void* aTrans)
 
     IDE_ASSERT( aTrans != NULL );
 
-    return  ((smxTrans*)aTrans)->abort();
+    return  ((smxTrans*)aTrans)->abort( ID_FALSE, /* aIsLegacyTrans */
+                                        NULL      /* aLegacyTrans */ );
 }
 // for  fix bug-8084.
 IDE_RC smxTrans::commit4LayerCall(void* aTrans)
@@ -4057,7 +4102,7 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
     IDE_ASSERT( (SMI_TABLE_TYPE_IS_MEMORY(   (smcTableHeader*)aTable ) == ID_TRUE ) ||
                 (SMI_TABLE_TYPE_IS_VOLATILE( (smcTableHeader*)aTable ) == ID_TRUE ) );
 
-    IDE_TEST_RAISE( mCurLobCursorID == UINT_MAX, overflowLobCursorID);
+    IDE_TEST_RAISE( mCurLobCursorID == ID_UINT_MAX, overflowLobCursorID);
 
     /* TC/FIT/Limit/sm/smx/smxTrans_openLobCursor1_malloc.sql */
     IDU_FIT_POINT_RAISE( "smxTrans::openLobCursor1::malloc",
@@ -4223,7 +4268,7 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
     //disk table이어야 한다.
     IDE_ASSERT( SMI_TABLE_TYPE_IS_DISK( (smcTableHeader*)aTable ) == ID_TRUE );
 
-    IDE_TEST_RAISE( mCurLobCursorID == UINT_MAX, overflowLobCursorID);
+    IDE_TEST_RAISE( mCurLobCursorID == ID_UINT_MAX, overflowLobCursorID);
 
     /*
      * alloc Lob Cursor
@@ -5126,6 +5171,7 @@ void smxTrans::dumpTransInfo()
                 "MinDskViewSCN   : 0x%"ID_XINT64_FMT"\n"
                 "FstDskViewSCN   : 0x%"ID_XINT64_FMT"\n"
                 "OldestFstViewSCN: 0x%"ID_XINT64_FMT"\n"
+                "CursorOpenSCN   : 0x%"ID_XINT64_FMT"\n"
                 "CommitSCN       : 0x%"ID_XINT64_FMT"\n"
                 "Infinite        : 0x%"ID_XINT64_FMT"\n"
                 "Status          : 0x%"ID_XINT32_FMT"\n"
@@ -5164,7 +5210,8 @@ void smxTrans::dumpTransInfo()
                 "FreeInsUndoSegFlag : %"ID_UINT32_FMT"\n"
                 "DiskTBSAccessed    : %"ID_UINT32_FMT"\n"
                 "MemoryTBSAccessed  : %"ID_UINT32_FMT"\n"
-                "MetaTableModified  : %"ID_UINT32_FMT"\n",
+                "MetaTableModified  : %"ID_UINT32_FMT"\n"
+                "IsReusableRollback : %"ID_UINT32_FMT"\n",
                 mSlotN,
                 mTransID,
                 mTransID,
@@ -5175,6 +5222,7 @@ void smxTrans::dumpTransInfo()
                 mMinDskViewSCN,
                 mFstDskViewSCN,
                 mOldestFstViewSCN,
+                mCursorOpenInfSCN,
                 mCommitSCN,
                 mInfinite,
                 mStatus,
@@ -5219,5 +5267,6 @@ void smxTrans::dumpTransInfo()
                 mFreeInsUndoSegFlag,
                 mDiskTBSAccessed,
                 mMemoryTBSAccessed,
-                mMetaTableModified );
+                mMetaTableModified,
+                mIsReusableRollback );
 }

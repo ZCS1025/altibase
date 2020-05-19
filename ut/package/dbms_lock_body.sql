@@ -80,6 +80,22 @@ begin
     dummy := sp_sleep( seconds );
 end sleep;
 
+
+--  Suspend the session for the specified period of time.
+--  Input parameters:
+--    seconds
+--      In seconds, currently the maximum resolution is in hundreths of
+--      a second (e.g., 1.00, 1.01, .99 are all legal and distinct values).
+--    microseconds
+--      from 1 to 999999
+procedure sleep2(seconds in number, microseconds in number)
+as
+    dummy integer;
+begin
+    dummy := sp_sleep( seconds, microseconds );
+end sleep2;
+
+
 end dbms_lock;
 /
 

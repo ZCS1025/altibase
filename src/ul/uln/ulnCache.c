@@ -775,7 +775,9 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
     // ulnFlushAndReadProtocol을 호출하기 위해 sDbc를 얻음
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     ACI_TEST_RAISE( ulnCacheHasLob( aCache ) == ACP_FALSE, LABEL_SKIP_CLOSE );
 
     if (sStmt->mParentStmt != NULL)
@@ -862,6 +864,11 @@ ACI_RC ulnCacheCloseLobInCurrentContents(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     /* BUG-38818 Prevent to fail a assertion in ulnCacheInitialize() */

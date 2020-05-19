@@ -162,7 +162,6 @@ void sdpstRtBMP::findFreeItBMP( sdpstBMPHdr       * aBMPHdr,
 
     sNxtItBMP   = SD_NULL_PID;
     sFreeSlotNo = SDPST_INVALID_SLOTNO;
-    sSlotPtr    = sdpstBMP::getMapPtr( aBMPHdr );
 
     /* HWM과 동일 RtBMP이면, Free ItBMP 탐색은 HWM 까지만 한다. */
     sHWMPos = sdpstStackMgr::getSeekPos( &aHWM->mStack, SDPST_RTBMP );

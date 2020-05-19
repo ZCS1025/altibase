@@ -70,6 +70,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfGeoCollectionFromTextCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

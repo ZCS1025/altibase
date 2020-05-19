@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smapManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smapManager.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <ide.h>
@@ -58,11 +58,11 @@ IDE_RC smapChild::doJob()
     UInt          sState = 0;
 
     IDE_TEST( smxTransMgr::alloc( (smxTrans**)&sTrans ) != IDE_SUCCESS );
-    IDE_TEST( sTrans->begin( NULL,
-                             ( SMI_TRANSACTION_REPL_NONE |
-                               SMI_COMMIT_WRITE_NOWAIT ),
-                             SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTrans->begin( NULL,
+                               ( SMI_TRANSACTION_REPL_NONE |
+                                 SMI_COMMIT_WRITE_NOWAIT ),
+                               SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     //refine table
     IDE_TEST(smaRefineDB::refineTable( sTrans,
@@ -93,7 +93,8 @@ IDE_RC smapChild::doJob()
     IDE_POP();
     if(sTrans != NULL)
     {
-        sTrans->abort();
+        sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                       NULL      /* aLegacyTrans */ );
         smxTransMgr::freeTrans( sTrans );
     }
     return IDE_FAILURE;
@@ -380,8 +381,9 @@ IDE_RC smapManager::doIt(SInt aLoaderCnt)
                                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                   ID_FALSE,							/* ForcePooling */
                                   ID_TRUE,							/* GarbageCollection */
-                                  ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                  ID_TRUE,                          /* HWCacheLine */
+                                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     /* TC/FIT/Limit/sm/sma/smapManager_doIt_malloc.sql */
     IDU_FIT_POINT_RAISE( "smapManager::doIt::malloc",
@@ -415,11 +417,11 @@ IDE_RC smapManager::doIt(SInt aLoaderCnt)
      *  [2] Catalog Table에 대해 RefineDB를 수행
      * ----------------------------------------------*/
     IDE_TEST( smxTransMgr::alloc( (smxTrans**)&sTrans ) != IDE_SUCCESS );
-    IDE_TEST( sTrans->begin( NULL,
-                             ( SMI_TRANSACTION_REPL_NONE |
-                               SMI_COMMIT_WRITE_NOWAIT ),
-                             SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTrans->begin( NULL,
+                               ( SMI_TRANSACTION_REPL_NONE |
+                                 SMI_COMMIT_WRITE_NOWAIT ),
+                               SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     IDE_TEST( smaRefineDB::refineTempCatalogTable(sTrans,
                           (smcTableHeader *)smmManager::m_catTempTableHeader)
@@ -463,7 +465,8 @@ IDE_RC smapManager::doIt(SInt aLoaderCnt)
 
     if(sTrans != NULL)
     {
-        sTrans->abort();
+        sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                       NULL      /* aLegacyTrans */ );
         smxTransMgr::freeTrans( sTrans);
     }
 

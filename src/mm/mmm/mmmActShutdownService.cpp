@@ -25,7 +25,6 @@
 #include <mmcPlanCache.h>
 #include <mmtAuditManager.h>
 #include <mmtJobManager.h>
-#include <mmtIPCDAProcMonitor.h>
 #include <mmtSnapshotExportManager.h>
 
 static IDE_RC mmmPhaseActionShutdownService(mmmPhase         /*aPhase*/,
@@ -34,9 +33,6 @@ static IDE_RC mmmPhaseActionShutdownService(mmmPhase         /*aPhase*/,
 {
     /* PROJ-2626 Snapshot Export */
     IDE_TEST(mmtSnapshotExportManager::finalize() != IDE_SUCCESS );
-
-    /* PROJ-2616 */
-    IDE_TEST( mmtIPCDAProcMonitor::finalize() != IDE_SUCCESS );
 
     /* PROJ-1438 Job Scheduler */
     IDE_TEST(mmtJobManager::finalize() != IDE_SUCCESS );

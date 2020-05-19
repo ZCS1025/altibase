@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiLogRec.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiLogRec.h 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SMI_LOG_REC_H_
@@ -76,6 +76,7 @@ typedef struct smiLogUnion
         smrDiskLog      mDisk;
         smrLobLog       mLob;
         smrTableMetaLog mTableMetaLog;  // Tabe Meta Log Record
+        smrDDLStmtMeta  mDDLStmtMeta;
     };
 } smiLogUnion;
 
@@ -101,7 +102,8 @@ typedef enum
     SMI_LT_DISK_CHANGE,          // disk의 update 로그
     SMI_LT_LOB_FOR_REPL,         // LOB operation 로그
     SMI_LT_DDL,                  // DDL Transaction
-    SMI_LT_TABLE_META            // Table Meta
+    SMI_LT_TABLE_META,           // Table Meta
+    SMI_LT_DDL_QUERY_STRING      // DDL Statement
 } smiLogType;
 
 // PROJ-1723
@@ -414,6 +416,10 @@ public :
     UInt           getTblMetaLogBodySize();
     void         * getTblMetaLogBodyPtr();
     smiTableMeta * getTblMeta();
+    
+    UInt             getDDLStmtMetaLogBodySize();
+    void           * getDDLStmtMetaLogBodyPtr();
+    smiDDLStmtMeta * getDDLStmtMeta();
 
     inline iduMemPool * getChainedValuePool()
     {

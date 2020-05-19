@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvProcVar.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvProcVar.h 84499 2018-12-04 01:47:06Z ahra.cho $
  **********************************************************************/
 
 #ifndef _Q_QSV_PROC_VAR_H_
@@ -159,6 +159,18 @@ public:
         qtcNode       * aVarNode,
         idBool        * aIsFound,
         qsVariables  ** aVariable );
+
+    // BUG-46032
+    static IDE_RC makeInternalArrayVariable( qcStatement      * aStatement, 
+                                             qtcNode          * aNode,      
+                                             qsVariables      * aParentArray,
+                                             qsVariables     ** aChildArray );
+
+    // BUG-46174
+    static IDE_RC makeRecordColumnByName( qcStatement      * aStatement,
+                                          qtcNode          * aRecord,
+                                          qcNamePosition   * aFieldName,
+                                          qtcNode         ** aColumn );
 
 private:
 

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmPkg.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmPkg.cpp 84060 2018-09-21 02:18:40Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -485,7 +485,7 @@ IDE_RC qcmPkg::getPkgExistWithEmptyByNamePtr(
     qcNameCharBuffer      sPkgNameBuffer;
     mtdCharType         * sPkgName = ( mtdCharType * ) &sPkgNameBuffer;
     mtcColumn           * sFirsttMtcColumn;
-    mtcColumn           * sSceondMtcColumn;
+    mtcColumn           * sSecondMtcColumn;
     mtcColumn           * sThirdMtcColumn;
 
     if ( aPkgNameSize > QC_MAX_OBJECT_NAME_LEN )
@@ -514,7 +514,7 @@ IDE_RC qcmPkg::getPkgExistWithEmptyByNamePtr(
 
     IDE_TEST( smiGetTableColumns( gQcmPkgs,
                                   QCM_PKGS_PKGTYPE_COL_ORDER,
-                                  (const smiColumn**)&sSceondMtcColumn )
+                                  (const smiColumn**)&sSecondMtcColumn )
               != IDE_SUCCESS );
 
     IDE_TEST( smiGetTableColumns( gQcmPkgs,
@@ -527,7 +527,7 @@ IDE_RC qcmPkg::getPkgExistWithEmptyByNamePtr(
                                     & sThirdMetaRange,
                                     sFirsttMtcColumn,
                                     ( const void * ) sPkgName,
-                                    sSceondMtcColumn,
+                                    sSecondMtcColumn,
                                     & sObjTypeData,
                                     sThirdMtcColumn,
                                     & sUserIdData,
@@ -1751,10 +1751,19 @@ IDE_RC qcmPkg::relInsert(
     SChar  sRelObjectName [ QC_MAX_OBJECT_NAME_LEN + 1 ];
     SChar *sBuffer;
 
-    IDE_TEST( qcmUser::getUserID( aStatement,
-                                  aRelatedObjList->userName.name,
-                                  aRelatedObjList->userName.size,
-                                  & sRelUserID ) != IDE_SUCCESS );
+    // BUG-46395 public synonym을 고려한다.
+    if ( ( aRelatedObjList->objectType == QS_SYNONYM ) &&
+         ( aRelatedObjList->userName.size == 0 ) )
+    {
+        sRelUserID = QC_PUBLIC_USER_ID;
+    }
+    else
+    {
+        IDE_TEST( qcmUser::getUserID( aStatement,
+                                      aRelatedObjList->userName.name,
+                                      aRelatedObjList->userName.size,
+                                      & sRelUserID ) != IDE_SUCCESS );
+    }
 
     idlOS::memcpy(sRelObjectName,
                   aRelatedObjList-> objectName.name,
@@ -1767,18 +1776,35 @@ IDE_RC qcmPkg::relInsert(
                                     &sBuffer)
              != IDE_SUCCESS);
 
-    idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
-                     "INSERT INTO SYS_PACKAGE_RELATED_ VALUES ( "
-                     QCM_SQL_UINT32_FMT", "                     // 1 USER_ID
-                     QCM_SQL_BIGINT_FMT", "                     // 2 PACKAGE_OID
-                     QCM_SQL_INT32_FMT", "                      // 3 RELATED_USER_ID
-                     QCM_SQL_CHAR_FMT", "                       // 4 RELATED_OBJECT_NAME
-                     QCM_SQL_INT32_FMT") ",                     // 5 RELATED_OBJECT_TYPE
-                     aPkgParse-> userID,                        // 1 USER_ID
-                     QCM_OID_TO_BIGINT( aPkgParse->pkgOID ),    // 2 PACKAGE_OID
-                     sRelUserID,                                // 3 RELATED_USER_ID
-                     sRelObjectName,                            // 4 RELATED_OBJECT_NAME
-                     aRelatedObjList-> objectType );            // 5 RELATED_OBJECT_TYPE
+    if ( sRelUserID != QC_PUBLIC_USER_ID )
+    {
+        idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
+                         "INSERT INTO SYS_PACKAGE_RELATED_ VALUES ( "
+                         QCM_SQL_UINT32_FMT", "                     // 1 USER_ID
+                         QCM_SQL_BIGINT_FMT", "                     // 2 PACKAGE_OID
+                         QCM_SQL_INT32_FMT", "                      // 3 RELATED_USER_ID
+                         QCM_SQL_CHAR_FMT", "                       // 4 RELATED_OBJECT_NAME
+                         QCM_SQL_INT32_FMT") ",                     // 5 RELATED_OBJECT_TYPE
+                         aPkgParse-> userID,                        // 1 USER_ID
+                         QCM_OID_TO_BIGINT( aPkgParse->pkgOID ),    // 2 PACKAGE_OID
+                         sRelUserID,                                // 3 RELATED_USER_ID
+                         sRelObjectName,                            // 4 RELATED_OBJECT_NAME
+                         aRelatedObjList-> objectType );            // 5 RELATED_OBJECT_TYPE
+    }
+    else
+    {
+        idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
+                         "INSERT INTO SYS_PACKAGE_RELATED_ VALUES ( "
+                         QCM_SQL_UINT32_FMT", "                     // 1 USER_ID
+                         QCM_SQL_BIGINT_FMT", "                     // 2 PACKAGE_OID
+                         "NULL, "                                   // (3) NULL value
+                         QCM_SQL_CHAR_FMT", "                       // 4 RELATED_OBJECT_NAME
+                         QCM_SQL_INT32_FMT") ",                     // 5 RELATED_OBJECT_TYPE
+                         aPkgParse->userID,                         // 1 USER_ID
+                         QCM_OID_TO_BIGINT( aPkgParse->pkgOID ),    // 2 PACKAGE_OID
+                         sRelObjectName,                            // 4 RELATED_OBJECT_NAME
+                         aRelatedObjList-> objectType );            // 5 RELATED_OBJECT_TYPE
+    }
 
     IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
                                  sBuffer,
@@ -1837,12 +1863,48 @@ IDE_RC qcmModifyStatusOfRelatedPkgToInvalid (
 
 }
 
+// BUG-46416
+IDE_RC qcmModifyStatusOfRelatedPkgToInvalidTx (
+    idvSQL              * /* aStatistics */,
+    const void          * aRow,
+    qcStatement         * aStatement )
+{
+    qsOID           sPkgOID;
+    SLong           sSLongOID;
+    mtcColumn     * sPkgOIDMtcColumn;
+
+    IDE_TEST( smiGetTableColumns( gQcmPkgRelated,
+                                  QCM_PKG_RELATED_PKGOID_COL_ORDER,
+                                  (const smiColumn**)&sPkgOIDMtcColumn )
+              != IDE_SUCCESS );
+
+    qcm::getBigintFieldValue (
+        aRow,
+        sPkgOIDMtcColumn,
+        & sSLongOID );
+    // BUGBUG 32bit machine에서 동작 시 SLong(64bit)변수를 uVLong(32bit)변수로
+    // 변환하므로 데이터 손실 가능성 있음
+    sPkgOID = (qsOID)sSLongOID;
+
+    IDE_TEST( qsxPkg::makeStatusInvalidTx( aStatement,
+                                           sPkgOID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
+}
+
 IDE_RC qcmPkg::relSetInvalidPkgOfRelated(
     qcStatement    * aStatement,
     UInt             aRelatedUserID,
     SChar          * aRelatedObjectName,
     UInt             aRelatedObjectNameSize,
-    qsObjectType     aRelatedObjectType)
+    qsObjectType     aRelatedObjectType,
+    idBool           aIsUseTx )
 {
     smiRange              sRange;
     qtcMetaRangeColumn    sFirstMetaRange;
@@ -1855,7 +1917,7 @@ IDE_RC qcmPkg::relSetInvalidPkgOfRelated(
     qcNameCharBuffer      sObjectNameBuffer;
     mtdCharType         * sObjectName = ( mtdCharType * ) & sObjectNameBuffer ;
     mtcColumn           * sFirstMtcColumn;
-    mtcColumn           * sSceondMtcColumn;
+    mtcColumn           * sSecondMtcColumn;
     mtcColumn           * sThirdMtcColumn;
 
     sUserIdData = (mtdIntegerType) aRelatedUserID;
@@ -1874,7 +1936,7 @@ IDE_RC qcmPkg::relSetInvalidPkgOfRelated(
 
     IDE_TEST( smiGetTableColumns( gQcmPkgRelated,
                                   QCM_PKG_RELATED_RELATEDOBJECTNAME_COL_ORDER,
-                                  (const smiColumn**)&sSceondMtcColumn )
+                                  (const smiColumn**)&sSecondMtcColumn )
               != IDE_SUCCESS );
 
     IDE_TEST( smiGetTableColumns( gQcmPkgRelated,
@@ -1888,7 +1950,7 @@ IDE_RC qcmPkg::relSetInvalidPkgOfRelated(
         & sThirdMetaRange,
         sFirstMtcColumn,
         & sUserIdData,
-        sSceondMtcColumn,
+        sSecondMtcColumn,
         (const void*) sObjectName,
         sThirdMtcColumn,
         & sObjectTypeIntData,
@@ -1901,8 +1963,8 @@ IDE_RC qcmPkg::relSetInvalidPkgOfRelated(
             & sRange,
             gQcmPkgRelatedIndex
             [ QCM_PKG_RELATED_RELUSERID_RELOBJECTNAME_RELOBJECTTYPE ],
-            (qcmSetStructMemberFunc )
-            qcmModifyStatusOfRelatedPkgToInvalid,
+            (aIsUseTx == ID_FALSE)?(qcmSetStructMemberFunc ) qcmModifyStatusOfRelatedPkgToInvalid:
+                                   (qcmSetStructMemberFunc ) qcmModifyStatusOfRelatedPkgToInvalidTx,
             aStatement, /* argument to qcmSetStructMemberFunc */
             0,          /* aMetaStructDistance.
                            0 means do not change pointer to aStatement */
@@ -1972,7 +2034,7 @@ IDE_RC qcmPkg::relSetInvalidPkgBody(
     qcNameCharBuffer      sObjectNameBuffer;
     mtdCharType         * sObjectName = ( mtdCharType * ) & sObjectNameBuffer ;
     mtcColumn           * sFirstMtcColumn;
-    mtcColumn           * sSceondMtcColumn;
+    mtcColumn           * sSecondMtcColumn;
     mtcColumn           * sThirdMtcColumn;
 
     sUserIdData = (mtdIntegerType) aPkgBodyUserID;
@@ -1991,7 +2053,7 @@ IDE_RC qcmPkg::relSetInvalidPkgBody(
 
     IDE_TEST( smiGetTableColumns( gQcmPkgs,
                                   QCM_PKGS_PKGTYPE_COL_ORDER,
-                                  (const smiColumn**)&sSceondMtcColumn )
+                                  (const smiColumn**)&sSecondMtcColumn )
               != IDE_SUCCESS );
 
     IDE_TEST( smiGetTableColumns( gQcmPkgs,
@@ -2005,7 +2067,7 @@ IDE_RC qcmPkg::relSetInvalidPkgBody(
         & sThirdMetaRange,
         sFirstMtcColumn,
         (const void*) sObjectName,
-        sSceondMtcColumn,
+        sSecondMtcColumn,
         & sObjectTypeIntData,
         sThirdMtcColumn,
         & sUserIdData,

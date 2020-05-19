@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSumKeep.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfSumKeep.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -218,6 +218,7 @@ static const mtcExecute mtfSumKeepExecuteFloat = {
     mtfSumKeepFinalizeFloat,
     mtfSumKeepCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -574,10 +575,11 @@ IDE_RC mtfSumKeepCalculateDouble( mtcNode     * aNode,
 static const mtcExecute mtfSumKeepExecuteDouble = {
     mtfSumKeepInitializeDouble,
     mtfSumKeepAggregateDouble,
-    NULL,
+    mtf::calculateNA,
     mtfSumKeepFinalizeDouble,
     mtfSumKeepCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -587,10 +589,11 @@ static const mtcExecute mtfSumKeepExecuteDouble = {
 static const mtcExecute mtfSumKeepExecuteDoubleFast = {
     mtfSumKeepInitializeDouble,
     mtfSumKeepAggregateDoubleFast,
-    NULL,
+    mtf::calculateNA,
     mtfSumKeepFinalizeDouble,
     mtfSumKeepCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1112,10 +1115,11 @@ IDE_RC mtfSumKeepCalculateBigint( mtcNode     * aNode,
 static const mtcExecute mtfSumKeepExecuteBigint = {
     mtfSumKeepInitializeBigint,
     mtfSumKeepAggregateBigint,
-    NULL,
+    mtf::calculateNA,
     mtfSumKeepFinalizeBigint,
     mtfSumKeepCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1126,10 +1130,11 @@ static const mtcExecute mtfSumKeepExecuteBigint = {
 static const mtcExecute mtfSumKeepExecuteBigintFast = {
     mtfSumKeepInitializeBigint,
     mtfSumKeepAggregateBigintFast,
-    NULL,
+    mtf::calculateNA,
     mtfSumKeepFinalizeBigint,
     mtfSumKeepCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

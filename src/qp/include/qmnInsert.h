@@ -43,6 +43,9 @@
 //-----------------
 // Code Node Flags
 //-----------------
+#define QMNC_INST_PARTITIONED_MASK  (0x00000001)
+#define QMNC_INST_PARTITIONED_FALSE (0x00000000)
+#define QMNC_INST_PARTITIONED_TRUE  (0x00000001)
 
 //-----------------
 // Data Node Flags

@@ -74,6 +74,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfMsgRcvQueueCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

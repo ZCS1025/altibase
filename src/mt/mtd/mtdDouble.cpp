@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdDouble.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtdDouble.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -33,8 +33,9 @@
 
 extern mtdModule mtdDouble;
 
-ULong mtdDoubleNull = ( MTD_DOUBLE_EXPONENT_MASK |
-                        MTD_DOUBLE_FRACTION_MASK );
+/* PROJ-2632 */
+const ULong mtdDoubleNull = ( MTD_DOUBLE_EXPONENT_MASK |
+                              MTD_DOUBLE_FRACTION_MASK );
 
 static IDE_RC mtdInitialize( UInt aNo );
 
@@ -156,7 +157,7 @@ mtdModule mtdDouble = {
     15,
     0,
     0,
-    &mtdDoubleNull,
+    (void*)&mtdDoubleNull, /* PROJ-2632 */
     mtdInitialize,
     mtdEstimate,
     mtdValue,

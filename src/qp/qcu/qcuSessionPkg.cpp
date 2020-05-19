@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcuSessionPkg.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcuSessionPkg.cpp 83637 2018-08-07 05:40:38Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -443,9 +443,6 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
                 }
 
                 break;
-            case QS_TRIGGER_VARIABLE:
-                // Nothing To Do
-                break;
             case QS_CURSOR :
                 sCursor     = ( qsCursors * ) sVariableItem;
 
@@ -473,6 +470,8 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
             case QS_TYPE :
             case QS_PRAGMA_AUTONOMOUS_TRANS :
             case QS_PRAGMA_EXCEPTION_INIT :
+            case QS_TRIGGER_NEW_VARIABLE:
+            case QS_TRIGGER_OLD_VARIABLE:
                 break;
             default:
                 break;
@@ -592,7 +591,8 @@ IDE_RC qcuSessionPkg::initPkgCursors( qcStatement * aQcStmt, qsOID aObjectID )
                 }
                 break;
             case QS_VARIABLE :
-            case QS_TRIGGER_VARIABLE :
+            case QS_TRIGGER_NEW_VARIABLE :
+            case QS_TRIGGER_OLD_VARIABLE :
             case QS_EXCEPTION :
             case QS_TYPE :
             case QS_PRAGMA_AUTONOMOUS_TRANS :
@@ -654,7 +654,8 @@ IDE_RC qcuSessionPkg::finiPkgCursors( qcStatement * aQcStmt,
                           != IDE_SUCCESS );
                 break;
             case QS_VARIABLE :
-            case QS_TRIGGER_VARIABLE :
+            case QS_TRIGGER_NEW_VARIABLE :
+            case QS_TRIGGER_OLD_VARIABLE :
             case QS_EXCEPTION :
             case QS_TYPE :
             case QS_PRAGMA_AUTONOMOUS_TRANS :
@@ -842,7 +843,8 @@ IDE_RC qcuSessionPkg::finiPkgVariable( qcStatement * aStatement,
                                                aStatement )
                           != IDE_SUCCESS );
                 break;
-            case QS_TRIGGER_VARIABLE:
+            case QS_TRIGGER_NEW_VARIABLE:
+            case QS_TRIGGER_OLD_VARIABLE:
             case QS_EXCEPTION : 
             case QS_TYPE :
             case QS_PRAGMA_AUTONOMOUS_TRANS :

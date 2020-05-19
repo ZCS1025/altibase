@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdpTableSpace.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpTableSpace.cpp 84383 2018-11-20 04:18:42Z emlee $
  **********************************************************************/
 
 #include <sdd.h>
@@ -168,6 +168,10 @@ IDE_RC sdpTableSpace::resetTBS( idvSQL           *aStatistics,
                       != IDE_SUCCESS );
         }
     }
+    else
+    {
+        IDE_ERROR( sctTableSpaceMgr::isUndoTableSpace( aSpaceID ) == ID_TRUE );
+    }
 
     return IDE_SUCCESS ;
 
@@ -220,14 +224,15 @@ smiSegMgmtType sdpTableSpace::getSegMgmtType( scSpaceID   aSpaceID )
     if ( sctTableSpaceMgr::hasState( aSpaceID, SCT_SS_INVALID_DISK_TBS )
          == ID_FALSE )
     {
-        if ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO )
+        if ( sctTableSpaceMgr::isUndoTableSpace( aSpaceID ) == ID_TRUE )
         {
             sSegMgmtType = SMI_SEGMENT_MGMT_CIRCULARLIST_TYPE;
         }
         else
         {
-            sCacheHeader  =
-                (sdpSpaceCacheCommon*) sddDiskMgr::getSpaceCache( aSpaceID );
+            IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID ) == ID_TRUE );
+
+            sCacheHeader = (sdpSpaceCacheCommon*) sddDiskMgr::getSpaceCache( aSpaceID );
 
             IDE_ASSERT( sCacheHeader != NULL );
             sSegMgmtType = sCacheHeader->mSegMgmtType;
@@ -281,19 +286,12 @@ IDE_RC sdpTableSpace::doActAllocSpaceCache( idvSQL            * /*aStatistics*/,
 
     IDE_ASSERT( aSpaceNode != NULL );
 
-    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
-         == ID_TRUE )
+    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE )
     {
         sSpaceNode = (sddTableSpaceNode*)aSpaceNode;
         sTBSMgrOp  = getTBSMgmtOP( sSpaceNode );
 
         IDE_ASSERT(sSpaceNode->mExtMgmtType == SMI_EXTENT_MGMT_BITMAP_TYPE );
-
-        sSpaceNode = (sddTableSpaceNode*)aSpaceNode;
-
-        IDE_ASSERT( sSpaceNode->mExtMgmtType == SMI_EXTENT_MGMT_BITMAP_TYPE );
-
-        sTBSMgrOp  = getTBSMgmtOP( sSpaceNode );
 
         IDE_TEST( sTBSMgrOp->mInitialize( aSpaceNode->mID,
                                           sSpaceNode->mExtMgmtType,
@@ -321,14 +319,11 @@ IDE_RC sdpTableSpace::doActFreeSpaceCache( idvSQL            * /*aStatistics*/,
 
     IDE_ASSERT( aSpaceNode != NULL );
 
-    if ( sctTableSpaceMgr::isDiskTableSpace(aSpaceNode->mID)
-         == ID_TRUE )
+    if ( sctTableSpaceMgr::isDiskTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
-        sTBSMgrOp  = getTBSMgmtOP(
-            (sddTableSpaceNode*)aSpaceNode );
+        sTBSMgrOp  = getTBSMgmtOP( (sddTableSpaceNode*)aSpaceNode );
 
-        sCache = (sdpSpaceCacheCommon *)sddDiskMgr::getSpaceCache( 
-            aSpaceNode->mID );
+        sCache = (sdpSpaceCacheCommon *)sddDiskMgr::getSpaceCache( aSpaceNode->mID );
         IDE_ASSERT( sCache != NULL );
 
         // Space Cache 해제
@@ -399,27 +394,19 @@ IDE_RC sdpTableSpace::doRefineSpaceCache( idvSQL            * /* aStatistics*/ ,
 
     IDE_ASSERT( aSpaceNode != NULL );
 
-    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
-         == ID_TRUE )
+    //temp tablespace에 대한 refine은 reset시에 실시한다.
+    if ( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE ) &&
+         ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) == ID_FALSE ) )
     {
         sSpaceNode = (sddTableSpaceNode*)aSpaceNode;
 
-        //temp tablespace에 대한 refine은 reset시에 실시한다.
-        if( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) == ID_FALSE )
-        {
-            sTBSMgrOp  = getTBSMgmtOP( sSpaceNode );
+            sTBSMgrOp = getTBSMgmtOP( sSpaceNode );
 
             if( sTBSMgrOp->mRefineSpaceCache != NULL )
             {
                 IDE_TEST( sTBSMgrOp->mRefineSpaceCache( sSpaceNode )
-                        != IDE_SUCCESS );
+                          != IDE_SUCCESS );
             }
-
-        }
-   
-
-
-
     }
 
     return IDE_SUCCESS;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnManager.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnManager.h 82916 2018-04-26 06:29:17Z seulki $
  **********************************************************************/
 
 #ifndef _O_SMN_MANAGER_H_
@@ -176,7 +176,11 @@ class smnManager
 
     /* index module에서 smp, svp에 상관없이 사용하는 함수 */
     static inline idBool checkSCN( smiIterator *aIterator,
-                                   const void  *aRow );
+                                   const void  *aRow,
+                                   idBool      *aCanReusableRollback );
+
+    static inline idBool checkCanReusableRollback( smiIterator * aIterator,
+                                                   const void  * aRow );
 
     static IDE_RC lockRow( smiIterator * aIterator);
     
@@ -395,7 +399,8 @@ inline IDE_RC smnManager::dropIndexRuntimeByAbort( smOID        aTableOID,
  * Row에 설정하지 않은 상태이다.
  */
 inline idBool smnManager::checkSCN( smiIterator *aIterator,
-                                    const void  *aRow )
+                                    const void  *aRow,
+                                    idBool      *aCanReusableRollback )
 {
     smSCN     sCreateSCN;
     smSCN     sLimitSCN;
@@ -406,10 +411,17 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
 #ifdef DEBUG
     smSCN     sRowSCNAfterCheck;
 #endif
+    smxTrans *sTrans = (smxTrans*)aIterator->trans;
+
     const     smpSlotHeader* sSlotHeader = NULL;
     idBool    sIsVisible = ID_FALSE;
 
     sSlotHeader = (smpSlotHeader*)aRow;
+
+    if( aCanReusableRollback != NULL )
+    {
+        *aCanReusableRollback = ID_TRUE;
+    }
 
     SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) );
     SM_SET_SCN( &sLimitSCN, &(sSlotHeader->mLimitSCN) );
@@ -433,6 +445,21 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
             if ( SM_SCN_IS_FREE_ROW( sNxtSCN ) ||
                  SM_SCN_IS_LOCK_ROW( sNxtSCN ) )
             {
+                /* PROJ-2694 Fetch Across Rollback
+                 * holdable cursor open 이전 자신이 생성한 row에 접근했을 경우
+                 * 해당 Tx를 rollback시 cursor를 재활용할 수 없다. */
+                if ( ( sRowTID == aIterator->tid ) && 
+                     ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
+                     ( SM_SCN_IS_LT( &sCreateSCN, &( sTrans->mCursorOpenInfSCN ) ) ) &&
+                     ( aCanReusableRollback != NULL ) )
+                {
+                    *aCanReusableRollback = ID_FALSE;
+                }
+                else
+                {
+                    /* nothing to do */
+                }
+
                 sIsVisible = ID_TRUE;
                 break;
             }
@@ -446,6 +473,17 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
                 /* Next Version을 내가 만들었지만 cursor를 열기전에 만들었음 */
                 if ( SM_SCN_IS_GE( &(sLimitSCN), &(aIterator->infinite) ) )
                 {
+
+                    if( ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) && 
+                        ( SM_SCN_IS_GE( &sLimitSCN, &sTrans->mCursorOpenInfSCN ) ) &&
+                        ( aCanReusableRollback != NULL ) )
+                    {
+                        /* PROJ-2694 Fetch Across Rollback 
+                         * holdable cursor open 이전 자신이 생성한 row에 접근했을 경우
+                         * 해당 Tx를 rollback시 cursor를 재활용할 수 없다. */
+                        *aCanReusableRollback = ID_FALSE;
+                    }
+
                     sIsVisible = ID_TRUE;
                     break;
                 }
@@ -538,5 +576,56 @@ inline scGRID * smnManager::getIndexSegGRIDPtr( void * aIndexHeader )
 {
     return ( &((smnIndexHeader *)aIndexHeader)->mIndexSegDesc );
 }
+
+inline idBool smnManager::checkCanReusableRollback( smiIterator * aIterator,
+                                                    const void  * aRow )
+{
+    smSCN     sCreateSCN;
+    smTID     sRowTID = SM_NULL_TID;
+    smSCN     sRowSCN;
+    idBool    sIsReusableRollback = ID_TRUE;
+    smxTrans *sTrans = (smxTrans*)aIterator->trans;
+
+    const   smpSlotHeader   * sSlotHeader = NULL;
+
+    IDE_DASSERT( aIterator != NULL );
+    IDE_DASSERT( aRow != NULL );
+
+    sSlotHeader = (smpSlotHeader*)aRow;
+
+    SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) );
+
+    SMX_GET_SCN_AND_TID( sCreateSCN, sRowSCN, sRowTID );
+    if( SM_SCN_IS_DELETED( sRowSCN ) == ID_TRUE )
+    {
+        /* 해당 row가 이미 삭제되었다면 fetch across rollback과 관계가 없다. */
+        sIsReusableRollback = ID_TRUE;
+    }
+    else
+    {
+        if( sRowTID != aIterator->tid )
+        {
+            /* 다른 Tx의 내용에 접근할 경우 fetch across rollback과 관계가 없다. */
+            sIsReusableRollback = ID_TRUE;
+        }
+        else
+        {
+            if( ( SM_SCN_IS_LT( &sCreateSCN, &( sTrans->mCursorOpenInfSCN ) ) == ID_TRUE ) &&
+                ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) )
+            {
+                /* 접근한 row가 holdable cursor가 열리기 전 생성한 row일 경우 fetch across rollback이 불가능하다.     */
+                sIsReusableRollback = ID_FALSE;
+            }
+            else
+            {
+                /* non holdable cursor이거나 holdable cursor가 열린 후 생성한 row일 경우 fetch across rollback과 관계가 없다. */
+                sIsReusableRollback = ID_TRUE;
+            }
+        }
+    }
+
+    return sIsReusableRollback;
+}
+
 
 #endif /* _O_SMN_MANAGER_H_ */

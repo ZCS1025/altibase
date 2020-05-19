@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvProcType.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvProcType.h 83113 2018-05-29 02:04:30Z ahra.cho $
  **********************************************************************/
 
 #ifndef _Q_QSV_PROC_TYPE_H_
@@ -101,6 +101,10 @@ public:
                                        idBool          * aIsFound,
                                        qsTypes        ** aType );
 
+    // BUG- 46032
+    static IDE_RC makeArrayTypeColumnByModule( iduVarMemList   * aMemory,
+                                               qtcModule       * aRowModule,
+                                               qsTypes        ** aType );
 private:
     static IDE_RC validateRecordTypeDeclare(
         qcStatement    * aStatement,

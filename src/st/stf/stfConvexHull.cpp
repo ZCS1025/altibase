@@ -67,6 +67,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfConvexHullCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

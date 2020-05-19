@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoad.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloLoad.h 84157 2018-10-14 23:36:20Z bethy $
  **********************************************************************/
 
 #ifndef _O_ILO_LOAD_H
@@ -56,7 +56,7 @@ typedef struct iloLoadInsertContext
     SInt    mRealCount;        //입력된 실제 Record수 (-array 사용됨)
     SInt    mArrayCount;
     SInt    mPrevCommitRecCnt;
-    SInt    mLoad;
+    SInt    mLoad4Sleep;   // for sleep, BUG-18707
     SInt    mErrorCount;
     // BUG-28675
     SInt   *mRecordNumber;
@@ -148,8 +148,8 @@ private:
                            SInt                     aIsLog );
 
     /* BUG-32114 aexport must support the import/export of partition tables. */
-    void PrintProgress( ALTIBASE_ILOADER_HANDLE aHandle,
-                        SInt aLoadCount );
+    inline void PrintProgress( ALTIBASE_ILOADER_HANDLE aHandle,
+                               SInt aLoadCount );
 
     /* BUG-42609 code refactoring */
     IDE_RC InitStmts(iloaderHandle *sHandle);
@@ -169,9 +169,9 @@ private:
 
     inline IDE_RC InitContextData(iloLoadInsertContext *aData);
     inline IDE_RC FiniContextData(iloLoadInsertContext *aData);
-    inline SInt   ReadOneRecord(iloLoadInsertContext *aData);
+    inline SInt   ReadRecord(iloLoadInsertContext *aData);
     inline IDE_RC LogError(iloLoadInsertContext *aData, SInt aArrayIndex);
-    inline void   Sleep(SInt aLoad);
+    inline void   Sleep(iloLoadInsertContext *aData);
     inline IDE_RC Callback4Api(iloLoadInsertContext *aData);
     inline IDE_RC SetParamInfo(iloLoadInsertContext *aData);
     inline IDE_RC ExecuteInsertSQL(iloLoadInsertContext *aData);

@@ -20,6 +20,7 @@
 #include <qci.h>
 #include <mmErrorCode.h>
 #include <mmm.h>
+#include <mmcTrans.h>
 #include <mmcSession.h>
 #include <mmcTask.h>
 #include <mmdXa.h>
@@ -144,7 +145,7 @@ qciSessionCallback mmcSession::mCallback =
     /* PROJ-2451 Concurrent Execute Package */
     mmcSession::allocInternalSession,
     mmcSession::freeInternalSession,
-    mmcSession::getSessionTrans,
+    mmcSession::getSessionSmiTrans,
     // PROJ-2446
     mmcSession::getStatisticsCallback,
     /* BUG-41452 Built-in functions for getting array binding info.*/
@@ -174,11 +175,28 @@ qciSessionCallback mmcSession::mCallback =
     mmcSession::getOptimizerPerformanceViewCallback,
     /* PROJ-2624 [기능성] MM - 유연한 access_list 관리방법 제공 */
     mmcSession::loadAccessListCallback,
+    /* PROJ-2701 Sharding online data rebuild */
+    mmcSession::isShardDataCallback,
     /* PROJ-2638 shard native linker */
     mmcSession::getShardPINCallback,
+    mmcSession::getShardMetaNumberCallback, /* BUG-46090 Meta Node SMN 전파 */
     mmcSession::getShardNodeNameCallback,
-    mmcSession::setShardLinkerCallback,
-    mmcSession::getExplainPlanCallback
+    mmcSession::reloadShardMetaNumberCallback,
+    /* BUG-45899 */
+    mmcSession::getTrclogDetailShardCallback,
+    mmcSession::getExplainPlanCallback,
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+    mmcSession::getDBLinkGTXLevelCallback,
+    /* PROJ-2677 DDL synchronization */
+    mmcSession::getReplicationDDLSyncCallback,
+    mmcSession::getPrintOutEnableCallback,
+    mmcPlanCache::planCacheKeep,  /* BUG-46158 */
+    mmcSession::isShardCliCallback,             /* BUG-46092 */
+    mmcSession::getShardStmtCallback,           /* BUG-46092 */
+    mmcSession::freeShardStmtCallback,          /* BUG-46092 */
+    mmcSession::getShardFailoverTypeCallback,   /* BUG-46092 */
+    mmcSession::getSerialExecuteModeCallback, /* PROJ-2632 */
+    mmcSession::getTrcLogDetailInformationCallback /* PROJ-2632 */
 };
 
 
@@ -373,6 +391,15 @@ IDE_RC mmcSession::initialize(mmcTask *aTask, mmcSessID aSessionID)
     /* BUG-42639 Monitoring query */
     setOptimizerPerformanceView(QCU_OPTIMIZER_PERFORMANCE_VIEW);
 
+    setReplicationDDLSync( mmuProperty::getReplicationDDLSync() );
+    setReplicationDDLSyncTimeout( mmuProperty::getReplicationDDLSyncTimeout() );
+
+    setPrintOutEnable( QCU_PRINT_OUT_ENABLE );
+
+    /* PROJ-2632 */
+    setSerialExecuteMode( QCU_SERIAL_EXECUTE_MODE );
+    setTrcLogDetailInformation( QCU_TRCLOG_DETAIL_INFORMATION );
+
     /*
      * Runtime Session Info
      */
@@ -438,9 +465,8 @@ IDE_RC mmcSession::initialize(mmcTask *aTask, mmcSessID aSessionID)
 
     mTrans          = NULL;
     mTransAllocFlag = ID_FALSE;
-    mTransShareSes  = NULL;
     mTransBegin     = ID_FALSE;
-    mTransRelease   = ID_FALSE;
+    mTransLazyBegin = ID_FALSE;
     mTransPrepared  = ID_FALSE;
     idlOS::memset( &mTransXID, 0x00, ID_SIZEOF(ID_XID) );
 
@@ -475,6 +501,7 @@ IDE_RC mmcSession::initialize(mmcTask *aTask, mmcSessID aSessionID)
     mQueueInfo     = NULL;
     mQueueEndTime  = 0;
     mQueueWaitTime = 0;
+    mNeedQueueWait = ID_FALSE;  /* BUG-46183 */
 
     IDU_LIST_INIT_OBJ(&mQueueListNode, this);
 
@@ -493,6 +520,9 @@ IDE_RC mmcSession::initialize(mmcTask *aTask, mmcSessID aSessionID)
                                  ID_FALSE,
                                  mmqQueueInfo::hashFunc,
                                  mmqQueueInfo::compFunc) != IDE_SUCCESS);
+
+    clearPartialRollbackFlag();
+
     /*
      * Statistics 초기화
      */
@@ -548,8 +578,9 @@ IDE_RC mmcSession::initialize(mmcTask *aTask, mmcSessID aSessionID)
                                           IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                           ID_FALSE,							/* ForcePooling */
                                           ID_TRUE,							/* GarbageCollection */
-                                          ID_TRUE) != IDE_SUCCESS,			/* HWCacheLine */
-                   InsufficientMemory);
+                                          ID_TRUE,                          /* HWCacheLine */
+                                          IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/)
+                  != IDE_SUCCESS , InsufficientMemory);
     /*
      * BUG-38430
      */
@@ -566,11 +597,26 @@ IDE_RC mmcSession::initialize(mmcTask *aTask, mmcSessID aSessionID)
 
     /* PROJ-2638 shard native linker */
     mInfo.mShardNodeName[0] = '\0';
+
     /* PROJ-2660 */
-    mInfo.mShardPin = 0;
+    mInfo.mShardPin = SDI_SHARD_PIN_INVALID;
+
+    /* BUG-46090 Meta Node SMN 전파 */
+    mInfo.mIsMetaNodeShardCli = ID_FALSE;
+    mInfo.mShardMetaNumber    = ID_ULONG(0);
 
     /* BUG-44967 */
     mInfo.mTransID = 0;
+
+    /* BUG-45707 */
+    mInfo.mShardClient = SDI_SHARD_CLIENT_FALSE;
+    mInfo.mShardSessionType = SDI_SESSION_TYPE_EXTERNAL;
+
+    /* BUG-45899 */
+    setTrclogDetailShard( SDU_TRCLOG_DETAIL_SHARD );
+
+    /* BUG-46092 */
+    mInfo.mDataNodeFailoverType.initialize();
 
     return IDE_SUCCESS;
 
@@ -651,14 +697,12 @@ IDE_RC mmcSession::finalize()
         IDE_TEST(endSession() != IDE_SUCCESS);
     }
 
-    /* shard session의 tx공유를 해제한다. */
-    unsetShardShareTrans();
-
     if ((mTrans != NULL) && (mTransAllocFlag == ID_TRUE))
     {
-        IDE_ASSERT(mmcTrans::free(mTrans) == IDE_SUCCESS);
-        //fix BUG-18117
+        /*mmcTrans::free inside mTrans = NULL*/
+        IDE_ASSERT(mmcTrans::free(this, mTrans) == IDE_SUCCESS);
         mTrans = NULL;
+        mTransAllocFlag = ID_FALSE;
         mTransBegin = ID_FALSE;
     }
 
@@ -691,6 +735,9 @@ IDE_RC mmcSession::finalize()
 
     // BUG-42464 dbms_alert package
     IDE_ASSERT(mInfo.mEvent.finalize() == IDE_SUCCESS);
+
+    /* BUG-46092 */
+    mInfo.mDataNodeFailoverType.finalize();
 
     return IDE_SUCCESS;
 
@@ -862,8 +909,8 @@ IDE_RC mmcSession::beginSession()
     if (getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
     {
         initTransStartMode();
-        getTrans(ID_TRUE);
-        if (getReleaseTrans() == ID_FALSE)
+        (void)allocTrans();
+        if (getTransLazyBegin() == ID_FALSE) // BUG-45772 TRANSACTION_START_MODE 지원
         {
             mmcTrans::begin(mTrans, &mStatSQL, getSessionInfoFlagForTx(), this);
         }
@@ -916,67 +963,59 @@ IDE_RC mmcSession::endSession()
         // fix BUG-20850
         if ( getXaAssocState() != MMD_XA_ASSOC_STATE_ASSOCIATED )
         {
-            /* 공유중인 경우 무시하고, 공유해제된 후 마지막 세션만 수행한다. */
-            if ( mTransShareSes == NULL )
+            if ( getTransBegin() == ID_TRUE )
             {
-                if ( getTransBegin() == ID_TRUE )
+                if ( mTrans == NULL )
                 {
-                    if ( mTrans == NULL )
+                    ideLog::log( IDE_SERVER_0, "#### mmcSession::endSession (%d) XaAssocState: %d,LINE:%d ",
+                                 getSessionID(),
+                                 getXaAssocState(),
+                                 __LINE__);
+                    IDE_ASSERT(0);
+                }
+                else
+                {   
+                    if ( mmcTrans::getSmiTrans(mTrans)->getTrans() == NULL )
                     {
-                        ideLog::log( IDE_SERVER_0, "#### mmcSession::endSession (%d) XaAssocState: %d,LINE:%d ",
+                        ideLog::log( IDE_SERVER_0, "#### mmcSession::endSession (%d) XaAssocState: %d,LINE:%d",
                                      getSessionID(),
                                      getXaAssocState(),
-                                    __LINE__);
+                                     __LINE__);
                         IDE_ASSERT(0);
                     }
                     else
-                    {   
-                        if ( mTrans->getTrans() == NULL )
-                        {
-                            ideLog::log( IDE_SERVER_0, "#### mmcSession::endSession (%d) XaAssocState: %d,LINE:%d",
-                                         getSessionID(),
-                                         getXaAssocState(),
-                                        __LINE__);
-                            IDE_ASSERT(0);
-                        }
-                        else
-                        {
-                            //noting to do.
-                        }
+                    {
+                        //nothing to do.
                     }
-                }
-                else
-                {
-                    //noting to do.
-                }
-
-                switch ( getSessionState() )
-                {
-                    case MMC_SESSION_STATE_END:
-                        if ( mmcTrans::commit( mTrans, this ) != IDE_SUCCESS )
-                        {
-                            /* PROJ-1832 New database link */
-                            IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
-                                            mTrans, this )
-                                        == IDE_SUCCESS );
-                        }
-                        break;
-
-                    case MMC_SESSION_STATE_ROLLBACK:
-                        /* PROJ-1832 New database link */
-                        IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
-                                        mTrans, this )
-                                    == IDE_SUCCESS );
-                        break;
-
-                    default:
-                        IDE_CALLBACK_FATAL("invalid session state");
-                        break;
                 }
             }
             else
             {
-                /* Nothing to do */
+                //nothing to do.
+            }
+
+            switch ( getSessionState() )
+            {
+                case MMC_SESSION_STATE_END:
+                    if ( mmcTrans::commit( mTrans, this ) != IDE_SUCCESS )
+                    {
+                        /* PROJ-1832 New database link */
+                        IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
+                                        mTrans, this )
+                                    == IDE_SUCCESS );
+                    }
+                    break;
+
+                case MMC_SESSION_STATE_ROLLBACK:
+                    /* PROJ-1832 New database link */
+                    IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
+                                    mTrans, this )
+                                == IDE_SUCCESS );
+                    break;
+
+                default:
+                    IDE_CALLBACK_FATAL("invalid session state");
+                    break;
             }
         }
         else
@@ -1049,6 +1088,16 @@ IDE_RC mmcSession::closeAllCursor(idBool        aSuccess,
                     sStmt->setFetchFlag(MMC_FETCH_FLAG_INVALIDATED);
                 }
             }
+            else
+            {
+                /* PROJ-2701 Online Data Rebuild:
+                 * release share trans lock for transaction commit using FAC
+                 */
+                if (sStmt->getExecutingTrans() != NULL)
+                {
+                    sStmt->releaseShareTransSmiStmtLock(sStmt->getExecutingTrans());
+                }
+            }
         }
     }
 
@@ -1107,8 +1156,8 @@ IDE_RC mmcSession::closeAllCursorByFetchList(iduList *aFetchList,
  * @param aReadOnly[OUT] 트랜잭션의 ReadOnly
  * @return 성공하면 IDE_SUCCESS, 아니면 IDE_FAILURE
  **/
-IDE_RC mmcSession::prepare( ID_XID * aXID,
-                            idBool * aReadOnly )
+IDE_RC mmcSession::prepareForShard( ID_XID * aXID,
+                                    idBool * aReadOnly )
 {
     IDE_TEST_RAISE( isAutoCommit() == ID_TRUE, ERR_AUTOCOMMIT_MODE );
 
@@ -1123,7 +1172,7 @@ IDE_RC mmcSession::prepare( ID_XID * aXID,
         /* Nothing to do. */
     }
 
-    IDE_TEST( mmcTrans::prepare( mTrans, this, aXID, aReadOnly ) != IDE_SUCCESS );
+    IDE_TEST( mmcTrans::prepareForShard( mTrans, this, aXID, aReadOnly ) != IDE_SUCCESS );
 
     if ( *aReadOnly == ID_TRUE )
     {
@@ -1190,15 +1239,16 @@ IDE_RC mmcSession::commit(idBool aInStoredProc)
             unlockForFetchList();
             IDE_TEST_RAISE(isAllStmtEndExceptHold() != ID_TRUE, StmtRemainError);
 
-            if (getReleaseTrans() == ID_TRUE)
+            IDE_TEST(mmcTrans::commit(mTrans, this, SMI_DO_NOT_RELEASE_TRANSACTION) != IDE_SUCCESS);
+
+            if ( ( getTransLazyBegin() == ID_FALSE ) || // BUG-45772 TRANSACTION_START_MODE 지원
+                 ( isAllStmtEnd() == ID_FALSE ) )       // BUG-45772 Fetch Across Commit 지원
             {
-                IDE_TEST(mmcTrans::commit(mTrans, this, SMI_RELEASE_TRANSACTION) != IDE_SUCCESS);
+                mmcTrans::begin(mTrans, &mStatSQL, getSessionInfoFlagForTx(), this);
             }
             else
             {
-                IDE_TEST(mmcTrans::commit(mTrans, this, SMI_DO_NOT_RELEASE_TRANSACTION) != IDE_SUCCESS);
-
-                mmcTrans::begin(mTrans, &mStatSQL, getSessionInfoFlagForTx(), this);
+                /* Nothing to do */
             }
 
             setActivated(ID_FALSE); // 세션을 초기상태로 설정.
@@ -1212,7 +1262,7 @@ IDE_RC mmcSession::commit(idBool aInStoredProc)
 
             // SP 내부에서 commit할 경우 되돌아갈 부분을 명시.
             // To Fix BUG-12512 : PSM 시작시 EXP SVP -> IMP SVP
-            mTrans->reservePsmSvp();
+            mmcTrans::reservePsmSvp(mTrans);
         }
     }
 
@@ -1253,22 +1303,21 @@ IDE_RC mmcSession::commitForceDatabaseLink( idBool aInStoredProc )
             IDE_TEST_RAISE( isAllStmtEndExceptHold() != ID_TRUE,
                             StmtRemainError );
             
-            if (getReleaseTrans() == ID_TRUE)
-            {
-                IDE_TEST( mmcTrans::commitForceDatabaseLink(
-                              mTrans, this, SMI_RELEASE_TRANSACTION )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                IDE_TEST( mmcTrans::commitForceDatabaseLink(
-                              mTrans, this, SMI_DO_NOT_RELEASE_TRANSACTION )
-                          != IDE_SUCCESS );
+            IDE_TEST( mmcTrans::commitForceDatabaseLink(
+                          mTrans, this, SMI_DO_NOT_RELEASE_TRANSACTION )
+                      != IDE_SUCCESS );
 
+            if ( ( getTransLazyBegin() == ID_FALSE ) || // BUG-45772 TRANSACTION_START_MODE 지원
+                 ( isAllStmtEnd() == ID_FALSE ) )       // BUG-45772 Fetch Across Commit 지원
+            {
                 mmcTrans::begin( mTrans,
                                  &mStatSQL,
                                  getSessionInfoFlagForTx(),
                                  this );
+            }
+            else
+            {
+                /* Nothing to do */
             }
             
             setActivated( ID_FALSE ); // 세션을 초기상태로 설정.
@@ -1287,7 +1336,7 @@ IDE_RC mmcSession::commitForceDatabaseLink( idBool aInStoredProc )
             
             // SP 내부에서 commit할 경우 되돌아갈 부분을 명시.
             // To Fix BUG-12512 : PSM 시작시 EXP SVP -> IMP SVP
-            mTrans->reservePsmSvp();
+            mmcTrans::reservePsmSvp(mTrans);
         }
     }
     
@@ -1324,29 +1373,37 @@ IDE_RC mmcSession::rollback(const SChar *aSavePoint, idBool aInStoredProc)
         {
             if (aInStoredProc == ID_FALSE)
             {
-                /* PROJ-1381 FAC : Holdable Fetch도 rollback할 때는 닫는다. */
-                IDE_ASSERT(closeAllCursor(ID_FALSE, MMC_CLOSEMODE_NON_COMMITED) == IDE_SUCCESS);
-                IDE_TEST_RAISE(isAllStmtEndExceptHold() != ID_TRUE, StmtRemainError);
-
-                if (getReleaseTrans() == ID_TRUE)
+                /* PROJ-1381 FAC, PROJ-2694 FAR : rollback 후에도 유지 가능한 hold 커서는 유지 */
+                if (mmcTrans::isReusableRollback(mTrans) == ID_TRUE)
                 {
-                    IDE_TEST(mmcTrans::rollback(mTrans,
-                                                this,
-                                                aSavePoint,
-                                                ID_FALSE,
-                                                SMI_RELEASE_TRANSACTION)
-                             != IDE_SUCCESS);
+                    IDE_TEST( closeAllCursor(ID_TRUE, MMC_CLOSEMODE_REMAIN_HOLD) != IDE_SUCCESS );
                 }
                 else
                 {
-                    IDE_TEST(mmcTrans::rollback(mTrans,
-                                                this,
-                                                aSavePoint,
-                                                ID_FALSE,
-                                                SMI_DO_NOT_RELEASE_TRANSACTION)
-                             != IDE_SUCCESS);
+                    IDE_TEST( closeAllCursor(ID_TRUE, MMC_CLOSEMODE_NON_COMMITED) != IDE_SUCCESS );
+                }
 
+                lockForFetchList();
+                IDU_LIST_JOIN_LIST( getCommitedFetchList(), getFetchList() );
+                unlockForFetchList();
+
+                IDE_TEST_RAISE(isAllStmtEndExceptHold() != ID_TRUE, StmtRemainError);
+
+                IDE_TEST( mmcTrans::rollback( mTrans,
+                                              this,
+                                              aSavePoint,
+                                              ID_FALSE,
+                                              SMI_DO_NOT_RELEASE_TRANSACTION )
+                          != IDE_SUCCESS );
+
+                if ( ( getTransLazyBegin() == ID_FALSE ) || // BUG-45772 TRANSACTION_START_MODE 지원
+                     ( isAllStmtEnd() == ID_FALSE ) )       // BUG-45772 Fetch Across Commit 지원
+                {
                     mmcTrans::begin(mTrans, &mStatSQL, getSessionInfoFlagForTx(), this);
+                }
+                else
+                {
+                    /* Nothing to do */
                 }
 
                 setActivated(ID_FALSE); // 세션을 초기상태로 설정.
@@ -1360,7 +1417,7 @@ IDE_RC mmcSession::rollback(const SChar *aSavePoint, idBool aInStoredProc)
 
                 // SP 내부에서 commit할 경우 되돌아갈 부분을 명시.
                 // To Fix BUG-12512 : PSM 시작시 EXP SVP -> IMP SVP
-                mTrans->reservePsmSvp();
+                mmcTrans::reservePsmSvp(mTrans);
             }
         }
         else // partial rollback to explicit savepoint
@@ -1404,10 +1461,20 @@ IDE_RC mmcSession::rollbackForceDatabaseLink( idBool aInStoredProc )
     {
         if ( aInStoredProc == ID_FALSE )
         {
-            /* PROJ-1381 FAC : Holdable Fetch도 rollback할 때는 닫는다. */
-            IDE_ASSERT( closeAllCursor( ID_FALSE,
-                                        MMC_CLOSEMODE_NON_COMMITED )
-                        == IDE_SUCCESS );
+            /* PROJ-1381 FAC, PROJ-2694 FAR : rollback 후에도 유지 가능한 hold 커서는 유지 */
+            if (mmcTrans::isReusableRollback(mTrans) == ID_TRUE)
+            {
+                IDE_TEST( closeAllCursor(ID_TRUE, MMC_CLOSEMODE_REMAIN_HOLD) != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( closeAllCursor(ID_TRUE, MMC_CLOSEMODE_NON_COMMITED) != IDE_SUCCESS );
+            }
+
+            lockForFetchList();
+            IDU_LIST_JOIN_LIST( getCommitedFetchList(), getFetchList() );
+            unlockForFetchList();
+
             IDE_TEST_RAISE( isAllStmtEndExceptHold() != ID_TRUE,
                             StmtRemainError );
             
@@ -1417,10 +1484,18 @@ IDE_RC mmcSession::rollbackForceDatabaseLink( idBool aInStoredProc )
                             SMI_DO_NOT_RELEASE_TRANSACTION )
                         == IDE_SUCCESS );    
             
-            mmcTrans::begin( mTrans,
-                             &mStatSQL,
-                             getSessionInfoFlagForTx(),
-                             this );
+            if ( ( getTransLazyBegin() == ID_FALSE ) || // BUG-45772 TRANSACTION_START_MODE 지원
+                 ( isAllStmtEnd() == ID_FALSE ) )       // BUG-45772 Fetch Across Commit 지원
+            {
+                mmcTrans::begin( mTrans,
+                                 &mStatSQL,
+                                 getSessionInfoFlagForTx(),
+                                 this );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
             
             setActivated( ID_FALSE ); // 세션을 초기상태로 설정.
         }
@@ -1440,7 +1515,7 @@ IDE_RC mmcSession::rollbackForceDatabaseLink( idBool aInStoredProc )
             
             // SP 내부에서 commit할 경우 되돌아갈 부분을 명시.
             // To Fix BUG-12512 : PSM 시작시 EXP SVP -> IMP SVP
-            mTrans->reservePsmSvp();
+            mmcTrans::reservePsmSvp(mTrans);
         }
     }
 
@@ -1466,8 +1541,31 @@ IDE_RC mmcSession::savepoint(const SChar *aSavePoint, idBool /*aInStoredProc*/)
 
     if (getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
     {
+        /* BUG-46785 Shard statement partial rollback */
+        /* tx가 begin되지 않았으면 begin한다. */
+        if ( getTransBegin() == ID_FALSE )
+        {
+            mmcTrans::begin( mTrans, &mStatSQL, getSessionInfoFlagForTx(), this );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
         IDE_TEST(mmcTrans::savepoint(mTrans, this, aSavePoint) != IDE_SUCCESS);
     }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46785 Shard statement partial rollback */
+IDE_RC mmcSession::shardStmtPartialRollback( void )
+{
+    IDE_TEST( mmcTrans::shardStmtPartialRollback( mTrans ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1499,20 +1597,39 @@ IDE_RC mmcSession::setCommitMode(mmcCommitMode aCommitMode)
              * Commit Mode를 바꾸려면 반드시 열려있는 커서를 모두 닫아야 한다. */
             IDE_TEST_RAISE(isAllStmtEnd() != ID_TRUE, StmtRemainError);
             IDE_TEST_RAISE(isActivated() != ID_FALSE, AlreadyActiveError);
+
             // change a commit mode from none auto commit to autocommit.
             if (getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
             {
                 IDE_TEST(mmcTrans::commit(mTrans, this) != IDE_SUCCESS);
 
-                /* autocommit으로 변경시 shard session의 tx공유를 해제한다. */
-                unsetShardShareTrans();
+                /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+                IDE_TEST( sdi::setCommitMode( & mQciSession,
+                                              ID_TRUE,
+                                              getDblinkGlobalTransactionLevel() )
+                          != IDE_SUCCESS );
+
+                mInfo.mCommitMode = aCommitMode;
+                /* PROJ-2701 transaction realloc for new transaction mode after alter commit mode */
+                reallocTrans();
             }
             else
             {
+                /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+                IDE_TEST( sdi::setCommitMode( & mQciSession,
+                                              ID_FALSE,
+                                              getDblinkGlobalTransactionLevel() )
+                          != IDE_SUCCESS );
+
                 // change a commit mode from autocommit to non auto commit.
                 initTransStartMode();
-                getTrans(ID_TRUE);
-                if ( getReleaseTrans() == ID_FALSE )
+
+                // BUG-45772 Transaction Begin 전에 Commit Mode를 변경해야 한다.
+                mInfo.mCommitMode = aCommitMode;
+                /* PROJ-2701 transaction realloc for new transaction mode after alter commit mode */
+                reallocTrans();
+
+                if ( getTransLazyBegin() == ID_FALSE ) // BUG-45772 TRANSACTION_START_MODE 지원
                 {
                     mmcTrans::begin( mTrans, &mStatSQL, getSessionInfoFlagForTx(), this );
                 }
@@ -1520,12 +1637,7 @@ IDE_RC mmcSession::setCommitMode(mmcCommitMode aCommitMode)
                 {
                     /* Nothing to do */
                 }
-
-                /* non-autocommit으로 변경시 shard session의 tx를 공유한다. */
-                (void)setShardShareTrans();
             }
-
-            mInfo.mCommitMode = aCommitMode;
         }
         else
         {
@@ -1848,7 +1960,7 @@ IDE_RC mmcSession::setReplicationMode(UInt aReplicationMode)
 
         mInfo.mReplicationMode = aReplicationMode;
 
-        if (getReleaseTrans() == ID_FALSE)
+        if (getTransLazyBegin() == ID_FALSE) // BUG-45772 TRANSACTION_START_MODE 지원
         {
             mmcTrans::begin(mTrans, &mStatSQL, getSessionInfoFlagForTx(), this);
         }
@@ -1953,8 +2065,11 @@ IDE_RC mmcSession::setTX(UInt aType, UInt aValue, idBool aIsSession)
             }
         }
 
-        // 새로운 transaction begin
-        mmcTrans::begin(mTrans, &mStatSQL, sFlag, this);
+        if ( getTransLazyBegin() == ID_FALSE )
+        {
+            // 새로운 transaction begin
+            mmcTrans::begin(mTrans, &mStatSQL, sFlag, this);
+        }
     }
     else
     {
@@ -2870,13 +2985,10 @@ IDE_RC mmcSession::setPropertyCallback(void   *aSession,
     else if ( idlOS::strMatch( "DBLINK_GLOBAL_TRANSACTION_LEVEL", idlOS::strlen( "DBLINK_GLOBAL_TRANSACTION_LEVEL" ),
                                aPropName, aPropNameLen ) == 0 )
     {
-        IDE_TEST( dkiSessionSetGlobalTransactionLevel(
-                      &(sSession->mDatabaseLinkSession),
+        /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+        IDE_TEST( sSession->setDblinkGlobalTransactionLevel(
                       idlOS::strToUInt((UChar *)aPropValue, aPropValueLen) )
                   != IDE_SUCCESS );
-        
-        sSession->setDblinkGlobalTransactionLevel(
-            idlOS::strToUInt((UChar *)aPropValue, aPropValueLen) );
     }
     else if ( idlOS::strMatch( "DBLINK_REMOTE_STATEMENT_AUTOCOMMIT", idlOS::strlen("DBLINK_REMOTE_STATEMENT_AUTOCOMMIT"),
                                aPropName, aPropNameLen ) == 0 )
@@ -2943,6 +3055,44 @@ IDE_RC mmcSession::setPropertyCallback(void   *aSession,
     {
         IDE_TEST( idp::validate( "OPTIMIZER_PERFORMANCE_VIEW", aPropValue ) != IDE_SUCCESS );
         sSession->setOptimizerPerformanceView((SInt)idlOS::strToUInt((UChar *)aPropValue, aPropValueLen));
+    }
+    else if ( idlOS::strMatch( "REPLICATION_DDL_SYNC", idlOS::strlen( "REPLICATION_DDL_SYNC" ),
+                               aPropName, aPropNameLen ) == 0 )
+    {
+        IDE_TEST( idp::validate( "REPLICATION_DDL_SYNC", aPropValue ) != IDE_SUCCESS );
+        sSession->setReplicationDDLSync( (UInt)idlOS::strToUInt( (UChar *)aPropValue, aPropValueLen ) );
+    }
+    else if ( idlOS::strMatch( "REPLICATION_DDL_SYNC_TIMEOUT", idlOS::strlen( "REPLICATION_DDL_SYNC_TIMEOUT" ),
+                               aPropName, aPropNameLen ) == 0 )
+    {
+        IDE_TEST( idp::validate( "REPLICATION_DDL_SYNC_TIMEOUT", aPropValue ) != IDE_SUCCESS );
+        sSession->setReplicationDDLSyncTimeout( idlOS::strToUInt( (UChar *)aPropValue, aPropValueLen ) );
+    }
+    else if ( idlOS::strMatch( "__PRINT_OUT_ENABLE", idlOS::strlen( "__PRINT_OUT_ENABLE" ),
+                               aPropName, aPropNameLen ) == 0 )
+    {
+        IDE_TEST( idp::validate( "__PRINT_OUT_ENABLE", aPropValue ) != IDE_SUCCESS );
+        sSession->setPrintOutEnable( (SInt)idlOS::strToUInt( (UChar *)aPropValue,
+                                                             aPropValueLen ) );
+    }
+    else if ( idlOS::strMatch( "TRCLOG_DETAIL_SHARD", idlOS::strlen( "TRCLOG_DETAIL_SHARD" ),
+                              aPropName, aPropNameLen ) == 0 )
+    {
+        IDE_TEST( idp::validate( "TRCLOG_DETAIL_SHARD", aPropValue ) != IDE_SUCCESS );
+        sSession->setTrclogDetailShard( idlOS::strToUInt( (UChar *)aPropValue, aPropValueLen ) );
+    }
+    /* PROJ-2632 */
+    else if ( idlOS::strMatch( "SERIAL_EXECUTE_MODE", idlOS::strlen( "SERIAL_EXECUTE_MODE" ),
+                               aPropName, aPropNameLen ) == 0 )
+    {
+        IDE_TEST( idp::validate( "SERIAL_EXECUTE_MODE", aPropValue ) != IDE_SUCCESS );
+        sSession->setSerialExecuteMode( (SInt)idlOS::strToUInt( (UChar *)aPropValue, aPropValueLen ) );
+    }
+    else if ( idlOS::strMatch( "TRCLOG_DETAIL_INFORMATION", idlOS::strlen( "TRCLOG_DETAIL_INFORMATION" ),
+                              aPropName, aPropNameLen ) == 0 )
+    {
+        IDE_TEST( idp::validate( "TRCLOG_DETAIL_INFORMATION", aPropValue ) != IDE_SUCCESS );
+        sSession->setTrcLogDetailInformation( idlOS::strToUInt( (UChar *)aPropValue, aPropValueLen ) );
     }
     else
     {
@@ -3091,17 +3241,32 @@ UInt mmcSession::getSTObjBufSize()
     return mInfo.mSTObjBufSize;
 }
 
-/* PROJ-2638 shard native linker를 연결한다. */
-IDE_RC mmcSession::setShardLinker()
+/* BUG-46041 Shard Meta 변경의 예외 사항을 처리하는 구문이 필요합니다. */
+IDE_RC mmcSession::reloadShardMetaNumber( idBool aIsLocalOnly )
 {
-    /* none에서 coordinator로의 전환만 가능하다 */
+    sdiClientInfo * sOrgClientInfo = mQciSession.mQPSpecific.mClientInfo;
+    ULong           sSMN = ID_ULONG(0);
+
+    mQciSession.mQPSpecific.mClientInfo = NULL;
+
     if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
-         ( qci::isShardMetaEnable() == ID_TRUE ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
          ( isShardData() == ID_FALSE ) )
     {
-        if ( mQciSession.mQPSpecific.mClientInfo != NULL )
+        IDE_TEST( sdi::reloadSMNForDataNode(NULL) != IDE_SUCCESS );
+
+        if ( aIsLocalOnly == ID_FALSE )
         {
-            sdi::incShardLinkerChangeNumber();
+            sSMN = sdi::getSMNForDataNode();
+
+            IDE_TEST( sdi::initializeSession( &mQciSession,
+                                              (void*)&mDatabaseLinkSession,
+                                              NULL, // smiTrans
+                                              ID_FALSE,
+                                              sSMN )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( sdi::openAllShardConnections( &mQciSession ) != IDE_SUCCESS );
 
             sdi::finalizeSession( &mQciSession );
         }
@@ -3109,52 +3274,129 @@ IDE_RC mmcSession::setShardLinker()
         {
             /* Nothing to do. */
         }
-
-        IDE_TEST( sdi::initializeSession(
-                      &mQciSession,
-                      (void*)&mDatabaseLinkSession,
-                      mInfo.mSessionID,
-                      mInfo.mUserInfo.loginID,
-                      mInfo.mUserInfo.loginOrgPassword,
-                      mInfo.mShardPin )
-                  != IDE_SUCCESS );
     }
     else
     {
         /* Nothing to do. */
     }
 
+    mQciSession.mQPSpecific.mClientInfo = sOrgClientInfo;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    sdi::finalizeSession( &mQciSession );
+    IDE_POP();
+
+    mQciSession.mQPSpecific.mClientInfo = sOrgClientInfo;
+
     return IDE_FAILURE;
 }
 
-void mmcSession::setTransBegin(idBool aBegin, idBool aShareTrans)
+/* BUG-46090 Meta Node SMN 전파 */
+IDE_RC mmcSession::applyShardMetaChange( smiTrans * aTrans,
+                                         ULong    * aNewSMN )
 {
-    mmcSession   *sShareSession;
+    sdiClientInfo * sOrgClientInfo = mQciSession.mQPSpecific.mClientInfo;
 
+    mQciSession.mQPSpecific.mClientInfo = NULL;
+
+    IDE_TEST_RAISE( isMetaNodeShardCli() == ID_TRUE, ERR_SHARD_META_CHANGE_BY_SHARDCLI );
+
+    if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( isShardData() == ID_FALSE ) )
+    {
+        /* PROJ-2701 Sharding online data rebuild
+         *
+         * SMN의 increase시점은 shard meta information을 변경하는 transaction내의
+         * 첫 shard meta 갱신 statement수행 성공 시점이다.
+         * applyShardMetaChange는 이미 increase된 SMN으로 meta nodes에 전파한다.
+         */
+        IDE_TEST( sdi::getIncreasedSMNForMetaNode( aTrans, aNewSMN ) != IDE_SUCCESS );
+
+        /* oldSMN nodes와 newSMN nodes가 union된 nodes에 대해 dataSMN을 올려준다. */
+        IDE_TEST( sdi::initializeSession( &mQciSession,
+                                          (void*)&mDatabaseLinkSession,
+                                          aTrans,
+                                          ID_TRUE,
+                                          *aNewSMN )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( sdi::openAllShardConnections( &mQciSession ) != IDE_SUCCESS );
+
+        sdi::finalizeSession( &mQciSession );
+
+        sdi::setSMNForDataNode( *aNewSMN );
+
+        /* BUG-45967 Rebuild Data 완료 대기 */
+        IDE_TEST( sdi::waitToRebuildData( &mStatSQL ) != IDE_SUCCESS );
+    }
+    else
+    {
+        *aNewSMN = ID_ULONG(0);
+    }
+
+    mQciSession.mQPSpecific.mClientInfo = sOrgClientInfo;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_META_CHANGE_BY_SHARDCLI );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_MMI_NOT_IMPLEMENTED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    sdi::finalizeSession( &mQciSession );
+    IDE_POP();
+
+    mQciSession.mQPSpecific.mClientInfo = sOrgClientInfo;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46090 Meta Node SMN 전파 */
+void mmcSession::clearShardDataInfo()
+{
+    mmcStatement * sStmt     = NULL;
+    iduListNode  * sIterator = NULL;
+
+    IDU_LIST_ITERATE( getStmtList(), sIterator )
+    {
+        sStmt = (mmcStatement *)sIterator->mObj;
+
+        sStmt->clearShardDataInfo();
+    }
+}
+
+/* BUG-46092 */
+void mmcSession::freeRemoteStatement( UInt aNodeId, UChar aMode )
+{
+    mmcStatement * sStmt     = NULL;
+    iduListNode  * sIterator = NULL;
+
+    IDU_LIST_ITERATE( getStmtList(), sIterator )
+    {
+        sStmt = (mmcStatement *)sIterator->mObj;
+
+        sStmt->freeRemoteStatement( aNodeId, aMode );
+    }
+}
+
+/* BUG-46092 */
+UInt mmcSession::getShardFailoverType( UInt aNodeId )
+{
+    return mInfo.mDataNodeFailoverType.getClientConnectionStatus( aNodeId );
+}
+
+void mmcSession::setTransBegin(idBool aBegin)
+{
     if ( mTransBegin != aBegin )
     {
         mTransBegin = aBegin;
-
-        if ( (isShardTrans() == ID_TRUE) && (aShareTrans == ID_TRUE) )
-        {
-            if ( mTransShareSes != NULL )
-            {
-                sShareSession = (mmcSession*)mTransShareSes;
-                sShareSession->setTransBegin( aBegin, ID_FALSE );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-        }
-        else
-        {
-            /* Nothing to do */
-        }
     }
     else
     {
@@ -3176,47 +3418,18 @@ void mmcSession::setTransPrepared(ID_XID * aXID)
     }
 }
 
-IDE_RC mmcSession::endTransShareSes( idBool aIsCommit )
-{
-    mmcSession   *sShareSession;
-
-    if ( mTransShareSes != NULL )
-    {
-        sShareSession = (mmcSession*)mTransShareSes;
-
-        if ( aIsCommit == ID_TRUE )
-        {
-            IDE_TEST( sShareSession->commit() != IDE_SUCCESS );
-        }
-        else
-        {
-            IDE_TEST( sShareSession->rollback() != IDE_SUCCESS );
-        }
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 void mmcSession::initTransStartMode()
 {
-    /* shard meta 혹은 shard data session인 경우 tx를 release한다. */
+    /* shard meta 혹은 shard data session인 경우 tx를 lazy start한다. */
     if ( (mmuProperty::getTxStartMode() == 1) ||
-         (qci::isShardMetaEnable() == ID_TRUE) ||
+         (sdi::isShardEnable() == ID_TRUE) ||
          (isShardData() == ID_TRUE) )
     {
-        setReleaseTrans( ID_TRUE );
+        setTransLazyBegin( ID_TRUE );
     }
     else
     {
-        setReleaseTrans( ID_FALSE );
+        setTransLazyBegin( ID_FALSE );
     }
 }
 
@@ -3553,10 +3766,43 @@ void * mmcSession::getDatabaseLinkSessionCallback( void * aSession )
     return (void *)&(sSession->mDatabaseLinkSession);
 }
 
-
-void mmcSession::setDblinkGlobalTransactionLevel( UInt aValue )
+UInt mmcSession::getDblinkGlobalTransactionLevel()
 {
+    return mInfo.mDblinkGlobalTransactionLevel;
+}
+
+IDE_RC mmcSession::setDblinkGlobalTransactionLevel( UInt aValue )
+{
+    SInt sStep = 0;
+
+    IDE_TEST( dkiSessionSetGlobalTransactionLevel( & mDatabaseLinkSession,
+                                                   aValue )
+              != IDE_SUCCESS );
+    sStep = 1;
+
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+    IDE_TEST( sdi::setCommitMode( & mQciSession,
+                                  isAutoCommit(),
+                                  aValue )
+              != IDE_SUCCESS );
+
     mInfo.mDblinkGlobalTransactionLevel = aValue;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sStep )
+    {
+        case 1 :
+            (void) dkiSessionSetGlobalTransactionLevel( & mDatabaseLinkSession,
+                                                        mInfo.mDblinkGlobalTransactionLevel );
+            /* fall through */
+        default :
+            break;
+    }
+
+    return IDE_FAILURE;
 }
 
 void mmcSession::setDblinkRemoteStatementAutoCommit( UInt aValue )
@@ -3598,6 +3844,9 @@ IDE_RC mmcSession::swapTransaction( void * aUserContext , idBool aIsAT )
     qciSwapTransactionContext * sArg;
     mmcSession                * sSession;
     mmcStatement              * sStatement;
+    mmcTransObj               * sTrans = NULL;
+    UInt                        sStage = 0;
+    smSCN                       sDummySCN;
 
     sArg       = (qciSwapTransactionContext *)aUserContext;
     sSession   = (mmcSession *)(sArg->mmSession);
@@ -3605,58 +3854,116 @@ IDE_RC mmcSession::swapTransaction( void * aUserContext , idBool aIsAT )
 
     if ( aIsAT == ID_TRUE )
     {
+        IDE_TEST( mmcTrans::alloc( NULL, &sTrans ) != IDE_SUCCESS );
+        sStage = 1;
+        mmcTrans::beginRaw( sTrans, 
+                            sSession->getStatSQL(), 
+                            sSession->getSessionInfoFlagForTx(), 
+                            sSession->getEventFlag() );
+        sStage = 2;
         // 1. 현재 transaction 및 smiStatement를 백업한다.
         // 2. AT를 셋팅한다.
         // 3. mmcStatement->mSmiStmtPtr을 AT의 smiStatement로 셋팅한다.
-        sArg->oriSmiStmt = (void *)sStatement->getSmiStmt();
- 
+        sArg->mOriSmiStmt = (void *)sStatement->getSmiStmt();
+        sArg->mNewMmcTrans = sTrans;
+        sArg->mNewSmiTrans = mmcTrans::getSmiTrans(sTrans);
         if ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
         {
-            sArg->oriTrans = sSession->mTrans;
-            sSession->mTrans = sArg->newTrans;
+            sArg->mOriMmcTrans = sSession->mTrans;
+            sSession->mTrans = sTrans;
         }
         else
         {
             if ( sStatement->isRootStmt() == ID_TRUE )
             {
-                sArg->oriTrans = sStatement->getTrans(ID_FALSE); 
-                sStatement->setTrans(sArg->newTrans);
+                sArg->mOriMmcTrans = sStatement->getTransPtr();
+                sStatement->setTrans(sTrans);
             }
             else
             {
-                sArg->oriTrans = sStatement->getParentStmt()->getTrans(ID_FALSE);
-                sStatement->getParentStmt()->setTrans(sArg->newTrans);
+                sArg->mOriMmcTrans = sStatement->getParentStmt()->getTransPtr();
+                sStatement->getParentStmt()->setTrans(sTrans);
             }
         }
 
-        sStatement->setSmiStmtForAT( sArg->newTrans->getStatement() );
+        sStatement->setSmiStmtForAT( sArg->mNewSmiTrans->getStatement() );
     }
     else
     {
         IDE_DASSERT( aIsAT == ID_FALSE );
 
+        sTrans = (mmcTransObj*)sArg->mNewMmcTrans;
+        sStage = 2;
         // 1. mmcStatement->mSmiStmtPtr을 원래의 smiStatement로 셋팅한다.
         // 2. 기존 실행중이었던 transaction을 셋팅한다.
-        sStatement->setSmiStmtForAT( (smiStatement *)sArg->oriSmiStmt );
+        sStatement->setSmiStmtForAT( (smiStatement *)sArg->mOriSmiStmt );
 
         if ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
         {
-            sSession->mTrans = sArg->oriTrans;
+            sSession->mTrans = (mmcTransObj*)sArg->mOriMmcTrans;
         }
         else
         {
             if ( sStatement->isRootStmt() == ID_TRUE )
             {
-                sStatement->setTrans(sArg->oriTrans);
+                sStatement->setTrans((mmcTransObj*)sArg->mOriMmcTrans);
             }
             else
             {
-                sStatement->getParentStmt()->setTrans(sArg->oriTrans);
+                sStatement->getParentStmt()->setTrans((mmcTransObj*)sArg->mOriMmcTrans);
             }
         }
+
+        if ( sArg->mIsExecSuccess == ID_TRUE )
+        {
+            IDE_TEST( mmcTrans::commitRaw( sTrans,
+                                           sSession->getEventFlag(),
+                                           sSession->getSessionInfoFlagForTx(),
+                                           &sDummySCN ) 
+                      != IDE_SUCCESS );
+            sStage = 1;
+            /*
+             * 함수 전체에서 예외처리 로직을 동일하게 사용하기 위해서 sStage를 올려주었으며, 
+             * 의미상으로도 commit과 free는 다른 단계라 명시적으로 commit후 sStage = 1 대한 처리를 수행함
+             */
+        }
+        else
+        {
+            sStage = 1;
+            IDE_TEST( mmcTrans::rollbackRaw( sTrans,
+                                             sSession->getEventFlag(),
+                                             sSession->getSessionInfoFlagForTx() )
+                      != IDE_SUCCESS );
+        }
+
+        sStage = 0;
+        IDE_TEST( mmcTrans::free( NULL, sTrans ) != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sTrans != NULL )
+    {
+        switch ( sStage )
+        {
+            case 2:
+                (void)mmcTrans::rollbackRaw( sTrans,
+                                             sSession->getEventFlag(),
+                                             sSession->getSessionInfoFlagForTx() );
+                /* fall through */
+            case 1:
+                (void)mmcTrans::free( NULL, sTrans );
+                /* fall through */
+            case 0:
+                /* fall through */
+            default:
+                break;
+        }
+    }
+
+    return IDE_FAILURE;
 }
 
 /* PROJ-2451 Concurrent Execute Package */
@@ -3695,11 +4002,11 @@ IDE_RC mmcSession::freeInternalSession( void * aMmSession, idBool aIsSuccess )
 }
 
 /* PROJ-2451 Concurrent Execute Package */
-smiTrans * mmcSession::getSessionTrans( void * aMmSession )
+smiTrans * mmcSession::getSessionSmiTrans( void * aMmSession )
 {
     mmcSession * sMmSession = (mmcSession*)aMmSession;
 
-    return sMmSession->getTrans(ID_FALSE);
+    return mmcTrans::getSmiTrans(sMmSession->getTransPtr());
 }
 
 idvSQL * mmcSession::getStatisticsCallback(void *aSession)
@@ -3813,9 +4120,21 @@ SChar *mmcSession::getUserPasswordCallback(void *aSession)
     return ((mmcSession *)aSession)->getUserInfo()->loginOrgPassword;
 }
 
+/* PROJ-2701 Sharding online data rebuild */
+idBool mmcSession::isShardDataCallback( void *aSession )
+{
+    return ((mmcSession *)aSession)->isShardData();
+}
+
 ULong mmcSession::getShardPINCallback( void *aSession )
 {
     return ((mmcSession *)aSession)->getShardPIN();
+}
+
+ULong mmcSession::getShardMetaNumberCallback( void * aSession )
+{
+    /* BUG-46090 Meta Node SMN 전파 */
+    return ((mmcSession *)aSession)->getShardMetaNumber();
 }
 
 SChar *mmcSession::getShardNodeNameCallback( void *aSession )
@@ -3823,14 +4142,81 @@ SChar *mmcSession::getShardNodeNameCallback( void *aSession )
     return ((mmcSession *)aSession)->getInfo()->mShardNodeName;
 }
 
-IDE_RC mmcSession::setShardLinkerCallback( void *aSession )
+IDE_RC mmcSession::reloadShardMetaNumberCallback( void   *aSession,
+                                                  idBool  aIsLocalOnly )
 {
-    return ((mmcSession *)aSession)->setShardLinker();
+    return ((mmcSession *)aSession)->reloadShardMetaNumber( aIsLocalOnly );
+}
+
+/* BUG-45899 */
+UInt mmcSession::getTrclogDetailShardCallback( void *aSession )
+{
+    return ((mmcSession *)aSession)->getTrclogDetailShard();
 }
 
 UChar mmcSession::getExplainPlanCallback( void *aSession )
 {
     return ((mmcSession *)aSession)->getExplainPlan();
+}
+
+UInt mmcSession::getDBLinkGTXLevelCallback( void * aSession )
+{
+    return ((mmcSession *)aSession)->getDblinkGlobalTransactionLevel();
+}
+
+/* PROJ-2677 DDL synchronization */
+UInt mmcSession::getReplicationDDLSyncCallback( void *aSession )
+{
+    return ( (mmcSession *)aSession )->getReplicationDDLSync();
+}
+
+/* BUG-46092 */
+UInt mmcSession::isShardCliCallback( void * aSession )
+{
+    return ( (mmcSession *)aSession )->isShardClient();
+}
+
+/* BUG-46092 */
+void * mmcSession::getShardStmtCallback( void * aUserContext )
+{
+    mmcStatement * sStatement = (mmcStatement *)aUserContext;
+
+    if ( sStatement == NULL )
+    {
+        return NULL;
+    }
+
+    return sStatement->getShardStatement();
+}
+
+/* BUG-46092 */
+void mmcSession::freeShardStmtCallback( void  * aSession, 
+                                        UInt    aNodeId, 
+                                        UChar   aMode )
+{
+    ( (mmcSession *)aSession )->freeRemoteStatement( aNodeId, aMode );
+}
+
+/* BUG-46092 */
+UInt mmcSession::getShardFailoverTypeCallback( void *aSession, UInt aNodeId )
+{
+    return ( (mmcSession *)aSession )->getShardFailoverType( aNodeId );
+}
+
+UInt mmcSession::getPrintOutEnableCallback( void *aSession )
+{    
+    return  ( (mmcSession *)aSession )->getPrintOutEnable();
+}
+
+/* PROJ-2632 */
+UInt mmcSession::getSerialExecuteModeCallback( void * aSession )
+{
+    return ( (mmcSession *)aSession )->getSerialExecuteMode();
+}
+
+UInt mmcSession::getTrcLogDetailInformationCallback( void *aSession )
+{
+    return ((mmcSession *)aSession)->getTrcLogDetailInformation();
 }
 
 // BUG-42464 dbms_alert package
@@ -3978,6 +4364,8 @@ IDE_RC mmcSession::loadAccessListCallback()
 
 IDE_RC mmcSession::touchShardNode(UInt aNodeId)
 {
+    ULong sSMN = ID_ULONG(0);
+    
     /* autocommit mode에서는 사용할 수 없다. */
     IDE_TEST_RAISE( isAutoCommit() == ID_TRUE, ERR_AUTOCOMMIT_MODE );
 
@@ -3991,19 +4379,19 @@ IDE_RC mmcSession::touchShardNode(UInt aNodeId)
         /* Nothing to do. */
     }
 
-    /* client info가 없으면 성생한다. */
+    /* client info가 없으면 생성한다. */
     if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
-         ( qci::isShardMetaEnable() == ID_TRUE ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
          ( isShardData() == ID_FALSE ) &&
          ( mQciSession.mQPSpecific.mClientInfo == NULL ) )
     {
-        IDE_TEST( sdi::initializeSession(
-                      &mQciSession,
-                      (void*)&mDatabaseLinkSession,
-                      mInfo.mSessionID,
-                      mInfo.mUserInfo.loginID,
-                      mInfo.mUserInfo.loginOrgPassword,
-                      mInfo.mShardPin )
+        sSMN = getShardMetaNumber();
+        
+        IDE_TEST( sdi::initializeSession( &mQciSession,
+                                          (void*)&mDatabaseLinkSession,
+                                          mmcTrans::getSmiTrans(mTrans),
+                                          ID_FALSE,
+                                          sSMN )
                   != IDE_SUCCESS );
     }
     else
@@ -4013,7 +4401,7 @@ IDE_RC mmcSession::touchShardNode(UInt aNodeId)
 
     IDE_TEST( sdi::touchShardNode( &mQciSession,
                                    &mStatSQL,
-                                   mTrans->getTransID(),
+                                   mmcTrans::getTransID(mTrans),
                                    aNodeId )
               != IDE_SUCCESS );
 
@@ -4028,125 +4416,79 @@ IDE_RC mmcSession::touchShardNode(UInt aNodeId)
     return IDE_FAILURE;
 }
 
-idBool mmcSession::setShardShareTrans()
+/* BUG-46092 */
+IDE_RC mmcSession::shardNodeConnectionReport( UInt              aNodeId, 
+                                              UChar             aDestination )
 {
-    mmcSession  * sShareSession = NULL;
-    idBool        sShared = ID_FALSE;
+    IDE_TEST_RAISE( isMetaNodeShardCli() != ID_TRUE, ERR_SHARD_META_CHANGE_BY_SHARDCLI );
 
-    if ( ( isShardTrans() == ID_TRUE ) && ( mTransShareSes == NULL ) )
+    if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( isShardData() == ID_FALSE ) )
     {
-        /* 동일한 shard pin의 세션 tx를 공유한다. */
-        mmtSessionManager::findSessionByShardPIN( &sShareSession,
-                                                  getSessionID(),
-                                                  getShardPIN() );
+        (void)freeRemoteStatement( aNodeId, CMP_DB_FREE_DROP );
 
-        if ( sShareSession != NULL )
+        if ( mQciSession.mQPSpecific.mClientInfo != NULL )
         {
-            /* BUG-45411 client-side global transaction */
-            if ( sShareSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
-            {
-                if (IDE_TRC_MM_4 != 0)
-                {
-                    (void)ideLog::logLine( IDE_MM_4,
-                                           "[setShardShareTrans] session: %u,%u, "
-                                           "nodeName: %s, "
-                                           "shardPin: %lu",
-                                           getSessionID(), sShareSession->getSessionID(),
-                                           mInfo.mShardNodeName,
-                                           getShardPIN() );
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
-
-                /* 기존 mTrans는 free한다. */
-                if ( mTransAllocFlag == ID_TRUE )
-                {
-                    IDE_ASSERT( mTrans != NULL );
-                    IDE_ASSERT( mmcTrans::free(mTrans) == IDE_SUCCESS );
-                    mTransAllocFlag = ID_FALSE;
-                }
-                else
-                {
-                    /* Nothing to do. */
-                }
-
-                mTrans = sShareSession->getTrans( ID_FALSE );
-                IDE_ASSERT( mTrans != NULL );
-
-                /* 공유정보 설정 */
-                mTransShareSes = sShareSession;
-                sShareSession->mTransShareSes = this;
-
-                sShared = ID_TRUE;
-
-                IDL_MEM_BARRIER;
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
+            sdi::closeShardSessionByNodeId( &mQciSession,
+                                            aNodeId,
+                                            aDestination );
         }
-        else
-        {
-            /* Nothing to do. */
-        }
+
+        sdi::setTransactionBroken( ( ( getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT )
+                                     ? ID_TRUE : ID_FALSE ),
+                                   &mDatabaseLinkSession,
+                                   mmcTrans::getSmiTrans(mTrans) );
+
+        IDE_TEST( mInfo.mDataNodeFailoverType.setClientConnectionStatus( aNodeId,
+                                                                         aDestination )
+                  != IDE_SUCCESS );
     }
     else
     {
         /* Nothing to do. */
     }
 
-    return sShared;
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_META_CHANGE_BY_SHARDCLI );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_MMI_NOT_IMPLEMENTED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
-void mmcSession::unsetShardShareTrans()
+IDE_RC mmcSession::shardNodeTransactionBrokenReport( void )
 {
-    mmcSession   *sShareSession;
+    IDE_TEST_RAISE( isMetaNodeShardCli() != ID_TRUE, ERR_SHARD_META_CHANGE_BY_SHARDCLI );
 
-    if ( ( isShardTrans() == ID_TRUE ) && ( mTransShareSes != NULL ) )
+    if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( isShardData() == ID_FALSE ) )
     {
-        sShareSession = (mmcSession*)mTransShareSes;
-
-        /* tx를 공유해준 경우, 공유주체 교환 */
-        if ( mTransAllocFlag == ID_TRUE )
+        if ( getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT )
         {
-            if ( sShareSession->mTransAllocFlag == ID_FALSE )
-            {
-                sShareSession->mTransAllocFlag = ID_TRUE;
-                mTransAllocFlag = ID_FALSE;
-                mTrans = NULL;
-            }
-            else
-            {
-                /* Nothing to do */
-            }
+            sdi::setTransactionBroken( ID_TRUE,
+                                       &mDatabaseLinkSession,
+                                       mmcTrans::getSmiTrans(mTrans) );
         }
         else
         {
-            mTrans = NULL;
+            sdi::setTransactionBroken( ID_FALSE,
+                                       &mDatabaseLinkSession,
+                                       mmcTrans::getSmiTrans(mTrans) );
         }
-
-        /* tx begin 여부를 정보를 전달한다. */
-        if ( mTransBegin == ID_TRUE )
-        {
-            sShareSession->mTransBegin = ID_TRUE;
-            mTransBegin = ID_FALSE;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        /* 공유해제 */
-        sShareSession->mTransShareSes = NULL;
-        mTransShareSes = NULL;
-
-        IDL_MEM_BARRIER;
     }
-    else
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_META_CHANGE_BY_SHARDCLI );
     {
-        /* Nothing to do. */
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_MMI_NOT_IMPLEMENTED ) );
     }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

@@ -109,13 +109,16 @@ public class LibLoader {
         }
 
         else if (osName.equals("AIX")) {
-            if (majorVersion.equals("6")) {
+            if (majorVersion.equals("6") || majorVersion.equals("7")) {
                 //v5 binary is compatible with version 6
                 majorVersion = "5";
             }
-            //archName == "ppc" on 32-bit, "ppc64" on 64-bit 
-            archName = "aix-" + archName + "-" + majorVersion + ".so";
-            return archName;
+            if (majorVersion.equals("5"))
+            {
+                //archName == "ppc" on 32-bit, "ppc64" on 64-bit 
+                archName = "aix-" + archName + "-" + majorVersion + ".so";
+                return archName;
+            }
         }
 
         String platformName = osName + "-" + archName + "-" + osVersion + "-" + osBit + "bit";

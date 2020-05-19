@@ -230,8 +230,7 @@ extern IDE_RC dkmGetNotifierTransactionInfo( dkmNotifierTransactionInfo ** aInfo
 extern IDE_RC dkmOpenShardConnection( dkmSession     * aSession,
                                       sdiConnectInfo * aConnectInfo );
 
-extern void dkmCloseShardConnection( dkmSession     * aSession,
-                                     sdiConnectInfo * aConnectInfo );
+extern void dkmCloseShardConnection( sdiConnectInfo * aConnectInfo );
 
 extern IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
                                       dkmSession     * aSession,
@@ -240,6 +239,9 @@ extern IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
 
 extern void dkmDelShardTransaction( dkmSession     * aSession,
                                     sdiConnectInfo * aConnectInfo );
+
+extern IDE_RC dkmSetTransactionBrokenOnGlobalCoordinator( dkmSession * aSession,
+                                                          smTID        aTransID );
 
 /*
  * Functions.

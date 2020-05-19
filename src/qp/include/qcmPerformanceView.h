@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmPerformanceView.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmPerformanceView.h 83512 2018-07-18 00:47:26Z hykim $
  *
  * Description :
  *
@@ -40,6 +40,7 @@
 #include    <qdbCommon.h>
 #include    <qdbCreate.h>
 #include    <qdv.h>
+#include    <qcmTableInfo.h>
 
 extern SChar * gQcmPerformanceViews[];
 
@@ -65,9 +66,24 @@ public:
     static IDE_RC   finalize();
 
     // 총 performance view 의 수를 얻는다.
-    static SInt     getTotalViewCount()
+    static SInt     getTotalViewCount( qcmPVType aType )
     {
-        return mNumOfPreViews + mNumOfAddedViews;
+        SInt sCount = 0;
+
+        switch( aType )
+        {
+            case QCM_PV_TYPE_NORMAL:
+                sCount = mNumOfPreViews + mNumOfAddedViews;
+                break;
+            case QCM_PV_TYPE_SHARD:
+                sCount = mShardViewCount;
+                break;
+            default:
+                IDE_DASSERT(0);
+                break;
+        }
+
+        return sCount;
     }
 
     // 동적으로 performance view 를 추가
@@ -75,7 +91,7 @@ public:
 
     // performance view 를 리턴. 기존의 gQcmPerformanceViews의
     // 배열 접근 방식과 같은 인터페이스 제공.
-    static SChar *  get(int aIdx);
+    static SChar *  get( int aIdx, qcmPVType aType );
 
 private:
     static SChar *  getFromAddedViews(int aIdx);
@@ -85,6 +101,9 @@ private:
 
     static SInt     mNumOfAddedViews;
     static iduList  mAddedViewList;
+
+    static SChar ** mShardViews;
+    static SInt     mShardViewCount;
 };
 
 class qcmPerformanceView
@@ -92,7 +111,7 @@ class qcmPerformanceView
 
 private:
 
-    static IDE_RC runDDLforPV( idvSQL * aStatistics );
+    static IDE_RC runDDLforPV( idvSQL * aStatistics, qcmPVType aType );
 
     static IDE_RC executeDDL( qcStatement * aStatement,
                               SChar       * aText );
@@ -102,11 +121,11 @@ private:
 public:
 
     static IDE_RC makeParseTreeForViewInSelect(
-        qcStatement   * aStatement,
-        qmsTableRef   * aTableRef );
+            qcStatement   * aStatement,
+            qmsTableRef   * aTableRef );
 
 
-    static IDE_RC registerPerformanceView( idvSQL * aStatistics );
+    static IDE_RC registerPerformanceView( idvSQL * aStatistics, qcmPVType aType );
 
     // parse
     static IDE_RC parseCreate( qcStatement * aStatement );

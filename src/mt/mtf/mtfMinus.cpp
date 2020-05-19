@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfMinus.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfMinus.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -183,6 +183,7 @@ static const mtcExecute mtfMinusExecuteInteger = {
     mtf::calculateNA,
     mtfMinusCalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -270,6 +271,7 @@ static const mtcExecute mtfMinusExecuteSmallint = {
     mtf::calculateNA,
     mtfMinusCalculateSmallint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -357,6 +359,7 @@ static const mtcExecute mtfMinusExecuteBigint = {
     mtf::calculateNA,
     mtfMinusCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -443,6 +446,7 @@ static const mtcExecute mtfMinusExecuteNumeric = {
     mtf::calculateNA,
     mtfMinusCalculateNumeric,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -558,6 +562,7 @@ static const mtcExecute mtfMinusExecuteFloat = {
     mtf::calculateNA,
     mtfMinusCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -674,6 +679,7 @@ static const mtcExecute mtfMinusExecuteReal = {
     mtf::calculateNA,
     mtfMinusCalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -762,6 +768,7 @@ static const mtcExecute mtfMinusExecuteDouble = {
     mtf::calculateNA,
     mtfMinusCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

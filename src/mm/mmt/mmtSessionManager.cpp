@@ -38,6 +38,7 @@ static void logQueryTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTime
 static void logDdlTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout);
 static void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout);
 static void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout);
+static void logDdlSyncTimeout( mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout );
 
 enum {
     MMT_TIMEOUT_IDLE = 0,
@@ -45,7 +46,9 @@ enum {
     /* BUG-32885 Timeout for DDL must be distinct to query_timeout or utrans_timeout */
     MMT_TIMEOUT_DDL,
     MMT_TIMEOUT_FETCH,
-    MMT_TIMEOUT_UTRANS
+    MMT_TIMEOUT_UTRANS,
+    /* PROJ-2677 Timeout for DDL synchronization */
+    MMT_TIMEOUT_DDL_SYNC
 };
 
 
@@ -114,6 +117,12 @@ mmtTimeoutInfo        mmtSessionManager::mTimeoutInfo[] =
         ID_TRUE,
         &mmtSessionManager::mInfo.mUTransTimeoutCount,
         IDV_STAT_INDEX_UTRANS_TIMEOUT_COUNT
+    },
+    {
+        logDdlSyncTimeout,
+        ID_FALSE,
+        &mmtSessionManager::mInfo.mDdlSyncTimeoutCount,
+        IDV_STAT_INDEX_DDL_SYNC_TIMEOUT_COUNT
     }
 };
 
@@ -277,7 +286,7 @@ void logDdlTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt
 
 void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout)
 {
-    smiTrans          *sTrans = aTask->getSession()->getTrans(aStatement, ID_FALSE);
+    mmcTransObj       *sTrans = aTask->getSession()->getTransPtr(aStatement);
     // BUG-25512 Timeout 시 altibase_boot.log에 Client PID를 출력해야합니다.
     mmcSessionInfo    *sInfo = aTask->getSession()->getInfo();
     UChar              sCommName[IDL_IP_ADDR_MAX_LEN];
@@ -296,7 +305,7 @@ void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UI
                 aTimeout,
                 aTimeGap,
                 aStatement->getQueryString() ? aStatement->getQueryString() : "(null)",
-                sTrans ? sTrans->getTransID() : 0);
+                sTrans ? mmcTrans::getTransID(sTrans) : 0);
 
     aStatement->unlockQuery();
 
@@ -327,7 +336,7 @@ void logFetchTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UI
 
 void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout)
 {
-    smiTrans          *sTrans = aTask->getSession()->getTrans(aStatement, ID_FALSE);
+    mmcTransObj       *sTrans = aTask->getSession()->getTransPtr(aStatement);
     // BUG-25512 Timeout 시 altibase_boot.log에 Client PID를 출력해야합니다.
     mmcSessionInfo    *sInfo = aTask->getSession()->getInfo();
     UChar              sCommName[IDL_IP_ADDR_MAX_LEN];
@@ -349,7 +358,7 @@ void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, U
                     aTimeout,
                     aTimeGap,
                     aStatement->getQueryString() ? aStatement->getQueryString() : "(null)",
-                    sTrans ? sTrans->getTransID() : 0);
+                    sTrans ? mmcTrans::getTransID(sTrans) : 0);
 
         aStatement->unlockQuery();
     }
@@ -363,7 +372,7 @@ void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, U
                     aTimeout,
                     aTimeGap,
                     "(null)",
-                    sTrans ? sTrans->getTransID() : 0);
+                    sTrans ? mmcTrans::getTransID(sTrans) : 0);
     }
 
     /* PROJ-2473 SNMP 지원 */
@@ -389,6 +398,27 @@ void logUTransTimeout(mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, U
     {
         /* Nothing */
     }
+}
+
+void logDdlSyncTimeout( mmcTask *aTask, mmcStatement *aStatement, UInt aTimeGap, UInt aTimeout )
+{
+    mmcSessionInfo *sInfo = aTask->getSession()->getInfo();
+    UChar           sCommName[IDL_IP_ADDR_MAX_LEN] = { 0, };
+
+    (void)getChannelInfo( NULL, &aTask, sCommName, ID_SIZEOF( sCommName ) );
+
+    aStatement->lockQuery();
+
+    ideLog::log( IDE_SERVER_1,
+                 MM_TRC_DDL_SYNC_TIMEOUT,
+                 aTask->getSession()->getSessionID(),
+                 sCommName,
+                 sInfo->mClientPID,
+                 aTimeout,
+                 aTimeGap,
+                 aStatement->getQueryString() ? aStatement->getQueryString() : "(null)" );
+
+    aStatement->unlockQuery();
 }
 
 IDE_RC mmtSessionManager::initialize()
@@ -425,7 +455,9 @@ IDE_RC mmtSessionManager::initialize()
                                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlginByte */
                                   ID_FALSE,							/* ForcePooling */
                                   ID_TRUE,							/* GarbageCollection */
-                                  ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                                  ID_TRUE,                          /* HWCacheLine */
+                                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+              != IDE_SUCCESS);			
 
     IDE_TEST(mSessionPool.initialize(IDU_MEM_MMC,
                                      (SChar *)"MMC_SESSION_POOL",
@@ -437,7 +469,9 @@ IDE_RC mmtSessionManager::initialize()
                                      IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                      ID_FALSE,							/* ForcePooling */
                                      ID_TRUE,							/* GarbageCollection */
-                                     ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                                     ID_TRUE,                           /* HWCacheLine */
+                                     IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+               != IDE_SUCCESS);			
 
     IDU_LIST_INIT(&mTaskList);
 
@@ -455,8 +489,9 @@ IDE_RC mmtSessionManager::initialize()
                                       IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                       ID_FALSE,							/* ForcePooling */
                                       ID_TRUE,							/* GarbageCollection */
-                                      ID_TRUE							/* HWCacheLine */
-                                     ) != IDE_SUCCESS);
+                                      ID_TRUE,                          /* HWCacheLine */
+                                      IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     IDE_TEST(mSessionIDPool.initialize(IDU_MEM_MMC,
                                        (SChar *)"MMC_SESSIONID_POOL",
@@ -468,8 +503,9 @@ IDE_RC mmtSessionManager::initialize()
                                        IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                        ID_FALSE,						/* ForcePooling */
                                        ID_TRUE,							/* GarbageCollection */
-                                       ID_TRUE							/* HWCacheLine */
-                                      ) != IDE_SUCCESS);
+                                       ID_TRUE,                          /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     IDU_LIST_INIT(&mFreeSessionIDList);
 
@@ -854,7 +890,6 @@ IDE_RC mmtSessionManager::freeSession(mmcTask *aTask)
     mmcSession  *sSession     = NULL;
     mmcSessID   *sSid         = NULL;
     iduListNode *sListNode    = NULL;
-    IDE_RC       sRet;
 
     lock();
 
@@ -885,19 +920,7 @@ IDE_RC mmtSessionManager::freeSession(mmcTask *aTask)
 
         IDU_LIST_INIT_OBJ(sListNode, sSid);
 
-        /* shard session인 경우 공유 tx를 처리하기 위해 finalize를 직렬로 세운다. */
-        if (sSession->isShardTrans() == ID_TRUE)
-        {
-            lock();
-            sRet = sSession->finalize();
-            unlock();
-        }
-        else
-        {
-            sRet = sSession->finalize();
-        }
-
-        IDE_TEST_RAISE(sRet != IDE_SUCCESS, SessionFreeFail);
+        IDE_TEST_RAISE(sSession->finalize() != IDE_SUCCESS, SessionFreeFail);
 
         IDE_TEST_RAISE(mSessionPool.memfree(sSession) != IDE_SUCCESS, SessionFreeFail);
 
@@ -1417,7 +1440,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
 {
     mmcSession   *sSession = aTask->getSession();
     mmcStatement *sStatement;
-    smiTrans     *sTrans;
+    mmcTransObj  *sTrans;
     iduListNode  *sIterator;
     iduList      *sStmtList = NULL;
 
@@ -1457,7 +1480,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
     {
         if (sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
         {
-            sTrans     = sSession->getTrans(ID_FALSE);
+            sTrans     = sSession->getTransPtr();
             if (sTrans != NULL)
             {
                 // 2번째 인자로 stmt가 없으므로 NULL로 넘긴다
@@ -1465,7 +1488,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
                 // logUtransTimeout 안의 getTrans(stmt..)에서 무시됨
                 checkTimeoutEvent(aTask,
                         NULL,
-                        sTrans->getFirstUpdateTime(),
+                        mmcTrans::getFirstUpdateTime(sTrans),
                         sSession->getUTransTimeout(),
                         MMT_TIMEOUT_UTRANS);
             }
@@ -1479,7 +1502,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
         IDU_LIST_ITERATE(sStmtList, sIterator)
         {
             sStatement = (mmcStatement *)sIterator->mObj;
-            sTrans     = sSession->getTrans(sStatement, ID_FALSE);
+            sTrans     = sSession->getTransPtr(sStatement);
 
             /*
              * Fetch Timeout 검사
@@ -1503,7 +1526,7 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
                 if ((sTrans != NULL) &&
                     (checkTimeoutEvent(aTask,
                                        sStatement,
-                                       sTrans->getFirstUpdateTime(),
+                                       mmcTrans::getFirstUpdateTime(sTrans),
                                        sSession->getUTransTimeout(),
                                        MMT_TIMEOUT_UTRANS) == ID_TRUE))
                 {
@@ -1529,6 +1552,19 @@ void mmtSessionManager::checkSessionTimeout(mmcTask *aTask)
                                          sStatement->getQueryStartTime(),
                                          sSession->getDdlTimeout(),
                                          MMT_TIMEOUT_DDL );
+
+                if ( sSession->getReplicationDDLSync() == 1 )
+                {
+                    (void)checkTimeoutEvent( aTask,
+                                             sStatement,
+                                             sStatement->getQueryStartTime(),
+                                             sSession->getReplicationDDLSyncTimeout(),
+                                             MMT_TIMEOUT_DDL_SYNC );
+                }
+                else
+                {
+                    /* nothing to do */
+                }
             }
         }
     }
@@ -2270,6 +2306,54 @@ static iduFixedTableColDesc gSESSIONColDesc[] =
         NULL,
         0, 0, NULL // for internal use
     },
+    {    
+        (SChar *)"SHARD_PIN",
+        offsetof(mmcSessionInfo4PerfV, mShardPinStr),
+        IDU_FT_SIZEOF(mmcSessionInfo4PerfV, mShardPinStr) - 1,
+        IDU_FT_TYPE_VARCHAR,
+        NULL,
+        0, 0, NULL
+    },
+    {   /* BUG-46090 Meta Node SMN 전파 */
+        (SChar *)"SHARD_META_NUMBER",
+        offsetof( mmcSessionInfo4PerfV, mShardMetaNumber ),
+        IDU_FT_SIZEOF( mmcSessionInfo4PerfV, mShardMetaNumber ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"REPLICATION_DDL_SYNC",
+        offsetof( mmcSessionInfo4PerfV, mReplicationDDLSync ),
+        IDU_FT_SIZEOF( mmcSessionInfo4PerfV, mReplicationDDLSync ),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"REPLICATION_DDL_SYNC_TIMELIMIT",
+        offsetof( mmcSessionInfo4PerfV, mReplicationDDLSyncTimeout ),
+        IDU_FT_SIZEOF( mmcSessionInfo4PerfV, mReplicationDDLSyncTimeout ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"SHARD_CLIENT",
+        offsetof(mmcSessionInfo4PerfV, mShardClient),
+        IDU_FT_SIZEOF(mmcSessionInfo4PerfV, mShardClient),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        (SChar *)"SHARD_SESSION_TYPE",
+        offsetof(mmcSessionInfo4PerfV, mShardSessionType),
+        IDU_FT_SIZEOF(mmcSessionInfo4PerfV, mShardSessionType),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL
+    },
     {
         NULL,
         0,
@@ -2407,6 +2491,9 @@ IDE_RC mmtSessionManager::buildRecordForSESSION(idvSQL              * /*aStatist
             /* PROJ-2047 Strengthening LOB - LOBCACHE */
             sSessionInfo.mLobCacheThreshold      = sSession->mLobCacheThreshold;
 
+            sSessionInfo.mReplicationDDLSync        = sSession->mReplicationDDLSync;
+            sSessionInfo.mReplicationDDLSyncTimeout = sSession->mReplicationDDLSyncTimeout;
+
             /* BUG-31390 Failover info for v$session */
             idlOS::memcpy( sSessionInfo.mFailOverSource,
                            sSession->mFailOverSource,
@@ -2445,7 +2532,18 @@ IDE_RC mmtSessionManager::buildRecordForSESSION(idvSQL              * /*aStatist
             sSessionInfo.mQueryRewriteEnable = sSession->mQueryRewriteEnable;
 
             sSessionInfo.mMaxStatementsPerSession = sSession->mMaxStatementsPerSession;
-            
+
+            sdi::shardPinToString( sSessionInfo.mShardPinStr,
+                                   ID_SIZEOF( sSessionInfo.mShardPinStr ),
+                                   sSession->mShardPin );
+
+            /* BUG-46090 Meta Node SMN 전파 */
+            sSessionInfo.mShardMetaNumber = sSession->mShardMetaNumber;
+
+            /* BUG-45707 */
+            sSessionInfo.mShardClient = sSession->mShardClient;
+            sSessionInfo.mShardSessionType = sSession->mShardSessionType;
+
             IDE_TEST(iduFixedTable::buildRecord(aHeader,
                                                 aMemory,
                                                 (void *)&sSessionInfo) != IDE_SUCCESS);
@@ -3264,29 +3362,67 @@ IDE_RC mmtSessionManager::findSession(mmcSession **aSession, mmcSessID aSessionI
     return IDE_FAILURE;
 }
 
-void mmtSessionManager::findSessionByShardPIN( mmcSession **aSession,
-                                               mmcSessID    aSessionID,
-                                               ULong        aShardPIN )
+/*
+ * aSession: [IN] sharable session 
+ * aShareTrans: [OUT] share transaction
+ */
+void mmtSessionManager::findShareTransLockNeeded( mmcSession  *aSession, 
+                                                  mmcTransObj ** aShareTrans )
 {
     iduListNode *sIterator;
     mmcTask     *sTask;
-    mmcSession  *sSession;
-    mmcSession  *sFound = NULL;
-
-    lock();
+    mmcSession  *sExistingSession;
+    mmcTransObj *sTrans = NULL;
+    SChar       *sMyNodeName = NULL;
+    SChar       *sTransNodeName = NULL;
 
     IDU_LIST_ITERATE(&mTaskList, sIterator)
     {
         sTask = (mmcTask *) sIterator->mObj;
-        sSession = sTask->getSession();
+        sExistingSession = sTask->getSession();
 
-        if ((sSession != NULL)
-            && (sSession->getSessionID() != aSessionID)
-            && (sSession->getShardPIN() == aShardPIN)
-            && (sSession->isShardData() == ID_TRUE))
+        if ( sExistingSession != NULL )
         {
-            sFound = sSession;
-            break;
+            if ( ( sExistingSession->getSessionID() != aSession->getSessionID() ) && 
+                 ( sExistingSession->getShardPIN() == aSession->getShardPIN() ) && 
+                 ( sExistingSession->isShareableTrans() == ID_TRUE ) )
+            {
+                sTrans = sExistingSession->getTransPtr();
+
+                if ( sTrans != NULL )
+                {
+                    sTransNodeName = mmcTrans::getShardNodeName(sTrans);
+                    sMyNodeName = aSession->getShardNodeName();
+                    if ( ( sTransNodeName[0] != '\0' ) && ( sMyNodeName[0] != '\0' ) )
+                    {
+                        if ( idlOS::strncmp( sMyNodeName,
+                                             sTransNodeName,
+                                             SDI_NODE_NAME_MAX_SIZE ) == 0 )
+                        {
+                            /*do nothing: ok transaction share*/
+                        }
+                        else
+                        {
+                            IDE_WARNING(IDE_SERVER_0, "Multiple shard nodes exist on a server.");
+                            sTrans = NULL;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if ( ( sTransNodeName[0] == '\0' ) && ( sMyNodeName[0] != '\0') )
+                        {
+                            mmcTrans::setTransShardNodeName(sTrans, sMyNodeName);
+                        }
+                    }
+
+                    break;
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
         }
         else
         {
@@ -3294,9 +3430,7 @@ void mmtSessionManager::findSessionByShardPIN( mmcSession **aSession,
         }
     }
 
-    unlock();
-
-    *aSession = sFound;
+    *aShareTrans = sTrans;
 }
 
 idBool mmtSessionManager::existSessionByXID( ID_XID *aXID )
@@ -3881,6 +4015,7 @@ IDE_RC mmtSessionManager::allocInternalSession( mmcSession  ** aSession,
     iduListNode * sListNode = NULL;
     iduListNode * sISListNode = NULL; // sInternalSessionListNode
     idBool        sIsLocked = ID_FALSE;
+    mmcTransObj * sTrans = NULL;
 
     /* internal link를 생성한다. */
     IDE_TEST( cmiAllocLink( (cmnLink **)&sLink,
@@ -3958,10 +4093,11 @@ IDE_RC mmtSessionManager::allocInternalSession( mmcSession  ** aSession,
      * AUTO_COMMIT = 0 인 경우 setCommitMode에서 smiTrans를 할당하지 않아서
      * FATAL이 발생한다
      */
-    if ( sSession->getTrans(ID_FALSE) == NULL )
+    if ( sSession->getTransPtr() == NULL )
     {
         // change a commit mode from autocommit to non auto commit.
-        mmcTrans::begin( sSession->getTrans( ID_TRUE ),
+        sTrans = sSession->allocTrans();
+        mmcTrans::begin( sTrans,
                          sSession->getStatSQL(),
                          sSession->getSessionInfoFlagForTx(),
                          sSession );

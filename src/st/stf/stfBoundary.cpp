@@ -66,6 +66,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfBoundaryCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

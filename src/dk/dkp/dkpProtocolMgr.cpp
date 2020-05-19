@@ -819,7 +819,13 @@ IDE_RC  dkpProtocolMgr::recvCreateLinkerCtrlSessionResult( dksSession        *aS
                                                       &sTargetNameLen,
                                                       ID_TRUE ) 
                               != IDE_SUCCESS );
+
+                    if( sTargetNameLen > DK_NAME_LEN )
+                    {
+                        sTargetNameLen = DK_NAME_LEN;
+                    }
                     sInvalidTargetName[sTargetNameLen] = '\0';                    
+
                     idlOS::snprintf( sMsgBuf + sMsgOffset,
                                     ( ID_SIZEOF( sMsgBuf ) - ( ID_SIZEOF(SChar) * sMsgOffset ) ),
                                     PDL_TEXT( "%s, " ),
@@ -3173,6 +3179,11 @@ IDE_RC  dkpProtocolMgr::recvRequestResultSetMetaResult( dksSession    *aSession,
                                                   &sColumnNameLen,
                                                   ID_TRUE )
                           != IDE_SUCCESS  );
+
+                if( sColumnNameLen > DK_NAME_LEN )
+                {
+                    sColumnNameLen = DK_NAME_LEN;
+                }
                 sColumnMetaArray[i].mName[sColumnNameLen] = '\0';   
                                    
                 /* For XDB's JDBC */

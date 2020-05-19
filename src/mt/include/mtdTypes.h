@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdTypes.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtdTypes.h 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_MTD_TYPES_H_
@@ -102,6 +102,8 @@ typedef SFloat mtdRealType;
 # define MTD_REAL_FRACTION_MASK (0x007FFFFF)
 # define MTD_REAL_MINIMUM       (1.175494351E-37F)
 
+extern const UInt mtdRealNull; /* PROJ-2632 */
+
 typedef SDouble mtdDoubleType;
 # define MTD_DOUBLE_EXPONENT_MASK  ID_ULONG(0x7FF0000000000000)
 # define MTD_DOUBLE_FRACTION_MASK  ID_ULONG(0x000FFFFFFFFFFFFF)
@@ -109,7 +111,7 @@ typedef SDouble mtdDoubleType;
 # define MTD_DOUBLE_MINUS_INFINITE ID_ULONG(0xFFF8000000000000)
 # define MTD_DOUBLE_MINIMUM        (2.2250738585072014E-307)
 
-extern ULong mtdDoubleNull;
+extern const ULong mtdDoubleNull; /* PROJ-2632 */
 
 typedef struct mtdIntervalType {
     SLong second;
@@ -119,6 +121,10 @@ typedef struct mtdIntervalType {
 extern const mtdIntervalType mtdIntervalNull;
 # define MTD_INTERVAL_NULL (mtdIntervalNull)
 
+#define MTD_INTERVAL_IS_NULL( i )                      \
+    ( (i)->second      == mtdIntervalNull.second    && \
+      (i)->microsecond == mtdIntervalNull.microsecond  )
+
 typedef struct mtdDateType
 {
     SShort year;
@@ -126,7 +132,7 @@ typedef struct mtdDateType
     UInt   min_sec_mic;
 } mtdDateType;
 
-extern mtdDateType mtdDateNull;
+extern const mtdDateType mtdDateNull; /* PROJ-2632 */
 
 # define MTD_DATE_MON_SHIFT    (10)
 # define MTD_DATE_DAY_SHIFT    (5)
@@ -246,6 +252,10 @@ typedef enum mtdTypesMTDNumber
 # define MTD_DATE_FORMAT_WW2                  (56)   /* BUG-42941 TO_CHAR()에 WW2(Oracle Version WW) 추가 */
 # define MTD_DATE_FORMAT_SYYYY                (57)   /* BUG-36296 SYYYY Format 지원 */
 # define MTD_DATE_FORMAT_SCC                  (58)   /* BUG-36296 SCC Format 지원 */
+# define MTD_DATE_FORMAT_IYYY                 (59)   /* BUG-46727 TO_CHAR()에 IYYY 추가 */
+# define MTD_DATE_FORMAT_IYY                  (60)   /* BUG-46727 TO_CHAR()에 IYY 추가 */
+# define MTD_DATE_FORMAT_IY                   (61)   /* BUG-46727 TO_CHAR()에 IY 추가 */
+# define MTD_DATE_FORMAT_I                    (62)   /* BUG-46727 TO_CHAR()에 I 추가 */
 
 # define MTD_DATE_GREGORY_ONLY       (0)
 # define MTD_DATE_GREGORY_AND_JULIAN (1)
@@ -504,6 +514,8 @@ typedef struct mtdBitType {
     UChar value[1];
 } mtdBitType;
 
+extern const mtdBitType mtdBitNull; /* PROJ-2632 */
+
 #define MTD_BIT_ALIGN             (ID_SIZEOF(UInt))
 #define MTD_BIT_PRECISION_DEFAULT (1)
 #define MTD_BIT_PRECISION_MINIMUM (MTD_CHAR_PRECISION_MINIMUM)  // to fix BUG-12597
@@ -599,6 +611,8 @@ typedef struct mtdNibbleType {
     UChar value[1];
 } mtdNibbleType;
 
+extern const mtdNibbleType mtdNibbleNull; /* PROJ-2632 */
+
 #define MTD_NIBBLE_PRECISION_DEFAULT (1)
 #define MTD_NIBBLE_PRECISION_MINIMUM (0)  // to fix BUG-12597
 #define MTD_NIBBLE_PRECISION_MAXIMUM (254)// to fix BUG-12597
@@ -674,6 +688,19 @@ public:
                           mtdNcharType     * aSource,
                           UChar            * aResult,
                           UShort           * aResultLen );
+
+    /* PROJ-2632 */
+    static IDE_RC toNchar( SInt               aPrecision,
+                           const mtlModule  * aSrcCharSet,
+                           const mtlModule  * aDestCharSet,
+                           mtdCharType      * aSource,
+                           mtdNcharType     * aResult );
+
+    static IDE_RC toChar( SInt               aPrecision,
+                          const mtlModule  * aSrcCharSet,
+                          const mtlModule  * aDestCharSet,
+                          mtdNcharType     * aSource,
+                          mtdCharType      * aResult );
 
     static IDE_RC toNchar4UnicodeLiteral(
             const mtlModule * aSourceCharSet,

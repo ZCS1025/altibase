@@ -89,6 +89,8 @@ public:
     static IDE_RC dropWASegment(sdtWASegment * aWASegment,
                                 idBool         aWait4Flush);
 
+    inline static void updateTempStats( smiTempTableHeader * aHeader );
+
     /******************************************************************
      * Group
      ******************************************************************/
@@ -268,11 +270,11 @@ public:
                               scPageID       aNPID);
     static IDE_RC unassignNPage(sdtWASegment * aWASegment,
                                 scPageID       aWPID );
-    static IDE_RC movePage( sdtWASegment * aWASegment,
-                            sdtWAGroupID   aSrcGroupID,
-                            scPageID       aSrcWPID,
-                            sdtWAGroupID   aDstGroupID,
-                            scPageID       aDstWPID );
+    static IDE_RC moveWPage( sdtWASegment * aWASegment,
+                             sdtWAGroupID   aSrcGroupID,
+                             scPageID       aSrcWPID,
+                             sdtWAGroupID   aDstGroupID,
+                             scPageID       aDstWPID );
 
     inline static UInt getNPageHashValue( sdtWASegment * aWASegment,
                                           scSpaceID      aNSpaceID,
@@ -857,6 +859,9 @@ IDE_RC sdtWASegment::getWCBByNPID(sdtWASegment * aWASegment,
 
         if ( (*aRetWCB) == NULL )
         {
+            // WAGroupID NONE으로 Free Page를 할당 할 수 없음
+            IDE_ERROR( aWAGroupID != SDT_WAGROUPID_NONE );
+
             /* WA상에 페이지가 존재하지 않을 경우, 빈 페이지를 Group에 할당받아
              * Read함*/
             IDE_TEST( getFreeWAPage( aWASegment,
@@ -1334,5 +1339,35 @@ UChar * sdtWASegment::getWAExtentPtr(sdtWASegment  * aWASegment,
     return *sSlotPtr;
 }
 
+/**************************************************************************
+ * Description : Temp table 관련 통계정보를 갱신한다.
+ *
+ * <IN>
+ * aHeader     - 대상 Temp Table Header
+ ***************************************************************************/
+void sdtWASegment::updateTempStats( smiTempTableHeader * aHeader )
+{
+    sdtWASegment      * sWASegment = (sdtWASegment*)aHeader->mWASegment;
+    smiTempTableStats * sStats     = aHeader->mStatsPtr;
+    sdtWAFlushQueue   * sWAFQ      = sWASegment->mFlushQueue;
+
+    sStats->mWorkAreaSize   = getWASegmentPageCount( sWASegment ) * SD_PAGE_SIZE;
+    sStats->mNormalAreaSize = getNExtentCount( sWASegment )
+                              * SDT_WAEXTENT_PAGECOUNT 
+                              * SD_PAGE_SIZE;
+
+    /* clear 등으로 하나의 통계가 여러 WASegment, Flusher를 거칠 수도 있다.
+     * 대입이 아닌 누적으로 갱신해야 한다. */
+    sStats->mWriteCount += sWAFQ->mWriteCount;
+    sWAFQ->mWriteCount   = 0;
+
+    sStats->mWritePageCount += sWAFQ->mWritePageCount;
+    sWAFQ->mWritePageCount   = 0;
+
+    sStats->mRedirtyCount += sWAFQ->mRedirtyCount;
+    sWAFQ->mRedirtyCount   = 0;
+
+    return;
+}
 
 #endif //_O_SDT_WA_SEGMENT_H_

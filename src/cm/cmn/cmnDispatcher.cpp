@@ -55,6 +55,11 @@ static cmnDispatcherAllocInfo gCmnDispatcherAllocInfo[CMN_DISPATCHER_IMPL_MAX] =
         cmnDispatcherSizeIPCDA
 #endif
     },
+    /* PROJ-2681 */
+    {
+        cmnDispatcherMapIB,
+        cmnDispatcherSizeIB
+    }
 };
 
 
@@ -79,6 +84,8 @@ static IDE_RC (*gCmnDispatcherWaitLink[CMN_DISPATCHER_IMPL_MAX])(cmnLink *aLink,
 #else
     cmnDispatcherWaitLinkIPCDA,
 #endif
+    /* PROJ-2681 */
+    cmnDispatcherWaitLinkIB
 };
 
 
@@ -109,6 +116,10 @@ idBool cmnDispatcherIsSupportedImpl(cmnDispatcherImpl aImpl)
         case CMN_DISPATCHER_IMPL_IPCDA:
             return ID_TRUE;
 #endif
+
+        /* PROJ-2681 */
+        case CMN_DISPATCHER_IMPL_IB:
+            return ID_TRUE;
 
         default:
             break;
@@ -284,6 +295,10 @@ cmnDispatcherImpl cmnDispatcherImplForLinkImpl(cmnLinkImpl aLinkImpl)
         /* PROJ-2474 SSL/TLS */
         case CMN_LINK_IMPL_SSL:
             return CMN_DISPATCHER_IMPL_SOCK;
+
+        /* PROJ-2681 */
+        case CMN_LINK_IMPL_IB:
+            return CMN_DISPATCHER_IMPL_IB;
 
         default:
             break;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdx.cpp 82209 2018-02-07 07:33:37Z returns $
+ * $Id: qdx.cpp 83292 2018-06-19 04:55:51Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -842,7 +842,11 @@ IDE_RC qdx::validate(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if ( ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
          ( sParseTree->partIndex->partIndexType == QCM_NONE_PARTITIONED_INDEX ) )
-    {   
+    {  
+        IDE_TEST_RAISE( ( qrc::isDDLSync( aStatement ) == ID_TRUE ) &&
+                        ( sParseTree->tableInfo->replicationCount > 0 ), 
+                        ERR_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX ); 
+
         // PROJ-1624 global non-partitioned index
         IDE_TEST( validateNonPartitionedIndex(
                       aStatement,
@@ -852,6 +856,18 @@ IDE_RC qdx::validate(qcStatement * aStatement)
                       sParseTree->keyIndexName,
                       sParseTree->ridIndexName )
                   != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do
+    }
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
     }
     else
     {
@@ -927,6 +943,11 @@ IDE_RC qdx::validate(qcStatement * aStatement)
                                  sqlInfo.getErrMessage() ) );
         (void)sqlInfo.fini();
     }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_DDL_SYNC_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX ) );
+    }
+
 
     IDE_EXCEPTION_END;
 
@@ -2841,6 +2862,18 @@ IDE_RC qdx::validateAgingIndex(qcStatement * aStatement)
                                                 NULL );
 
     IDE_TEST_RAISE( sCountDiskPart == 0, ERR_INVALID_INDEX_TYPE );
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
 
     return IDE_SUCCESS;
 

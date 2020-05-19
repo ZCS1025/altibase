@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qrc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qrc.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -229,9 +229,8 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
 
     QC_STR_COPY( sReplName, sParseTree->replName );
 
-    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteStop( &sSmiStmt,
-                                                             sReplName,
-                                                             aStatement->mStatistics )
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteStop( aStatement,
+                                                             sReplName )                                                            
               != IDE_SUCCESS );
 
     qcg::setSmiStmt( aStatement, sSmiStmtOrg );
@@ -446,4 +445,43 @@ IDE_RC qrc::validateAlterSetGrouping(qcStatement * aStatement)
 IDE_RC qrc::executeAlterSetGrouping(qcStatement * aStatement)
 {
     return qci::mExecuteReplicationCallback.mExecuteAlterSetGrouping( aStatement );
+}
+
+IDE_RC qrc::validateAlterSetDDLReplicate(qcStatement * aStatement)
+{
+    return qci::mValidateReplicationCallback.mValidateAlterSetDDLReplicate( aStatement );
+}
+
+IDE_RC qrc::executeAlterSetDDLReplicate(qcStatement * aStatement)
+{
+    return qci::mExecuteReplicationCallback.mExecuteAlterSetDDLReplicate( aStatement );
+}
+
+/* PROJ-2677 DDL Synchronization */
+void qrc::setDDLReplInfo( qcStatement * aQcStatement,
+                          smOID         aTableOID,
+                          smOID         aSrcPartOID1,
+                          smOID         aSrcPartOID2 )
+{
+    aQcStatement->mDDLReplInfo.mTableOID = aTableOID;
+    aQcStatement->mDDLReplInfo.mPartTableOID[0] = aSrcPartOID1;
+    aQcStatement->mDDLReplInfo.mPartTableOID[1] = aSrcPartOID2;
+}
+
+idBool qrc::isDDLSync( qcStatement * aQcStatement )
+{
+    idBool sResult = ID_FALSE;
+
+    if ( ( QCG_GET_SESSION_REPLICATION_DDL_SYNC( aQcStatement ) == 1 ) ||
+         ( ( aQcStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+           == QC_SESSION_INTERNAL_DDL_SYNC_TRUE ) )
+    {
+        sResult = ID_TRUE;
+    }
+    else
+    {
+        sResult = ID_FALSE;
+    }
+
+    return sResult;
 }

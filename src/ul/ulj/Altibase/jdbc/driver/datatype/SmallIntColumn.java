@@ -33,24 +33,21 @@ import Altibase.jdbc.driver.util.ShortDynamicArray;
 
 public class SmallIntColumn extends AbstractColumn
 {
-    private static final short NULL_VALUE = (short)0x8000;
+    public static final short NULL_VALUE = (short)0x8000;
     private static final int SMALLINT_BYTE_SIZE = 2;
 
     private short mShortValue = 0;
 
     SmallIntColumn()
     {
+        // Altibase는 TINYINT를 지원하지 않는다. SMALLINT 타입으로 받아들인다.
+        addMappedJdbcTypeSet(AltibaseTypes.SMALLINT);
+        addMappedJdbcTypeSet(AltibaseTypes.TINYINT);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.SMALLINT;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        // Altibase는 TINYINT를 지원하지 않는다. SMALLINT 타입으로 받아들인다.
-        return new int[] { AltibaseTypes.SMALLINT, AltibaseTypes.TINYINT };
     }
 
     public String getDBColumnTypeName()

@@ -814,9 +814,9 @@ IDE_RC smnbPointerbaseBuild::prepareQuickSort( smcTableHeader * aTable,
         
             IDE_TEST(duplicate(sSrcIndex, aIndex) != 0);
 
-            IDE_TEST(smnbBTree::lockTree( sSrcIndexHeader ) != IDE_SUCCESS );
+            smnbBTree::lockTree( sSrcIndexHeader );
             sSrcIndexHeader->cRef--;
-            IDE_TEST(smnbBTree::unlockTree( sSrcIndexHeader ) != IDE_SUCCESS );
+            smnbBTree::unlockTree( sSrcIndexHeader );
         }
 
         while(1)
@@ -846,7 +846,7 @@ IDE_RC smnbPointerbaseBuild::prepareQuickSort( smcTableHeader * aTable,
             /* smnbPointerbaseBuild_prepareQuickSort_malloc_ArrNode.tc */
             IDU_FIT_POINT("smnbPointerbaseBuild::prepareQuickSort::malloc::ArrNode");
             IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SMN,
-                                       (ULong)smnbBTree::mNodeSize * sNode,
+                                       ID_SIZEOF(smnbLNode *) * sNode,
                                        (void**)&sArrNode)
                      != IDE_SUCCESS);
             sState = 1;
@@ -958,7 +958,6 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
     SChar     * sRow    = NULL;
     void      * sKey    = NULL;
     void      * sKeyBuf = NULL;
-    smnbLNode * sMiddleNode;
     SInt        sResult;
     smTID       sTID;
     idBool      sIsEqual;
@@ -975,17 +974,15 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
 
     SM_INIT_SCN( &sNullSCN );
 
-    sMiddleNode = aArrNode[(aLeftNode->sequence + aRightNode->sequence) / 2];
-
-    if(sMiddleNode == aLeftNode)
-    {
-        rowPtr = sMiddleNode->mRowPtrs[aLeftPos];
-    }
-    else
-    {
-        rowPtr = sMiddleNode->mRowPtrs[sMiddleNode->mSlotCount / 2];
-    }
-    
+    /* BUG-46955 */
+    rowPtr = getPivot( aIndexHeader,
+                       aIndexStat,
+                       aArrNode,
+                       aLeftNode,
+                       aLeftPos,
+                       aRightNode,
+                       aRightPos );
+ 
     i = aLeftPos - 1;
     j = aRightPos + 1;
 
@@ -1016,16 +1013,22 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
                 j--;
             }
 
-            sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
-                                                     sColumns,
-                                                     sFence,
-                                                     aRightNode->mRowPtrs[j],
-                                                     rowPtr,
-                                                     &sIsEqual );
 
-            if(aIsUnique == ID_TRUE && sIsEqual == ID_TRUE)
+            if ( aRightNode->mRowPtrs[j] == rowPtr )
             {
-                if ( rowPtr != aRightNode->mRowPtrs[j] )
+                /* 동일한 포인터라면 같은 값이기 때문에 비교할 필요없다. */
+                sResult = 0;
+            }
+            else
+            {
+                sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                                         sColumns,
+                                                         sFence,
+                                                         aRightNode->mRowPtrs[j],
+                                                         rowPtr,
+                                                         &sIsEqual );
+
+                if ( ( aIsUnique == ID_TRUE ) && ( sIsEqual == ID_TRUE ) )
                 {
                     sOIDPtr = aRightNode->mRowPtrs[j];
 
@@ -1048,10 +1051,6 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
                                   != IDE_SUCCESS );
                     }
                 }
-                else
-                {
-                    /* nothing to do */
-                }
             }
         }while(sResult > 0);
         
@@ -1067,16 +1066,21 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
                 i++;
             }
 
-            sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
-                                                     sColumns,
-                                                     sFence,
-                                                     aLeftNode->mRowPtrs[i],
-                                                     rowPtr,
-                                                     &sIsEqual );
-            
-            if(aIsUnique == ID_TRUE && sIsEqual == ID_TRUE)
+            if ( aLeftNode->mRowPtrs[i] == rowPtr )
             {
-                if ( rowPtr != aLeftNode->mRowPtrs[i] )
+                /* 동일한 포인터라면 같은 값이기 때문에 비교할 필요없다. */
+                sResult = 0;
+            }
+            else
+            {
+                sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                                         sColumns,
+                                                         sFence,
+                                                         aLeftNode->mRowPtrs[i],
+                                                         rowPtr,
+                                                         &sIsEqual );
+            
+                if ( ( aIsUnique == ID_TRUE ) && ( sIsEqual == ID_TRUE ) )
                 {
                     sOIDPtr = aLeftNode->mRowPtrs[i];
 
@@ -1099,11 +1103,6 @@ IDE_RC smnbPointerbaseBuild::partition( void            * aTrans,
                                   != IDE_SUCCESS );
                     }
                 }
-                else
-                {
-                    /* nothing to do */
-                }
-                
             }
         }while(sResult < 0);
 
@@ -1469,4 +1468,373 @@ IDE_RC smnbPointerbaseBuild::duplicate( smnIndexHeader * aSrcIndex,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbPointerbaseBuild::getPivot             *
+ * ------------------------------------------------------------------*
+ * BUG-46955
+ *
+ * QUICK SORT 에서 사용할 PIVOT 을 구해서 리턴한다.
+ * 최악을 피하기 위해, 3개의 값(lo, mid, hi) 중 중간값을 선택한다.
+ *
+ *********************************************************************/
+SChar * smnbPointerbaseBuild::getPivot( smnbHeader      * aIndexHeader,
+                                        smnbStatistic   * aIndexStat,
+                                        smnbLNode      ** aArrNode,
+                                        smnbLNode       * aLeftNode,
+                                        UInt              aLeftPos,
+                                        smnbLNode       * aRightNode,
+                                        UInt              aRightPos )
+{
+    const smnbColumn * sColumns = aIndexHeader->columns;
+    const smnbColumn * sFence   = aIndexHeader->fence;
+    SChar            * sLo      = NULL;
+    SChar            * sMid     = NULL;
+    SChar            * sHi      = NULL;
+    SChar            * sTmp     = NULL;
+    SInt               sResult  = 0;
+    idBool             sDummy   = ID_FALSE;
+
+
+    if ( ( aLeftNode->sequence + 8 ) <= aRightNode->sequence ) 
+    {
+        /** NODE 갯수 : 9, 10, 11, ~ **/
+
+        sHi = getPivot4Large( aIndexHeader,
+                              aIndexStat,
+                              aArrNode,
+                              aLeftNode,
+                              aLeftPos,
+                              aRightNode,
+                              aRightPos );
+        IDE_CONT( PIVOT_RETURN );
+    }
+    else if ( ( aLeftNode->sequence + 2 ) <= aRightNode->sequence )
+    {
+        /** NODE 갯수 : 3, 4, 5, 6, 7, 8 **/
+
+        sLo  = aLeftNode->mRowPtrs[aLeftPos];
+        sMid = (aArrNode[(aLeftNode->sequence + aRightNode->sequence) / 2])->mRowPtrs[0];
+        sHi  = aRightNode->mRowPtrs[aRightPos];
+    }
+    else if ( ( aLeftNode->sequence + 1 ) == aRightNode->sequence ) 
+    {
+        /** NODE 갯수 : 2개 **/
+
+        if ( ( aLeftNode->mSlotCount - aLeftPos ) + ( aRightPos + 1 ) <= 2 )
+        {
+            /* 인덱스 키가 2개 이하면 첫번째 인덱스키를 pivot으로 선택 */
+            sHi = aLeftNode->mRowPtrs[aLeftPos];
+            IDE_CONT( PIVOT_RETURN );
+        }
+        else
+        {
+            sLo  = aLeftNode->mRowPtrs[aLeftPos];
+            sMid = ( ( aLeftNode->mSlotCount - aLeftPos ) >= 2 ) ?
+                   aLeftNode->mRowPtrs[aLeftNode->mSlotCount - 1] : aRightNode->mRowPtrs[0];
+            sHi  = aRightNode->mRowPtrs[aRightPos];
+        }
+    }
+    else 
+    {
+        /** NODE 갯수 : 1개 **/
+
+        if ( ( aRightPos - aLeftPos + 1 ) <= 2 )
+        {
+            /* 인덱스 키가 2개 이하면 첫번째 인덱스키를 pivot으로 선택 */
+            sHi = aLeftNode->mRowPtrs[aLeftPos];
+            IDE_CONT( PIVOT_RETURN );
+        }
+        else
+        {
+            sLo  = aLeftNode->mRowPtrs[aLeftPos];
+            sMid = aLeftNode->mRowPtrs[(aLeftPos + aRightPos) / 2];
+            sHi  = aLeftNode->mRowPtrs[aRightPos];
+        }
+    }
+
+    /* sLo, sMid, sHi 중에 중간값을 찾는다. */
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             sMid,
+                                             sLo,
+                                             &sDummy );
+    /* ( sMid < sLo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = sMid;
+        sMid = sLo;
+        sLo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             sHi,
+                                             sLo,
+                                             &sDummy );
+    /* ( sHi < sLo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = sHi;
+        sHi  = sLo;
+        sLo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             sMid,
+                                             sHi,
+                                             &sDummy );
+    /* ( sMid < sHi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = sMid;
+        sMid = sHi;
+        sHi  = sTmp;
+    }
+
+    IDE_EXCEPTION_CONT( PIVOT_RETURN );
+
+    return sHi;
+}
+
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbPointerbaseBuild::getPivot4Large       *
+ * ------------------------------------------------------------------*
+ * BUG-46955
+ *
+ * NODE 갯수가 9개이상인 경우
+ * QUICK SORT 에서 사용할 PIVOT 을 구해서 리턴한다.
+ *
+ * 9개의 값 중 중간값을 선택한다.
+ *   
+ * pivot = median( median(s1Lo, s1Mid, s1Hi),
+ *                 median(s2Lo, s2Mid, s2Hi),
+ *                 median(s3Lo, s3Mid, s3Hi) )
+ *
+ *********************************************************************/
+SChar * smnbPointerbaseBuild::getPivot4Large( smnbHeader      * aIndexHeader,
+                                              smnbStatistic   * aIndexStat,
+                                              smnbLNode      ** aArrNode,
+                                              smnbLNode       * aLeftNode,
+                                              UInt              aLeftPos,
+                                              smnbLNode       * aRightNode,
+                                              UInt              aRightPos )
+{
+    const smnbColumn * sColumns = aIndexHeader->columns;
+    const smnbColumn * sFence   = aIndexHeader->fence;
+    SChar            * s1Lo     = NULL;
+    SChar            * s1Mid    = NULL;
+    SChar            * s1Hi     = NULL;
+    SChar            * s2Lo     = NULL;
+    SChar            * s2Mid    = NULL;
+    SChar            * s2Hi     = NULL;
+    SChar            * s3Lo     = NULL;
+    SChar            * s3Mid    = NULL;
+    SChar            * s3Hi     = NULL;
+    SChar            * sTmp     = NULL;
+    SInt               sResult  = 0;
+    idBool             sDummy   = ID_FALSE;
+    UInt               sInc     = 0;
+
+    sInc = ( aRightNode->sequence - aLeftNode->sequence ) / 8;
+
+    s1Lo  = aLeftNode->mRowPtrs[aLeftPos];
+    s1Mid = aArrNode[(aLeftNode->sequence + ( 1 * sInc ))]->mRowPtrs[0];
+    s1Hi  = aArrNode[(aLeftNode->sequence + ( 2 * sInc ))]->mRowPtrs[0];
+
+    s2Lo  = aArrNode[(aLeftNode->sequence + ( 3 * sInc ))]->mRowPtrs[0];
+    s2Mid = aArrNode[(aLeftNode->sequence + ( 4 * sInc ))]->mRowPtrs[0];
+    s2Hi  = aArrNode[(aLeftNode->sequence + ( 5 * sInc ))]->mRowPtrs[0];
+
+    s3Lo  = aArrNode[(aLeftNode->sequence + ( 6 * sInc ))]->mRowPtrs[0];
+    s3Mid = aArrNode[(aLeftNode->sequence + ( 7 * sInc ))]->mRowPtrs[0];
+    s3Hi  = aRightNode->mRowPtrs[aRightPos];
+
+    /************************************
+     * s1Hi = median(s1Lo, s1Mid, s1Hi)
+     ************************************/
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s1Mid,
+                                             s1Lo,
+                                             &sDummy );
+    /* ( s1Mid < s1Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp  = s1Mid;
+        s1Mid = s1Lo;
+        s1Lo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s1Hi,
+                                             s1Lo,
+                                             &sDummy );
+    /* ( s1Hi < s1Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp  = s1Hi;
+        s1Hi  = s1Lo;
+        s1Lo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s1Mid,
+                                             s1Hi,
+                                             &sDummy );
+    /* ( s1Mid < s1Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp  = s1Mid;
+        s1Mid = s1Hi;
+        s1Hi  = sTmp;
+    }
+
+    /************************************
+     * s2Hi = median(s2Lo, s2Mid, s2Hi)
+     ************************************/
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s2Mid,
+                                             s2Lo,
+                                             &sDummy );
+    /* ( s2Mid < s2Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp  = s2Mid;
+        s2Mid = s2Lo;
+        s2Lo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s2Hi,
+                                             s2Lo,
+                                             &sDummy );
+    /* ( s2Hi < s2Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Hi;
+        s2Hi  = s2Lo;
+        s2Lo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s2Mid,
+                                             s2Hi,
+                                             &sDummy );
+    /* ( s2Mid < s2Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Mid;
+        s2Mid = s2Hi;
+        s2Hi  = sTmp;
+    }
+
+    /************************************
+     * s3Hi = median(s3Lo, s3Mid, s3Hi)
+     ************************************/
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s3Mid,
+                                             s3Lo,
+                                             &sDummy );
+    /* ( s3Mid < s3Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Mid;
+        s3Mid = s3Lo;
+        s3Lo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s3Hi,
+                                             s3Lo,
+                                             &sDummy );
+    /* ( s3Hi < s3Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Hi;
+        s3Hi  = s3Lo;
+        s3Lo  = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s3Mid,
+                                             s3Hi,
+                                             &sDummy );
+    /* ( s3Mid < s3Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Mid;
+        s3Mid = s3Hi;
+        s3Hi  = sTmp;
+    }
+
+    /************************************
+     * s3Hi = median(s1Hi, s2Hi, s3Hi)
+     ************************************/
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s2Hi,
+                                             s1Hi,
+                                             &sDummy );
+    /* ( s2Hi < s1Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Hi;
+        s2Hi = s1Hi;
+        s1Hi = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s3Hi,
+                                             s1Hi,
+                                             &sDummy );
+    /* ( s3Hi < s1Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Hi;
+        s3Hi = s1Hi;
+        s1Hi = sTmp;
+    }
+
+    sResult = smnbBTree::compareRowsAndPtr2( aIndexStat,
+                                             sColumns,
+                                             sFence,
+                                             s2Hi,
+                                             s3Hi,
+                                             &sDummy );
+    /* ( s2Hi < s3Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Hi;
+        s2Hi = s3Hi;
+        s3Hi = sTmp;
+    }
+
+    return s3Hi;
 }

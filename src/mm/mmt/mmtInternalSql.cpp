@@ -260,9 +260,6 @@ mmtInternalSql::prepare( void * aUserContext )
 {
     qciSQLPrepareContext * sArg;
     mmcStatement         * sStatement;
-    mmcSession           * sSession;
-    mmcTask              * sTask;
-    cmiProtocolContext   * sProtocolContext;
 
     SChar                * sQuery;
     qciStatement         * sQciStmt = NULL;
@@ -270,11 +267,6 @@ mmtInternalSql::prepare( void * aUserContext )
     sArg = (qciSQLPrepareContext*)aUserContext;
 
     sStatement       = (mmcStatement*)sArg->mmStatement;
-    /* bug-45569 */
-    sSession         = sStatement->getSession();
-    sTask            = sSession->getTask();
-    sProtocolContext = sTask->getProtocolContext();
-
 
     /* PROJ-2223 Altibase Auditing */
     mmtAuditManager::auditBySession( sStatement );
@@ -334,11 +326,6 @@ mmtInternalSql::prepare( void * aUserContext )
     IDE_TEST( qci::checkInternalProcCall( sStatement->getQciStmt() )
               != IDE_SUCCESS );
 
-    /* bug-45569 ipcda에서는 queue를 지원하지 않는다.
-     * procedure안에 queue구문이 있을경우 execute 시점에 internalSql에서 처리한다.*/
-    IDE_TEST_RAISE( (cmiGetLinkImpl(sProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
-                    (sStatement->getStmtType() == QCI_STMT_ENQUEUE || sStatement->getStmtType() == QCI_STMT_DEQUEUE ), ipcda_unsupported_queue);
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(InvalidStatementState);
@@ -352,10 +339,6 @@ mmtInternalSql::prepare( void * aUserContext )
     IDE_EXCEPTION(InsufficientMemory);
     {
         IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
-    }
-    IDE_EXCEPTION(ipcda_unsupported_queue)
-    {
-        IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_UNSUPPORTED_QUEUE));
     }
     IDE_EXCEPTION_END;
 
@@ -901,8 +884,6 @@ mmtInternalSql::fetch( void * aUserContext )
 
     sArg       = (qciSQLFetchContext*)aUserContext;
     sStatement = (mmcStatement*)sArg->mmStatement;
-
-    sArg->nextRecordExist = ID_FALSE;
 
     IDE_TEST_RAISE( sStatement->getStmtState() !=
                     MMC_STMT_STATE_EXECUTED,

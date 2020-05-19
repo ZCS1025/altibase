@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloDataFile.cpp 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloDataFile.cpp 83988 2018-09-14 04:32:21Z bethy $
  **********************************************************************/
 
 #include <ilo.h>
@@ -30,6 +30,15 @@ extern "C" int _fseeki64(FILE *, __int64, int);
 #else
 #define IS_ABSOLUTE_PATH(P)  (P[0] == IDL_FILE_SEPARATOR)
 #endif
+
+/* BUG-46442
+   * 에러가 발생한 최초 컬럼 번호 저장 */
+#define SET_READ_ERROR          \
+    sRC = READ_ERROR;           \
+    if (sReadErrCol == -1)      \
+    {                           \
+        sReadErrCol = i;        \
+    }
 
 iloLOB::iloLOB()
 {
@@ -2475,6 +2484,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
 {
 
     EDataToken eToken;
+    SInt sReadErrCol = -1; // BUG-46442
     SInt i = 0;
     SInt j = 0;
     SInt sMsSql;
@@ -2573,7 +2583,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
             }
             else
             {
-                sRC = READ_ERROR;
+                SET_READ_ERROR;
                 IDE_CONT(RETURN_CODE);
             }
         }
@@ -2636,7 +2646,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                               != IDE_SUCCESS);
                         }
                     }
-                    sRC = READ_ERROR;
+                    SET_READ_ERROR;
                 }
             }
 
@@ -2647,7 +2657,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                                      &aTableInfo->mLOBPhyLen[i][aArrayCount])
                     != IDE_SUCCESS)
                 {
-                    sRC = READ_ERROR;
+                    SET_READ_ERROR;
                 }
             }
             else
@@ -2721,7 +2731,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                                                   mErrorTokenLen)
                                                   != IDE_SUCCESS);
             }
-            sRC = READ_ERROR;
+            SET_READ_ERROR;
             if( sHandle->mProgOption->mRule == csv )
             {
                 eToken = GetCSVTokenFromCBuff( sHandle, aTableInfo->GetAttrName(i));
@@ -2729,7 +2739,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                 {
                     aTableInfo->SetReadCount(i+1, aArrayCount);
 
-                    sRC = READ_ERROR;
+                    SET_READ_ERROR;
                     IDE_CONT(RETURN_CODE);
                 }
             }
@@ -2742,7 +2752,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
         {
             aTableInfo->SetReadCount(i, aArrayCount);
 
-            sRC = READ_ERROR;
+            SET_READ_ERROR;
             IDE_CONT(RETURN_CODE);
         }
 
@@ -2775,7 +2785,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
             {
                 aTableInfo->SetReadCount(i, aArrayCount);
 
-                sRC = READ_ERROR;
+                SET_READ_ERROR;
                 IDE_CONT(RETURN_CODE);
             }
         }
@@ -2802,7 +2812,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
                 aTableInfo->SetReadCount(i, aArrayCount);
             }
 
-            sRC = READ_ERROR;
+            SET_READ_ERROR;
             IDE_CONT(RETURN_CODE);
         }
         else if ( (i < aTableInfo->GetAttrCount()-1) &&
@@ -2811,7 +2821,7 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
             //BUG-28584
             aTableInfo->SetReadCount( i + 1, aArrayCount);
 
-            sRC = READ_ERROR;
+            SET_READ_ERROR;
             IDE_CONT(RETURN_CODE);
         }
 
@@ -2855,10 +2865,10 @@ SInt iloDataFile::ReadOneRecordFromCBuff( ALTIBASE_ILOADER_HANDLE  aHandle,
     {
         if(sRC == READ_ERROR)
         {
-            if(aTableInfo->GetAttrCount() > i)
+            if(sReadErrCol >= 0 && sReadErrCol < aTableInfo->GetAttrCount())
             {
                 uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Parsing_Error,
-                                aTableInfo->GetTransAttrName(i,sColName,(UInt)MAX_OBJNAME_LEN)
+                                aTableInfo->GetTransAttrName(sReadErrCol,sColName,(UInt)MAX_OBJNAME_LEN)
                                );
             }
         }

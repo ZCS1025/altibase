@@ -37,7 +37,7 @@ public class CmGetBindParamInfoResult extends CmStatementIdResult
         return (ColumnInfo)mColumnInfoList.get(aParamIdx - 1);
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

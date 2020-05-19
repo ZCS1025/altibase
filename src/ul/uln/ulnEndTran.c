@@ -16,6 +16,7 @@
 
 #include <uln.h>
 #include <ulnPrivate.h>
+#include <ulsdnExecute.h>
 #include <ulnEndTran.h>
 
 ACI_RC ulnCallbackTransactionResult(cmiProtocolContext *aProtocolContext,
@@ -98,7 +99,7 @@ static ACI_RC ulnEndTranDbcMain(ulnFnContext    *aFnContext,
         /*
          * BUG-45509 shard nested commit
          */
-        (void)ulsdDbcCallback(aDbc);
+        ulsdDbcCallback(aDbc);
 
         /*
          * Waiting for Transaction Result Packet

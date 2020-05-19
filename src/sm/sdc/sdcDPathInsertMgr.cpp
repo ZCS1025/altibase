@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdcDPathInsertMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdcDPathInsertMgr.cpp 84032 2018-09-19 05:32:05Z kclee $
  ******************************************************************************/
 
 #include <sdcReq.h>
@@ -53,8 +53,9 @@ IDE_RC sdcDPathInsertMgr::initializeStatic()
                             IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignSize */
                             ID_FALSE,							/* ForcePooling */
                             ID_TRUE,							/* GarbageCollection */
-                            ID_TRUE ) 							/* HWCacheLine */
-              != IDE_SUCCESS );
+                            ID_TRUE,                            /* HWCacheLine */
+                            IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */) 
+              != IDE_SUCCESS);			
     sState = 3;
 
     // 통계 값에 접근 시, 동시성 제어를 위한 Mutex 초기화

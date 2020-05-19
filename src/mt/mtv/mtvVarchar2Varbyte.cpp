@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvVarchar2Varbyte.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtvVarchar2Varbyte.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -32,6 +32,8 @@ extern mtvModule mtvVarchar2Varbyte;
 
 extern mtdModule mtdVarbyte;
 extern mtdModule mtdVarchar;
+
+extern mtxModule mtxFromVarcharTo; /* BUG-2632 */
 
 static IDE_RC mtvEstimate( mtcNode*     aNode,
                            mtcTemplate* aTemplate,
@@ -59,6 +61,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Varchar2Varbyte,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -72,6 +75,10 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns+aNode->column;
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxFromVarcharTo.mGetExecute( mtdVarbyte.id, mtdVarbyte.id );
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdVarbyte,

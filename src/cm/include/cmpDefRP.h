@@ -101,6 +101,16 @@ enum
     CMP_OP_RP_MetaDictTableCount, /* BUG-38759 */
     CMP_OP_RP_AckOnDML,
     CMP_OP_RP_AckEager,
+    CMP_OP_RP_DDLSyncInfo, /* PROJ-2677 */
+    CMP_OP_RP_DDLSyncMsg,
+    CMP_OP_RP_DDLSyncMsgAck,
+    CMP_OP_RP_DDLSyncCancel,
+    CMP_OP_RP_DDLReplicateHandshake, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    CMP_OP_RP_DDLReplicateQueryStatement,
+    CMP_OP_RP_DDLReplicateExecute,
+    CMP_OP_RP_DDLReplicateAck,
+    CMP_OP_RP_MetaPartitionCount, /* BUG-46120 */
+    CMP_OP_RP_MetaInitialize,
     CMP_OP_RP_MAX_VER1
 };
 

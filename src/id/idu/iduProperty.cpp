@@ -103,6 +103,13 @@ IDE_RC iduProperty::load()
     IDE_ASSERT(idp::read("QP_MSGLOG_FLAG", &mProperties->mQpTrcFlag)
                == IDE_SUCCESS);
 
+    /* BUG-46138 */
+    IDE_ASSERT(idp::read("SD_MSGLOG_FLAG", &mProperties->mSdTrcFlag)
+               == IDE_SUCCESS);
+
+    IDE_ASSERT(idp::read("SHARD_ENABLE", &mProperties->mSdTrcEnable)
+               == IDE_SUCCESS);
+
     IDE_ASSERT(idp::read("RP_MSGLOG_FLAG", &mProperties->mRpTrcFlag)
                == IDE_SUCCESS);
 
@@ -225,6 +232,9 @@ IDE_RC iduProperty::load()
 
     // fix BUG-21547
     IDE_ASSERT(idp::read("USE_MEMORY_POOL", &mProperties->mUseMemoryPool)
+               == IDE_SUCCESS);
+
+    IDE_ASSERT(idp::read("__USE_DUMP_CALLSTACKS", &mProperties->mUseDumpCallstacks)
                == IDE_SUCCESS);
 
     /*
@@ -467,6 +477,16 @@ IDE_RC iduProperty::load()
     IDE_ASSERT(idp::read( "THREAD_REUSE_ENABLE",
                           &mProperties->mThreadReuseEnable )
                == IDE_SUCCESS );
+
+    IDE_ASSERT(idp::read("__USE_REQUESTED_SIZE_FOR_EXECUTE_STMT_MEMORY_MAXIMUM",
+                           &mProperties->mUseRequestedSize)
+               == IDE_SUCCESS);
+
+    /* BUG-46892 */
+    IDE_ASSERT( idp::read( "MATHEMATICS_TEMP_MEMORY_MAXIMUM",
+                           & mProperties->mMathTempMemMax )
+                == IDE_SUCCESS );
+
 #ifdef DEBUG
     gIdeFTTrace = mProperties->mFaultToleranceTrace;
 #endif
@@ -604,6 +624,10 @@ IDE_RC iduProperty::registCallbacks()
                                             callbackQpTrcFlag)
               != IDE_SUCCESS);
 
+    /* BUG-46138 */
+    IDE_TEST( idp::setupAfterUpdateCallback("SD_MSGLOG_FLAG", callbackSdTrcFlag)
+              != IDE_SUCCESS );
+
     IDE_TEST( idp::setupAfterUpdateCallback("RP_MSGLOG_FLAG",
                                             callbackRpTrcFlag)
               != IDE_SUCCESS);
@@ -660,6 +684,11 @@ IDE_RC iduProperty::registCallbacks()
     IDE_TEST( idp::setupAfterUpdateCallback ( "__MUTEX_POOL_MAX_SIZE",
                                               callbackMutexPoolMaxSize )
               != IDE_SUCCESS);
+
+    /* BUG-46892 */
+    IDE_TEST( idp::setupAfterUpdateCallback( "MATHEMATICS_TEMP_MEMORY_MAXIMUM",
+                                             callbackMathTempMemMax )
+              != IDE_SUCCESS );
 
 #if !defined(LIB_BUILD)
 
@@ -751,6 +780,10 @@ IDE_RC iduProperty::registCallbacks()
                                             callbackShmLogging)
               != IDE_SUCCESS);
 
+    IDE_TEST( idp::setupAfterUpdateCallback("__USE_DUMP_CALLSTACKS",
+                                            callbackUseDumpCallstacks)
+              != IDE_SUCCESS);
+
     IDE_TEST( idp::setupAfterUpdateCallback("SHM_LATCH_SPIN_LOCK_COUNT",
                                             callbackShmLatchSpinLockCount)
               != IDE_SUCCESS);
@@ -758,6 +791,12 @@ IDE_RC iduProperty::registCallbacks()
     // BUG-40819
     IDE_TEST( idp::setupAfterUpdateCallback("EXTPROC_AGENT_CALL_RETRY_COUNT",
                                             callbackExtprocAgentCallRetryCount)
+              != IDE_SUCCESS);
+
+    //BUG-46531
+    IDE_TEST( idp::setupAfterUpdateCallback(
+                     "__USE_REQUESTED_SIZE_FOR_EXECUTE_STMT_MEMORY_MAXIMUM",
+                     callbackUseRequestedSize )
               != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -822,6 +861,18 @@ IDE_RC iduProperty::callbackQpTrcFlag(idvSQL * /*aStatistics*/,
                                       void  * /*aArg*/)
 {
     mProperties->mQpTrcFlag = *((UInt *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+
+/* BUG-46138 */
+IDE_RC iduProperty::callbackSdTrcFlag(idvSQL * /*aStatistics*/,
+                                      SChar  * /*aName*/,
+                                      void  * /*aOldValue*/,
+                                      void  *aNewValue,
+                                      void  * /*aArg*/)
+{
+    mProperties->mSdTrcFlag = *((UInt *)aNewValue);
 
     return IDE_SUCCESS;
 }
@@ -1411,6 +1462,18 @@ IDE_RC iduProperty::callbackShmLogging(
     return IDE_SUCCESS;
 }
 
+IDE_RC iduProperty::callbackUseDumpCallstacks(
+    idvSQL * /*aStatistics*/,
+    SChar  * /*aName*/,
+    void   * /*aOldValue*/,
+    void   * aNewValue,
+    void   * /*aArg*/)
+{
+    mProperties->mUseDumpCallstacks = *((UInt *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+
 IDE_RC iduProperty::callbackShmLatchSpinLockCount(
     idvSQL * /*aStatistics*/,
     SChar  * /*aName*/,
@@ -1432,6 +1495,31 @@ IDE_RC iduProperty::callbackExtprocAgentCallRetryCount(
     void   * /*aArg*/)
 {
     mProperties->mExtprocAgentCallRetryCount = *((UInt *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+
+//BUG-46531
+IDE_RC iduProperty::callbackUseRequestedSize(
+    idvSQL * /*aStatistics*/,
+    SChar  * /*aName*/,
+    void   * /*aOldValue*/,
+    void   * aNewValue,
+    void   * /*aArg*/)
+{
+    mProperties->mUseRequestedSize = *((UInt *)aNewValue);
+    return IDE_SUCCESS;
+}
+
+/* BUG-46892 */
+IDE_RC iduProperty::callbackMathTempMemMax(
+    idvSQL * /*aStatistics*/,
+    SChar  * /*aName*/,
+    void   * /*aOldValue*/,
+    void   * aNewValue,
+    void   * /*aArg*/ )
+{
+    mProperties->mMathTempMemMax = *( (ULong *) aNewValue );
 
     return IDE_SUCCESS;
 }

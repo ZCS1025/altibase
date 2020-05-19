@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCharacter_length.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfCharacter_length.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -103,6 +103,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfCharacter_lengthCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -114,6 +115,7 @@ const mtcExecute mtfExecute4MB = {
     mtf::calculateNA,
     mtfCharacter_lengthCalculate4MB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -126,6 +128,7 @@ const mtcExecute mtfExecuteClobValue = {
     mtf::calculateNA,
     mtfCharacter_lengthCalculateClobValue,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -138,6 +141,7 @@ const mtcExecute mtfExecuteClobValue4MB = {
     mtf::calculateNA,
     mtfCharacter_lengthCalculateClobValue4MB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -150,6 +154,7 @@ const mtcExecute mtfExecuteXlobLocator = {
     mtf::calculateNA,
     mtfCharacter_lengthCalculateXlobLocator,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -161,6 +166,7 @@ const mtcExecute mtfExecuteXlobLocator4MB = {
     mtf::calculateNA,
     mtfCharacter_lengthCalculateXlobLocator4MB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

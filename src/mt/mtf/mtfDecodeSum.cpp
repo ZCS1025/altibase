@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfDecodeSum.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfDecodeSum.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -99,6 +99,7 @@ static const mtcExecute mtfDecodeSumExecuteFloat = {
     mtfDecodeSumFinalizeFloat,
     mtfDecodeSumCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -140,6 +141,7 @@ static const mtcExecute mtfDecodeSumExecuteDouble = {
     mtfDecodeSumFinalizeDouble,
     mtfDecodeSumCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -181,6 +183,7 @@ static const mtcExecute mtfDecodeSumExecuteBigint = {
     mtfDecodeSumFinalizeBigint,
     mtfDecodeSumCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

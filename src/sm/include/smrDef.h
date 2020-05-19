@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrDef.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smrDef.h 85250 2019-04-16 07:15:32Z emlee $
  *
  * Description :
  *
@@ -66,19 +66,19 @@ typedef IDE_RC (*smrTBSUptRecFunction)( idvSQL*            aStatistics,
 
 #define SMR_LOG_FULL_SIZE               (500)
 
-#define SMR_LOG_BUFFER_POOL_LIST_COUNT  (4)
-#define SMR_LOG_BUFFER_SIZE             (SM_PAGE_SIZE * 2)
-#define SMR_LOG_BUFFER_POOL_SIZE        (20)
+//#define SMR_LOG_BUFFER_POOL_LIST_COUNT  (4)
+//#define SMR_LOG_BUFFER_SIZE             (SM_PAGE_SIZE * 2)
+//#define SMR_LOG_BUFFER_POOL_SIZE        (20)
 
-#define SMR_LOG_FILE_COUNT              (10)
-#define SMR_MAX_LOGFILE_COUNT           (10)
+//#define SMR_LOG_FILE_COUNT              (10)
+//#define SMR_MAX_LOGFILE_COUNT           (10)
 #define SMR_LOG_FILE_NAME               "logfile"
 #define SMR_BACKUP_VER_NAME             "backup_ver"
 
-#define SMR_LOG_FLUSH_NODE_SIZE         (1024)
-#define SMR_LOG_FLUSH_INTERVAL          (1) //sec
+//#define SMR_LOG_FLUSH_NODE_SIZE         (1024)
+//#define SMR_LOG_FLUSH_INTERVAL          (1) //sec
 
-#define SMR_MAX_TRANS_COUNT             (10)
+//#define SMR_MAX_TRANS_COUNT             (10)
 
 #define SMR_LOGANCHOR_RESERV_SIZE       (4)
 
@@ -437,7 +437,7 @@ typedef struct smrLogHead
 
     smrLogType      mType;
 
-    /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+    /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
      * Partial Rollback을 지원해야 합니다.
      *
      * Replication이 Statment의 Savepoint를 설정할때 이용해야할

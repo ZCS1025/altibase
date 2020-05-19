@@ -155,9 +155,10 @@ rpi::startSenderThread(smiStatement  * /*aSmiStmt*/,
 }
 
 IDE_RC
-rpi::stopSenderThread(smiStatement * /*aSmiStmt*/,
-                      SChar        * /*aReplName*/,
-                      idvSQL       * /*aStatistics*/)
+rpi::stopSenderThread( smiStatement * /*aSmiStmt*/,
+                       SChar        * /*aReplName*/,
+                       idvSQL       * /*aStatistics*/,
+                       idBool         /*aIsImmediate*/ )
 {
     IDE_SET(ideSetErrorCode(idERR_ABORT_MODULE_IS_NOT_LOADED, "REPLICATION"));
 

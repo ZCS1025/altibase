@@ -90,7 +90,8 @@ IDE_RC cmuProperty::load()
     }
 
 #if defined(ALTI_CFG_OS_LINUX)
-    if (idp::read("IPCDA_SERVER_MESSAGEQ_TIMEOUT", &mIPCDAIsMessageQ) == IDE_SUCCESS)
+    /* BUG-46390 잘못된 옵션 문자 수정 */
+    if (idp::read("IPCDA_MESSAGEQ_MODE", &mIPCDAIsMessageQ) == IDE_SUCCESS)
     {
         /* Do nothing */
     }

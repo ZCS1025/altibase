@@ -166,6 +166,7 @@ IDE_RC sdtTempRow::fetchByGRID( sdtWASegment         * aWASegment,
     IDE_ERROR( sIsValidSlot == ID_TRUE );
     IDE_DASSERT( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor)->mTRFlag, SDT_TRFLAG_HEAD ) );
 
+    SC_COPY_GRID( aGRID, aTRPInfo->mTRPHGRID );
     IDE_TEST( fetch( aWASegment,
                      aGroupID,
                      sCursor,
@@ -210,24 +211,52 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtWASegment         * aWASegment,
                                          sdtTRPInfo4Select    * aTRPInfo )
 {
     UChar        * sCursor    = aRowPtr;
-    sdtTRPHeader * sTRPHeader;
-    scGRID         sGRID;
+    sdtTRPHeader * sTRPHeader = aTRPInfo->mTRPHeader;
+    scGRID         sGRID      = SC_NULL_GRID;
+    scGRID         sNextGRID;
+    scSpaceID      sSpaceID;
+    scPageID       sNPID;
+    scPageID       sFixedWPID;
     UChar          sFlag;
-    idBool         sIsValidSlot     = ID_FALSE;
+    sdtWCB       * sWCBPtr;
+    idBool         sIsValidSlot;
+    idBool         sIsFixed = ID_FALSE;
     UInt           sRowBufferOffset = 0;
     UInt           sTRPHeaderSize;
 
     sTRPHeaderSize = SDT_TR_HEADER_SIZE( aTRPInfo->mTRPHeader->mTRFlag );
 
-    /* Chainig Row일경우, 자신이 ReadPage하면서
-     * HeadRow가 unfix될 수 있기에, Header를 복사해두고 이용함*/
-    idlOS::memcpy( &aTRPInfo->mTRPHeaderBuffer,
-                   aTRPInfo->mTRPHeader,
-                   sTRPHeaderSize );
+    /* BUG-46410 sdcTempRow::filteringAndFetch()에서 row Ptr이 잘못 설정 될 수 있습니다.
+     * Chainig Row일경우, 자신이 ReadPage하면서 HeadRow가 replace될 수 있기에,
+     * Header가 재활용 되지 않게 fixpage 해두고 이용함*/
+    sNextGRID = aTRPInfo->mTRPHeader->mNextGRID;
+
+    if (( aWASegment->mDiscardPage == ID_TRUE ) &&
+        ( SC_GRID_IS_NULL( aTRPInfo->mTRPHGRID ) == ID_FALSE ))
+    {
+        sSpaceID = SC_MAKE_SPACE( aTRPInfo->mTRPHGRID );
+
+        if (( sSpaceID != SDT_SPACEID_WORKAREA ) &&
+            ( sSpaceID != SDT_SPACEID_WAMAP ))
+        {
+            sNPID   = SC_MAKE_PID( aTRPInfo->mTRPHGRID );
+            sWCBPtr = sdtWASegment::findWCB( aWASegment,
+                                             sSpaceID,
+                                             sNPID );
+
+            IDE_ERROR( sWCBPtr != NULL );
+            IDE_ERROR(( (UChar*)sTRPHeader > sWCBPtr->mWAPagePtr ) &&
+                      ( (UChar*)sTRPHeader < sWCBPtr->mWAPagePtr + SD_PAGE_SIZE ));
+
+            sFixedWPID = sWCBPtr->mWPageID;
+
+            sdtWASegment::fixPage( aWASegment, sFixedWPID );
+            sIsFixed = ID_TRUE;
+        }
+    }
+
     sCursor += sTRPHeaderSize;
 
-    sTRPHeader           = &aTRPInfo->mTRPHeaderBuffer;
-    aTRPInfo->mTRPHeader = &aTRPInfo->mTRPHeaderBuffer;
     aTRPInfo->mValuePtr  = aRowBuffer;
 
     idlOS::memcpy( aRowBuffer + sRowBufferOffset,
@@ -246,6 +275,7 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtWASegment         * aWASegment,
                                                   &sCursor,
                                                   &sIsValidSlot )
                   != IDE_SUCCESS );
+
         IDE_ERROR( sIsValidSlot == ID_TRUE );
 
         sTRPHeader = (sdtTRPHeader*)sCursor;
@@ -273,6 +303,17 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtWASegment         * aWASegment,
 
     IDE_ERROR( aTRPInfo->mValueLength == aValueLength );
 
+    if ( sIsFixed == ID_TRUE )
+    {
+        sdtWASegment::unfixPage( aWASegment, sFixedWPID );
+        sIsFixed = ID_FALSE;
+    }
+
+    // BUG-46410 sdcTempRow::filteringAndFetch()에서 row Ptr이 잘못 설정 될 수 있습니다.
+    // sTRPHeader가 변경 되었는지를 NextGRID로 확인함,
+    IDE_ERROR( SC_GRID_IS_EQUAL( sNextGRID,
+                                 aTRPInfo->mTRPHeader->mNextGRID ) == ID_TRUE );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -283,10 +324,15 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtWASegment         * aWASegment,
     smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
                                     smuUtility::dumpGRID,
                                     &sGRID );
-
     smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
                                     dumpTempTRPHeader,
                                     (void*)aTRPInfo->mTRPHeader );
+
+    if ( sIsFixed == ID_TRUE )
+    {
+        sdtWASegment::unfixPage( aWASegment, sFixedWPID );
+        sIsFixed = ID_FALSE;
+    }
 
     return IDE_FAILURE;
 }
@@ -316,14 +362,13 @@ IDE_RC sdtTempRow::update( smiTempCursor * aTempCursor,
     UInt                 sBeginOffset = 0;
     UInt                 sEndOffset   = 0;
 
-    IDE_DASSERT( aTempCursor->mRowPtr != NULL );
-    IDE_DASSERT( SM_IS_FLAG_ON( ((sdtTRPHeader*)aTempCursor->mRowPtr)->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_ERROR( aTempCursor->mRowPtr != NULL );
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)aTempCursor->mRowPtr)->mTRFlag, SDT_TRFLAG_HEAD ) );
 
     while( 1 )
     {
         if( sRowPos == NULL )
         {
-            IDE_DASSERT (aTempCursor->mRowPtr != NULL );
             sRowPos = aTempCursor->mRowPtr;
         }
         else
@@ -416,6 +461,8 @@ IDE_RC sdtTempRow::setHitFlag( smiTempCursor * aTempCursor,
     idBool         sIsValidSlot  = ID_FALSE;
     smiTempTableHeader * sHeader = (smiTempTableHeader*)aTempCursor->mTTHeader;
 
+    IDE_ERROR( sTRPHeader != NULL );
+
     /* BUG-45474 hash_area_size가 부족하면 비정상종료하거나 SQL 의 결과가 중복된 값이 출력될 수 있습니다. */
     if ( ( SC_MAKE_SPACE( aTempCursor->mGRID ) != SDT_SPACEID_WAMAP ) &&
          ( SC_MAKE_SPACE( aTempCursor->mGRID ) != SDT_SPACEID_WORKAREA ) )
@@ -432,7 +479,7 @@ IDE_RC sdtTempRow::setHitFlag( smiTempCursor * aTempCursor,
                                                       &sIsValidSlot )
                     != IDE_SUCCESS );
             IDE_ERROR( sIsValidSlot == ID_TRUE );
-            IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+            IDE_ERROR( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
         }
         else
         {
@@ -551,6 +598,10 @@ idBool sdtTempRow::isHitFlagged( smiTempCursor * aTempCursor,
     return sIsHitFlagged;
 }
 
+/**************************************************************************
+ * Description :
+ *   공용 변수들에 대한 DumpFunction 
+ ***************************************************************************/
 void sdtTempRow::dumpTempTRPHeader( void       * aTRPHeader,
                                     SChar      * aOutBuf,
                                     UInt         aOutSize )
@@ -569,23 +620,22 @@ void sdtTempRow::dumpTempTRPHeader( void       * aTRPHeader,
                          sTRPHeader->mValueLength,
                          sTRPHeader->mHashValue );
 
-    if( SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) == SDT_TR_HEADER_SIZE_FULL )
+    if ( SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) == SDT_TR_HEADER_SIZE_FULL )
     {
-        idlVA::appendFormat(
-            aOutBuf,
-            aOutSize,
-            "mNextGRID    : <%"ID_UINT32_FMT
-            ",%"ID_UINT32_FMT
-            ",%"ID_UINT32_FMT">\n"
-            "mChildGRID   : <%"ID_UINT32_FMT
-            ",%"ID_UINT32_FMT
-            ",%"ID_UINT32_FMT">\n",
-            sTRPHeader->mNextGRID.mSpaceID,
-            sTRPHeader->mNextGRID.mPageID,
-            sTRPHeader->mNextGRID.mOffset,
-            sTRPHeader->mChildGRID.mSpaceID,
-            sTRPHeader->mChildGRID.mPageID,
-            sTRPHeader->mChildGRID.mOffset );
+        idlVA::appendFormat( aOutBuf,
+                             aOutSize,
+                             "mNextGRID    : <%"ID_UINT32_FMT
+                             ",%"ID_UINT32_FMT
+                             ",%"ID_UINT32_FMT">\n"
+                             "mChildGRID   : <%"ID_UINT32_FMT
+                             ",%"ID_UINT32_FMT
+                             ",%"ID_UINT32_FMT">\n",
+                             sTRPHeader->mNextGRID.mSpaceID,
+                             sTRPHeader->mNextGRID.mPageID,
+                             sTRPHeader->mNextGRID.mOffset,
+                             sTRPHeader->mChildGRID.mSpaceID,
+                             sTRPHeader->mChildGRID.mPageID,
+                             sTRPHeader->mChildGRID.mOffset );
     }
 
     return;
@@ -599,10 +649,11 @@ void sdtTempRow::dumpTempTRPInfo4Insert( void       * aTRPInfo,
     sdtTRPInfo4Insert * sTRPInfo = (sdtTRPInfo4Insert*)aTRPInfo;
     UInt                sSize;
     UInt                i;
+    UInt                sDumpSize;
 
     dumpTempTRPHeader( &sTRPInfo->mTRPHeader, aOutBuf, aOutSize );
 
-    for( i = 0 ; i < sTRPInfo->mColumnCount ; i ++)
+    for ( i = 0 ; i < sTRPInfo->mColumnCount ; i ++ )
     {
         idlVA::appendFormat( aOutBuf,
                              aOutSize,
@@ -613,13 +664,20 @@ void sdtTempRow::dumpTempTRPInfo4Insert( void       * aTRPInfo,
         idlVA::appendFormat( aOutBuf,
                              aOutSize,
                              "Value : ");
-        sSize = idlOS::strlen( aOutBuf );
+        sSize     = idlOS::strlen( aOutBuf );
+        sDumpSize = sTRPInfo->mValueList[ i ].length;
+        if ( sDumpSize > 64 )
+        {
+            /* IDE_MESSAGE_SIZE 를 넘으면 출력안될수도 있으므로 
+               임의의 값으로 자름  */
+            sDumpSize = 64;
+        }
         IDE_TEST( ideLog::ideMemToHexStr(
-                      (UChar*)sTRPInfo->mValueList[ i ].value,
-                      sTRPInfo->mValueList[ i ].length ,
-                      IDE_DUMP_FORMAT_VALUEONLY,
-                      aOutBuf + sSize,
-                      aOutSize - sSize )
+                                  (UChar*)sTRPInfo->mValueList[ i ].value,
+                                  sDumpSize,
+                                  IDE_DUMP_FORMAT_VALUEONLY,
+                                  aOutBuf + sSize,
+                                  aOutSize - sSize )
                   != IDE_SUCCESS );
         idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
     }
@@ -637,19 +695,27 @@ void sdtTempRow::dumpTempTRPInfo4Select( void       * aTRPInfo,
 {
     sdtTRPInfo4Select * sTRPInfo = (sdtTRPInfo4Select*)aTRPInfo;
     UInt                sSize;
+    UInt                sDumpSize;
 
     dumpTempTRPHeader( sTRPInfo->mTRPHeader, aOutBuf, aOutSize );
 
     idlVA::appendFormat( aOutBuf,
                          aOutSize,
                          "Value : ");
-    sSize = idlOS::strlen( aOutBuf );
+    sSize     = idlOS::strlen( aOutBuf );
+    sDumpSize = sTRPInfo->mTRPHeader->mValueLength;
+    if ( sDumpSize > 64 )
+    {
+        /* IDE_MESSAGE_SIZE 를 넘으면 출력안될수도 있으므로 
+           임의의 값으로 자름  */
+        sDumpSize = 64;
+    }
     IDE_TEST( ideLog::ideMemToHexStr(
-                  (UChar*)sTRPInfo->mValuePtr,
-                  sTRPInfo->mTRPHeader->mValueLength,
-                  IDE_DUMP_FORMAT_VALUEONLY,
-                  aOutBuf + sSize,
-                  aOutSize - sSize )
+                                  (UChar*)sTRPInfo->mValuePtr,
+                                  sDumpSize,
+                                  IDE_DUMP_FORMAT_VALUEONLY,
+                                  aOutBuf + sSize,
+                                  aOutSize - sSize )
               != IDE_SUCCESS );
     idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
 
@@ -659,6 +725,7 @@ void sdtTempRow::dumpTempTRPInfo4Select( void       * aTRPInfo,
 
     return;
 }
+
 void sdtTempRow::dumpTempRow( void  * aRowPtr,
                               SChar * aOutBuf,
                               UInt    aOutSize )
@@ -667,7 +734,7 @@ void sdtTempRow::dumpTempRow( void  * aRowPtr,
 
     sTRPInfo.mTRPHeader = (sdtTRPHeader*)aRowPtr;
     sTRPInfo.mValuePtr  = ((UChar*)aRowPtr) +
-        SDT_TR_HEADER_SIZE( sTRPInfo.mTRPHeader->mTRFlag );
+               SDT_TR_HEADER_SIZE( sTRPInfo.mTRPHeader->mTRFlag );
 
     dumpTempTRPInfo4Select( (void*)&sTRPInfo, aOutBuf, aOutSize );
 
@@ -686,7 +753,7 @@ void sdtTempRow::dumpTempPageByRow( void  * aPagePtr,
     IDE_TEST( sdtTempPage::getSlotCount( sPagePtr, &sSlotCount )
               != IDE_SUCCESS );
 
-    for( i = 0 ; i < sSlotCount ; i ++ )
+    for ( i = 0 ; i < sSlotCount ; i ++ )
     {
         sSlotValue = sdtTempPage::getSlotOffset( sPagePtr, i );
         dumpTempRow( sPagePtr + sSlotValue, aOutBuf, aOutSize );
@@ -717,6 +784,7 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
     UInt                 sBeginOffset  = 0;
     UInt                 sEndOffset    = 0;
     UInt                 sSize         = 0;
+    UInt                 sDumpSize     = 0;
 
     IDE_ERROR( sCursor != NULL );
 
@@ -725,7 +793,7 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
                          "DUMP TEMPROW\n");
     while( 1 )
     {
-        if( sRowPos == NULL )
+        if ( sRowPos == NULL )
         {
             sRowPos = sCursor->mRowPtr;
         }
@@ -740,14 +808,14 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
             IDE_ERROR( sIsValidSlot == ID_TRUE );
         }
 
-        idlVA::appendFormat(aOutBuf,
-                            aOutSize,
-                            "GRID  : %4"ID_UINT32_FMT","
-                            "%4"ID_UINT32_FMT","
-                            "%4"ID_UINT32_FMT"\n",
-                            sGRID.mSpaceID,
-                            sGRID.mPageID,
-                            sGRID.mOffset );
+        idlVA::appendFormat( aOutBuf,
+                             aOutSize,
+                             "GRID  : %4"ID_UINT32_FMT","
+                             "%4"ID_UINT32_FMT","
+                             "%4"ID_UINT32_FMT"\n",
+                             sGRID.mSpaceID,
+                             sGRID.mPageID,
+                             sGRID.mOffset );
 
         sTRPHeader = (sdtTRPHeader*)sRowPos;
         sEndOffset = sBeginOffset + sTRPHeader->mValueLength;
@@ -756,7 +824,7 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
 
         sUpdateColumn = sCursor->mUpdateColumns;
 
-        if( sUpdateColumn != NULL )
+        if ( sUpdateColumn != NULL )
         {
             idlVA::appendFormat( aOutBuf,
                                  aOutSize,
@@ -767,12 +835,19 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
                                  aOutSize,
                                  "value : ");
             sSize = idlOS::strlen( aOutBuf );
+            sDumpSize = sTRPHeader->mValueLength;
+            if ( sDumpSize > 64 )
+            {
+                /* IDE_MESSAGE_SIZE 를 넘으면 출력안될수도 있으므로 
+                   임의의 값으로 자름  */
+                sDumpSize = 64;
+            }
             IDE_TEST( ideLog::ideMemToHexStr(
-                          sRowPos,
-                          sTRPHeader->mValueLength,
-                          IDE_DUMP_FORMAT_VALUEONLY,
-                          aOutBuf + sSize,
-                          aOutSize - sSize )
+                                          sRowPos,
+                                          sDumpSize,
+                                          IDE_DUMP_FORMAT_VALUEONLY,
+                                          aOutBuf + sSize,
+                                          aOutSize - sSize )
                       != IDE_SUCCESS );
             idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
         }

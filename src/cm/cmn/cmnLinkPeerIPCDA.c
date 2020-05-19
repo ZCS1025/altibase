@@ -731,18 +731,38 @@ ACI_RC cmnLinkPeerCheckClientIPCDA(cmnLinkPeer * aLink, acp_bool_t * aIsClosed)
     cmnLinkPeerIPCDA *sLink = (cmnLinkPeerIPCDA *)aLink;
     cmnLinkDescIPCDA *sDesc = &sLink->mDesc;
 
-    acp_sint32_t    rc;
+    acp_sint32_t rc;
 
-    rc = semop(sDesc->mSemChannelID, sDesc->mOpCheckSvrExit, 2);
-    ACI_TEST_RAISE(rc == 0, ConnectionClosed);
+    /* BUG-45976 */
+    while (1)
+    {
+        rc = semop(sDesc->mSemChannelID, sDesc->mOpCheckSvrExit, 2);
+        if (rc == 0)
+        {
+            ACI_RAISE(ConnectionClosed);
+        }
+        else if ((rc == -1) && (errno == EAGAIN))
+        {
+            break;
+        }
+        else
+        {
+            ACI_TEST_RAISE(errno == EIDRM, ConnectionClosed);
+            ACI_TEST_RAISE(errno != EINTR, SemOpError);
+        }
+    }
 
     *aIsClosed = ACP_FALSE;
 
     return ACI_SUCCESS;
 
-    ACI_EXCEPTION(ConnectionClosed);
+    ACI_EXCEPTION(ConnectionClosed)
     {
         ACI_SET(aciSetErrorCode(cmERR_ABORT_CONNECTION_CLOSED));
+    }
+    ACI_EXCEPTION(SemOpError)
+    {
+        ACI_SET(aciSetErrorCode(cmERR_FATAL_CMN_SEM_OP));
     }
     ACI_EXCEPTION_END;
 

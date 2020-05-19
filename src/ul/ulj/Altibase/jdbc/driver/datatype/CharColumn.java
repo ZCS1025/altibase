@@ -22,6 +22,7 @@ public class CharColumn extends CommonCharVarcharColumn
 {
     CharColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.CHAR);
     }
 
     protected boolean isNationalCharset()
@@ -34,11 +35,6 @@ public class CharColumn extends CommonCharVarcharColumn
         return ColumnTypes.CHAR;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.CHAR };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "CHAR";

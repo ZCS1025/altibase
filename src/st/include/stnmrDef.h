@@ -58,8 +58,9 @@
 
 # define STNMR_LIST_COUNT_MAX       256
 # define STNMR_ELEM_COUNT_MAX       (10000000)
-# define STNMR_NODE_POOL_CACHE      (SMM_TEMP_PAGE_BODY_SIZE/idlOS::align((UInt)ID_SIZEOF(stnmrNode)))
-# define STNMR_NODE_POOL_MAXIMUM    (STNMR_NODE_POOL_CACHE*2)
+
+# define STNMR_NODE_POOL_CACHE      10 
+# define STNMR_NODE_POOL_MAXIMUM    100
 
 # define STNMR_MAX(a, b)                 (((a) > (b))? (a) : (b))
 # define STNMR_MIN(a, b)                 (((a) < (b))? (a) : (b))

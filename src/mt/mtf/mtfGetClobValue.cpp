@@ -65,8 +65,9 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfGetClobValueCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA,
+    mtk::extractRangeNA
 };
 
 IDE_RC mtfGetClobValueEstimate( mtcNode*     aNode,

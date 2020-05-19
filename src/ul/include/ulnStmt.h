@@ -324,6 +324,12 @@ struct ulnStmt
 
     ulsdStmtContext      mShardStmtCxt;
     ulsdModule          *mShardModule;       /* Shard Module */
+
+    /* BUG-46011 */
+    acp_char_t          *mDeferredQstr;
+    acp_sint32_t         mDeferredQstrMaxLen;
+    acp_sint32_t         mDeferredQstrLen;
+    acp_uint8_t          mDeferredPrepareMode;
 };
 
 /*
@@ -1126,5 +1132,24 @@ void ulnStmtResetPD( ulnStmt *aStmt )
 {\
     (aStmtPtr)->mAttrParamsSetRowCounts = aValue;\
 } while (0)
+
+/* BUG-46011 */
+
+ACP_INLINE acp_bool_t ulnStmtIsSetDeferredQstr(ulnStmt *aStmt)
+{
+    return (aStmt->mDeferredQstrLen > 0) ? ACP_TRUE : ACP_FALSE;
+}
+
+ACP_INLINE void ulnStmtClearDeferredQstr(ulnStmt *aStmt)
+{
+    aStmt->mDeferredQstrLen = 0;
+
+    if (aStmt->mDeferredQstrMaxLen > 0)
+    {
+        aStmt->mDeferredQstr[0] = '\0';
+    }
+}
+
+ACI_RC ulnStmtEnsureAllocDeferredQstr(ulnStmt *aStmt, acp_sint32_t aBufLen);
 
 #endif /* _O_ULN_STMT_H_ */

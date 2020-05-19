@@ -159,6 +159,10 @@ typedef enum idvStatIndex
     IDV_STAT_INDEX_UTRANS_TIMEOUT_COUNT,
     IDV_STAT_INDEX_SESSION_TERMINATED_COUNT,
 
+    /* PROJ-2677 */
+    IDV_STAT_INDEX_DDL_SYNC_TIMEOUT_COUNT,
+
+
     /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Count를
      *            AWI로 추가해야 합니다.*/
     IDV_STAT_INDEX_STMT_REBUILD_COUNT,
@@ -217,6 +221,13 @@ typedef enum idvStatIndex
     IDV_STAT_INDEX_MEMORY_TABLE_ACCESS_COUNT,
 
     IDV_STAT_INDEX_PLAN_CACHE_PPCO_MISS_X_TRY_LATCH_COUNT, /* BUG-35631 */
+
+    /* PROJ-2681 */
+    IDV_STAT_INDEX_RECV_IB_COUNT,
+    IDV_STAT_INDEX_SEND_IB_COUNT,
+
+    IDV_STAT_INDEX_RECV_IB_BYTE,
+    IDV_STAT_INDEX_SEND_IB_BYTE,
 
     // stmt에서 session 으로 누적되는 통계정보 추가
     // 물론, system 통계정보에도 누적된다.
@@ -571,6 +582,8 @@ typedef struct idvSQL
     /* Process Monitoring */
     void         * mProcInfo; /* Process Thread Info */
     void         * mThrInfo;  /* Thread Info */
+    
+    ULong mMathTempMem; /* BUG-46892 */
 }idvSQL;
 
 

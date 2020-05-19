@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRpad.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfRpad.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -86,6 +86,7 @@ const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfRpadCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -97,6 +98,7 @@ const mtcExecute mtfExecuteFor3Args = {
     mtf::calculateNA,
     mtfRpadCalculateFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -108,6 +110,7 @@ const mtcExecute mtfExecuteNcharFor2Args = {
     mtf::calculateNA,
     mtfRpadCalculateNcharFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -119,6 +122,7 @@ const mtcExecute mtfExecuteNcharFor3Args = {
     mtf::calculateNA,
     mtfRpadCalculateNcharFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

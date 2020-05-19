@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvDouble2Interval.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtvDouble2Interval.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -32,6 +32,8 @@ extern mtvModule mtvDouble2Interval;
 
 extern mtdModule mtdInterval;
 extern mtdModule mtdDouble;
+
+extern mtxModule mtxFromDoubleTo; /* PROJ-2632 */
 
 static IDE_RC mtvEstimate( mtcNode*     aNode,
                            mtcTemplate* aTemplate,
@@ -60,6 +62,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Double2Interval,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -73,7 +76,11 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns+aNode->column;
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxFromDoubleTo.mGetExecute( mtdInterval.id, mtdInterval.id );
+
     //IDE_TEST( mtdInterval.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,

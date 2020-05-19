@@ -86,6 +86,7 @@ static const mtcExecute mtfExecute = {
     mtfRowNumberLimitFinalize,
     mtfRowNumberLimitCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

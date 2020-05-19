@@ -63,6 +63,38 @@
 #ifndef PDL_BASIC_TYPES_H
 # define PDL_BASIC_TYPES_H
 
+
+/* before modifying, check acpConfig.h ,Basic_Types.h, and OS.h
+   (BUG-45623,BUG-46609)*/
+
+#ifndef FD_SETSIZE_NOT_REDEFINED
+#define FD_SETSIZE_NOT_REDEFINED
+
+#if !defined(ANDROID)
+#  if defined(ALTI_CFG_OS_HPUX)
+#    undef  FD_SETSIZE
+#    define FD_SETSIZE 65536    
+#  elif defined(ALTI_CFG_OS_AIX)
+#    ifdef _H_SELECT
+#      error  select_h_is_already_included
+#    endif
+#    undef  FD_SETSIZE
+#    define FD_SETSIZE 65536   
+#  else
+#    ifdef _WIN32
+#      define FD_SETSIZE 1024
+#    else
+#      if !defined(INTEL_LINUX)
+#        undef  FD_SETSIZE
+#        define FD_SETSIZE 65536
+#      endif
+#    endif
+#  endif
+#endif
+
+#endif  /* #ifndef FD_SETSIZE_NOT_REDEFINED */
+
+
 # if !defined (PDL_LACKS_PRAGMA_ONCE)
 #   pragma once
 # endif /* PDL_LACKS_PRAGMA_ONCE */

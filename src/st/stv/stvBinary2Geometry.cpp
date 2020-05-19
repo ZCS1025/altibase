@@ -75,6 +75,7 @@ static const mtcExecute stvBinary2GeoExecute = {
     mtf::calculateNA,
     stvCalculate_Binary2Geometry,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

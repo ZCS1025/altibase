@@ -78,6 +78,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfHex_decodeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnbModule.h 84469 2018-11-29 06:56:05Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMNB_MODULE_H_
@@ -128,8 +128,7 @@ public:
     static SInt compareKeyVarColumn( smnbColumn * aColumn,
                                      void       * aKey,
                                      UInt         aPartialKeySize,
-                                     SChar      * aRow,
-                                     idBool     * aIsSuccess );
+                                     SChar      * aRow );
     /* PROJ-2433 end */
 
     static SInt compareVarColumn( const smnbColumn * aColumn,
@@ -277,13 +276,13 @@ public:
                                      void           ** a_pSepKeyRow,
                                      void           ** aSepKey );
 
-    static void splitLeafNode( smnbHeader       * aIndexHeader,
-                               SInt               aSlotPos,
-                               smnbLNode        * aLeafNode,
-                               smnbLNode        * aNewLeafNode,
-                               smnbLNode       ** aTargetLeaf,
-                               SInt             * aTargetSeq );
-    
+    static IDE_RC splitLeafNode( smnbHeader       * aIndexHeader,
+                                 SInt               aSlotPos,
+                                 smnbLNode        * aLeafNode,
+                                 smnbLNode        * aNewLeafNode,
+                                 smnbLNode       ** aTargetLeaf,
+                                 SInt             * aTargetSeq );
+
     static IDE_RC findPosition( const smnbHeader   * a_pHeader,
                                 SChar              * a_pRow,
                                 SInt               * a_pDepth,
@@ -393,11 +392,11 @@ public:
                                SLong          * aAgableSpace, 
                                SLong          * aFreeSpace );
 
-    static IDE_RC getNextNode4Stat( smnbHeader     * aIdxHdr,
-                                    idBool           aBackTraverse,
-                                    idBool         * aNodeLatched,
-                                    UInt           * aIndexHeight,
-                                    smnbLNode     ** aCurNode );
+    static void getNextNode4Stat( smnbHeader     * aIdxHdr,
+                                  idBool           aBackTraverse,
+                                  idBool         * aNodeLatched,
+                                  UInt           * aIndexHeight,
+                                  smnbLNode     ** aCurNode );
 
     static IDE_RC NA( void );
 
@@ -447,18 +446,18 @@ public:
                               smnbIterator* aIterator,
                               const void**  /*aRow*/ );
 
-    static inline void initLeafNode( smnbLNode *a_pNode,
-                                     smnbHeader * aIndexHeader,
-                                     IDU_LATCH a_latch );
+    static inline IDE_RC initLeafNode( smnbLNode  * a_pNode,
+                                       smnbHeader * aIndexHeader,
+                                       IDU_LATCH    a_latch );
     static inline void initInternalNode( smnbINode *a_pNode,
                                          smnbHeader * aIndexHeader,
                                          IDU_LATCH a_latch );
-    static inline void destroyNode( smnbNode *a_pNode );
+    static inline IDE_RC destroyNode( smnbNode * a_pNode );
 
-    static inline IDE_RC lockTree( smnbHeader *a_pIndex );
-    static inline IDE_RC unlockTree( smnbHeader *a_pIndex );
-    static inline IDE_RC lockNode( smnbLNode *a_pLeafNode );
-    static inline IDE_RC unlockNode( smnbLNode *a_pLeafNodne );
+    static inline void lockTree( smnbHeader * a_pIndex );
+    static inline void unlockTree( smnbHeader * a_pIndex );
+    static inline void lockNode( smnbLNode * a_pLeafNode );
+    static inline void unlockNode( smnbLNode * a_pLeafNodne );
     
     /* For Make Disk Image When server is stopped normally */
     static IDE_RC makeDiskImage(smnIndexHeader* a_pIndex,
@@ -656,11 +655,11 @@ private:
                                               SChar      * aOldRowPtr );
     /* PROJ-2613 end */
 
-    /* BUG-44043 */
-    static inline void findNextSlotInLeaf( smnbStatistic    * aIndexStat,
-                                           const smnbColumn * aColumns,
-                                           const smnbColumn * aFence,
+    /* BUG-44043, BUG-46428 */
+    static inline void findNextSlotInLeaf( smnbHeader       * index,
                                            const smnbLNode  * aNode,
+                                           SInt               aMinimum,
+                                           SInt               aMaximum,
                                            SChar            * aSearchRow,
                                            SInt             * aSlot );
 
@@ -671,6 +670,8 @@ public:
     static inline idBool checkEnableReorgInNode( smnbLNode * aLNode,
                                                  smnbINode * aINode,
                                                  SShort      aSlotMaxCount );
+
+    static void setInconsistentIndex( smnIndexHeader * aIndex );
 };
 
 // BUG-19249
@@ -729,9 +730,9 @@ inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
  *
  * leaf node를 초기화한다
  */
-inline void smnbBTree::initLeafNode( smnbLNode  * a_pNode,
-                                     smnbHeader * aIndexHeader,
-                                     IDU_LATCH a_latch )
+inline IDE_RC smnbBTree::initLeafNode( smnbLNode  * a_pNode,
+                                       smnbHeader * aIndexHeader,
+                                       IDU_LATCH    a_latch )
 {
     SChar   sBuf[IDU_MUTEX_NAME_LEN];
 
@@ -752,10 +753,10 @@ inline void smnbBTree::initLeafNode( smnbLNode  * a_pNode,
     /* init Node Latch */
     idlOS::snprintf( sBuf, IDU_MUTEX_NAME_LEN, "SMNB_MUTEX_NODE_%"ID_UINT64_FMT,
                      (ULong)a_pNode );
-    IDE_ASSERT( a_pNode->nodeLatch.initialize( sBuf,
-                                               IDU_MUTEX_KIND_POSIX,
-                                               IDV_WAIT_INDEX_NULL )
-                == IDE_SUCCESS );
+    IDE_TEST( a_pNode->nodeLatch.initialize( sBuf,
+                                             IDU_MUTEX_KIND_POSIX,
+                                             IDV_WAIT_INDEX_NULL )
+              != IDE_SUCCESS );
 
     a_pNode->sequence      = 0;
     a_pNode->mKeySize      = aIndexHeader->mKeySize;
@@ -770,10 +771,14 @@ inline void smnbBTree::initLeafNode( smnbLNode  * a_pNode,
     {
         a_pNode->mKeys = (void **)&(a_pNode->mRowPtrs[a_pNode->mMaxSlotCount]);
     }
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
 }
 
 
-inline void smnbBTree::destroyNode( smnbNode *a_pNode )
+inline IDE_RC smnbBTree::destroyNode( smnbNode * a_pNode )
 {
     smnbLNode   * s_pLeafNode;
 
@@ -782,55 +787,38 @@ inline void smnbBTree::destroyNode( smnbNode *a_pNode )
     if ( (a_pNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF )
     {
         s_pLeafNode = (smnbLNode*)a_pNode;
-        IDE_ASSERT( s_pLeafNode->nodeLatch.destroy() == IDE_SUCCESS );
+        IDE_TEST( s_pLeafNode->nodeLatch.destroy() != IDE_SUCCESS );
     }
-    else
-    {
-        IDE_ASSERT( (a_pNode->flag & SMNB_NODE_TYPE_MASK) ==
-                    SMNB_NODE_TYPE_INTERNAL );
-    }
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
 }
 
-inline IDE_RC smnbBTree::lockTree(smnbHeader *a_pIndex)
+inline void smnbBTree::lockTree( smnbHeader * a_pIndex )
 {
     IDE_DASSERT( a_pIndex != NULL );
-    IDE_TEST( a_pIndex->mTreeMutex.lock( NULL /* idvSQL */ ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-    IDE_EXCEPTION_END;
-    return IDE_FAILURE;
+    (void)a_pIndex->mTreeMutex.lock( NULL /* idvSQL */ ); /* always IDE_SUCCESS return */
 }
 
-inline IDE_RC smnbBTree::unlockTree(smnbHeader *a_pIndex)
+inline void smnbBTree::unlockTree( smnbHeader * a_pIndex )
 {
     IDE_DASSERT( a_pIndex != NULL );
-    IDE_TEST( a_pIndex->mTreeMutex.unlock() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-    IDE_EXCEPTION_END;
-    return IDE_FAILURE;
+    (void)a_pIndex->mTreeMutex.unlock(); /* always IDE_SUCCESS return */
 }
 
-inline IDE_RC smnbBTree::lockNode(smnbLNode *a_pLeafNode)
+inline void smnbBTree::lockNode( smnbLNode * a_pLeafNode )
 {
-    IDE_ASSERT( a_pLeafNode != NULL );
+    IDE_DASSERT( a_pLeafNode != NULL );
     IDE_DASSERT( (a_pLeafNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF );
-    IDE_TEST( a_pLeafNode->nodeLatch.lock( NULL /* idvSQL */ ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-    IDE_EXCEPTION_END;
-    return IDE_FAILURE;
+    (void)a_pLeafNode->nodeLatch.lock( NULL /* idvSQL */ ); /* always IDE_SUCCESS return */
 }
 
-inline IDE_RC smnbBTree::unlockNode(smnbLNode *a_pLeafNode)
+inline void smnbBTree::unlockNode( smnbLNode * a_pLeafNode )
 {
-    IDE_ASSERT( a_pLeafNode != NULL );
+    IDE_DASSERT( a_pLeafNode != NULL );
     IDE_DASSERT( (a_pLeafNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF );
-    IDE_TEST( a_pLeafNode->nodeLatch.unlock() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-    IDE_EXCEPTION_END;
-    return IDE_FAILURE;
+    (void)a_pLeafNode->nodeLatch.unlock(); /* always IDE_SUCCESS return */
 }
 
 inline IDU_LATCH smnbBTree::getLatchValueOfINode(volatile smnbINode* aNodePtr)
@@ -1009,7 +997,7 @@ inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
 {
     SInt i = 0;
 
-    IDE_ASSERT( aStartIdx <= aEndIdx );
+    IDE_DASSERT( aStartIdx <= aEndIdx );
 
     /* BUG-41787
      * 기존에는 index node의 slot 이동시 memmove() 함수를 사용하였는데

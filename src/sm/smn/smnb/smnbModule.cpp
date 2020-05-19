@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnbModule.cpp 84469 2018-11-29 06:56:05Z justin.kwon $
  **********************************************************************/
 
 #include <idl.h>
@@ -37,7 +37,7 @@
 extern smiGlobalCallBackList gSmiGlobalCallBackList;
 
 smmSlotList  smnbBTree::mSmnbNodePool;
-void*        smnbBTree::mSmnbFreeNodeList;
+void*        smnbBTree::mSmnbFreeNodeList; /* AGER 가 정리하기 위해 들고있는 NODE LIST */
 
 UInt         smnbBTree::mNodeSize;
 UInt         smnbBTree::mIteratorSize;
@@ -545,19 +545,13 @@ static const  smSeekFunc smnbSeekFunctions[32][12] =
 
 void smnbBTree::setIndexProperties()
 {
-    SInt sNodeCntPerPage = 0;
-
     /* PROJ-2433
-     * NODE SIZE는 property __MEM_BTREE_INDEX_NODE_SIZE 값이다.
-     * 단, 페이지에서 사용되지 못하는 공간을 줄이기위해 보정한다.
-     * ( mNodeSize >= __MEM_BTREE_INDEX_NODE_SIZE,
-     *                except for __MEM_BTREE_INDEX_NODE_SIZE == 32K ) */
+     * NODE SIZE는 property __MEM_BTREE_INDEX_NODE_SIZE 값이다. */
 
-    mNodeSize       = smuProperty::getMemBtreeNodeSize();
-    sNodeCntPerPage = SMM_TEMP_PAGE_BODY_SIZE / idlOS::align( mNodeSize );
-    sNodeCntPerPage = ( sNodeCntPerPage <= 0 ) ? 1 : sNodeCntPerPage; /* page에 최소 한개의 node 할당*/
-    mNodeSize       = idlOS::align( (SInt)( ( SMM_TEMP_PAGE_BODY_SIZE / sNodeCntPerPage )
-                                            - idlOS::align(1) + 1 ) );
+    /* BUG-46402
+     * PAGE 단위가 아닌 NODE 단위로 mempool alloc 받도록 수정했기 때문에
+     * PAGE의 낭비되는 공간이 없도록 node size를 보정하는 작업은 필요없게 되었다. */
+    mNodeSize     = idlOS::align( smuProperty::getMemBtreeNodeSize() );
 
     /* PROJ-2433
      * mIteratorSize는 btree index 공통으로 사용하는 smnbIterator에 할당할 메모리 크기이다.
@@ -590,7 +584,9 @@ IDE_RC smnbBTree::releaseIteratorMem(const smnIndexModule* )
 
 IDE_RC smnbBTree::prepareFreeNodeMem( const smnIndexModule* )
 {
-    IDE_TEST( mSmnbNodePool.initialize( mNodeSize,
+    IDE_TEST( mSmnbNodePool.initialize( IDU_MEM_SM_INDEX,
+                                        "SMNB_INDEX_NODE_POOL",
+                                        mNodeSize,
                                         SMNB_NODE_POOL_MAXIMUM,
                                         SMNB_NODE_POOL_CACHE )
               != IDE_SUCCESS );
@@ -628,15 +624,16 @@ IDE_RC smnbBTree::freeAllNodeList(idvSQL         * /*aStatistics*/,
     /* BUG-37643 Node의 array를 지역변수에 저장하는데
      * compiler 최적화에 의해서 지역변수가 제거될 수 있다.
      * 따라서 이러한 변수는 volatile로 선언해야 한다. */
-    volatile smnbLNode  * sCurLNode;
+    volatile smnbLNode  * sCurLNode = NULL;
     volatile smnbINode  * sFstChildINode;
     volatile smnbINode  * sCurINode;
     smnbHeader          * sHeader;
     smmSlot               sSlots = { &sSlots, &sSlots };
     smmSlot             * sFreeNode;
     SInt                  sSlotCount = 0;
+    ULong                 sDestroyFailCnt = 0;
 
-    IDE_ASSERT( aIndex != NULL );
+    IDE_DASSERT( aIndex != NULL );
 
     sHeader = (smnbHeader*)(aIndex->mHeader);
 
@@ -657,7 +654,10 @@ IDE_RC smnbBTree::freeAllNodeList(idvSQL         * /*aStatistics*/,
                 {
                     sSlotCount++;
 
-                    destroyNode( (smnbNode*)sCurLNode );
+                    if ( destroyNode( (smnbNode*)sCurLNode ) != IDE_SUCCESS )
+                    {
+                        sDestroyFailCnt++;
+                    }
 
                     sFreeNode = (smmSlot*)sCurLNode;
 
@@ -691,7 +691,10 @@ IDE_RC smnbBTree::freeAllNodeList(idvSQL         * /*aStatistics*/,
                 {
                     sSlotCount++;
 
-                    destroyNode( (smnbNode*)sCurINode );
+                    if ( destroyNode( (smnbNode*)sCurINode ) != IDE_SUCCESS )
+                    {
+                        sDestroyFailCnt++;
+                    }
 
                     sFreeNode = (smmSlot*)sCurINode;
 
@@ -711,9 +714,23 @@ IDE_RC smnbBTree::freeAllNodeList(idvSQL         * /*aStatistics*/,
         sHeader->root     = NULL;
     }
 
+    if ( sDestroyFailCnt != 0 )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "fail to destroy node - smnbBTree::freeAllNodeList, Count[%"ID_UINT64_FMT"]",
+                     sDestroyFailCnt );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sDestroyFailCnt != 0 )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "fail to destroy node - smnbBTree::freeAllNodeList, Count[%"ID_UINT64_FMT"]",
+                     sDestroyFailCnt );
+    }
 
     return IDE_FAILURE;
 }
@@ -723,10 +740,14 @@ IDE_RC smnbBTree::freeNode( smnbNode* aNodes )
     smmSlot* sSlots;
     smmSlot* sSlot;
     UInt     sCount;
+    ULong    sDestroyFailCnt = 0;
 
     if ( aNodes != NULL )
     {
-        destroyNode( aNodes );
+        if ( destroyNode( aNodes ) != IDE_SUCCESS )
+        {
+            sDestroyFailCnt++;
+        }
 
         sSlots       = (smmSlot*)aNodes;
         aNodes       = (smnbNode*)(aNodes->freeNodeList);
@@ -736,7 +757,10 @@ IDE_RC smnbBTree::freeNode( smnbNode* aNodes )
 
         while( aNodes != NULL )
         {
-            destroyNode( aNodes );
+            if ( destroyNode( aNodes ) != IDE_SUCCESS )
+            {
+                sDestroyFailCnt++;
+            }
 
             sSlot             = (smmSlot*)aNodes;
             aNodes            = (smnbNode*)(aNodes->freeNodeList);
@@ -751,9 +775,23 @@ IDE_RC smnbBTree::freeNode( smnbNode* aNodes )
                       != IDE_SUCCESS );
     }
 
+    if ( sDestroyFailCnt != 0 )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "fail to destroy node - smnbBTree::freeNode, Count[%"ID_UINT64_FMT"]",
+                     sDestroyFailCnt );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sDestroyFailCnt != 0 )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "fail to destroy node - smnbBTree::freeNode, Count[%"ID_UINT64_FMT"]",
+                     sDestroyFailCnt );
+    }
 
     return IDE_FAILURE;
 }
@@ -805,13 +843,10 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
                                 IDV_WAIT_INDEX_NULL )
                 != IDE_SUCCESS );
 
-    // fix BUG-23007
-    // Index Node Pool 초기화
-    IDE_TEST( sHeader->mNodePool.initialize( mNodeSize,
-                                         SMM_SLOT_LIST_MAXIMUM_DEFAULT,
-                                         SMM_SLOT_LIST_CACHE_DEFAULT,
-                                         &mSmnbNodePool )
-              != IDE_SUCCESS );
+    mSmnbNodePool.makeChild( SMM_SLOT_LIST_MAXIMUM_DEFAULT,
+                             SMM_SLOT_LIST_CACHE_DEFAULT,
+                             &sHeader->mNodePool );
+
     sStage = 2;
 
     //TC/TC/Limit/sm/smn/smnb/smnbBTree_create_malloc2.sql
@@ -1114,9 +1149,9 @@ IDE_RC smnbBTree::buildIndex( idvSQL*               aStatistics,
     idBool              sBuildWithKeyValue = ID_TRUE;
     UInt                sPageCnt;
 
-    IDE_ASSERT( aGetPageFunc != NULL );
-    IDE_ASSERT( aGetRowFunc  != NULL );
-    IDE_ASSERT( aNullRow     != NULL );
+    IDE_DASSERT( aGetPageFunc != NULL );
+    IDE_DASSERT( aGetRowFunc  != NULL ); 
+    IDE_DASSERT( aNullRow     != NULL );
 
     sIndexModules = aIndex->mModule;
 
@@ -1230,6 +1265,7 @@ IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
     smmSlot             *s_pFreeNode;
     SInt                 s_slotCount = 0;
     SInt                 s_cSlot;
+    ULong                sDestroyFailCnt = 0;
 
     s_pHeader = (smnbHeader*)(aIndex->mHeader);
 
@@ -1250,7 +1286,10 @@ IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
                 {
                     s_slotCount++;
                     
-                    destroyNode( (smnbNode*)s_pCurLNode );
+                    if ( destroyNode( (smnbNode*)s_pCurLNode ) != IDE_SUCCESS )
+                    {
+                        sDestroyFailCnt++;
+                    }
 
                     s_pFreeNode = (smmSlot*)s_pCurLNode;
 
@@ -1289,7 +1328,10 @@ IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
                 {
                     s_slotCount++;
 
-                    destroyNode( (smnbNode*)s_pCurINode );
+                    if ( destroyNode( (smnbNode*)s_pCurINode ) != IDE_SUCCESS )
+                    {
+                        sDestroyFailCnt++;
+                    }
 
                     s_pFreeNode = (smmSlot*)s_pCurINode;
 
@@ -1322,9 +1364,23 @@ IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
         aIndex->mHeader = NULL;
     }
 
+    if ( sDestroyFailCnt != 0 )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "fail to destroy node - smnbBTree::drop, Count[%"ID_UINT64_FMT"]",
+                     sDestroyFailCnt );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sDestroyFailCnt != 0 )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "fail to destroy node - smnbBTree::drop, Count[%"ID_UINT64_FMT"]",
+                     sDestroyFailCnt );
+    }
 
     return IDE_FAILURE;
 }
@@ -1837,9 +1893,7 @@ SInt smnbBTree::compareKeys( smnbStatistic      * aIndexStat,
         sResult = compareKeyVarColumn( (smnbColumn*)aColumns,
                                        aKey1,
                                        aPartialKeySize,
-                                       aRow2,
-                                       aIsSuccess );
-        IDE_TEST( *aIsSuccess != ID_TRUE );
+                                       aRow2 );
     }
 
     *aIsSuccess = ID_TRUE;
@@ -1875,13 +1929,14 @@ SInt smnbBTree::compareKeys( smnbStatistic      * aIndexStat,
 SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
                                      void       * aKey,
                                      UInt         aPartialKeySize,
-                                     SChar      * aRow,
-                                     idBool     * aIsSuccess )
+                                     SChar      * aRow )
 {
     SInt              sResult = 0;
     smiColumn         sDummyColumn;
     smiColumn         sColumn;
+#ifdef DEBUG
     smVCDesc        * sColumnVCDesc = NULL;
+#endif
     ULong             sInPageBuffer = 0;
     smiValueInfo      sValueInfo1;
     smiValueInfo      sValueInfo2;
@@ -1889,6 +1944,7 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
 
     sColumn = aColumn->column;
 
+#ifdef DEBUG
     // BUG-37533
     if ( ( sColumn.flag & SMI_COLUMN_COMPRESSION_MASK )
          == SMI_COLUMN_COMPRESSION_FALSE )
@@ -1897,7 +1953,8 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
         {
             // BUG-30068 : malloc 실패시 비정상 종료합니다.
             sColumnVCDesc = (smVCDesc*)(aRow + sColumn.offset);
-            IDE_ERROR_RAISE( sColumnVCDesc->length <= SMP_VC_PIECE_MAX_SIZE, ERR_CORRUPTED_INDEX );
+            /* VARIABLE_LARGE 는 구형 VARIABLE 타입이다. 간단히 DASSERT로만 확인한다. */
+            IDE_DASSERT( sColumnVCDesc->length <= SMP_VC_PIECE_MAX_SIZE );
         }
         else
         {
@@ -1908,6 +1965,7 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
     {
         // compressed column이면 smVCDesc의 length를 검사하지 않는다.
     }
+#endif
 
     sDummyColumn.offset = 0;
     sDummyColumn.flag   = 0;
@@ -1941,20 +1999,6 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
 
     sResult = aColumn->compare( &sValueInfo1,
                                 &sValueInfo2 );
-    *aIsSuccess = ID_TRUE;
-
-    return sResult;
-
-    IDE_EXCEPTION( ERR_CORRUPTED_INDEX )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-
-        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong VC Piece Size" );
-    }
-    IDE_EXCEPTION_END;    
-
-    *aIsSuccess = ID_FALSE;
-
     return sResult;
 }
 
@@ -1969,8 +2013,10 @@ SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
     SInt        sResult;
     smiColumn   sColumn1;
     smiColumn   sColumn2;
+#ifdef DEBUG
     smVCDesc  * sColumnVCDesc1;
     smVCDesc  * sColumnVCDesc2;
+#endif
     ULong       sInPageBuffer1;
     ULong       sInPageBuffer2;
     smiValueInfo  sValueInfo1;
@@ -1979,6 +2025,7 @@ SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
     sColumn1 = aColumn->column;
     sColumn2 = aColumn->column;
 
+#ifdef DEBUG
     // BUG-37533
     if ( ( sColumn1.flag & SMI_COLUMN_COMPRESSION_MASK )
          == SMI_COLUMN_COMPRESSION_FALSE )
@@ -1987,10 +2034,12 @@ SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
         {
             // BUG-30068 : malloc 실패시 비정상 종료합니다.
             sColumnVCDesc1 = (smVCDesc*)((SChar *)aRow1 + sColumn1.offset);
-            IDE_ASSERT( sColumnVCDesc1->length <= SMP_VC_PIECE_MAX_SIZE );
+            /* VARIABLE_LARGE 는 구형 VARIABLE 타입이다. 간단히 DASSERT로만 확인한다. */
+            IDE_DASSERT( sColumnVCDesc1->length <= SMP_VC_PIECE_MAX_SIZE );
 
             sColumnVCDesc2 = (smVCDesc*)((SChar *)aRow2 + sColumn2.offset);
-            IDE_ASSERT( sColumnVCDesc2->length <= SMP_VC_PIECE_MAX_SIZE );
+            /* VARIABLE_LARGE 는 구형 VARIABLE 타입이다. 간단히 DASSERT로만 확인한다. */
+            IDE_DASSERT( sColumnVCDesc2->length <= SMP_VC_PIECE_MAX_SIZE );
         }
         else
         {
@@ -2001,6 +2050,7 @@ SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
     {
         // compressed column이면 smVCDesc의 length를 검사하지 않는다.
     }
+#endif
 
     sColumn1.value = (void*)&sInPageBuffer1;
     *(ULong*)(sColumn1.value) = 0;
@@ -2071,8 +2121,9 @@ idBool smnbBTree::isVarNull( smnbColumn * aColumn,
 {
     idBool      sResult;
     smiColumn   sColumn;
+#ifdef DEBUG
     smVCDesc  * sColumnVCDesc;
-    UChar     * sOutPageBuffer = NULL;
+#endif
     ULong       sInPageBuffer;
     UChar     * sOrgValue;
     SChar     * sValue;
@@ -2081,26 +2132,17 @@ idBool smnbBTree::isVarNull( smnbColumn * aColumn,
     sColumn = *aSmiColumn;
 
     sOrgValue = (UChar*)sColumn.value;
+#ifdef DEBUG
     if ( ( sColumn.flag & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_VARIABLE_LARGE )
     {
+        /* BUG-30068 */
         sColumnVCDesc = (smVCDesc*)(aRow + sColumn.offset);
-        if ( sColumnVCDesc->length > SMP_VC_PIECE_MAX_SIZE )
-        {
-            IDE_ASSERT( iduMemMgr::malloc( IDU_MEM_SM_SMN,
-                        sColumnVCDesc->length + ID_SIZEOF( ULong ),
-                        (void**)&sOutPageBuffer ) == IDE_SUCCESS );
-            sColumn.value = sOutPageBuffer;
-        }
-        else
-        {
-            sColumn.value = (void*)&sInPageBuffer;
-        }
-        *(ULong*)(sColumn.value) = 0;
+        /* VARIABLE_LARGE 는 구형 VARIABLE 타입이다. 간단히 DASSERT로만 확인한다. */
+        IDE_DASSERT( sColumnVCDesc->length <= SMP_VC_PIECE_MAX_SIZE );
     }
-    else
-    {
-        sColumn.value = (void*)&sInPageBuffer;
-    }
+#endif
+
+    sColumn.value = (void*)&sInPageBuffer;
     *(ULong*)(sColumn.value) = 0;
 
     sValue = sgmManager::getVarColumn(aRow, &sColumn, &sLength);
@@ -2115,10 +2157,6 @@ idBool smnbBTree::isVarNull( smnbColumn * aColumn,
     }
 
     sColumn.value = sOrgValue;
-    if ( sOutPageBuffer != NULL )
-    {
-        IDE_ASSERT( iduMemMgr::free( sOutPageBuffer ) == IDE_SUCCESS );
-    }
 
     return sResult;
 }
@@ -2155,7 +2193,7 @@ UInt smnbBTree::getMaxKeyValueSize( smnIndexHeader *aIndexHeader )
 {
     UInt             sTotalSize;
 
-    IDE_ASSERT( aIndexHeader != NULL );
+    IDE_DASSERT( aIndexHeader != NULL );
 
     sTotalSize = idlOS::align8(((smnbHeader*)aIndexHeader->mHeader)->mFixedKeySize);
 
@@ -3102,22 +3140,24 @@ IDE_RC smnbBTree::splitInternalNode(smnbHeader      * a_pIndexHeader,
     return IDE_FAILURE;
 }
 
-void smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
-                               SInt            a_nSlotPos,
-                               smnbLNode     * a_pLeafNode,
-                               smnbLNode     * a_pNewLeafNode,
-                               smnbLNode    ** aTargetLeaf,
-                               SInt          * aTargetSeq )
+IDE_RC smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
+                                 SInt            a_nSlotPos,
+                                 smnbLNode     * a_pLeafNode,
+                                 smnbLNode     * a_pNewLeafNode,
+                                 smnbLNode    ** aTargetLeaf,
+                                 SInt          * aTargetSeq )
 {
     IDL_MEM_BARRIER;
 
     // BUG-18292 : V$MEM_BTREE_HEADER 정보 추가
     a_pIndexHeader->nodeCount++;
 
+    IDU_FIT_POINT_RAISE( "BUG-46504@smnbBTree::splitLeafNode::initLeafNode", ERR_FAIL_TO_INITIALIZE_LEAF_NODE );
     // To fix BUG-18671
-    initLeafNode( a_pNewLeafNode,
-                  a_pIndexHeader,
-                  IDU_LATCH_LOCKED );
+    IDE_ERROR_RAISE( initLeafNode( a_pNewLeafNode,
+                                   a_pIndexHeader,
+                                   IDU_LATCH_LOCKED ) == IDE_SUCCESS,
+                     ERR_FAIL_TO_INITIALIZE_LEAF_NODE );
     
     SMNB_SCAN_UNLATCH( a_pNewLeafNode );
 
@@ -3189,6 +3229,19 @@ void smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
     }
 
     SMNB_SCAN_UNLATCH( a_pNewLeafNode );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_LEAF_NODE )
+    {
+        SMNB_SCAN_UNLATCH( a_pNewLeafNode ); /* LATCH 풀어줘야함 */
+
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] fail to initialize leaf node" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
@@ -3285,9 +3338,9 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
         if ( a_pLeafNode != s_pCurLeafNode )
         {
             /* 이웃 노드를 봐야한다면 Tree latch가 잡혀있어야 한다. */
-            IDE_ASSERT( aIsTreeLatched == ID_TRUE );
+            IDE_ERROR_RAISE( ( aIsTreeLatched == ID_TRUE ), ERR_NOT_TREE_LATCH );
 
-            IDE_TEST( lockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            lockNode( s_pCurLeafNode );
             sState = 1;
 
             /* 마지막 slot부터 시작. */
@@ -3396,7 +3449,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                         if( sState == 1)
                         {
                             sState = 0;
-                            IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+                            unlockNode( s_pCurLeafNode );
                         }
 
                         *aIsRetraverse = ID_TRUE;
@@ -3408,7 +3461,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
                         while( ( sCheckEnd == ID_FALSE ) && ( sTempNode != NULL ) )
                         {
-                            IDE_TEST( lockNode( sTempNode ) != IDE_SUCCESS );
+                            lockNode( sTempNode );
                             sTempLockState = 1;
 
                             for( j = ( sTempNode->mSlotCount - 1) ; j>= 0; j-- )
@@ -3423,7 +3476,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                                 {
                                     /* 동일하지 않은 키가 발견될 경우 더 이상 탐색할 필요 없다. */
                                     sTempLockState = 0;
-                                    IDE_TEST( unlockNode( sTempNode ) != IDE_SUCCESS );
+                                    unlockNode( sTempNode );
 
                                     sCheckEnd = ID_TRUE;
 
@@ -3450,7 +3503,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                              * 다시 그 앞 노드에 대해서도 탐색을 수행한다.*/
 
                             sTempLockState = 0;
-                            IDE_TEST( unlockNode( sTempNode ) != IDE_SUCCESS );
+                            unlockNode( sTempNode );
 
                             sTempNode = sTempNode->prevSPtr;
                         }
@@ -3463,7 +3516,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
         if ( sState == 1 )
         {
             sState = 0;
-            IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            unlockNode( s_pCurLeafNode );
         }
 
         if ( *a_pTransID != SM_NULL_TID )
@@ -3487,9 +3540,9 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
         if ( a_pLeafNode != s_pCurLeafNode )
         {
             /* 이웃 노드를 봐야한다면 Tree latch가 잡혀있어야 한다. */
-            IDE_ASSERT( aIsTreeLatched == ID_TRUE );
+            IDE_ERROR_RAISE( ( aIsTreeLatched == ID_TRUE ), ERR_NOT_TREE_LATCH );
 
-            IDE_TEST( lockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            lockNode( s_pCurLeafNode );
             sState = 1;
 
             /* 이웃 노드인 경우 처음부터 시작 */
@@ -3600,7 +3653,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                         if( sState == 1 )
                         {
                             sState = 0;
-                            IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+                            unlockNode( s_pCurLeafNode );
                         }
 
                         *aIsRetraverse = ID_TRUE;
@@ -3612,7 +3665,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
                         while( ( sCheckEnd == ID_FALSE ) && ( sTempNode != NULL ) )
                         {
-                            IDE_TEST( lockNode( sTempNode ) != IDE_SUCCESS );
+                            lockNode( sTempNode );
                             sTempLockState = 1;
 
                             for( j = 0 ; j < sTempNode->mSlotCount ; j++ )
@@ -3628,7 +3681,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                                 {
                                     /* 동일하지 않은 키가 발견될 경우 더 이상 탐색할 필요 없다. */
                                     sTempLockState = 0;
-                                    IDE_TEST( unlockNode( sTempNode ) != IDE_SUCCESS );
+                                    unlockNode( sTempNode );
 
                                     sCheckEnd = ID_TRUE;
 
@@ -3655,7 +3708,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                              * 다시 그 다음 노드에 대해서도 탐색을 수행한다.*/
 
                             sTempLockState = 0;
-                            IDE_TEST( unlockNode( sTempNode ) != IDE_SUCCESS );
+                            unlockNode( sTempNode );
 
                             sTempNode = sTempNode->nextSPtr;
                         }
@@ -3668,7 +3721,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
         if ( sState == 1 )
         {
             sState = 0;
-            IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            unlockNode( s_pCurLeafNode );
         }
 
         if ( *a_pTransID != SM_NULL_TID )
@@ -3681,16 +3734,15 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
             break;
         }
 
-        IDE_ASSERT( aIsTreeLatched == ID_TRUE );
+        IDE_ERROR_RAISE( ( aIsTreeLatched == ID_TRUE ), ERR_NOT_TREE_LATCH );
 
         s_pCurLeafNode = s_pCurLeafNode->nextSPtr;
     }
 
-
     IDE_EXCEPTION_CONT( need_to_wait );
     IDE_EXCEPTION_CONT( need_to_retraverse );
 
-    IDE_ASSERT( sState == 0 );
+    IDE_ERROR_RAISE( ( sState == 0 ), ERR_NOT_STATE_ZERO );
 
     return IDE_SUCCESS;
 
@@ -3700,21 +3752,26 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Order" );
     }
-    IDE_EXCEPTION_END;
-
-    if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
+    IDE_EXCEPTION( ERR_NOT_TREE_LATCH )
     {
-        smnManager::setIsConsistentOfIndexHeader( aIndexHeader, ID_FALSE );
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] Tree Latch is not latched." );
     }
-
+    IDE_EXCEPTION( ERR_NOT_STATE_ZERO )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] State is not zero." );
+    }
+    IDE_EXCEPTION_END;
+    
     if( sTempLockState == 1 )
     {
-        IDE_ASSERT( unlockNode( sTempNode ) == IDE_SUCCESS );
+        unlockNode( sTempNode );
     }
 
     if ( sState == 1 )
     {
-        IDE_ASSERT( unlockNode(s_pCurLeafNode) == IDE_SUCCESS );
+        unlockNode( s_pCurLeafNode );
     }
 
     return IDE_FAILURE;
@@ -3728,10 +3785,10 @@ void smnbBTree::getPreparedNode( smnbNode    ** aNodeList,
     smnbNode    *sPrev;
     smnbNode    *sNext;
 
-    IDE_ASSERT( aNodeList  != NULL );
-    IDE_ASSERT( aNodeCount != NULL );
-    IDE_ASSERT( aNode      != NULL );
-    IDE_ASSERT( *aNodeCount > 0 );
+    IDE_DASSERT( aNodeList  != NULL );
+    IDE_DASSERT( aNodeCount != NULL );
+    IDE_DASSERT( aNode      != NULL );
+    IDE_DASSERT( *aNodeCount > 0 );
 
     sNode = *aNodeList;
     sPrev = (smnbNode*)((*aNodeList)->prev);
@@ -3769,13 +3826,12 @@ IDE_RC smnbBTree::prepareNodes( smnbHeader    * aIndexHeader,
     SInt              sCurDepth;
     SInt              sNewNodeCount;
 
-    IDE_ASSERT( aIndexHeader != NULL );
-    IDE_ASSERT( aStack       != NULL );
-    IDE_ASSERT( aNewNodeList != NULL );
-    IDE_ASSERT( aNewNodeCount != NULL );
+    IDE_DASSERT( aIndexHeader != NULL );
+    IDE_DASSERT( aStack       != NULL );
+    IDE_DASSERT( aNewNodeList != NULL );
+    IDE_DASSERT( aNewNodeCount != NULL );
 
     sStack    = aStack;
-    sCurDepth = aDepth;
 
     *aNewNodeList  = NULL;
     *aNewNodeCount = 0;
@@ -3918,6 +3974,8 @@ IDE_RC smnbBTree::insertRow( idvSQL*           aStatistics,
     idBool       sIsRetraverse = ID_FALSE;
     idBool       sNeedTreeLatch = ID_FALSE;
     idBool       sIsNxtNodeLatched = ID_FALSE;
+    idBool       sIsLeafScanLatched = ID_FALSE;
+    idBool       sIsInternalScanLatched = ID_FALSE;
     smnIndexHeader * sIndex = ((smnIndexHeader*)a_pIndex);
     SChar          * s_diffRow = NULL;
     SInt             s_diffSlotPos = 0;
@@ -3937,7 +3995,7 @@ restart:
      *           아래와 같이 수정함 */
     if ( sNeedTreeLatch == ID_TRUE )
     {
-        IDE_TEST( lockTree(s_pIndexHeader) != IDE_SUCCESS );
+        lockTree( s_pIndexHeader );
         sIsTreeLatched = ID_TRUE;
         sNeedTreeLatch = ID_FALSE;
     }
@@ -3955,7 +4013,7 @@ restart:
         /* root node가 없는 경우. Tree latch잡고, 루트 노드 생성한다. */
         if ( sIsTreeLatched == ID_FALSE )
         {
-            IDE_TEST( lockTree(s_pIndexHeader) != IDE_SUCCESS );
+            lockTree( s_pIndexHeader );
             sIsTreeLatched = ID_TRUE;
         }
 
@@ -3971,9 +4029,10 @@ restart:
             // BUG-18292 : V$MEM_BTREE_HEADER 정보 추가
             s_pIndexHeader->nodeCount++;
 
-            initLeafNode( s_pCurLNode,
-                          s_pIndexHeader,
-                          IDU_LATCH_UNLOCKED );
+            IDE_ERROR_RAISE( initLeafNode( s_pCurLNode,
+                                           s_pIndexHeader,
+                                           IDU_LATCH_UNLOCKED ) == IDE_SUCCESS,
+                             ERR_FAIL_TO_INITIALIZE_LEAF_NODE );
 
             IDE_TEST( insertIntoLeafNode( s_pIndexHeader,
                                           s_pCurLNode,
@@ -4012,7 +4071,7 @@ restart:
 
         IDU_FIT_POINT( "smnbBTree::insertRow::beforeLock" );
 
-        IDE_TEST( lockNode(s_pCurLNode) != IDE_SUCCESS );
+        lockNode( s_pCurLNode );
         sIsNodeLatched = ID_TRUE;
 
         IDU_FIT_POINT( "smnbBTree::insertRow::afterLock" );
@@ -4022,10 +4081,10 @@ restart:
         if ( ( s_pCurLNode->mSlotCount == 0 ) || 
              ( ( s_pCurLNode->flag & SMNB_NODE_VALID_MASK ) == SMNB_NODE_INVALID ) )
         {
-            IDE_ASSERT( sIsTreeLatched == ID_FALSE );
+            IDE_ERROR_RAISE( sIsTreeLatched == ID_FALSE, ERR_NOT_TREE_UNLATCH );
 
             sIsNodeLatched = ID_FALSE;
-            IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+            unlockNode( s_pCurLNode );
 
             goto restart;
         }
@@ -4059,10 +4118,10 @@ restart:
              * 다시 시도 한다. */
             if ( s_pCurLNode->nextSPtr != NULL )
             {
-                IDE_ASSERT( sIsTreeLatched == ID_FALSE );
+                IDE_ERROR_RAISE( sIsTreeLatched == ID_FALSE, ERR_NOT_TREE_UNLATCH );
 
                 sIsNodeLatched = ID_FALSE;
-                IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLNode );
 
                 goto restart;
             }
@@ -4089,12 +4148,12 @@ restart:
 
             if ( sIsRetraverse == ID_TRUE )
             {
-                IDE_ASSERT( sIsTreeLatched == ID_FALSE );
+                IDE_ERROR_RAISE( sIsTreeLatched == ID_FALSE, ERR_NOT_TREE_UNLATCH );
 
                 sNeedTreeLatch = ID_TRUE;
 
                 sIsNodeLatched = ID_FALSE;
-                IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLNode );
 
                 goto restart;
             }
@@ -4132,6 +4191,7 @@ restart:
         if ( s_pCurLNode->mSlotCount < SMNB_LEAF_SLOT_MAX_COUNT( s_pIndexHeader ) )
         {
             SMNB_SCAN_LATCH(s_pCurLNode);
+            sIsLeafScanLatched = ID_TRUE;
 
             IDE_ERROR_RAISE( s_pCurLNode->mSlotCount != 0, ERR_CORRUPTED_INDEX_SLOTCOUNT );
 
@@ -4140,6 +4200,7 @@ restart:
                                 a_pRow,
                                 s_nSlotPos ) != IDE_SUCCESS );
 
+            sIsLeafScanLatched = ID_FALSE;
             SMNB_SCAN_UNLATCH(s_pCurLNode);
 
             if ( needToUpdateStat( s_pIndexHeader->mIsMemTBS ) == ID_TRUE )
@@ -4165,7 +4226,7 @@ restart:
                 sNeedTreeLatch = ID_TRUE;
 
                 sIsNodeLatched = ID_FALSE;
-                IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLNode );
 
                 goto restart;
             }
@@ -4196,7 +4257,7 @@ restart:
                 /* 키 재분배를 수행한다. */
                 s_pNxtLNode = s_pCurLNode->nextSPtr;
 
-                IDE_TEST( lockNode( s_pNxtLNode ) != IDE_SUCCESS );
+                lockNode( s_pNxtLNode );
                 sIsNxtNodeLatched = ID_TRUE;
                 IDU_FIT_POINT( "BUG-45283@smnbBTree::insertRow::lockNode" ); 
 
@@ -4208,13 +4269,13 @@ restart:
                        삽입연산이 발생하여 기준을 초과할 경우에는 키 재분배를 수행하지 않는다. */
                     sNeedTreeLatch = ID_FALSE;
                     sIsTreeLatched = ID_FALSE;
-                    IDE_TEST( unlockTree(s_pIndexHeader) != IDE_SUCCESS );
+                    unlockTree( s_pIndexHeader );
 
                     sIsNodeLatched = ID_FALSE;
-                    IDE_TEST( unlockNode( s_pNxtLNode) != IDE_SUCCESS );
+                    unlockNode( s_pNxtLNode );
 
                     sIsNxtNodeLatched = ID_FALSE;
-                    IDE_TEST( unlockNode( s_pCurLNode) != IDE_SUCCESS );
+                    unlockNode( s_pCurLNode );
 
                     goto restart;
                 }
@@ -4239,13 +4300,13 @@ restart:
                     /* 해당 노드 진입전 다른 Tx에 의해 split/aging이 발생한 경우이므로 재수행한다. */
                     sNeedTreeLatch = ID_FALSE;
                     sIsTreeLatched = ID_FALSE;
-                    IDE_TEST( unlockTree(s_pIndexHeader) != IDE_SUCCESS );
+                    unlockTree( s_pIndexHeader );
 
                     sIsNodeLatched = ID_FALSE;
-                    IDE_TEST( unlockNode( s_pNxtLNode) != IDE_SUCCESS );
+                    unlockNode( s_pNxtLNode );
 
                     sIsNxtNodeLatched = ID_FALSE;
-                    IDE_TEST( unlockNode( s_pCurLNode) != IDE_SUCCESS );
+                    unlockNode( s_pCurLNode );
 
                     goto restart; 
                 }
@@ -4255,9 +4316,9 @@ restart:
                 }
 
                 sIsNxtNodeLatched = ID_FALSE;
-                IDE_TEST( unlockNode( s_pNxtLNode ) != IDE_SUCCESS );
+                unlockNode( s_pNxtLNode );
 
-                IDE_ASSERT( sIsNodeLatched == ID_TRUE );
+                IDE_ERROR_RAISE( sIsNodeLatched == ID_TRUE, ERR_NOT_NODE_LATCH );
 
                 /* 부모 노드를 갱신하다. */
                 IDE_TEST( keyRedistributionPropagate( s_pIndexHeader,
@@ -4268,10 +4329,10 @@ restart:
                 /* 삽입 연산을 수행하기 위해 latch를 풀고 재시작한다. */
                 sNeedTreeLatch = ID_FALSE;
                 sIsTreeLatched = ID_FALSE;
-                IDE_TEST( unlockTree(s_pIndexHeader) != IDE_SUCCESS );
+                unlockTree( s_pIndexHeader );
 
                 sIsNodeLatched = ID_FALSE;
-                IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLNode );
 
                 goto restart;
             }
@@ -4301,13 +4362,15 @@ restart:
                 IDE_ERROR_RAISE( s_pNewNode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
 
                 SMNB_SCAN_LATCH(s_pCurLNode);
+                sIsLeafScanLatched = ID_TRUE;
 
-                splitLeafNode( s_pIndexHeader,
-                               s_nSlotPos,
-                               s_pCurLNode,
-                               (smnbLNode*)s_pNewNode,
-                               &sTargetNode,
-                               &sTargetSeq );
+                IDE_TEST( splitLeafNode( s_pIndexHeader,
+                                         s_nSlotPos,
+                                         s_pCurLNode,
+                                         (smnbLNode*)s_pNewNode,
+                                         &sTargetNode,
+                                         &sTargetSeq )
+                          != IDE_SUCCESS );
 
                 IDE_TEST( insertIntoLeafNode( s_pIndexHeader,
                                               sTargetNode,
@@ -4323,6 +4386,7 @@ restart:
                              s_pCurLNode,
                              (SShort)( s_pCurLNode->mSlotCount - 1 ) );
 
+                sIsLeafScanLatched = ID_FALSE;
                 SMNB_SCAN_UNLATCH(s_pCurLNode);
 
                 if ( needToUpdateStat( s_pIndexHeader->mIsMemTBS ) == ID_TRUE )
@@ -4348,6 +4412,7 @@ restart:
                     s_pCurINode = (smnbINode*)(s_stack[s_nDepth].node);
 
                     SMNB_SCAN_LATCH(s_pCurINode);
+                    sIsInternalScanLatched = ID_TRUE;
 
                     /* PROJ-2433
                      * 새로운 new split으로 child pointer 변경함 */
@@ -4367,6 +4432,7 @@ restart:
                                                           sSepKey1,
                                                           s_pLeftNode ) != IDE_SUCCESS );
 
+                        sIsInternalScanLatched = ID_FALSE;
                         SMNB_SCAN_UNLATCH(s_pCurINode);
 
                         break;
@@ -4375,6 +4441,8 @@ restart:
                     {
                         /* nothing to do */
                     }
+
+                    IDE_ERROR_RAISE( s_nNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
 
                     getPreparedNode( &s_pNewNodeList,
                                      &s_nNewNodeCount,
@@ -4392,6 +4460,7 @@ restart:
                                                  &s_pSepKeyRow1, 
                                                  &sSepKey1 ) != IDE_SUCCESS );
 
+                    sIsInternalScanLatched = ID_FALSE;
                     SMNB_SCAN_UNLATCH(s_pCurINode);
 
                     s_pLeftNode = s_pCurINode;
@@ -4400,6 +4469,8 @@ restart:
 
                 if ( s_nDepth < 0 )
                 {
+                    IDE_ERROR_RAISE( s_nNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
+
                     getPreparedNode( &s_pNewNodeList,
                                      &s_nNewNodeCount,
                                      (void**)&s_pRootINode );
@@ -4443,13 +4514,13 @@ restart:
     if ( sIsNodeLatched == ID_TRUE )
     {
         sIsNodeLatched = ID_FALSE;
-        IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+        unlockNode( s_pCurLNode );
     }
 
     if ( ( sIsNxtNodeLatched == ID_TRUE ) && ( s_pNxtLNode != NULL ) )
     {
         sIsNxtNodeLatched = ID_FALSE;
-        IDE_TEST( unlockNode(s_pNxtLNode) != IDE_SUCCESS );
+        unlockNode( s_pNxtLNode );
     }
     else
     {
@@ -4459,7 +4530,7 @@ restart:
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
-        IDE_TEST( unlockTree(s_pIndexHeader) != IDE_SUCCESS );
+        unlockTree( s_pIndexHeader );
     }
 
     if ( s_nNewNodeCount > 0 )
@@ -4481,13 +4552,13 @@ restart:
     if ( sIsNodeLatched == ID_TRUE )
     {
         sIsNodeLatched = ID_FALSE;
-        IDE_TEST( unlockNode(s_pCurLNode) != IDE_SUCCESS );
+        unlockNode( s_pCurLNode );
     }
 
     if ( ( sIsNxtNodeLatched == ID_TRUE ) && ( s_pNxtLNode != NULL ) )
     {
         sIsNxtNodeLatched = ID_FALSE;
-        IDE_TEST( unlockNode(s_pNxtLNode) != IDE_SUCCESS );
+        unlockNode( s_pNxtLNode );
     }
     else
     {
@@ -4497,7 +4568,7 @@ restart:
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
-        IDE_TEST( unlockTree(s_pIndexHeader) != IDE_SUCCESS );
+        unlockTree( s_pIndexHeader );
     }
 
     /* BUG-38198 Session이 아직 살아있는지 체크하여
@@ -4549,42 +4620,73 @@ restart:
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Cannot Alloc New Node" );
     }
+    IDE_EXCEPTION( ERR_NOT_TREE_UNLATCH )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] Tree Latch is not unlatched." );
+    }
+    IDE_EXCEPTION( ERR_NOT_NODE_LATCH )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] Node Latch is not latched." );
+    }
+    IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_LEAF_NODE )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] fail to initialize leaf node" );
+    }
     IDE_EXCEPTION( ERR_UNIQUE_VIOLATION_REPL )
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_smnUniqueViolationInReplTrans ) );
     }
     IDE_EXCEPTION_END;
 
+    if ( sIsLeafScanLatched == ID_TRUE )
+    {
+        sIsLeafScanLatched = ID_FALSE;
+        SMNB_SCAN_UNLATCH( s_pCurLNode );
+    }
+
+    if ( sIsInternalScanLatched == ID_TRUE )
+    {
+        sIsInternalScanLatched = ID_FALSE;
+        SMNB_SCAN_UNLATCH( s_pCurINode );
+    }
+
     if (sIsNodeLatched == ID_TRUE)
     {
         sIsNodeLatched = ID_FALSE;
-        IDE_ASSERT( unlockNode(s_pCurLNode) == IDE_SUCCESS );
+        unlockNode( s_pCurLNode );
     }
 
     if ( ( sIsNxtNodeLatched == ID_TRUE ) && ( s_pNxtLNode != NULL ) )
     {
         sIsNxtNodeLatched = ID_FALSE;
-        IDE_ASSERT( unlockNode(s_pNxtLNode) == IDE_SUCCESS );
+        unlockNode( s_pNxtLNode );
     }
 
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
-        IDE_ASSERT( unlockTree(s_pIndexHeader) == IDE_SUCCESS );
+        unlockTree( s_pIndexHeader );
     }
 
     if ( s_nNewNodeCount > 0 )
     {
-        IDE_ASSERT( s_pIndexHeader->mNodePool.releaseSlots(
+        if ( s_pIndexHeader->mNodePool.releaseSlots(
                                                s_nNewNodeCount,
                                                (smmSlot*)s_pNewNodeList,
                                                SMM_SLOT_LIST_MUTEX_NEEDLESS )
-                    == IDE_SUCCESS );
+             != IDE_SUCCESS )
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+            ideLog::log( IDE_ERR_0, "[SM] fail to release index slots" );
+        }
     }
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( sIndex, ID_FALSE );
+        setInconsistentIndex( sIndex );
     }
 
     return IDE_FAILURE;
@@ -4739,7 +4841,7 @@ void smnbBTree::findFirstRowInInternal( const smiCallBack   * aCallBack,
     idBool    sResult;
     SChar   * sRow    = NULL;
 
-    IDE_ASSERT( aNode->mRowPtrs != NULL );
+    IDE_DASSERT( aNode->mRowPtrs != NULL );
 
     do
     {
@@ -5716,9 +5818,9 @@ IDE_RC smnbBTree::freeSlot( void            * a_pIndex,
     UInt              sDeleteNodeCount = 0;
     smOID             sRowOID;
 
-    IDE_ASSERT( a_pIndex        != NULL );
-    IDE_ASSERT( a_pRow          != NULL );
-    IDE_ASSERT( aIsExistFreeKey != NULL );
+    IDE_DASSERT( a_pIndex        != NULL );
+    IDE_DASSERT( a_pRow          != NULL );
+    IDE_DASSERT( aIsExistFreeKey != NULL );
 
     *aIsExistFreeKey = ID_TRUE;
 
@@ -5735,7 +5837,7 @@ restart:
     {
         IDU_FIT_POINT( "smnbBTree::freeSlot::beforeLockTree" );
 
-        IDE_TEST( lockTree(s_pIndexHeader) != IDE_SUCCESS );
+        lockTree( s_pIndexHeader );
         sIsTreeLatched = ID_TRUE;
         sNeedTreeLatch = ID_FALSE;
 
@@ -5784,7 +5886,7 @@ restart:
             /* prev node */
             if ( s_pCurLeafNode->prevSPtr != NULL )
             {
-                IDE_TEST( lockNode(s_pCurLeafNode->prevSPtr) != IDE_SUCCESS );
+                lockNode( s_pCurLeafNode->prevSPtr );
                 sLatchedNode[sLatchedNodeCount] = s_pCurLeafNode->prevSPtr;
                 sLatchedNodeCount++;
             }
@@ -5794,14 +5896,14 @@ restart:
             }
 
             /* curr node */
-            IDE_TEST( lockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            lockNode( s_pCurLeafNode );
             sLatchedNode[sLatchedNodeCount] = s_pCurLeafNode;
             sLatchedNodeCount++;
 
             /* next node */
             if ( s_pCurLeafNode->nextSPtr != NULL )
             {
-                IDE_TEST( lockNode(s_pCurLeafNode->nextSPtr) != IDE_SUCCESS );
+                lockNode( s_pCurLeafNode->nextSPtr );
                 sLatchedNode[sLatchedNodeCount] = s_pCurLeafNode->nextSPtr;
                 sLatchedNodeCount++;
             }
@@ -5812,23 +5914,23 @@ restart:
         }
         else
         {
-            IDE_TEST( lockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            lockNode( s_pCurLeafNode );
             sLatchedNode[sLatchedNodeCount] = s_pCurLeafNode;
             sLatchedNodeCount++;
         }
 
-        IDE_ASSERT( sLatchedNodeCount <= 3 );
+        IDE_ERROR_RAISE( sLatchedNodeCount <= 3, ERR_INVALID_LATCH_NODE_COUNT );
 
         /* node latch를 잡기전 split 되어 삭제할 키가 다른 노드로 이동했을
          * 수도 있다. 그렇게 되면 현 노드의 모든 Key가 삭제될 수 있다. */
         if ( ( s_pCurLeafNode->mSlotCount == 0 ) ||
              ( ( s_pCurLeafNode->flag & SMNB_NODE_VALID_MASK ) == SMNB_NODE_INVALID ) )
         {
-            IDE_ASSERT( sIsTreeLatched == ID_FALSE );
-            IDE_ASSERT( sLatchedNodeCount == 1 );
+            IDE_ERROR_RAISE( sIsTreeLatched == ID_FALSE, ERR_NOT_TREE_UNLATCH );
+            IDE_ERROR_RAISE( sLatchedNodeCount == 1, ERR_INVALID_LATCH_NODE_COUNT );
 
             sLatchedNodeCount = 0;
-            IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+            unlockNode( s_pCurLeafNode );
 
             goto restart;
         }
@@ -5842,11 +5944,11 @@ restart:
         {
             if ( ( s_pCurLeafNode->mSlotCount - 1 ) == 0 )
             {
-                IDE_ASSERT( sLatchedNodeCount == 1 );
+                IDE_ERROR_RAISE( sLatchedNodeCount == 1, ERR_INVALID_LATCH_NODE_COUNT );
                 sNeedTreeLatch = ID_TRUE;
 
                 sLatchedNodeCount = 0;
-                IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLeafNode );
 
                 goto restart;
             }
@@ -5867,11 +5969,11 @@ restart:
         {
             if ( s_pCurLeafNode->nextSPtr != NULL )
             {
-                IDE_ASSERT( sIsTreeLatched == ID_FALSE );
-                IDE_ASSERT( sLatchedNodeCount == 1 );
+                IDE_ERROR_RAISE( sIsTreeLatched == ID_FALSE, ERR_NOT_TREE_UNLATCH );
+                IDE_ERROR_RAISE( sLatchedNodeCount == 1, ERR_INVALID_LATCH_NODE_COUNT );
 
                 sLatchedNodeCount = 0;
-                IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLeafNode );
 
                 goto restart;
             }
@@ -5887,12 +5989,12 @@ restart:
         {
             if ( s_nSlotPos == ( s_pCurLeafNode->mSlotCount - 1 ) )
             {
-                IDE_ASSERT( sLatchedNodeCount == 1 );
+                IDE_ERROR_RAISE( sLatchedNodeCount == 1, ERR_INVALID_LATCH_NODE_COUNT );
 
                 sNeedTreeLatch = ID_TRUE;
 
                 sLatchedNodeCount = 0;
-                IDE_TEST( unlockNode(s_pCurLeafNode) != IDE_SUCCESS );
+                unlockNode( s_pCurLeafNode );
 
                 goto restart;
             }
@@ -5946,7 +6048,7 @@ restart:
 
         if ( s_pCurLeafNode->mSlotCount == 0 )
         {
-            IDE_ASSERT( sIsTreeLatched == ID_TRUE );
+            IDE_ERROR_RAISE( sIsTreeLatched == ID_TRUE, ERR_NOT_TREE_LATCH );
 
             //remove from leaf node list
             if ( s_pCurLeafNode->prevSPtr != NULL )
@@ -6120,13 +6222,13 @@ restart:
     while ( sLatchedNodeCount > 0 )
     {
         sLatchedNodeCount--;
-        IDE_TEST( unlockNode(sLatchedNode[sLatchedNodeCount]) != IDE_SUCCESS );
+        unlockNode( sLatchedNode[sLatchedNodeCount] );
     }
 
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
-        IDE_TEST( unlockTree(s_pIndexHeader) != IDE_SUCCESS );
+        unlockTree( s_pIndexHeader );
     }
 
     if ( s_pFreeNode != NULL )
@@ -6142,6 +6244,22 @@ restart:
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_TREE_UNLATCH )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] Tree Latch is not unlatched." );
+    }
+    IDE_EXCEPTION( ERR_INVALID_LATCH_NODE_COUNT )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] invalid latch node count [%"ID_UINT32_FMT"]",
+                     sLatchedNodeCount );
+    }
+    IDE_EXCEPTION( ERR_NOT_TREE_LATCH )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] Tree Latch is not latched." );
+    }
     IDE_EXCEPTION_END;
 
     smnManager::logCommonHeader( (smnIndexHeader*)a_pIndex );
@@ -6172,18 +6290,18 @@ restart:
     while ( sLatchedNodeCount > 0 )
     {
         sLatchedNodeCount--;
-        IDE_ASSERT( unlockNode(sLatchedNode[sLatchedNodeCount]) == IDE_SUCCESS );
+        unlockNode( sLatchedNode[sLatchedNodeCount] );
     }
 
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
-        IDE_ASSERT( unlockTree(s_pIndexHeader) == IDE_SUCCESS );
+        unlockTree( s_pIndexHeader );
     }
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( (smnIndexHeader*)a_pIndex, ID_FALSE );
+        setInconsistentIndex( (smnIndexHeader *)a_pIndex );
     }
 
     return IDE_FAILURE;
@@ -6206,7 +6324,7 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
     sIndexHeader  = (smnbHeader*)((smnIndexHeader*)aIndex)->mHeader;
     sDepth = -1;
 
-    IDE_TEST( lockTree( sIndexHeader ) != IDE_SUCCESS );
+    lockTree( sIndexHeader );
     sState = 1;
 
     IDE_TEST( findPosition( sIndexHeader,
@@ -6254,7 +6372,7 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
     }
 
     sState = 0;
-    IDE_TEST( unlockTree( sIndexHeader ) != IDE_SUCCESS );
+    unlockTree( sIndexHeader );
 
     (*aExistKey) = sExistKey;
 
@@ -6283,13 +6401,13 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
     if ( sState != 0)
     {
         IDE_PUSH();
-        IDE_ASSERT( unlockTree( sIndexHeader ) == IDE_SUCCESS );
+        unlockTree( sIndexHeader );
         IDE_POP();
     }
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( (smnIndexHeader*)aIndex, ID_FALSE );
+        setInconsistentIndex( (smnIndexHeader *)aIndex );
     }
 
     (*aExistKey) = ID_FALSE;
@@ -6316,7 +6434,11 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
                               SFloat           aPercentage,
                               SInt             /* aDegree */,
                               smcTableHeader * aHeader,
+#ifdef DEBUG
                               void           * aTotalTableArg,
+#else
+                              void           * /* aTotalTableArg */,
+#endif
                               smnIndexHeader * aIndex,
                               void           * aStats,
                               idBool           aDynamicMode )
@@ -6340,8 +6462,8 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
     smxTrans         * sSmxTrans          = (smxTrans *)aTrans;
     UInt               sStatFlag          = SMI_INDEX_BUILD_RT_STAT_UPDATE;
 
-    IDE_ASSERT( aIndex != NULL );
-    IDE_ASSERT( aTotalTableArg == NULL ); 
+    IDE_DASSERT( aIndex != NULL );
+    IDE_DASSERT( aTotalTableArg == NULL ); 
 
     /* BUG-44794 인덱스 빌드시 인덱스 통계 정보를 수집하지 않는 히든 프로퍼티 추가 */
     SMI_INDEX_BUILD_NEED_RT_STAT( sStatFlag, sSmxTrans );
@@ -6364,12 +6486,11 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
      ************************************************************/
     /* BeforeFirst겸 첫 페이지를 얻어옴 */
     sCurLeafNode = NULL;
-    IDE_TEST( getNextNode4Stat( sIdxHdr,
-                                ID_FALSE, /* BackTraverse */
-                                &sIsNodeLatched,
-                                &sIndexHeight,
-                                &sCurLeafNode )
-              != IDE_SUCCESS );
+    getNextNode4Stat( sIdxHdr,
+                      ID_FALSE, /* BackTraverse */
+                      &sIsNodeLatched,
+                      &sIndexHeight,
+                      &sCurLeafNode );
 
     while( sCurLeafNode != NULL )
     {
@@ -6410,12 +6531,11 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
         }
         sTotalNodeCount ++;
 
-        IDE_TEST( getNextNode4Stat( sIdxHdr,
-                                    ID_FALSE, /* BackTraverse */
-                                    &sIsNodeLatched,
-                                    NULL, /* sIndexHeight */
-                                    &sCurLeafNode )
-                  != IDE_SUCCESS );
+        getNextNode4Stat( sIdxHdr,
+                          ID_FALSE, /* BackTraverse */
+                          &sIsNodeLatched,
+                          NULL, /* sIndexHeight */
+                          &sCurLeafNode );
     }
 
     /************************************************************
@@ -6537,7 +6657,7 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
     if ( sIsNodeLatched == ID_TRUE )
     {
         sIsNodeLatched = ID_FALSE;
-        IDE_ASSERT( unlockNode(sCurLeafNode) == IDE_SUCCESS );
+        unlockNode( sCurLeafNode );
     }
 
     if ( sIsFreeNodeLocked == ID_TRUE )
@@ -6548,7 +6668,7 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( aIndex, ID_FALSE );
+        setInconsistentIndex( aIndex );
     }
 
     return IDE_FAILURE;
@@ -6588,12 +6708,12 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
 
     /* MinValue 찾아 구축함 */
     sCurLeafNode = NULL;
-    IDE_TEST( getNextNode4Stat( aRuntimeIndexHeader,
-                                sBacktraverse, 
-                                &sIsNodeLatched,
-                                NULL, /* sIndexHeight */
-                                &sCurLeafNode )
-              != IDE_SUCCESS );
+    getNextNode4Stat( aRuntimeIndexHeader,
+                      sBacktraverse, 
+                      &sIsNodeLatched,
+                      NULL, /* sIndexHeight */
+                      &sCurLeafNode );
+
     while( sCurLeafNode != NULL )
     {
         if ( sCurLeafNode->mSlotCount > 0 )
@@ -6610,7 +6730,7 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
                     /* Min값을 찾기 위해 정방향 탐색했는데 다 Null이란건
                      * Min값이 없다는 의미 */
                     sIsNodeLatched = ID_FALSE;
-                    IDE_TEST( unlockNode(sCurLeafNode) != IDE_SUCCESS );
+                    unlockNode( sCurLeafNode );
                     break;
                 }
                 else
@@ -6658,7 +6778,7 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
                     IDE_ERROR( i >= 0 );
                 }
                 sIsNodeLatched = ID_FALSE;
-                IDE_TEST( unlockNode(sCurLeafNode) != IDE_SUCCESS );
+                unlockNode( sCurLeafNode );
                 break;
             }
         }
@@ -6666,12 +6786,11 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
         {
             /* Node에 Key가 없음*/
         }
-        IDE_TEST( getNextNode4Stat( aRuntimeIndexHeader,
-                                    sBacktraverse, 
-                                    &sIsNodeLatched,
-                                    NULL, /* sIndexHeight */
-                                    &sCurLeafNode )
-                  != IDE_SUCCESS );
+        getNextNode4Stat( aRuntimeIndexHeader,
+                          sBacktraverse, 
+                          &sIsNodeLatched,
+                          NULL, /* sIndexHeight */
+                          &sCurLeafNode );
     }
 
     if ( sSet == ID_FALSE )
@@ -6814,13 +6933,12 @@ IDE_RC smnbBTree::analyzeNode( smnIndexHeader * aPersistentIndexHeader,
  * aIndexHeight  - [OUT]    NULL이 아닐 경우, Index 높이 반환함.
  * aCurNode      - [OUT]    다음 Node
  *********************************************************************/
-IDE_RC smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
-                                    idBool           aBackTraverse,
-                                    idBool         * aNodeLatched,
-                                    UInt           * aIndexHeight,
-                                    smnbLNode     ** aCurNode )
+void smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
+                                  idBool           aBackTraverse,
+                                  idBool         * aNodeLatched,
+                                  UInt           * aIndexHeight,
+                                  smnbLNode     ** aCurNode )
 {
-    idBool        sIsTreeLatched    = ID_FALSE;
     UInt          sIndexHeight      = 0;
     smnbINode   * sCurInternalNode;
     smnbLNode   * sCurLeafNode;
@@ -6831,8 +6949,7 @@ IDE_RC smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
     {
         /* 최초 탐색, BeforeFirst *
          * TreeLatch를 걸어 SMO를 막고 Leftmost를 타며 내려감 */
-        IDE_TEST( lockTree(aIdxHdr) != IDE_SUCCESS );
-        sIsTreeLatched = ID_TRUE;
+        lockTree( aIdxHdr );
 
         if ( aIdxHdr->root == NULL )
         {
@@ -6859,19 +6976,18 @@ IDE_RC smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
             }
 
             sCurLeafNode = (smnbLNode*)sCurInternalNode;
-            IDE_TEST( lockNode(sCurLeafNode) != IDE_SUCCESS );
+            lockNode( sCurLeafNode );
             *aNodeLatched = ID_TRUE;
         }
 
-        sIsTreeLatched = ID_FALSE;
-        IDE_TEST( unlockTree(aIdxHdr) != IDE_SUCCESS );
+        unlockTree( aIdxHdr );
     }
     else
     {
         /* 다음 Node 탐색.
          * 그냥 링크를 타고 좇아가면 됨 */
         *aNodeLatched = ID_FALSE;
-        IDE_TEST( unlockNode(sCurLeafNode) != IDE_SUCCESS );
+        unlockNode( sCurLeafNode );
 
         if ( aBackTraverse == ID_FALSE )
         {
@@ -6887,14 +7003,14 @@ IDE_RC smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
         }
         else
         {
-            IDE_TEST( lockNode(sCurLeafNode) != IDE_SUCCESS );
+            lockNode( sCurLeafNode );
             *aNodeLatched = ID_TRUE;
         }
     }
 
     /* NodeLatch를 안잡았으면 반환할 LeafNode가 없어야 하고
      * NodeLatch를 잡았으면 LeafNode가 있어야 한다. */
-    IDE_ASSERT( 
+    IDE_DASSERT( 
         ( ( *aNodeLatched == ID_FALSE ) && ( sCurLeafNode == NULL ) ) ||
         ( ( *aNodeLatched == ID_TRUE  ) && ( sCurLeafNode != NULL ) ) );
     *aCurNode = sCurLeafNode;
@@ -6903,19 +7019,6 @@ IDE_RC smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
     {
          ( *aIndexHeight ) = sIndexHeight;
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    if ( sIsTreeLatched == ID_TRUE )
-    {
-        sIsTreeLatched = ID_FALSE;
-        IDE_ASSERT( unlockTree(aIdxHdr) == IDE_SUCCESS );
-    }
-
-    return IDE_FAILURE;
-
 }
 
 IDE_RC smnbBTree::NA( void )
@@ -7099,7 +7202,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                                     mNodeSize );
                     ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator,
                                     mIteratorSize );
-                    IDE_ASSERT( 0 );
+                    IDE_DASSERT( 0 );
                 }
 #endif
 
@@ -7162,7 +7265,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                                             mNodeSize );
                             ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator,
                                             mIteratorSize );
-                            IDE_ASSERT( 0 );
+                            IDE_DASSERT( 0 );
                         }
                         else
                         {
@@ -7250,7 +7353,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                                     mNodeSize );
                     ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator,
                                     mIteratorSize );
-                    IDE_ASSERT( 0 );
+                    IDE_DASSERT( 0 );
                 }
 #endif
 
@@ -7292,7 +7395,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                     break;
                 }
 
-                if ( smnManager::checkSCN( (smiIterator *)a_pIterator, sRowPtr )
+                if ( smnManager::checkSCN( (smiIterator *)a_pIterator, sRowPtr, NULL )
                      == ID_TRUE )
                 {
                     i++;
@@ -7349,7 +7452,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
     
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( a_pIterator->index->mIndexHeader, ID_FALSE );
+        setInconsistentIndex( a_pIterator->index->mIndexHeader );
     }
 
     return IDE_FAILURE;
@@ -8034,7 +8137,7 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
     smnbLNode*      s_pPrvLNode = NULL;
     void          * sKey        = NULL;
 
-    IDE_ASSERT( lockTree( a_pIterator->index ) == IDE_SUCCESS );
+    lockTree( a_pIterator->index );
 
     s_pRange = a_pIterator->mKeyRange;
 
@@ -8326,7 +8429,7 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
         a_pIterator->highFence = a_pIterator->slot - 1;
     }
 
-    IDE_ASSERT( unlockTree( a_pIterator->index ) == IDE_SUCCESS );
+    unlockTree( a_pIterator->index );
 
     return IDE_SUCCESS;
 
@@ -8340,7 +8443,7 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( a_pIterator->index->mIndexHeader, ID_FALSE );
+        setInconsistentIndex( a_pIterator->index->mIndexHeader );
     }
 
     return IDE_FAILURE;
@@ -8452,7 +8555,7 @@ IDE_RC smnbBTree::beforeFirstR( smnbIterator*       aIterator,
     *aSeekFunc += 6;
 
     sState = 0;
-    IDE_TEST( freeIterator( sIterator ) != IDE_SUCCESS );
+    (void)freeIterator( sIterator ); /* always IDE_SUCCESS return */
 
     return IDE_SUCCESS;
 
@@ -8460,7 +8563,7 @@ IDE_RC smnbBTree::beforeFirstR( smnbIterator*       aIterator,
 
     if ( sState == 1 )
     {
-        IDE_ASSERT( freeIterator( sIterator ) == IDE_SUCCESS );
+        (void)freeIterator( sIterator ); /* always IDE_SUCCESS return */
     }
 
     return IDE_FAILURE;
@@ -8490,8 +8593,10 @@ IDE_RC smnbBTree::afterLastR( smnbIterator*       aIterator,
 IDE_RC smnbBTree::fetchNext( smnbIterator    * a_pIterator,
                              const void     ** aRow )
 {
-    idBool sIsRestart;
-    idBool sResult;
+    idBool     sIsRestart;
+    idBool     sResult;
+    idBool     sCanReusableRollback;
+    smxTrans * sTrans = (smxTrans*)a_pIterator->trans;
 
 restart:
 
@@ -8499,6 +8604,8 @@ restart:
          a_pIterator->slot <= a_pIterator->highFence;
          a_pIterator->slot++ )
     {
+        sCanReusableRollback = ID_TRUE;
+
         a_pIterator->curRecPtr      = *a_pIterator->slot;
         a_pIterator->lstFetchRecPtr = a_pIterator->curRecPtr;
 
@@ -8515,7 +8622,8 @@ restart:
         }
 
         if ( smnManager::checkSCN( (smiIterator*)a_pIterator,
-                                   a_pIterator->curRecPtr )
+                                   a_pIterator->curRecPtr,
+                                   &sCanReusableRollback )
             == ID_FALSE )
         {
             continue;
@@ -8547,6 +8655,11 @@ restart:
 
         if ( sResult == ID_TRUE )
         {
+            if( sCanReusableRollback == ID_FALSE )
+            {
+                sTrans->mIsReusableRollback = ID_FALSE;
+            }
+
             if ( a_pIterator->mProperties->mFirstReadRecordPos == 0 )
             {
                 if ( a_pIterator->mProperties->mReadRecordCount != 1 )
@@ -8639,7 +8752,7 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
     SInt          sMin;
     SInt          sMax;
 
-    IDE_ASSERT( aIterator->highest == ID_FALSE );
+    IDE_DASSERT( aIterator->highest == ID_FALSE );
     *aIsRestart = ID_FALSE;
 
     sCurLNode = aIterator->nxtNode;
@@ -8691,10 +8804,10 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
                 /* nothing to do */
             }
 
-            findNextSlotInLeaf( &aIterator->index->mAgerStat,
-                                aIterator->index->columns,
-                                aIterator->index->fence,
+            findNextSlotInLeaf( aIterator->index,
                                 sCurLNode,
+                                0,
+                                sSlotCount - 1,
                                 sLastReadRow,
                                 &sMin );
 
@@ -8848,8 +8961,10 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
 IDE_RC smnbBTree::fetchPrev( smnbIterator* aIterator,
                              const void**  aRow )
 {
-    idBool sIsRestart;
-    idBool sResult;
+    idBool     sIsRestart;
+    idBool     sResult;
+    idBool     sCanReusableRollback = ID_TRUE;
+    smxTrans * sTrans               = (smxTrans*)aIterator->trans;
 
 restart:
 
@@ -8857,6 +8972,8 @@ restart:
           aIterator->slot >= aIterator->lowFence ;
           aIterator->slot-- )
     {
+        sCanReusableRollback = ID_TRUE;
+
         aIterator->curRecPtr      = *aIterator->slot;
         aIterator->lstFetchRecPtr = aIterator->curRecPtr;
 
@@ -8870,7 +8987,8 @@ restart:
             /* nothing to do */
         }
         if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr )
+                                   aIterator->curRecPtr,
+                                   &sCanReusableRollback )
              == ID_FALSE )
         {
             continue;
@@ -8901,6 +9019,11 @@ restart:
 
         if ( sResult == ID_TRUE )
         {
+            if( sCanReusableRollback == ID_FALSE )
+            {     
+                sTrans->mIsReusableRollback = ID_FALSE;
+            }
+
             if ( aIterator->mProperties->mFirstReadRecordPos == 0 )
             {
                 if ( aIterator->mProperties->mReadRecordCount != 1 )
@@ -8994,10 +9117,10 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
     void        * sKey       = NULL;
     SInt          sState     = 0;
 
-    IDE_ASSERT( aIterator->least == ID_FALSE )
+    IDE_DASSERT( aIterator->least == ID_FALSE )
     *aIsRestart = ID_FALSE;
 
-    IDE_TEST( lockTree( aIterator->index ) != IDE_SUCCESS );
+    lockTree( aIterator->index );
     sState = 1;
 
     sCurLNode = aIterator->node->prevSPtr;
@@ -9134,7 +9257,7 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
     }
 
     sState = 0;
-    IDE_TEST( unlockTree( aIterator->index ) != IDE_SUCCESS );
+    unlockTree( aIterator->index );
 
     return IDE_SUCCESS;
 
@@ -9143,7 +9266,7 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
     if ( sState != 0 )
     {
         IDE_PUSH();
-        IDE_ASSERT( unlockTree( aIterator->index ) == IDE_SUCCESS );
+        unlockTree( aIterator->index );
         IDE_POP();
     }
     else
@@ -9157,8 +9280,10 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
 IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
                               const void**  aRow )
 {
-    idBool sIsRestart;
-    idBool sResult;
+    idBool     sIsRestart;
+    idBool     sResult;
+    idBool     sCanReusableRollback = ID_TRUE;
+    smxTrans * sTrans               = (smxTrans*)aIterator->trans;
 
   restart:
 
@@ -9166,6 +9291,8 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
          aIterator->slot <= aIterator->highFence;
          aIterator->slot++ )
     {
+        sCanReusableRollback = ID_TRUE;
+
         aIterator->curRecPtr      = *aIterator->slot;
         aIterator->lstFetchRecPtr = aIterator->curRecPtr;
 
@@ -9181,7 +9308,8 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
             /* nothing to do */
         }
         if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr )
+                                   aIterator->curRecPtr,
+                                   &sCanReusableRollback )
              == ID_FALSE )
         {
             continue;
@@ -9213,6 +9341,11 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
 
         if ( sResult == ID_TRUE )
         {
+            if( sCanReusableRollback == ID_FALSE )
+            {     
+                sTrans->mIsReusableRollback = ID_FALSE;
+            }
+
             smnManager::updatedRow( (smiIterator*)aIterator );
 
             *aRow = aIterator->curRecPtr;
@@ -9299,8 +9432,10 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
 IDE_RC smnbBTree::fetchPrevU( smnbIterator* aIterator,
                               const void**  aRow )
 {
-    idBool sIsRestart;
-    idBool sResult;
+    idBool     sIsRestart;
+    idBool     sResult;
+    idBool     sCanReusableRollback = ID_TRUE;
+    smxTrans * sTrans               = (smxTrans*)aIterator->trans;
 
 restart:
 
@@ -9308,6 +9443,8 @@ restart:
          aIterator->slot >= aIterator->lowFence;
          aIterator->slot-- )
     {
+        sCanReusableRollback = ID_TRUE;
+
         aIterator->curRecPtr = *aIterator->slot;
         aIterator->lstFetchRecPtr = aIterator->curRecPtr;
 
@@ -9321,7 +9458,8 @@ restart:
             /* nothing to do */
         }
         if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr )
+                                   aIterator->curRecPtr,
+                                   &sCanReusableRollback )
              == ID_FALSE )
         {
             continue;
@@ -9352,6 +9490,11 @@ restart:
 
         if ( sResult == ID_TRUE )
         {
+            if( sCanReusableRollback == ID_FALSE )
+            {     
+                sTrans->mIsReusableRollback = ID_FALSE;
+            }
+
             smnManager::updatedRow( (smiIterator*)aIterator );
 
             *aRow = aIterator->curRecPtr;
@@ -9436,10 +9579,12 @@ restart:
 
 IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
 {
-    SChar   * sRow = NULL;
-    scGRID    sRowGRID;
-    idBool    sIsRestart;
-    idBool    sResult;
+    SChar     * sRow = NULL;
+    scGRID     sRowGRID;
+    idBool     sIsRestart;
+    idBool     sResult;
+    idBool     sCanReusableRollback = ID_TRUE;
+    smxTrans * sTrans               = (smxTrans*)aIterator->trans;
 
   restart:
 
@@ -9447,6 +9592,8 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
          aIterator->slot <= aIterator->highFence;
          aIterator->slot++ )
     {
+        sCanReusableRollback = ID_TRUE;
+
         aIterator->curRecPtr      = *aIterator->slot;
         aIterator->lstFetchRecPtr = aIterator->curRecPtr;
 
@@ -9462,7 +9609,8 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
             /* nothing to do */
         }
         if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr )
+                                   aIterator->curRecPtr,
+                                   &sCanReusableRollback )
              == ID_FALSE )
         {
             continue;
@@ -9494,6 +9642,11 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
 
         if ( sResult == ID_TRUE )
         {
+            if( sCanReusableRollback == ID_FALSE )
+            {     
+                sTrans->mIsReusableRollback = ID_FALSE;
+            } 
+
             if ( aIterator->mProperties->mFirstReadRecordPos == 0 )
             {
                 if ( aIterator->mProperties->mReadRecordCount != 1 )
@@ -9585,7 +9738,7 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
 
     if ( sRowPtr == NULL )
     {
-        IDE_ASSERT(sFlag != SMI_RETRAVERSE_NEXT);
+        IDE_ERROR_RAISE( sFlag != SMI_RETRAVERSE_NEXT, ERR_INVALID_FLAG );
 
         if ( sFlag == SMI_RETRAVERSE_BEFORE )
         {
@@ -9599,7 +9752,7 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
             }
             else
             {
-                IDE_ASSERT(0);
+                IDE_ERROR_RAISE( 0 , ERR_INVALID_FLAG );
             }
         }
     }
@@ -9783,7 +9936,7 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
                         break;
                     }
 
-                    if ( smnManager::checkSCN( (smiIterator*)aIterator, sTmpRowPtr ) == ID_TRUE )
+                    if ( smnManager::checkSCN( (smiIterator*)aIterator, sTmpRowPtr, NULL ) == ID_TRUE ) 
                     {
                         j++;
                         aIterator->rows[j] = sTmpRowPtr;
@@ -9848,11 +10001,17 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index SlotCount" );
     }
+    IDE_EXCEPTION( ERR_INVALID_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] flag is RETRAVERSE_NEXT %["ID_UINT32_FMT"]",
+                     sFlag );
+    }
     IDE_EXCEPTION_END;
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( aIterator->index->mIndexHeader, ID_FALSE );
+        setInconsistentIndex( aIterator->index->mIndexHeader );
     }
 
     return IDE_FAILURE;
@@ -9930,9 +10089,10 @@ IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHe
                                                       (smmSlot**)&(s_pCurLNode))
                  != IDE_SUCCESS);
 
-        initLeafNode( (smnbLNode*)s_pCurLNode,
-                      s_pIndexHeader,
-                      IDU_LATCH_UNLOCKED );
+        IDE_TEST_RAISE( initLeafNode( (smnbLNode*)s_pCurLNode,
+                                       s_pIndexHeader,
+                                       IDU_LATCH_UNLOCKED ) != IDE_SUCCESS,
+                        ERR_FAIL_TO_INITIALIZE_LEAF_NODE );
 
         IDE_TEST( s_indexFile.read( a_pTable->mSpaceID,
                                     (SChar **)(((smnbLNode *)s_pCurLNode)->mRowPtrs),
@@ -10006,6 +10166,12 @@ IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHe
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_LEAF_NODE )
+    {
+        /* inconsistent 상태로 변경하지 않고, trace log 만 남기고 fail return 한다. 
+           이 함수는 index build 시에 호출되므로 index build 실패로 끝난다. */
+        ideLog::log( IDE_SM_0, "fail to initialize leaf node" );
+    }
     IDE_EXCEPTION_END;
 
     // To fix BUG-20631
@@ -10028,8 +10194,10 @@ IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHe
 IDE_RC smnbBTree::getPosition( smnbIterator *     aIterator,
                                smiCursorPosInfo * aPosInfo )
 {
-    IDE_ASSERT( (aIterator->slot >= aIterator->lowFence) ||
-                (aIterator->slot <= aIterator->highFence) );
+    IDU_FIT_POINT_RAISE( "BUG-46504@smnbBTree::getPositione::invalidFence", ERR_INVALID_FENCE );
+    IDE_ERROR_RAISE( ( aIterator->slot >= aIterator->lowFence ) ||
+                     ( aIterator->slot <= aIterator->highFence ),
+                     ERR_INVALID_FENCE );
 
     aPosInfo->mCursor.mMRPos.mLeafNode = aIterator->node;
 
@@ -10042,6 +10210,22 @@ IDE_RC smnbBTree::getPosition( smnbIterator *     aIterator,
     aPosInfo->mCursor.mMRPos.mKeyRange = (smiRange *)aIterator->mKeyRange; /* BUG-43913 */
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_FENCE )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] invalid fence. slot, lowfence, highfence "
+                                "[%"ID_XPOINTER_FMT" ,%"ID_XPOINTER_FMT", %"ID_XPOINTER_FMT"]",
+                                aIterator->slot, aIterator->lowFence, aIterator->highFence );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
+    {
+        setInconsistentIndex( aIterator->index->mIndexHeader );
+    }
+
+    return IDE_FAILURE;
 }
 
 
@@ -10197,7 +10381,8 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
             }
 
             if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                        sRowPtr )
+                                       sRowPtr,
+                                       NULL )
                 == ID_TRUE )
             {
                 j++;
@@ -10260,7 +10445,7 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( aIterator->index->mIndexHeader, ID_FALSE );
+        setInconsistentIndex( aIterator->index->mIndexHeader );
     }
 
     return IDE_FAILURE;
@@ -10307,9 +10492,9 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
     // Parameter Validation
     //---------------------------------------
 
-    IDE_ASSERT( aRowPtr      != NULL );
-    IDE_ASSERT( aIndexColumn != NULL );
-    IDE_ASSERT( aKeySize     != NULL );
+    IDE_DASSERT( aRowPtr      != NULL );
+    IDE_DASSERT( aIndexColumn != NULL );
+    IDE_DASSERT( aKeySize     != NULL );
 
     //---------------------------------------
     // Column Pointer 위치 획득
@@ -10487,7 +10672,7 @@ IDE_RC smnbBTree::setMinMaxStat( smnIndexHeader * aCommonHeader,
         sTarget = aCommonHeader->mStat.mMaxValue;
     }
 
-    IDE_ASSERT( sRunHeader->mStatMutex.lock(NULL) == IDE_SUCCESS );
+    (void)( sRunHeader->mStatMutex.lock(NULL) ); /* always ID_SUCCESS return */
     ID_SERIAL_BEGIN( sRunHeader->mAtomicB++; );
 
     if ( aRowPtr == NULL )
@@ -10508,7 +10693,7 @@ IDE_RC smnbBTree::setMinMaxStat( smnIndexHeader * aCommonHeader,
             1 );
     }
     ID_SERIAL_END( sRunHeader->mAtomicA++; );
-    IDE_ASSERT( sRunHeader->mStatMutex.unlock() == IDE_SUCCESS );
+    (void)( sRunHeader->mStatMutex.unlock() ); /* always ID_SUCCESS return */
 
     return IDE_SUCCESS;
 
@@ -10702,12 +10887,13 @@ IDE_RC smnbBTree::dumpIndexNode( smnIndexHeader * aIndex,
 
     IDE_EXCEPTION_END;
 
-    switch(sState)
+    if ( sState == 1 )
     {
-    case 1:
-        IDE_ASSERT( iduMemMgr::free( sValueBuf ) == IDE_SUCCESS );
-    default:
-        break;
+        sState = 0;
+        if ( iduMemMgr::free( sValueBuf ) != IDE_SUCCESS )
+        {
+            ideLog::log( IDE_ERR_0, "[SM] fail to free buffer" );
+        }
     }
 
     return IDE_FAILURE;
@@ -10718,30 +10904,37 @@ void smnbBTree::logIndexNode( smnIndexHeader * aIndex,
 {
     SChar           * sOutBuffer4Dump;
 
-    if ( iduMemMgr::calloc( IDU_MEM_SM_SMN,
-                            1,
-                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
-                            (void**)&sOutBuffer4Dump )
-        == IDE_SUCCESS )
+    if( aNode != NULL )
     {
-        if ( dumpIndexNode( aIndex, 
-                            aNode, 
-                            sOutBuffer4Dump,
-                            IDE_DUMP_DEST_LIMIT )
-            == IDE_SUCCESS )
+        if ( iduMemMgr::calloc( IDU_MEM_SM_SMN,
+                                1,
+                                ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
+                                (void**)&sOutBuffer4Dump )
+             == IDE_SUCCESS )
         {
-            ideLog::log( IDE_SM_0, "%s\n", sOutBuffer4Dump );
+            if ( dumpIndexNode( aIndex, 
+                                aNode, 
+                                sOutBuffer4Dump,
+                                IDE_DUMP_DEST_LIMIT )
+                 == IDE_SUCCESS )
+            {
+                ideLog::log( IDE_SM_0, "%s\n", sOutBuffer4Dump );
+            }
+            else
+            {
+                /* dump fail */
+            }
+
+            (void) iduMemMgr::free( sOutBuffer4Dump );
         }
         else
         {
-            /* dump fail */
+            /* alloc fail */
         }
-
-        (void) iduMemMgr::free( sOutBuffer4Dump );
     }
     else
     {
-        /* alloc fail */
+        ideLog::log( IDE_SM_0, "Can Not Dump Null Node" );
     }
 }
 
@@ -10860,7 +11053,9 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
 
     if ( sKeyBuf != NULL )
     {
-        IDE_ASSERT( iduMemMgr::free( sKeyBuf ) == IDE_SUCCESS );
+        IDE_ERROR_RAISE( iduMemMgr::free( sKeyBuf ) == IDE_SUCCESS,
+                         ERR_FAIL_TO_FREE_BUFFER );
+        sKeyBuf = NULL;
     }
     else
     {
@@ -10875,15 +11070,21 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Flag" );
     }
+    IDE_EXCEPTION( ERR_FAIL_TO_FREE_BUFFER )
+    {
+        sKeyBuf = NULL; /* 다시 free 시도하지 않게 하기 위해서 */
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] fail to free buffer - case 1" );
+    }
     IDE_EXCEPTION_END;
 
     if ( sKeyBuf != NULL )
     {
-        IDE_ASSERT( iduMemMgr::free( sKeyBuf ) == IDE_SUCCESS );
-    }
-    else
-    {
-        /* nothing to do */
+        if ( iduMemMgr::free( sKeyBuf ) != IDE_SUCCESS )
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+            ideLog::log( IDE_ERR_0, "[SM] fail to free buffer - case 2" );
+        }
     }
 
     return IDE_FAILURE;
@@ -11236,7 +11437,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
     IDU_FIT_POINT( "smnbBTree::keyReorganization::findFirstLeafNode" );
 
-    IDE_TEST( lockTree( aIndex ) != IDE_SUCCESS );
+    lockTree( aIndex );
     sLockState = 1;
 
     while ( ( sCurINode->mChildPtrs[0]->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_INTERNAL )
@@ -11246,7 +11447,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
     sCurLNode = (smnbLNode*)sCurINode->mChildPtrs[0];
 
     sLockState = 0;
-    IDE_TEST( unlockTree( aIndex ) != IDE_SUCCESS);
+    unlockTree( aIndex );
 
     while ( sCurLNode != NULL )
     {
@@ -11319,17 +11520,17 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             IDU_FIT_POINT( "smnbBTree::keyReorganization::beforeLock" );
 
             /* 3. lock을 잡는다. */
-            IDE_TEST( lockTree( aIndex ) != IDE_SUCCESS );
+            lockTree( aIndex );
             sLockState = 1;
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint1" );
 
-            IDE_TEST( lockNode( sCurLNode ) != IDE_SUCCESS );
+            lockNode( sCurLNode );
             sLockState = 2;
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint2" );
 
-            IDE_TEST( lockNode( sNxtLNode ) != IDE_SUCCESS );
+            lockNode( sNxtLNode );
             sLockState = 3;
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::afterLock" );
@@ -11340,13 +11541,13 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                                          SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) ) == ID_FALSE )       
             {
                 sLockState = 2;
-                IDE_TEST( unlockNode( sNxtLNode ) != IDE_SUCCESS );
+                unlockNode( sNxtLNode );
 
                 sLockState = 1;
-                IDE_TEST( unlockNode( sCurLNode ) != IDE_SUCCESS );
+                unlockNode( sCurLNode );
 
                 sLockState = 0;
-                IDE_TEST( unlockTree( aIndex ) != IDE_SUCCESS);
+                unlockTree( aIndex );
 
                 continue;
             }
@@ -11395,7 +11596,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
              * 항상 다음 노드의 next노드의 prev pointer를 조절해야 한다. */
             IDE_ERROR( sNxtLNode->nextSPtr != NULL );
 
-            IDE_TEST( lockNode( sNxtLNode->nextSPtr ) != IDE_SUCCESS );
+            lockNode( sNxtLNode->nextSPtr );
             sLockState = 5;
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint10" );
@@ -11410,7 +11611,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             SMNB_SCAN_UNLATCH( sNxtLNode->nextSPtr );
             sLockState = 5;
 
-            IDE_TEST( unlockNode( sNxtLNode->nextSPtr ) != IDE_SUCCESS );
+            unlockNode( sNxtLNode->nextSPtr );
             sLockState = 4;
 
             sCurLNode->mSlotCount += sNxtLNode->mSlotCount;
@@ -11449,10 +11650,10 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             /* 9. 리프 노드의 lock을 해제한다. */
             sLockState = 2;
-            IDE_TEST( unlockNode( sNxtLNode ) != IDE_SUCCESS );
+            unlockNode( sNxtLNode );
 
             sLockState = 1;
-            IDE_TEST( unlockNode( sCurLNode ) != IDE_SUCCESS );
+            unlockNode( sCurLNode );
 
             /* 10. 인터널 노드를 갱신한다. */
             SMNB_SCAN_LATCH( sCurINode );
@@ -11488,7 +11689,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             /* 11. tree latch를 해제한다. */
             sLockState = 0;
-            IDE_TEST( unlockTree( aIndex ) != IDE_SUCCESS );
+            unlockTree( aIndex );
         }
     }
 
@@ -11508,10 +11709,16 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
     IDE_EXCEPTION_CONT( SKIP_KEY_REORGANIZATION );
 
-    IDE_ASSERT( sLockState == 0 );
+    IDU_FIT_POINT_RAISE( "BUG-46504@smnbBTree::keyReorganization::errNotStateZero", ERR_NOT_STATE_ZERO );
+    IDE_ERROR_RAISE( sLockState == 0, ERR_NOT_STATE_ZERO );
 
     return IDE_SUCCESS;
     
+    IDE_EXCEPTION( ERR_NOT_STATE_ZERO )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] lock state is not zero. [%"ID_UINT32_FMT"]", sLockState );
+    }
     IDE_EXCEPTION_END;
 
     switch ( sNodeState )
@@ -11548,9 +11755,9 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                              sNewKey );
             SMNB_SCAN_UNLATCH( sCurINode );
 
-            IDE_ASSERT( lockNode( sCurLNode ) == IDE_SUCCESS );
+            lockNode( sCurLNode );
             sLockState = 2;
-            IDE_ASSERT( lockNode( sNxtLNode ) == IDE_SUCCESS );
+            lockNode( sNxtLNode );
             sLockState = 3;
 
             sDeleteNodeCount--;
@@ -11589,16 +11796,16 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
         case 6:
             SMNB_SCAN_UNLATCH( sNxtLNode->nextSPtr );
         case 5:
-            IDE_ASSERT( unlockNode( sNxtLNode->nextSPtr ) == IDE_SUCCESS );
+            unlockNode( sNxtLNode->nextSPtr );
         case 4:
             SMNB_SCAN_UNLATCH( sNxtLNode );
             SMNB_SCAN_UNLATCH( sCurLNode );
         case 3:
-            IDE_ASSERT( unlockNode( sNxtLNode ) == IDE_SUCCESS );
+            unlockNode( sNxtLNode );
         case 2:
-            IDE_ASSERT( unlockNode( sCurLNode ) == IDE_SUCCESS );
+            unlockNode( sCurLNode );
         case 1:
-            IDE_ASSERT( unlockTree( aIndex ) == IDE_SUCCESS );
+            unlockTree( aIndex );
         case 0:
         default:
             break;
@@ -11615,7 +11822,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
     {
-        smnManager::setIsConsistentOfIndexHeader( aIndex->mIndexHeader, ID_FALSE );
+        setInconsistentIndex( aIndex->mIndexHeader );
     }
 
     IDE_SET( ideSetErrorCode( smERR_ABORT_ReorgFail ) );
@@ -11626,42 +11833,44 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 /*********************************************************************
  * FUNCTION DESCRIPTION : smnbBTree::findNextSlotInLeaf              *
  * ------------------------------------------------------------------*
- * BUG-44043
+ * BUG-44043, BUG-46428
  *
  * 리프노드에서 aSearchRow 값보다 큰 첫번째 슬롯 위치를 찾아서
  * aSlot 으로 리턴한다.
  * ( 위치를 찾지 못하면 노드의 mSlotCount 값을 리턴한다. )
  *
- * aIndexStat - [IN]  INDEX 스탯
- * aColumns   - [IN]  INDEX 컬럼정보
- * aFence     - [IN]  INDEX 컬럼정보 fence
+ * aIndex     - [IN]  INDEX 정보
  * aNode      - [IN]  탐색할 리프노드
+ * aMinimum   - [IN]  탐색할 노드범위의 mimumum slot 
+ * aMaximum   - [IN]  탐색할 노드범위의 maximum slot
  * aSearchRow - [IN]  탐색할 키
  * aSlot      - [OUT] 탐색된 슬롯 위치
  *********************************************************************/
-inline void smnbBTree::findNextSlotInLeaf( smnbStatistic    * aIndexStat,
-                                           const smnbColumn * aColumns,
-                                           const smnbColumn * aFence,
+inline void smnbBTree::findNextSlotInLeaf( smnbHeader       * index,
                                            const smnbLNode  * aNode,
+                                           SInt               aMinimum,
+                                           SInt               aMaximum,
                                            SChar            * aSearchRow,
                                            SInt             * aSlot )
 {
-    IDE_DASSERT( aNode != NULL );
-    IDE_DASSERT( aNode->mSlotCount > 0 );
+    smnbStatistic    * sIndexStat   = &index->mAgerStat;
+    const smnbColumn * sColumns     = index->columns;
+    const smnbColumn * sFence       = index->fence;
 
-    SInt    sMinimum = 0;
-    SInt    sMaximum = ( aNode->mSlotCount - 1 );
-    SInt    sMedium  = 0;
-    SChar * sRow     = NULL;
+    SInt sMinimum = aMinimum;
+    SInt sMaximum = aMaximum;
+    SInt sMedium  = 0;
+    SChar  * sRow = NULL;
 
     do
     {
         sMedium = ( sMinimum + sMaximum ) >> 1;
+
         sRow    = aNode->mRowPtrs[sMedium];
 
-        if ( smnbBTree::compareRowsAndPtr( aIndexStat,
-                                           aColumns,
-                                           aFence,
+        if ( smnbBTree::compareRowsAndPtr( sIndexStat,
+                                           sColumns,
+                                           sFence,
                                            sRow,
                                            aSearchRow ) > 0 )
         {
@@ -11675,7 +11884,28 @@ inline void smnbBTree::findNextSlotInLeaf( smnbStatistic    * aIndexStat,
         }
     }
     while ( sMinimum <= sMaximum );
-
-    return;
 }
 
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbBTree::setInconsistentIndex              *
+ * ------------------------------------------------------------------*
+ * BUG-46504
+ *
+ * 인덱스를 inconsistent 상태로 변경한다.
+ * (inconsistent 상태가 된 인덱스는 rebuild 할때까지 사용할수없다.)
+ *
+ * aIndex     - [IN]  INDEX 헤더
+ *********************************************************************/
+void smnbBTree::setInconsistentIndex( smnIndexHeader * aIndex )
+{
+    IDE_DASSERT( aIndex != NULL );
+
+    /* inconsistent 되지 않은 index만 inconsistent 상태로 만든다. */
+    /* inconsistent로 변경중에 다른 TX가 끼어들수 있으나,
+       TRACE LOG를 중복으로 찍게 되는것 이외에는 문제되지 않는다. */
+
+    if ( smnManager::getIsConsistentOfIndexHeader( aIndex ) == ID_TRUE )
+    {
+        smnManager::setIsConsistentOfIndexHeader( aIndex, ID_FALSE );
+    }
+}

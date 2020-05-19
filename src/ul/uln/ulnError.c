@@ -18,6 +18,9 @@
 #include <ulnPrivate.h>
 #include <ulnError.h>
 #include <ulnErrorDef.h>
+#include <ulsdnFailover.h>
+#include <aciErrorMgr.h>
+#include <ulsdnTrans.h>
 #include <idErrorCodeClient.h>
 #include <smErrorCodeClient.h>
 #include <mtErrorCodeClient.h>
@@ -103,6 +106,286 @@ static ACI_RC ulnErrorMgrSetErrorMessage(ulnErrorMgr  *aManager, acp_uint8_t* aV
     aManager->mErrorMessage[sErrorMsgSize] = '\0';
 
     return ACI_SUCCESS;
+}
+
+/* BUG-45967 Data Node의 Shard Session 정리 */
+static void ulnErrorSetShardMetaNumberOfDataNode( ulnDbc       * aDbc,
+                                                  acp_uint8_t  * aVariable,
+                                                  acp_uint32_t   aLen )
+{
+    acp_sint32_t   sIndex    = 0;
+    acp_sint32_t   sSign     = 0;
+    acp_uint64_t   sResult64 = 0;
+    acp_char_t   * sEnd      = NULL;
+
+    if ( ( aVariable != NULL ) &&
+         ( aLen > 0 ) )
+    {
+        ACI_TEST( acpCStrFindCStr( (const acp_char_t *)aVariable,
+                                   (const acp_char_t *)"Data Node SMN=",
+                                   & sIndex,
+                                   0,
+                                   ACP_CSTR_CASE_SENSITIVE | ACP_CSTR_SEARCH_FORWARD )
+                  != ACP_RC_SUCCESS );
+        sIndex += 14; /* "Data Node SMN=" */
+
+        ACI_TEST( acpCStrToInt64( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)aLen - sIndex,
+                                  & sSign,
+                                  & sResult64,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+
+        ulnDbcSetSMNOfDataNode( aDbc, sResult64 );
+
+        if ( aDbc->mShardDbcCxt.mParentDbc != NULL )
+        {
+            ulnDbcSetSMNOfDataNode( aDbc->mShardDbcCxt.mParentDbc, sResult64 );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
+
+    ACI_EXCEPTION_END;
+
+    return;
+}
+
+/* BUG-45967 Data Node의 Shard Session 정리 */
+static void ulnErrorSetExecuteResult( cmiProtocolContext * aProtocolContext,
+                                      void               * aUserContext,
+                                      acp_uint8_t        * aVariable,
+                                      acp_uint32_t         aLen )
+{
+    acp_sint32_t   sIndex                 = 0;
+    acp_sint32_t   sSign                  = 0;
+    acp_uint32_t   sResult32              = 0;
+    acp_uint64_t   sResult64              = 0;
+    acp_char_t   * sEnd                   = NULL;
+
+    acp_uint32_t   sStatementID           = 0;
+    acp_uint32_t   sRowNumber             = 0;
+    acp_uint16_t   sResultSetCount        = 0;
+    acp_sint64_t   sAffectedRowCount      = 0;
+    acp_sint64_t   sFetchedRowCount       = 0;
+    acp_uint8_t    sIsSimpleSelectExecute = 0;
+
+    if ( ( aVariable != NULL ) &&
+         ( aLen > 0 ) )
+    {
+        ACI_TEST( acpCStrFindCStr( (const acp_char_t *)aVariable,
+                                   (const acp_char_t *)"ExecuteV2Result ",
+                                   & sIndex,
+                                   0,
+                                   ACP_CSTR_CASE_SENSITIVE | ACP_CSTR_SEARCH_FORWARD )
+                  != ACP_RC_SUCCESS );
+        sIndex += 16; /* "ExecuteV2Result " */
+
+        ACI_TEST( acpCStrToInt32( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult32,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1;
+
+        sStatementID = sResult32;
+
+        ACI_TEST( acpCStrToInt32( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult32,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1;
+
+        sRowNumber = sResult32;
+
+        ACI_TEST( acpCStrToInt32( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult32,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1;
+
+        sResultSetCount = (acp_uint16_t)sResult32;
+
+        ACI_TEST( acpCStrToInt64( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult64,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1;
+
+        sAffectedRowCount = (acp_sint64_t)sResult64;
+
+        ACI_TEST( acpCStrToInt64( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult64,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1;
+
+        sFetchedRowCount = (acp_sint64_t)sResult64;
+
+        ACI_TEST( acpCStrToInt32( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult32,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        /* sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1; */
+
+        sIsSimpleSelectExecute = (acp_uint8_t)sResult32;
+
+        (void)ulnCallbackExecuteResultInternal( aProtocolContext,
+                                                aUserContext,
+                                                sStatementID,
+                                                sRowNumber,
+                                                sResultSetCount,
+                                                sAffectedRowCount,
+                                                sFetchedRowCount,
+                                                sIsSimpleSelectExecute );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
+
+    ACI_EXCEPTION_END;
+
+    return;
+}
+
+/* BUG-45967 Data Node의 Shard Session 정리 */
+static void ulnErrorSetShardPrepareResult( void         * aUserContext,
+                                           acp_uint8_t  * aVariable,
+                                           acp_uint32_t   aLen )
+{
+    acp_sint32_t   sIndex       = 0;
+    acp_sint32_t   sSign        = 0;
+    acp_uint32_t   sResult32    = 0;
+    acp_char_t   * sEnd         = NULL;
+
+    acp_uint8_t    sReadOnly    = 0;
+
+    if ( ( aVariable != NULL ) &&
+         ( aLen > 0 ) )
+    {
+        ACI_TEST( acpCStrFindCStr( (const acp_char_t *)aVariable,
+                                   (const acp_char_t *)"ShardPrepareResult ",
+                                   & sIndex,
+                                   0,
+                                   ACP_CSTR_CASE_SENSITIVE | ACP_CSTR_SEARCH_FORWARD )
+                  != ACP_RC_SUCCESS );
+        sIndex += 19; /* "ShardPrepareResult " */
+
+        ACI_TEST( acpCStrToInt32( (const acp_char_t *) & aVariable[sIndex],
+                                  (acp_size_t)(aLen - sIndex),
+                                  & sSign,
+                                  & sResult32,
+                                  10,
+                                  & sEnd )
+                  != ACP_RC_SUCCESS );
+        ACI_TEST( sSign != 1 );
+        /* sIndex = (acp_sint32_t)(sEnd - (acp_char_t *)aVariable) + 1; */
+
+        sReadOnly = (acp_uint8_t)sResult32;
+
+        (void)ulsdCallbackShardPrepareResultInternal( aUserContext,
+                                                      sReadOnly );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
+
+    ACI_EXCEPTION_END;
+
+    return;
+}
+
+/* BUG-46100 Session SMN Update */
+static acp_bool_t ulnErrorSetShardDisconnect( ulnDbc       * aDbc,
+                                              acp_uint8_t  * aVariable,
+                                              acp_uint32_t   aLen )
+{
+    acp_sint32_t   sIndex        = 0;
+    acp_bool_t     sIsDisconnect = ACP_TRUE;
+
+    if ( ( aVariable != NULL ) &&
+         ( aLen > 0 ) )
+    {
+        ACI_TEST( acpCStrFindCStr( (const acp_char_t *)aVariable,
+                                   (const acp_char_t *)"Disconnect=N",
+                                   & sIndex,
+                                   0,
+                                   ACP_CSTR_CASE_SENSITIVE | ACP_CSTR_SEARCH_FORWARD )
+                  != ACP_RC_SUCCESS );
+
+        sIsDisconnect = ACP_FALSE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    ulnDbcSetNeedToDisconnect( aDbc, sIsDisconnect );
+
+    if ( aDbc->mShardDbcCxt.mParentDbc != NULL )
+    {
+        ulnDbcSetNeedToDisconnect( aDbc->mShardDbcCxt.mParentDbc, sIsDisconnect );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sIsDisconnect;
+
+    ACI_EXCEPTION_END;
+
+    ulnDbcSetNeedToDisconnect( aDbc, ACP_TRUE );
+
+    if ( aDbc->mShardDbcCxt.mParentDbc != NULL )
+    {
+        ulnDbcSetNeedToDisconnect( aDbc->mShardDbcCxt.mParentDbc, ACP_TRUE );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return ACP_TRUE;
 }
 
 /*
@@ -229,6 +512,13 @@ static ACI_RC ulnErrorAddDiagRec(ulnFnContext *aFnContext,
              */
             // ulnDiagSetReturnCode(sDiagHeader, ulnErrorDecideSqlReturnCode(sDiagRec->mSQLSTATE));
             ULN_FNCONTEXT_SET_RC(aFnContext, ulnErrorDecideSqlReturnCode(sDiagRec->mSQLSTATE));
+
+            /* BUG-46092 */
+            if ( ulnErrorMgrGetErrorCode( aErrorMgr )
+                 == ACI_E_ERROR_CODE( ulERR_ABORT_FAILOVER_SUCCESS ) )
+            {
+                aFnContext->mIsFailoverSuccess = ACP_TRUE;
+            }
         }
 
         ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
@@ -398,6 +688,10 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
     /* BUG-36256 Improve property's communication */
     ulnDbc              *sDbc = NULL;
 
+    /* BUG-46100 Session SMN Update */
+    SQLRETURN            sPrevSqlReturn     = SQL_SUCCESS;
+    acp_bool_t           sIsShardDisconnect = ACP_TRUE;
+
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
 
@@ -421,14 +715,23 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
 
     if (sOperationID == CMP_OP_DB_ExecuteV2)
     {
-        /* bug-18246 */
-        sStmt = sFnContext->mHandle.mStmt;
-
-        if (ulnStmtGetStatementType(sStmt) == ULN_STMT_UPDATE ||
-            ulnStmtGetStatementType(sStmt) == ULN_STMT_DELETE)
+        /* BUG-45967 Data Node의 Shard Session 정리 */
+        if ( ACI_E_ERROR_CODE( sErrorCode ) ==
+             ACI_E_ERROR_CODE( mmERR_ABORT_SESSION_WITH_INVALID_SMN ) )
         {
-            ulnStmtSetAttrParamStatusValue(sStmt, sErrorIndex - 1, SQL_PARAM_ERROR);
-            ULN_FNCONTEXT_SET_RC((sFnContext), SQL_ERROR);
+            /* Nothing to do */
+        }
+        else
+        {
+            /* bug-18246 */
+            sStmt = sFnContext->mHandle.mStmt;
+
+            if (ulnStmtGetStatementType(sStmt) == ULN_STMT_UPDATE ||
+                ulnStmtGetStatementType(sStmt) == ULN_STMT_DELETE)
+            {
+                ulnStmtSetAttrParamStatusValue(sStmt, sErrorIndex - 1, SQL_PARAM_ERROR);
+                ULN_FNCONTEXT_SET_RC((sFnContext), SQL_ERROR);
+            }
         }
     }
     /* BUG-36256 Improve property's communication */
@@ -497,6 +800,13 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
         }
         else
         {
+            /* BUG-46100 Session SMN Update */
+            if ( ACI_E_ERROR_CODE( sErrorCode ) ==
+                 ACI_E_ERROR_CODE( mmERR_ABORT_SESSION_WITH_INVALID_SMN ) )
+            {
+                sPrevSqlReturn = ULN_FNCONTEXT_GET_RC( sFnContext );
+            }
+
             /*
              * DiagRec 를 만들어서 object 에 붙이기
              * BUGBUG : 함수 이름, 개념, scope 등이 이상하다.
@@ -520,6 +830,94 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
                     }
                 }
             }
+
+            /* BUG-45967 Data Node의 Shard Session 정리 */
+            if ( ACI_E_ERROR_CODE( sErrorCode ) ==
+                 ACI_E_ERROR_CODE( mmERR_ABORT_SESSION_WITH_INVALID_SMN ) )
+            {
+                ulnErrorSetShardMetaNumberOfDataNode( sDbc,
+                                                      sErrorMessage,
+                                                      sErrorMessageLen );
+
+                /* BUG-46100 Session SMN Update */
+                sIsShardDisconnect = ulnErrorSetShardDisconnect( sDbc,
+                                                                 sErrorMessage,
+                                                                 sErrorMessageLen );
+
+                switch ( sOperationID )
+                {
+                    case CMP_OP_DB_PropertySet :
+                        if ( sIsShardDisconnect == ACP_TRUE )
+                        {
+                            ULN_FNCONTEXT_SET_RC( sFnContext, SQL_ERROR );
+                        }
+                        else
+                        {
+                            /* BUG-46100 Session SMN Update
+                             *  다수의 Property가 있으므로, SQL_SUCCESS 대신 이전의 결과를 설정한다.
+                             */
+                            ULN_FNCONTEXT_SET_RC( sFnContext, sPrevSqlReturn );
+                        }
+                        break;
+
+                    case CMP_OP_DB_ExecuteV2 :
+                    case CMP_OP_DB_ParamDataInListV2 :
+                        if ( sIsShardDisconnect == ACP_TRUE )
+                        {
+                            ULN_FNCONTEXT_SET_RC( sFnContext, SQL_SUCCESS_WITH_INFO );
+                        }
+                        else
+                        {
+                            /* BUG-46100 Session SMN Update */
+                            ULN_FNCONTEXT_SET_RC( sFnContext, sPrevSqlReturn );
+                        }
+
+                        ulnErrorSetExecuteResult( aPtContext,
+                                                  aUserContext,
+                                                  sErrorMessage,
+                                                  sErrorMessageLen );
+                        break;
+
+                    case CMP_OP_DB_Transaction :
+                    case CMP_OP_DB_ShardTransaction :
+                        if ( sIsShardDisconnect == ACP_TRUE )
+                        {
+                            ULN_FNCONTEXT_SET_RC( sFnContext, SQL_SUCCESS_WITH_INFO );
+                        }
+                        else
+                        {
+                            /* BUG-46100 Session SMN Update */
+                            ULN_FNCONTEXT_SET_RC( sFnContext, sPrevSqlReturn );
+                        }
+                        break;
+
+                    case CMP_OP_DB_ShardPrepare :
+                        if ( sIsShardDisconnect == ACP_TRUE )
+                        {
+                            ULN_FNCONTEXT_SET_RC( sFnContext, SQL_SUCCESS_WITH_INFO );
+                        }
+                        else
+                        {
+                            /* BUG-46100 Session SMN Update */
+                            ULN_FNCONTEXT_SET_RC( sFnContext, sPrevSqlReturn );
+                        }
+
+                        ulnErrorSetShardPrepareResult( aUserContext,
+                                                       sErrorMessage,
+                                                       sErrorMessageLen );
+                        break;
+
+                    default :
+                        break;
+                }
+            }
+
+#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+            if ( ( sErrorCode & ACI_E_MODULE_MASK ) == ACI_E_MODULE_SD )
+            {
+                ulsdErrorHandleShardingError( sFnContext );
+            }
+#endif /* COMPILE_SHARDCLI */
         }
     }
 
@@ -552,6 +950,7 @@ void ulnErrorMgrSetCmError( ulnDbc       *aDbc,
     switch (aCmErrorCode)
     {
         case cmERR_ABORT_CONNECT_ERROR:
+        case cmERR_ABORT_IB_RCONNECT_ERROR: /* PROJ-2681 */
             ulnErrorMgrSetUlError( aErrorMgr,
                                    ulERR_FATAL_FAIL_TO_ESTABLISH_CONNECTION,
                                    aciGetErrorMsg(aCmErrorCode) );
@@ -604,6 +1003,12 @@ void ulnErrorMgrSetCmError( ulnDbc       *aDbc,
         case cmERR_ABORT_CONNECT_INVALIDARG:
             ulnErrorMgrSetUlError( aErrorMgr,
                                    ulERR_ABORT_CONNECT_INVALIDARG );
+            break;
+
+        /* PROJ-2681 */
+        case cmERR_ABORT_IB_RCONNECT_INVALIDARG:
+            ulnErrorMgrSetUlError( aErrorMgr,
+                                   ulERR_ABORT_IB_RCONNECT_INVALIDARG );
             break;
 
         /* BUG-41330 Returning a detailed SSL error to the client */
@@ -689,10 +1094,12 @@ ACI_RC ulnErrHandleCmError(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
             }
 
         case cmERR_ABORT_CONNECT_ERROR:
+        case cmERR_ABORT_IB_RCONNECT_ERROR:          /* PROJ-2681*/
         case cmERR_ABORT_CMN_ERR_FULL_IPC_CHANNEL:
         case cmERR_ABORT_TIMED_OUT:
         case cmERR_ABORT_GETADDRINFO_ERROR:
         case cmERR_ABORT_CONNECT_INVALIDARG:
+        case cmERR_ABORT_IB_RCONNECT_INVALIDARG:     /* PROJ-2681 */
         case cmERR_ABORT_SSL_READ:
         case cmERR_ABORT_SSL_WRITE:
         case cmERR_ABORT_SSL_CONNECT:

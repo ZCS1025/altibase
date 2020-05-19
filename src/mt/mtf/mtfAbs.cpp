@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfAbs.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfAbs.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -176,6 +176,7 @@ static const mtcExecute mtfAbsExecuteInteger = {
     mtf::calculateNA,
     mtfAbsCalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -274,6 +275,7 @@ static const mtcExecute mtfAbsExecuteSmallint = {
     mtf::calculateNA,
     mtfAbsCalculateSmallint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -371,6 +373,7 @@ static const mtcExecute mtfAbsExecuteBigint = {
     mtf::calculateNA,
     mtfAbsCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -466,6 +469,7 @@ static const mtcExecute mtfAbsExecuteFloat = {
     mtf::calculateNA,
     mtfAbsCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -556,6 +560,7 @@ static const mtcExecute mtfAbsExecuteReal = {
     mtf::calculateNA,
     mtfAbsCalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -644,6 +649,7 @@ static const mtcExecute mtfAbsExecuteDouble = {
     mtf::calculateNA,
     mtfAbsCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

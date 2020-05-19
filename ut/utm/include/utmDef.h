@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmDef.h 80542 2017-07-19 08:01:20Z daramix $
+ * $Id: utmDef.h 84392 2018-11-21 00:08:16Z bethy $
  **********************************************************************/
 
 #ifndef _O_UTM_DEF_H_
@@ -44,6 +44,7 @@
 #define META_CNT      (18)
 #define QUERY_LEN     (1024)
 #define STR_LEN       (50)
+#define PARSE_LEN     (100)
 //fix BUG-17481 aexport가 partion disk table을 지원해야 한다.
 #define UTM_QUERY_LEN (2048)
 #define UTM_NAME_LEN  (128+20) /* BUG-39622: object max length(128) + alpha */
@@ -124,7 +125,7 @@ typedef struct ObjectModeInfo
     SChar mObjUserName[UTM_NAME_LEN+1];
     SChar mObjObjectName[UTM_NAME_LEN+1];
     SInt  mObjUserId;
-    SInt  mObjObjectId;
+    SLong mObjObjectId;         /* BUG-46292 */
     SInt  mObjObjectType;
 } ObjectModeInfo;
 
@@ -150,6 +151,7 @@ typedef enum
     UTM_PARTITION_METHOD_RANGE  = 0,
     UTM_PARTITION_METHOD_HASH   = 1,
     UTM_PARTITION_METHOD_LIST   = 2,
+    UTM_PARTITION_METHOD_RANGE_USING_HASH = 3,
     UTM_PARTITION_METHOD_NONE   = 100
 } utmPartitionMethod;
 

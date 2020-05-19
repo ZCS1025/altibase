@@ -35,13 +35,13 @@ SChar   gPgrantorName[UTM_NAME_LEN+1] = {"\0"};
 #define GET_PRIVID_QUERY                        \
     "select distinct priv_id "                  \
     "from system_.sys_grant_object_ "           \
-    "where obj_id=%d " 
+    "where obj_id=%"ID_INT64_FMT" " 
 
 #define GET_GRANTOR_GRANTEE_QUERY               \
     "select * "                                 \
     "from system_.sys_grant_object_ "           \
     "where user_id=%d "                         \
-    "and obj_id=%d "                            \
+    "and obj_id=%"ID_INT64_FMT" "                           \
     "and priv_id=%d "
 
 #define GET_OBJPRIV_HIER_QUERY                  \
@@ -53,17 +53,17 @@ SChar   gPgrantorName[UTM_NAME_LEN+1] = {"\0"};
     "from system_.sys_grant_object_ "           \
     "where priv_id=%d "                         \
     "and user_id=%d "                           \
-    "start with grantor_id=%d and obj_id=%d "   \
+    "start with grantor_id=%d and obj_id=%"ID_INT64_FMT" "  \
     "and priv_id=%d "                           \
     "connect by grantor_id=prior grantee_id "   \
     "and grantee_id!=%d "                       \
-    "and obj_id=%d "                            \
+    "and obj_id=%"ID_INT64_FMT" "                           \
     "and priv_id=%d "                           \
     "order by level, grantor_id "
 
 #define GET_PRIV_USING_GRANTEE_QUERY            \
     "select * from system_.sys_grant_object_ "  \
-    "where grantee_id=%d and obj_id=%d "        \
+    "where grantee_id=%d and obj_id=%"ID_INT64_FMT" "       \
     "and priv_id=%d "
 
 #define GET_RESULT_OBJPRIV_QUERY                                        \
@@ -87,7 +87,7 @@ SChar   gPgrantorName[UTM_NAME_LEN+1] = {"\0"};
     "and a.grantee_id=%d "                                              \
     "and a.user_id=%d "                                                 \
     "and a.priv_id=%d "                                                 \
-    "and a.obj_id=%d "                                                  \
+    "and a.obj_id=%"ID_INT64_FMT" "                                                 \
     "%s"
 
 //BUG-35893 [ux-aexport] Fail to handle grant object privilege to public
@@ -111,7 +111,7 @@ SChar   gPgrantorName[UTM_NAME_LEN+1] = {"\0"};
     "and a.grantee_id=%d "                                              \
     "and a.user_id=%d "                                                 \
     "and a.priv_id=%d "                                                 \
-    "and a.obj_id=%d "                                                  \
+    "and a.obj_id=%"ID_INT64_FMT" "                                                 \
     "%s"
 
 /****************************************************
@@ -136,10 +136,13 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
     SQLRETURN    sRet;
     SChar        sQuery[QUERY_LEN];
     SInt         sUserId    = 0;
-    SInt         sObjId     = 0;
+    SLong        sObjId     = 0;
     SChar       *sTempCol   = NULL;
     SChar       *sTempTable = NULL;
     SInt         sPos = 0;
+
+    /* BUG-46292 */
+    SQLBIGINT    sObjId2Bind   = SQLBIGINT_INIT_TO_ZERO;
 
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
                                   != SQL_SUCCESS, alloc_error );
@@ -228,7 +231,7 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
         SQLBindCol(sStmt, 1, SQL_C_SLONG,   &sUserId,  0, NULL)
         != SQL_SUCCESS, executeError);  
     IDE_TEST_RAISE(
-        SQLBindCol(sStmt, 2, SQL_C_SLONG,   &sObjId,  0, NULL)
+        SQLBindCol(sStmt, 2, SQL_C_SBIGINT,   &sObjId2Bind,  0, NULL)
         != SQL_SUCCESS, executeError);          
     
     sRet = SQLFetch(sStmt);
@@ -236,6 +239,9 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
     if ( sRet != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
+
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
         
         IDE_TEST( searchObjPrivQuery( aFp, aObjType, sUserId, sObjId )
                                       != SQL_SUCCESS );
@@ -274,7 +280,7 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
 SQLRETURN searchObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
-                              SInt   aObjId ) 
+                              SLong  aObjId ) 
 {
 #define IDE_FN "searchObjPrivQuery()"
     SQLHSTMT     sCntPrivStmt = SQL_NULL_HSTMT;
@@ -289,6 +295,7 @@ SQLRETURN searchObjPrivQuery( FILE  *aFp,
 
     IDE_TEST_RAISE(SQLExecDirect(sCntPrivStmt, (SQLCHAR *)sCntPrivQuery, SQL_NTS)
                    != SQL_SUCCESS, cntPrivExecuteError);  
+
     IDE_TEST_RAISE(
         SQLBindCol(sCntPrivStmt, 1, SQL_C_SLONG,   &sCntPriv,  0, NULL)
         != SQL_SUCCESS, cntPrivExecuteError);          
@@ -326,7 +333,7 @@ SQLRETURN searchObjPrivQuery( FILE  *aFp,
         // BUG-33995 aexport have wrong free handle code
         FreeStmt( &sCntPrivStmt );
     }
- 
+
     return SQL_ERROR;
 #undef IDE_FN
 }
@@ -335,7 +342,7 @@ SQLRETURN searchObjPrivQuery( FILE  *aFp,
 SQLRETURN checkObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
-                              SInt   aObjId,
+                              SLong  aObjId,
                               SInt   aPrivId) 
 {
 #define IDE_FN "checkObjPrivQuery()"
@@ -346,9 +353,12 @@ SQLRETURN checkObjPrivQuery( FILE  *aFp,
     SInt         sGranteeId = 0;
     SInt         sUserId    = 0;
     SInt         sPrivId    = 0;
-    SInt         sObjId     = 0;
+    SLong        sObjId     = 0;
     SInt         sWithGrant = 0;
-  
+ 
+    /* BUG-46292 */
+    SQLBIGINT    sObjId2Bind   = SQLBIGINT_INIT_TO_ZERO;
+    
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
                                   != SQL_SUCCESS, alloc_error );
     
@@ -375,7 +385,7 @@ SQLRETURN checkObjPrivQuery( FILE  *aFp,
                     0, NULL )
         != SQL_SUCCESS, stmtError);          
     IDE_TEST_RAISE(        
-        SQLBindCol( sStmt, 5, SQL_C_SLONG, (SQLPOINTER)&sObjId,
+        SQLBindCol( sStmt, 5, SQL_C_SBIGINT, (SQLPOINTER)&sObjId2Bind,
                     0, NULL )
         != SQL_SUCCESS, stmtError);          
     IDE_TEST_RAISE(        
@@ -386,6 +396,9 @@ SQLRETURN checkObjPrivQuery( FILE  *aFp,
     while ( (sRet = SQLFetch( sStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
+
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
 
         if (( sWithGrant == 0 ) && ( sGranteeId != sUserId ) &&
             ( sGrantorId == sUserId ))        
@@ -436,7 +449,7 @@ SQLRETURN checkObjPrivQuery( FILE  *aFp,
 SQLRETURN relateObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
-                              SInt   aObjId,
+                              SLong  aObjId,
                               SInt   aPrivId ) 
 {
 #define IDE_FN "relateObjPrivQuery()"
@@ -447,9 +460,12 @@ SQLRETURN relateObjPrivQuery( FILE  *aFp,
     SInt         sGranteeId = 0;
     SInt         sUserId    = 0;
     SInt         sPrivId    = 0;
-    SInt         sObjId     = 0;
+    SLong        sObjId     = 0;
     SInt         sWithGrant = 0;
-  
+
+    /* BUG-46292 */
+    SQLBIGINT    sObjId2Bind   = SQLBIGINT_INIT_TO_ZERO;
+    
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
                     != SQL_SUCCESS, alloc_error );
 
@@ -477,7 +493,7 @@ SQLRETURN relateObjPrivQuery( FILE  *aFp,
                     0, NULL )
         != SQL_SUCCESS, stmtError );
     IDE_TEST_RAISE(        
-        SQLBindCol( sStmt, 7, SQL_C_SLONG, (SQLPOINTER)&sObjId,
+        SQLBindCol( sStmt, 7, SQL_C_SBIGINT, (SQLPOINTER)&sObjId2Bind,
                     0, NULL )
         != SQL_SUCCESS, stmtError );
     IDE_TEST_RAISE(        
@@ -488,6 +504,9 @@ SQLRETURN relateObjPrivQuery( FILE  *aFp,
     while ( (sRet = SQLFetch( sStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE(sRet != SQL_SUCCESS, stmtError);
+
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
         
         IDE_TEST( resultObjPrivQuery( aFp, sGrantorId, sGranteeId,
                                       sUserId, sPrivId, sObjId, aObjType )
@@ -526,7 +545,7 @@ SQLRETURN relateObjPrivQuery( FILE  *aFp,
 SQLRETURN recCycleObjPrivQuery( FILE *aFp,
                            SInt   aObjType, 
                            SInt   aUserId, 
-                           SInt   aObjId, 
+                           SLong  aObjId, 
                            SInt   aPrivId) 
 {
 #define IDE_FN "recCycleObjPrivQuery()"
@@ -537,10 +556,13 @@ SQLRETURN recCycleObjPrivQuery( FILE *aFp,
     SInt         sGranteeId     = 0;
     SInt         sUserId        = 0; 
     SInt         sPrivId        = 0;
-    SInt         sObjId         = 0;
+    SLong        sObjId         = 0;
     SChar        sObjType[2];
     SQLLEN       sObjTypeInd    = 0;
 
+    /* BUG-46292 */
+    SQLBIGINT    sObjId2Bind   = SQLBIGINT_INIT_TO_ZERO;
+    
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
                                   != SQL_SUCCESS, alloc_error );
 
@@ -567,7 +589,7 @@ SQLRETURN recCycleObjPrivQuery( FILE *aFp,
                     0, NULL )
         != SQL_SUCCESS, stmtError );
     IDE_TEST_RAISE(    
-        SQLBindCol( sStmt, 5, SQL_C_SLONG, (SQLPOINTER)&sObjId,
+        SQLBindCol( sStmt, 5, SQL_C_SBIGINT, (SQLPOINTER)&sObjId2Bind,
                     0, NULL )
     != SQL_SUCCESS, stmtError );
     IDE_TEST_RAISE(    
@@ -580,6 +602,9 @@ SQLRETURN recCycleObjPrivQuery( FILE *aFp,
     if ( sRet != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
+
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
 
         IDE_TEST( resultObjPrivQuery( aFp, sGrantorId, sGranteeId,
                                       sUserId, sPrivId, sObjId, aObjType )
@@ -616,7 +641,7 @@ SQLRETURN resultObjPrivQuery( FILE *aFp,
                               SInt  aGranteeId, 
                               SInt  aUserId,
                               SInt  aPrivId,
-                              SInt  aObjId, 
+                              SLong aObjId, 
                               SInt  aObjType )
 {
 #define IDE_FN "resultObjPrivQuery()"

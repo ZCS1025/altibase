@@ -112,8 +112,8 @@ public class DriverTest extends AltibaseTestCase
         String sURL = "jdbc:Altibase://127.0.0.1:1234/yourdb";
         Driver sDriver = DriverManager.getDriver(sURL);
         DriverPropertyInfo[] sPropInfo = sDriver.getPropertyInfo(sURL, null);
-        assertEquals(35, sPropInfo.length);
+        assertEquals(39, sPropInfo.length);
         sPropInfo = sDriver.getPropertyInfo(sURL + "?prop1=val1", null);
-        assertEquals(35, sPropInfo.length);
+        assertEquals(39, sPropInfo.length);
     }
 }

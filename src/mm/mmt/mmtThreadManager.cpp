@@ -127,7 +127,9 @@ IDE_RC mmtThreadManager::initialize()
                                            IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                            ID_FALSE,						/* ForcePooling */
                                            ID_TRUE,							/* GarbageCollection */
-                                           ID_TRUE) != IDE_SUCCESS);		/* HWCacheLine */
+                                           ID_TRUE,                         /* HWCacheLine */
+                                           IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/) 
+             != IDE_SUCCESS);			
 
 
     /* PROJ-2108 Dedicated thread mode which uses less CPU */
@@ -449,6 +451,19 @@ IDE_RC mmtThreadManager::setupProtocolCallback()
     IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardEndPendingTx),
                             mmtServiceThread::shardEndPendingTxProtocol) != IDE_SUCCESS);
 
+    /* BUG-46785 Shard statement partial rollback */
+    IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, SetSavepoint ),
+                              mmtServiceThread::setSavepointProtocol ) != IDE_SUCCESS );
+
+    IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, RollbackToSavepoint ),
+                              mmtServiceThread::rollbackToSavepointProtocol ) != IDE_SUCCESS );
+
+    IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, ShardStmtPartialRollback ),
+                              mmtServiceThread::shardStmtPartialRollback ) != IDE_SUCCESS );
+
+    IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, ShardNodeReport ),
+                              mmtServiceThread::shardNodeReport) != IDE_SUCCESS );
+
     /* bug-33841: ipc thread's state is wrongly displayed */
     (void) cmiSetCallbackSetExecute(mmtServiceThread::setExecuteCallback);
 
@@ -502,28 +517,38 @@ IDE_RC mmtThreadManager::addListener(cmiLinkImpl aLinkImpl, SChar *aMsgBuffer, U
 
     IDE_TEST_RAISE(cmiIsSupportedLinkImpl(aLinkImpl) != ID_TRUE, UnableToMakeListener);
 
-    switch(aLinkImpl)
+    switch (aLinkImpl)
     {
         case CMI_LINK_IMPL_TCP:
             //TASK-3873 Static Analysis Code Sonar null pointer de-reference
             /* BUG-41168 SSL extension */
             IDE_TEST_RAISE(mmuProperty::getTcpEnable() == ID_FALSE, UnableToMakeListener);
             break;
+
         case CMI_LINK_IMPL_SSL:
             /* PROJ-2474 SSL/TLS */
             IDE_TEST_RAISE(mmuProperty::getSslEnable() == ID_FALSE, UnableToMakeListener);
             break;
+
         case CMI_LINK_IMPL_UNIX:
             sListenArg.mUNIX.mFilePath = sAddrBufferUnix;
             break;
+
         case CMI_LINK_IMPL_IPC:
             IDE_TEST_RAISE(mmuProperty::getIpcChannelCount() == 0, UnableToMakeListener);
             sListenArg.mIPC.mFilePath  = sAddrBufferIpc;
             break;
+
         case CMI_LINK_IMPL_IPCDA:/*PROJ-2616*/
-            IDE_TEST_RAISE( mmuProperty::getIPCDAChannelCount() == 0, UnableToMakeListener);
+            IDE_TEST_RAISE(mmuProperty::getIPCDAChannelCount() == 0, UnableToMakeListener);
             sListenArg.mIPCDA.mFilePath = sAddrBufferIPCDA;
             break;
+
+        case CMI_LINK_IMPL_IB: /* PROJ-2681 */
+            IDE_TEST_RAISE((mmuProperty::getIBEnable() == ID_FALSE) ||
+                           (mmuProperty::getIBListenerDisable() == ID_TRUE), UnableToMakeListener);
+            break;
+
         default:
             //TASK-3873 Static Analysis Code Sonar null pointer de-reference
             IDE_ASSERT(0);
@@ -712,14 +737,14 @@ IDE_RC mmtThreadManager::startServiceThreads()
         for (sCount = 0; sCount < mmuProperty::getMultiplexingThreadCount(); sCount++)
         {
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase */
-            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_SOCKET,1,&sDummy) != IDE_SUCCESS);
+            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_SOCKET, 1, &sDummy) != IDE_SUCCESS);
         }
     }
     else
     {
         for (sCount = 0; sCount < mmuProperty::getDedicatedThreadInitCount(); sCount++)
         {
-            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_DEDICATED,1,&sDummy) != IDE_SUCCESS);
+            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_DEDICATED, 1, &sDummy) != IDE_SUCCESS);
         }
     }
 
@@ -767,7 +792,7 @@ IDE_RC mmtThreadManager::startServiceThreads()
         for (sCount = 0; sCount < sIpcChannelCount; sCount++)
         {
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase */
-            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_IPC,1,&sDummy) != IDE_SUCCESS);
+            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_IPC, 1, &sDummy) != IDE_SUCCESS);
         }
     }
     
@@ -815,7 +840,7 @@ IDE_RC mmtThreadManager::startServiceThreads()
         for (sCount = 0; sCount < sIPCDAChannelCount; sCount++)
         {
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase */
-            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_IPCDA,1,&sDummy) != IDE_SUCCESS);
+            IDE_TEST(startServiceThread(MMC_SERVICE_THREAD_TYPE_IPCDA, 1, &sDummy) != IDE_SUCCESS);
         }
     }
 
@@ -1118,7 +1143,7 @@ IDE_RC mmtThreadManager::makeListenArg(cmiListenArg *aListenArg,
             }
             else
             {
-            	/* aMsgBuffer is NULL. */
+                /* aMsgBuffer is NULL. */
             }
 
             break;
@@ -1176,6 +1201,7 @@ IDE_RC mmtThreadManager::makeListenArg(cmiListenArg *aListenArg,
                 idlOS::snprintf(aMsgBuffer, aMsgBufferSize, "IPC");
             }
             break;
+
         case CMI_LINK_IMPL_IPCDA:    /*PROJ-2616*/
             IDE_DASSERT(aListenArg->mIPCDA.mFilePath != NULL);
             idlOS::snprintf(aListenArg->mIPCDA.mFilePath,
@@ -1188,6 +1214,27 @@ IDE_RC mmtThreadManager::makeListenArg(cmiListenArg *aListenArg,
             if (aMsgBuffer != NULL)
             {
                 idlOS::snprintf(aMsgBuffer, aMsgBufferSize, "IPCDA");
+            }
+            break;
+
+        case CMI_LINK_IMPL_IB: /* PROJ-2681 */
+            aListenArg->mIB.mPort       = mmuProperty::getIBPortNo();
+            aListenArg->mIB.mMaxListen  = mmuProperty::getIBMaxListen();
+            aListenArg->mIB.mLatency    = mmuProperty::getIBLatency();
+            aListenArg->mIB.mConChkSpin = mmuProperty::getIBConChkSpin();
+
+            aListenArg->mIB.mIPv6       = iduProperty::getNetConnIpStack();
+
+            sRet = getIPv6Info(&aListenArg->mIB.mIPv6, sIPv6Str, MM_IP_VER_STRLEN_ON_BOOT);
+            IDE_TEST(sRet != IDE_SUCCESS);
+
+            if (aMsgBuffer != NULL)
+            {
+                idlOS::snprintf(aMsgBuffer,
+                                aMsgBufferSize,
+                                "IB on port %" ID_UINT32_FMT" %s",
+                                aListenArg->mTCP.mPort,
+                                sIPv6Str);
             }
             break;
 
@@ -1508,7 +1555,7 @@ IDE_RC mmtThreadManager::addDedicatedTask(mmcTask *aTask)
             {
                 ID_SERIAL_EXEC(IDE_ASSERT(mMutexForThreadManagerSignal.lock(NULL) 
                                           == IDE_SUCCESS),1);
-                ID_SERIAL_EXEC(IDE_TEST_RAISE(startServiceThread(MMC_SERVICE_THREAD_TYPE_DEDICATED,1,&sDummy) 
+                ID_SERIAL_EXEC(IDE_TEST_RAISE(startServiceThread(MMC_SERVICE_THREAD_TYPE_DEDICATED, 1, &sDummy) 
                                               != IDE_SUCCESS, ThreadStartFail),2);
                 /* Wait for the service thread until it is added to the service thread list */
                 ID_SERIAL_EXEC(mThreadManagerCV.wait(&mMutexForThreadManagerSignal), 3);
@@ -1626,8 +1673,6 @@ IDE_RC mmtThreadManager::addIPCDATask(mmcTask *aTask)
     /* 클라이언트가 정상 접속이 된 후 TASK를 Thread에 추가하도록 한다. */
     /* 2. 클라이언트에게 IPC 정보 전송 */
     IDE_TEST(cmiHandshake(sLink) != IDE_SUCCESS);
-
-    mmtIPCDAProcMonitor::addIPCDAProcInfo(aTask->getProtocolContext());
 
     /* 3. IPC Service Thread에 Task 추가 */
     sIPCDAServiceThread = mIPCDAServiceThreadArray[sThreadCnt == 1?0:sChannelID%sThreadCnt];
@@ -1968,8 +2013,10 @@ IDE_RC  mmtThreadManager::createNewThr(UInt aThrCnt,
      * A equal sign has to be added in the comparison expression. */
     if ( (aThrCnt + aCntForNewThr) <= mmuProperty::getMultiplexingMaxThreadCount())
     {
-        IDE_TEST_RAISE(startServiceThread(MMC_SERVICE_THREAD_TYPE_SOCKET,aCntForNewThr,
-                                          &sAllocCntOfThr) != IDE_SUCCESS, ThreadStartFail);
+        IDE_TEST_RAISE(startServiceThread(MMC_SERVICE_THREAD_TYPE_SOCKET,
+                                          aCntForNewThr,
+                                          &sAllocCntOfThr)
+                       != IDE_SUCCESS, ThreadStartFail);
         mServiceThreadMgrInfo.mAddThrCount += sAllocCntOfThr;
         mServiceThreadMgrInfo.mReservedThrCnt += sAllocCntOfThr;
     }
@@ -2145,8 +2192,9 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
         sLocked = ID_TRUE;
 
         /* BUG-44530 SSL에서 ALTIBASE_SOCK_BIND_ADDR 지원 */
-        if ((sLinkPeer->mImpl == CMI_LINK_IMPL_TCP ||
-             sLinkPeer->mImpl == CMI_LINK_IMPL_SSL) &&
+        if (((sLinkPeer->mImpl == CMI_LINK_IMPL_TCP) ||
+             (sLinkPeer->mImpl == CMI_LINK_IMPL_SSL) ||
+             (sLinkPeer->mImpl == CMI_LINK_IMPL_IB)) &&
             (mmuAccessList::getIPACLCount() > 0))
         {
             (void) cmiCheckRemoteAccess(sLinkPeer, &sIsRemoteIP);
@@ -2154,7 +2202,7 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
             {
                 idlOS::memset(&sAddr, 0x00, ID_SIZEOF(sAddr));
                 IDE_TEST(cmiGetLinkInfo(sLinkPeer, (SChar *)&sAddr, ID_SIZEOF(sAddr),
-                                        CMI_LINK_INFO_TCP_REMOTE_SOCKADDR)
+                                        CMI_LINK_INFO_REMOTE_SOCKADDR)
                          != IDE_SUCCESS);
 
                 (void) mmuAccessList::checkIPACL(&sAddr, &sIPAllowed, &sIPACL);
@@ -2171,9 +2219,10 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
 
         IDE_TEST(sTask->setLink(sLinkPeer) != IDE_SUCCESS);
 
-        switch(aDispatcherImpl)
+        switch (aDispatcherImpl)
         {
             case CMN_DISPATCHER_IMPL_SOCK:
+            case CMN_DISPATCHER_IMPL_IB:
                 if ( mmuProperty::getIsDedicatedMode() == 0 )
                 {
                     IDE_TEST(addSocketTask(sTask) != IDE_SUCCESS);
@@ -2184,12 +2233,15 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
                     IDE_TEST(addDedicatedTask(sTask) != IDE_SUCCESS);
                 }
                 break;
+
             case CMN_DISPATCHER_IMPL_IPC:
                 IDE_TEST(addIpcTask(sTask) != IDE_SUCCESS);
                 break;
+
             case CMN_DISPATCHER_IMPL_IPCDA:    /*PROJ-2616*/
                 IDE_TEST(addIPCDATask(sTask) != IDE_SUCCESS);
                 break;
+
             default:
                 IDE_ASSERT(0);
         }
@@ -2513,7 +2565,7 @@ void mmtThreadManager::serviceThreadStopped(mmtServiceThread *aServiceThread)
     
     ID_SERIAL_BEGIN(lock());
 
-    switch(sThrType)
+    switch (sThrType)
     {
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
             /* fix BUG-30322 In case of terminating a transformed dedicated service thread,
@@ -2751,7 +2803,7 @@ IDE_RC mmtThreadManager::removeFromServiceThrList(mmtServiceThread*  aServiceThr
     iduListNode        *sIterator;
     //fix BUG-19405.
     iduListNode        *sNodeNext;
-    UChar              sState=0;
+    UChar              sState = 0;
     
     lock();
     sState =1;

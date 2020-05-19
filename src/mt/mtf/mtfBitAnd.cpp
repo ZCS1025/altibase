@@ -66,6 +66,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfBitAndCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

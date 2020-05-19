@@ -683,13 +683,16 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
 
     acp_uint32_t        sStatementID;
     acp_uint32_t        sRowNumber;
-    acp_uint32_t        sRowSize;
+    acp_uint32_t        sRowSize = 0;     /* BUG-46360 */
     acp_uint8_t        *sRow;
 
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
 
     ULN_FNCONTEXT_GET_DBC(sFnContext, sDbc);
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException); 
 
     CMI_RD4(aPtContext, &sStatementID);
     CMI_RD4(aPtContext, &sRowNumber);
@@ -787,6 +790,11 @@ ACI_RC ulnCallbackParamDataOutList(cmiProtocolContext *aPtContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_OBJECT_TYPE_MISMATCH)
     {
         ulnError(sFnContext,

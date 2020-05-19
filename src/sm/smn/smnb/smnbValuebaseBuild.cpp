@@ -299,8 +299,9 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
                                    IDU_MEM_POOL_DEFAULT_ALIGN_SIZE, //align
                                    ID_FALSE,               // force pooling
                                    ID_FALSE,               // garbage collection
-                                   ID_TRUE)                // HWCacheLine
-              != IDE_SUCCESS );
+                                   ID_TRUE,                /* HWCacheLine */
+                                   IDU_MEMPOOL_TYPE_LEGACY /* mempool type */ ) 
+              != IDE_SUCCESS);			
     sState = 1;
 
     //TC/FIT/Limit/sm/smn/smnb/smnbValuebaseBuild_buildIndex_malloc.sql

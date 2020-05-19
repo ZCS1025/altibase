@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmSynonym.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmSynonym.cpp 83512 2018-07-18 00:47:26Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -418,6 +418,7 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
     if ( ( idlOS::strlen( sObjectName ) >= 2 ) &&
          ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
     {
         if( qcmFixedTable::getTableInfo( aStatement,
@@ -1066,6 +1067,7 @@ IDE_RC qcmSynonym::resolveObject(
     if ( ( idlOS::strlen( sObjectName ) >= 2 ) &&
          ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
     {
         if( qcmFixedTable::getTableInfo( aStatement,
@@ -1670,6 +1672,7 @@ IDE_RC qcmSynonym::resolveTableViewQueueInternal(
     if ( ( idlOS::strlen( sObjectName ) >= 2 ) &&
          ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
     {
         if( qcmFixedTable::getTableInfo( aStatement,
@@ -2434,6 +2437,7 @@ IDE_RC qcmSynonym::resolveObjectInternal(
     if ( ( idlOS::strlen( sObjectName ) >= 2 ) &&
          ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
            ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
     {
         if( qcmFixedTable::getTableInfo( aStatement,

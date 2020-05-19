@@ -24,10 +24,10 @@
 #include <mmErrorCode.h>
 #include <mmtThreadManager.h>
 
-
 IDL_EXTERN_C void mmmSignalHandler(int, siginfo_t*, void*);
 IDL_EXTERN_C void mmmExitHandler(int, siginfo_t*, void*);
 IDL_EXTERN_C void mmmChildHandler(int, siginfo_t*, void*);
+IDL_EXTERN_C void mmmDumpCallstack(int,  siginfo_t*,void* );
 
 #if defined(SA_ONSTACK)
 # define SIGPIPEFLAG  0
@@ -35,12 +35,18 @@ IDL_EXTERN_C void mmmChildHandler(int, siginfo_t*, void*);
 /* PROJ-2617 */
 # define SIGFLAG_FT   SA_RESTART | SA_SIGINFO | SA_ONSTACK
 # define SIGOTHERFLAG SA_RESTART | SA_SIGINFO | SA_RESETHAND | SA_ONSTACK
+
+/*it's just for dumpping callstacks(BUG-45182)*/
+# define SIGFLAG4RT   SA_RESTART | SA_SIGINFO | SA_ONSTACK
 #else
 # define SIGPIPEFLAG  0
 # define SIGCHILDFLAG SA_RESTART | SA_SIGINFO
 /* PROJ-2617 */
 # define SIGFLAG_FT   SA_RESTART | SA_SIGINFO
 # define SIGOTHERFLAG SA_RESTART | SA_SIGINFO | SA_RESETHAND
+
+/*it's just for dumpping callstacks(BUG-45182)*/
+# define SIGFLAG4RT   SA_RESTART | SA_SIGINFO 
 #endif
 
 const static iduSignalDef gSignals[] =
@@ -132,6 +138,10 @@ const static iduSignalDef gSignals[] =
         SIGCHILDFLAG,
         (iduHandler*)mmmChildHandler
     },
+    {   SIGRTMIN,  "SIGRTMIN",  "Real Time Signal",  /*BUG-45182*/ 
+        SIGFLAG4RT,
+        (iduHandler*)mmmDumpCallstack    
+    },
     /* Do not handle 
     { SIGCONT,  "SIGCONT",  "Continue",                     (iduHandler*)mmmSignalHandler    },
     */
@@ -168,6 +178,21 @@ static idBool gCoreDumpOnSignal = ID_FALSE;
 static idBool mmmCanFaultTolerate(SInt        aSigNum,
                                   siginfo_t  *aSigInfo,
                                   ucontext_t *aContext);
+
+/* BUG-45182 */
+IDL_EXTERN_C void mmmDumpCallstack(int          /*aSigNum*/,
+                                   siginfo_t*   /*aSigInfo*/,
+                                   void*        /*aContext*/)
+{
+    iduStack::dumpStack( NULL,     /*default*/
+                         NULL,     /*default*/
+                         NULL,     /*default*/
+                         ID_FALSE, /*default*/
+                         NULL,     /*default*/
+                         ID_TRUE );/*for dumping callstacks*/
+
+
+}
 
 /* ------------------------------------------------------------
  *   altibase Signal handler

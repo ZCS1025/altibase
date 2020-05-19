@@ -49,7 +49,7 @@ mmcStmtEndFunc mmcStatement::mEndFunc[] =
 IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
 {
     mmcSession  *sSession  = aStmt->getSession();
-    smiTrans    *sTrans;
+    mmcTransObj *sTrans;
     UInt         sFlag = 0;
     UInt         sTxIsolationLevel;
     UInt         sTxTransactionMode;
@@ -75,7 +75,7 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
-            sTrans = aStmt->getParentStmt()->getTrans(ID_FALSE);
+            sTrans = aStmt->getParentStmt()->getTransPtr();
             aStmt->setTrans(sTrans);
         }
         else
@@ -86,7 +86,7 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
             IDE_TEST_RAISE(sSession->isReadOnlyTransaction() == ID_TRUE,
                            TransactionModeError);
 
-            sTrans = sSession->getTrans(ID_FALSE);
+            sTrans = sSession->getTransPtr();
             sTxBegin = sSession->getTransBegin();
         }
         
@@ -95,11 +95,23 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
         {
             if ( sTxBegin == ID_TRUE )
             {
-                /* 데이터를 변경하는 DML과 함께 사용할 수 없다. */
-                IDE_TEST( sTrans->isReadOnly( &sIsReadOnly ) != IDE_SUCCESS );
+                /*
+                 * PROJ-2701 Sharding online data rebuild
+                 * Shard meta 의 변경과 partition swap을 one transaction으로 수행 할 수 있어야 한다.
+                 * DDL의 실패시 이전에 수행한 DML까지 rollback됨을 유념해야 한다.
+                 */ 
+                if ( SDU_SHARD_REBUILD_LOCK_TABLE_WITH_DML_ENABLE == 0 )
+                {
+                    /* 데이터를 변경하는 DML과 함께 사용할 수 없다. */
+                    IDE_TEST( mmcTrans::isReadOnly( sTrans, &sIsReadOnly ) != IDE_SUCCESS );
 
-                IDE_TEST_RAISE( sIsReadOnly != ID_TRUE,
-                                ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_WITH_DML );
+                    IDE_TEST_RAISE( sIsReadOnly != ID_TRUE,
+                                    ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_WITH_DML );
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
             }
             else
             {
@@ -149,7 +161,7 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
 
         IDE_TEST_RAISE(sSession->isAllStmtEnd() != ID_TRUE, StmtRemainError);
 
-        sTrans = aStmt->getTrans(ID_TRUE);
+        sTrans = aStmt->allocTrans();
 
         mmcTrans::begin(sTrans,
                         sSession->getStatSQL(),
@@ -157,7 +169,8 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
                         sSession);
     }
 
-    IDE_TEST_RAISE(aStmt->beginSmiStmt(sTrans, SMI_STATEMENT_NORMAL)
+    IDE_TEST_RAISE(aStmt->beginSmiStmt(sTrans,
+                                       SMI_STATEMENT_NORMAL)
                    != IDE_SUCCESS, BeginError);
 
     sSession->changeOpenStmt(1);
@@ -194,7 +207,8 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
 IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
 {
     mmcSession    *sSession  = aStmt->getSession();
-    smiTrans      *sTrans;
+    mmcTransObj   *sTrans;
+    smiTrans      *sSmiTrans;
     qciStmtType    sStmtType = aStmt->getStmtType();
     UInt           sFlag     = 0;
     mmcCommitMode  sSessionCommitMode = sSession->getCommitMode();
@@ -202,9 +216,9 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
 
     IDE_DASSERT(qciMisc::isStmtDML(sStmtType) == ID_TRUE);
     
-    if ( sSessionCommitMode  == MMC_COMMITMODE_NONAUTOCOMMIT   )
+    if ( sSessionCommitMode == MMC_COMMITMODE_NONAUTOCOMMIT )
     {
-        sTrans = sSession->getTrans(ID_FALSE);
+        sTrans = sSession->getTransPtr();
         if ( sSession->getTransBegin() == ID_FALSE )
         {
             mmcTrans::begin(sTrans,
@@ -242,7 +256,7 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
         // fix BUG-28267 [codesonar] Ignored Return Value
         if( aStmt->isRootStmt() == ID_FALSE  )
         {
-            sTrans = aStmt->getParentStmt()->getTrans(ID_FALSE);
+            sTrans = aStmt->getParentStmt()->getTransPtr();
             aStmt->setTrans(sTrans);
         }
         else
@@ -255,8 +269,7 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
                            (sSession->isReadOnlySession() == ID_TRUE),
                            TransactionModeError);
 
-            sTrans = aStmt->getTrans(ID_TRUE);
-
+            sTrans = aStmt->allocTrans();
             mmcTrans::begin(sTrans,
                             sSession->getStatSQL(),
                             sSession->getSessionInfoFlagForTx(),
@@ -285,14 +298,27 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
         }
     }
 
+    /*
+     * PROJ-2701 Sharding online data rebuild
+     * 
+     * Shard coordinator로 인해 하나의 transaction이 두 개의 DML statement를 연속으로 begin하지만,
+     * 그 중 하나의 DML statement(hasShardCoordPlan() == true)는 DML result에 대한 전달만을 수행 하기 때문에
+     * SMI_STATEMENT_SELF_TRUE로 smiStmt를 begin한다.
+     */
+    if ( sdi::hasShardCoordPlan( &((aStmt->getQciStmt())->statement) ) == ID_TRUE )
+    {
+        sFlag |= SMI_STATEMENT_SELF_TRUE;
+    }
+    sSmiTrans = mmcTrans::getSmiTrans(sTrans);
     IDE_TEST_RAISE(aStmt->beginSmiStmt(sTrans, sFlag) != IDE_SUCCESS, BeginError);
-
     sSession->changeOpenStmt(1);
 
     /* PROJ-1381 FAC : Holdable Fetch로 열린 Stmt 개수 조절 */
     if ((aStmt->getStmtType() == QCI_STMT_SELECT)
      && (aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON))
     {
+        sSmiTrans->setCursorHoldable();
+
         sSession->changeHoldFetch(1);
     }
 
@@ -369,7 +395,7 @@ IDE_RC mmcStatement::beginDCL(mmcStatement *aStmt)
 IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
 {
     mmcSession  *sSession  = aStmt->getSession();
-    smiTrans    *sTrans;
+    mmcTransObj *sTrans;
 
 #ifdef DEBUG
     qciStmtType  sStmtType = aStmt->getStmtType();
@@ -386,12 +412,12 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
-            sTrans = aStmt->getParentStmt()->getTrans(ID_FALSE);
+            sTrans = aStmt->getParentStmt()->getTransPtr();
             aStmt->setTrans(sTrans);
         }
         else
         {
-            sTrans = sSession->getTrans(ID_FALSE);
+            sTrans = sSession->getTransPtr();
             if ( sSession->getTransBegin() == ID_FALSE )
             {
                 mmcTrans::begin(sTrans,
@@ -411,7 +437,7 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
                            TransactionModeError);
         }
 
-        sTrans->reservePsmSvp();
+        mmcTrans::reservePsmSvp(sTrans);
     }
     else
     {
@@ -423,7 +449,7 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
 
         sSession->setActivated(ID_TRUE);
 
-        sTrans = aStmt->getTrans(ID_TRUE);
+        sTrans = aStmt->allocTrans();
 
         mmcTrans::begin(sTrans,
                         sSession->getStatSQL(),
@@ -431,9 +457,9 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
                         aStmt->getSession());
     }
 
-    aStmt->setTransID(sTrans->getTransID());
+    aStmt->setTransID(mmcTrans::getTransID(sTrans));
     
-    aStmt->setSmiStmt(sTrans->getStatement());
+    aStmt->setSmiStmt(mmcTrans::getSmiStatement(sTrans));
 
     aStmt->setStmtBegin(ID_TRUE);
 
@@ -466,8 +492,8 @@ IDE_RC mmcStatement::beginDB(mmcStatement */*aStmt*/)
 
 IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
 {
-    mmcSession *sSession = aStmt->getSession();
-    smiTrans   *sTrans;
+    mmcSession  *sSession = aStmt->getSession();
+    mmcTransObj *sTrans;
     IDE_RC      sRc      = IDE_SUCCESS;
     UInt        sFlag    = 0;
     UInt        sTxIsolationLevel;
@@ -486,11 +512,11 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
-            sTrans = aStmt->getTrans(ID_FALSE);
+            sTrans = aStmt->getTransPtr();
         }
         else
         {
-            sTrans = sSession->getTrans(ID_FALSE);
+            sTrans = sSession->getTransPtr();
         }
 
         // BUG-17495
@@ -516,7 +542,7 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
     }
     else
     {
-        sTrans = aStmt->getTrans(ID_FALSE);
+        sTrans = aStmt->getTransPtr();
     }
 
     if (aSuccess == ID_TRUE)
@@ -547,7 +573,7 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
     }
 
     if ( ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) &&
-           ( sSession->getReleaseTrans() == ID_FALSE ) ) ||
+           ( sSession->getTransLazyBegin() == ID_FALSE ) ) || // BUG-45772 TRANSACTION_START_MODE 지원
          ( aStmt->isRootStmt() == ID_FALSE ) )
     {
         // BUG-17497
@@ -561,7 +587,7 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
         // BUG-20673 : PSM Dynamic SQL
         if ( aStmt->isRootStmt() == ID_FALSE )
         {
-            sTrans->reservePsmSvp();
+            mmcTrans::reservePsmSvp(sTrans);
         }
     }
     else
@@ -594,8 +620,8 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
 
 IDE_RC mmcStatement::endDML(mmcStatement *aStmt, idBool aSuccess)
 {
-    mmcSession *sSession = aStmt->getSession();
-    smiTrans   *sTrans;
+    mmcSession  *sSession = aStmt->getSession();
+    mmcTransObj *sTrans;
     
     IDE_DASSERT(qciMisc::isStmtDML(aStmt->getStmtType()) == ID_TRUE);
 
@@ -603,10 +629,24 @@ IDE_RC mmcStatement::endDML(mmcStatement *aStmt, idBool aSuccess)
                                SMI_STATEMENT_RESULT_SUCCESS : SMI_STATEMENT_RESULT_FAILURE)
              != IDE_SUCCESS);
 
+    /* BUG-29224
+     * Change a Statement Member variable after end of method.
+     */
+    sSession->changeOpenStmt(-1);
+
+    /* PROJ-1381 FAC : Holdable Fetch로 열린 Stmt 개수 조절 */
+    if ( ( aStmt->getStmtType() == QCI_STMT_SELECT ) &&
+         ( aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON ) )
+    {
+        sSession->changeHoldFetch(-1);
+    }
+
+    aStmt->setStmtBegin(ID_FALSE);
+
     if ( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
          ( aStmt->isRootStmt() == ID_TRUE ) )
     {
-        sTrans = aStmt->getTrans(ID_FALSE);
+        sTrans = aStmt->getTransPtr();
 
         if (sTrans == NULL)
         {
@@ -635,20 +675,6 @@ IDE_RC mmcStatement::endDML(mmcStatement *aStmt, idBool aSuccess)
         sSession->setActivated(ID_FALSE);
     }
 
-    /* BUG-29224
-     * Change a Statement Member variable after end of method.
-     */
-    sSession->changeOpenStmt(-1);
-
-    /* PROJ-1381 FAC : Holdable Fetch로 열린 Stmt 개수 조절 */
-    if ((aStmt->getStmtType() == QCI_STMT_SELECT)
-     && (aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON))
-    {
-        sSession->changeHoldFetch(-1);
-    }
-
-    aStmt->setStmtBegin(ID_FALSE);
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(CommitError);
@@ -658,20 +684,6 @@ IDE_RC mmcStatement::endDML(mmcStatement *aStmt, idBool aSuccess)
                         sTrans, sSession )
                     == IDE_SUCCESS );
         sSession->setActivated(ID_FALSE);
-        
-        /* BUG-29224
-         * Change a Statement Memeber variable when error occured.
-         */ 
-        sSession->changeOpenStmt(-1);
-
-        /* PROJ-1381 FAC : Holdable Fetch로 열린 Stmt 개수 조절 */
-        if ((aStmt->getStmtType() == QCI_STMT_SELECT)
-         && (aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON))
-        {
-            sSession->changeHoldFetch(-1);
-        }
-
-        aStmt->setStmtBegin(ID_FALSE);
     }
     IDE_EXCEPTION_END;
 
@@ -689,9 +701,9 @@ IDE_RC mmcStatement::endDCL(mmcStatement *aStmt, idBool /*aSuccess*/)
 
 IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
 {
-    mmcSession *sSession = aStmt->getSession();
-    smiTrans   *sTrans;
-    idBool      sTxBegin = ID_TRUE;
+    mmcSession  *sSession = aStmt->getSession();
+    mmcTransObj *sTrans;
+    idBool       sTxBegin = ID_TRUE;
 
     IDE_DASSERT(qciMisc::isStmtSP(aStmt->getStmtType()) == ID_TRUE);
 
@@ -703,12 +715,12 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
-            sTrans = aStmt->getParentStmt()->getTrans(ID_FALSE);
+            sTrans = aStmt->getParentStmt()->getTransPtr();
             aStmt->setTrans(sTrans);
         }
         else
         {
-            sTrans = sSession->getTrans(ID_FALSE);
+            sTrans = sSession->getTransPtr();
             sTxBegin = sSession->getTransBegin();
         }
 
@@ -716,11 +728,11 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
         {
             if (aSuccess == ID_TRUE)
             {
-                sTrans->clearPsmSvp();
+                mmcTrans::clearPsmSvp(sTrans);
             }
             else
             {
-                IDE_TEST(sTrans->abortToPsmSvp() != IDE_SUCCESS);
+                IDE_TEST(mmcTrans::abortToPsmSvp(sTrans) != IDE_SUCCESS);
             }
         }
         else
@@ -735,7 +747,7 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
                                         ID_FALSE )
                   != IDE_SUCCESS );
 
-        sTrans = aStmt->getTrans(ID_FALSE);
+        sTrans = aStmt->getTransPtr();
 
         if (aSuccess == ID_TRUE)
         {

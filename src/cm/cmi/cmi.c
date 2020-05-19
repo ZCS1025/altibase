@@ -166,6 +166,9 @@ ACP_INLINE acp_bool_t cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
 
     ACI_EXCEPTION_END;
 
+    /* BUG-46390 IPCDA client의 mIsDisconnect는 물리적인 접속 종료를 의미함 */
+    aCtx->mIsDisconnect = ACP_TRUE;
+
     return ACP_FALSE;
 }
 
@@ -186,7 +189,8 @@ ACI_RC cmiIPCDACheckReadFlag(void *aCtx, void *aBlock, acp_uint32_t aMicroSleepT
 
     ACI_TEST_RAISE(sCtx->mIsDisconnect == ACP_TRUE, err_disconnected);
 
-    while (sBlock->mRFlag == CMB_IPCDA_SHM_DEACTIVATED)
+    /* BUG-46502 atomic 함수 적용 */
+    while ( acpAtomicGet32(&sBlock->mRFlag) == CMB_IPCDA_SHM_DEACTIVATED )
     {
         ACI_TEST_RAISE(((aExpireCount > 0) && ((sTotalLoopCount++) ==  sExpireCount)), err_loop_expired);
 
@@ -212,11 +216,11 @@ ACI_RC cmiIPCDACheckReadFlag(void *aCtx, void *aBlock, acp_uint32_t aMicroSleepT
     return ACI_FAILURE;
 }
 
-ACP_INLINE ACI_RC cmiIPCDACheckDataCount(void         *aCtx,
-                                         acp_uint32_t *aCountPtr,
-                                         acp_uint32_t  aCompValue,
-                                         acp_uint32_t  aExpireCount,
-                                         acp_uint32_t  aMicroSleepTime)
+ACP_INLINE ACI_RC cmiIPCDACheckDataCount(void                  *aCtx,
+                                         volatile acp_uint32_t *aCountPtr,
+                                         acp_uint32_t           aCompValue,
+                                         acp_uint32_t           aExpireCount,
+                                         acp_uint32_t           aMicroSleepTime)
 {
     cmiProtocolContext *sCtx  = (cmiProtocolContext *)aCtx;
     acp_uint32_t        sTotalLoopCount = 0;  // for expired count.
@@ -226,7 +230,8 @@ ACP_INLINE ACI_RC cmiIPCDACheckDataCount(void         *aCtx,
 
     ACI_TEST(aCountPtr == NULL);
 
-    while (aCompValue == *aCountPtr)
+    /* BUG-46502 atomic 함수 적용 */
+    while ( aCompValue >= (acp_uint32_t)acpAtomicGet32(aCountPtr) )
     {
         ACI_TEST_RAISE(((aExpireCount > 0) && ((sTotalLoopCount++) ==  sExpireCount)), err_loop_expired);
         ACI_TEST_RAISE(cmiIPCDACheckLinkAndWait(sCtx,
@@ -251,24 +256,18 @@ ACP_INLINE ACI_RC cmiIPCDACheckDataCount(void         *aCtx,
     return ACI_FAILURE;
 }
 
-void cmiLinkPeerFinalizeCliReadForIPCDA(void *aCtx)
+void cmiLinkPeerFinalizeCliReadForIPCDA(cmiProtocolContext *aCtx)
 {
-    cmiProtocolContext *sCtx   = (cmiProtocolContext *)aCtx;
+    cmbBlockIPCDA *sReadBlock = (cmbBlockIPCDA*)aCtx->mReadBlock;
 
-    ACI_TEST(sCtx->mIsDisconnect == ACP_TRUE);
-
-    if (sCtx->mReadBlock != NULL)
+    if (sReadBlock != NULL)
     {
-        ((cmbBlockIPCDA*)sCtx->mReadBlock)->mRFlag = CMB_IPCDA_SHM_DEACTIVATED;
-    }
-    else
-    {
-        /* do nothing. */
-    }
+        /* BUG-46502 operationCount 초기화 */
+        acpAtomicSet32(&sReadBlock->mOperationCount, 0);
 
-    return ;
-
-    ACI_EXCEPTION_END;
+        /* BUG-46502 atomic 함수 적용 */
+        acpAtomicSet32(&sReadBlock->mRFlag, CMB_IPCDA_SHM_DEACTIVATED);
+    }
 
     return;
 }
@@ -702,6 +701,9 @@ ACI_RC cmiInitialize( acp_uint32_t  aCmMaxPendingList )
          * Therefore, any error from the function can be ignored at this point. */
         (void)cmnOpensslInitialize(&gOpenssl);
 #endif
+
+        /* PROJ-2681 */
+        (void)cmnIBInitialize();
     }
 
     gCMInitCountClient++;
@@ -789,6 +791,8 @@ ACI_RC cmiFinalize()
 #if !defined(CM_DISABLE_SSL)
         (void)cmnOpensslDestroy(&gOpenssl);
 #endif
+
+        (void)cmnIBFinalize();
     }
 
     ACE_ASSERT(acpThrMutexUnlock(&gCMInitMutexClient) == ACP_RC_SUCCESS);
@@ -1245,6 +1249,8 @@ acp_bool_t cmiIPCDAInitReadHandShakeResult(cmiProtocolContext  *aCtx,
     *aReadDataCount = 0;
 
     sOrBlock = (cmbBlockIPCDA*)aCtx->mReadBlock;
+    /* BUG-46390 */
+    *aOrReadBlock = sOrBlock;
     aTmpBlock->mCursor      = CMP_HEADER_SIZE;
     aTmpBlock->mData        = &sOrBlock->mData;
     aTmpBlock->mBlockSize   = sOrBlock->mBlock.mBlockSize;
@@ -1266,10 +1272,6 @@ acp_bool_t cmiIPCDAInitReadHandShakeResult(cmiProtocolContext  *aCtx,
 
         ACI_TEST_RAISE((mq_timeResult < 0), HandShakeErrorTimeOut);
     }
-    else
-    {
-        /* do nothing. */
-    }
 #endif
 
     ACI_TEST(cmiIPCDACheckReadFlag(aCtx, sOrBlock, 0, 0) == ACI_FAILURE);
@@ -1281,7 +1283,6 @@ acp_bool_t cmiIPCDAInitReadHandShakeResult(cmiProtocolContext  *aCtx,
                                     0) != ACI_SUCCESS);
 
     (*aReadDataCount)++;
-    *aOrReadBlock = sOrBlock;
 
     return ACP_TRUE;
 
@@ -1298,29 +1299,29 @@ acp_bool_t cmiIPCDAHandShakeResultCallback(cmiProtocolContext *aCtx,
                                                   cmbBlockIPCDA      *aOrReadBlock,
                                                   acp_uint32_t       *aReadDataCount)
 {
-    ACI_TEST_RAISE((cmiGetLinkImpl(aCtx) != CMN_LINK_IMPL_IPCDA),
-                   ContShakeResultCallback);
-
-    /* sModuleID + sMajorVersion + sMinorVersion + sPatchVersion + sFlags + ServerPID(4)*/
-    CMI_SKIP_READ_BLOCK(aCtx, 9);
+    /* sModuleID + sMajorVersion + sMinorVersion + sPatchVersion + sFlags */
+    CMI_SKIP_READ_BLOCK(aCtx, 5);
 
     ACI_TEST(cmiIPCDACheckDataCount((void*)aCtx,
                                     &aOrReadBlock->mOperationCount,
-                                    (*aReadDataCount)++,
+                                    *aReadDataCount,
                                     0,
                                     0) == ACI_FAILURE);
 
-    CMI_SKIP_READ_BLOCK(aCtx, 1);    // OpID
+    (*aReadDataCount)++; /* BUG-46390 가독성 개선 */
+    CMI_SKIP_READ_BLOCK(aCtx, 1);    /* IPCDALastOpEnded skip */
+    
     aCtx->mReadBlock = (cmbBlock*)aOrReadBlock;
-    acpMemBarrier();
-    cmiLinkPeerFinalizeCliReadForIPCDA((void*)aCtx);
-
-    ACI_EXCEPTION_CONT(ContShakeResultCallback)
+    cmiLinkPeerFinalizeCliReadForIPCDA(aCtx);
 
     return ACP_TRUE;
 
     ACI_EXCEPTION_END;
 
+    /* BUG-46390 */
+    aCtx->mReadBlock = (cmbBlock*)aOrReadBlock;
+    cmiLinkPeerFinalizeCliReadForIPCDA(aCtx);
+    
     return ACP_FALSE;
 }
 
@@ -1368,10 +1369,6 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     {
         cmiInitIPCDABuffer(aCtx);
     }
-    else
-    {
-        /* do nothing. */
-    }
 
     /*OpCode + ModuleID + Major_Version + Minor_Version + Patch_Version + dummy*/
     CMI_WRITE_CHECK(aCtx, 6); 
@@ -1385,7 +1382,6 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
 
     if (cmiGetLinkImpl(aCtx) == CMN_LINK_IMPL_IPCDA)
     {
-        acpMemBarrier();
         cmiIPCDAIncDataCount(aCtx);
         /* Finalize to write data block. */
         (void)cmiFinalizeSendBufferForIPCDA((void*)aCtx);
@@ -2446,7 +2442,7 @@ beginToRecv:
     while (1)
     {
         CMI_RD1(aCtx, sOpID);
-        ACI_TEST(sOpID >= aCtx->mModule->mOpMax);
+        ACI_TEST_RAISE(sOpID >= aCtx->mModule->mOpMax, InvalidOpError);  /* BUG-45804 */
 #ifdef CMI_DUMP
         printf("%s\n", gCmpOpDBMapClient[sOpID].mCmpOpName);
 #endif
@@ -2488,19 +2484,24 @@ beginToRecv:
 
     return sRet;
 
-    ACI_EXCEPTION(Disconnected);
+    ACI_EXCEPTION(Disconnected)
     {
         ACI_SET(aciSetErrorCode(cmERR_ABORT_CONNECTION_CLOSED));
     }
-    ACI_EXCEPTION(InvalidProtocolSeqNo);
+    ACI_EXCEPTION(InvalidProtocolSeqNo)
     {
         ACI_SET(aciSetErrorCode(cmERR_ABORT_INVALID_PROTOCOL_SEQUENCE));
     }
-    ACI_EXCEPTION(MarshalErr);
+    ACI_EXCEPTION(MarshalErr)
     {
         ACI_SET(aciSetErrorCode(cmERR_ABORT_MARSHAL_ERROR));
     }
+    ACI_EXCEPTION(InvalidOpError)
+    {
+        ACI_SET(aciSetErrorCode(cmERR_ABORT_INVALID_OPERATION));
+    }
     ACI_EXCEPTION_END;
+
     return ACI_FAILURE;
 }
 
@@ -2559,18 +2560,17 @@ ACI_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
     }
 #endif
 
-    ACI_TEST_RAISE(cmiIPCDACheckReadFlag(aCtx,
-                                         NULL,
-                                         aMicroSleepTime,
-                                         aTimeout) != ACI_SUCCESS, Disconnected);
-
     sOrgBlock = (cmbBlockIPCDA*)aCtx->mReadBlock;
     sTmpBlock.mBlockSize = sOrgBlock->mBlock.mBlockSize;
     sTmpBlock.mCursor = CMP_HEADER_SIZE;
     sTmpBlock.mDataSize = sOrgBlock->mBlock.mDataSize;
     sTmpBlock.mIsEncrypted = sOrgBlock->mBlock.mIsEncrypted;
     sTmpBlock.mData = &sOrgBlock->mData;
-
+    
+    ACI_TEST_RAISE(cmiIPCDACheckReadFlag(aCtx,
+                                         NULL,
+                                         aMicroSleepTime,
+                                         aTimeout) != ACI_SUCCESS, Disconnected);
     aCtx->mReadBlock = &sTmpBlock;
 
     while (1)
@@ -2581,9 +2581,6 @@ ACI_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
                                               aTimeout,
                                               aMicroSleepTime) != ACI_SUCCESS, err_cmi_lockcount);
 
-        /* 수신받은 데이터 사이즈 갱신 */
-        /* BUG-44705 sTmpBlock.mDataSize값 보장을 위하여 메모리 배리어 추가 */
-        acpMemBarrier();
         sTmpBlock.mDataSize = sOrgBlock->mBlock.mDataSize;
 
         CMI_RD1(aCtx, sOpID);
@@ -2639,10 +2636,6 @@ ACI_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
     if (sOrgBlock != NULL)
     {
         aCtx->mReadBlock = (cmbBlock*)sOrgBlock;
-    }
-    else
-    {
-        /* do nothing .*/
     }
 
     cmiLinkPeerFinalizeCliReadForIPCDA(aCtx);

@@ -21,6 +21,13 @@
 
 
 
+/* BUG-31390 Failover info for v$session */
+typedef enum
+{
+    ULN_FAILOVER_TYPE_CTF = 0,
+    ULN_FAILOVER_TYPE_STF = 1
+} ulnFailoverType;
+
 typedef enum
 {
     ULN_FAILOVER_CALLBACK_OUT_STATE = 0,
@@ -33,12 +40,22 @@ typedef struct ulnFailoverServerInfo
     acp_uint16_t      mPort;
     acp_char_t       *mDBName;
     acp_sint32_t      mDBNameLen;
-    acp_list_node_t   mLink;
 } ulnFailoverServerInfo;
 
 struct  ulnFnContext;
 
 
+
+acp_bool_t ulnFailoverIsOn(ulnDbc *aDbc);
+
+ACI_RC ulnFailoverConnect( ulnFnContext          *aFnContext,
+                           ulnFailoverType        aFailoverType,
+                           ulnFailoverServerInfo *aNewServerInfo );
+
+/* BUG-46092 */
+acp_bool_t ulnDiagRecIsNeedFailover(ulnObject *aObject);
+
+ACI_RC ulnFailoverXaReOpen(ulnDbc *  aDbc);
 
 ACI_RC ulnFailoverCreateServerInfo( ulnFailoverServerInfo **aServerInfo,
                                     acp_char_t             *aHost,
@@ -47,9 +64,14 @@ ACI_RC ulnFailoverCreateServerInfo( ulnFailoverServerInfo **aServerInfo,
 
 void ulnFailoverDestroyServerInfo(ulnFailoverServerInfo *aServerInfo);
 
+ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnContext,
+                                           ulnFailoverServerInfo **aServerInfo );
+
 void ulnFailoverClearServerList(ulnDbc *aDbc);
 
 void ulnFailoverInitialize(ulnDbc *aDbc);
+
+void ulnFailoverFinalize(ulnDbc *aDbc);
 
 ACI_RC ulnFailoverBuildServerList(ulnFnContext *aFnContext);
 

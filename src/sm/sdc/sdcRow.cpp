@@ -8912,7 +8912,8 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
                       smcRowTemplate              *aRowTemplate,
                       UChar                       *aDestRowBuf,
                       idBool                      *aIsRowDeleted,
-                      idBool                      *aIsPageLatchReleased )
+                      idBool                      *aIsPageLatchReleased,
+                      idBool                       aIsSkipAssert )
 {
     UChar                 * sCurrSlotPtr;
     sdcRowFetchStatus       sFetchStatus;
@@ -8928,7 +8929,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
     IDE_ERROR( aIsPageLatchReleased != NULL );
 
     /* head rowpiece부터 fetch를 시작해야 한다. */
-    IDE_DASSERT( isHeadRowPiece(aSlotPtr) == ID_TRUE );
+    IDE_ERROR_RAISE( isHeadRowPiece(aSlotPtr) == ID_TRUE, err_no_head_row_piece );
 
     IDE_DASSERT( validateSmiFetchColumnList( aFetchColumnList )
                  == ID_TRUE );
@@ -8944,6 +8945,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
 
     IDE_TEST( fetchRowPiece( aStatistics,
                              aTrans,
+                             aTableSpaceID, //BUG-45598, TBS_ID
                              sCurrSlotPtr,
                              aIsPersSlot,
                              aFetchColumnList,
@@ -8958,7 +8960,8 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
                              &sFetchStatus,
                              aDestRowBuf,
                              aIsRowDeleted,
-                             &sNextRowPieceSID )
+                             &sNextRowPieceSID,
+                             aIsSkipAssert )
               != IDE_SUCCESS );
 
     IDE_TEST_CONT( *aIsRowDeleted == ID_TRUE, skip_deleted_row );
@@ -9033,6 +9036,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
 
         IDE_TEST( fetchRowPiece( aStatistics,
                                  aTrans,
+                                 aTableSpaceID, //BUG-45598, TBS_ID
                                  sCurrSlotPtr,
                                  ID_TRUE, /* aIsPersSlot */
                                  aFetchColumnList,
@@ -9047,7 +9051,8 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
                                  &sFetchStatus,
                                  aDestRowBuf,
                                  &sIsDeleted,
-                                 &sNextRowPieceSID )
+                                 &sNextRowPieceSID,
+                                 aIsSkipAssert )
                   != IDE_SUCCESS );
 
         if ( sIsDeleted == ID_TRUE )
@@ -9073,18 +9078,33 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
             }
             else
             {
-                ideLog::log( IDE_ERR_0,
-                             "Fetch Info\n"
-                             "TransID:        %"ID_UINT32_FMT"\n"
-                             "FstDskViewSCN:  %"ID_UINT64_FMT"\n"
-                             "FetchVersion:   %"ID_UINT32_FMT"\n"
-                             "MyStmtSCN:      %"ID_UINT64_FMT"\n"
-                             "InfiniteSCN:    %"ID_UINT64_FMT"\n",
-                             smxTrans::getTransID( aTrans ),
-                             SM_SCN_TO_LONG( smxTrans::getFstDskViewSCN( aTrans ) ),
-                             aFetchVersion,
-                             SM_SCN_TO_LONG( *aMyStmtSCN ),
-                             SM_SCN_TO_LONG( *aInfiniteSCN ) );
+                /* BUG-46125 codesonar warning 제거 */
+                if( aInfiniteSCN != NULL )
+                {
+                    ideLog::log( IDE_ERR_0,
+                                 "Fetch Info\n"
+                                 "TransID:        %"ID_UINT32_FMT"\n"
+                                 "FstDskViewSCN:  %"ID_UINT64_FMT"\n"
+                                 "FetchVersion:   %"ID_UINT32_FMT"\n"
+                                 "MyStmtSCN:      %"ID_UINT64_FMT"\n"
+                                 "InfiniteSCN:    %"ID_UINT64_FMT"\n",
+                                 smxTrans::getTransID( aTrans ),
+                                 SM_SCN_TO_LONG( smxTrans::getFstDskViewSCN( aTrans ) ),
+                                 aFetchVersion,
+                                 SM_SCN_TO_LONG( *aMyStmtSCN ),
+                                 SM_SCN_TO_LONG( *aInfiniteSCN ) );
+                }
+                else
+                {
+                    ideLog::log( IDE_ERR_0,
+                                 "Fetch Info\n"
+                                 "TransID:        %"ID_UINT32_FMT"\n"
+                                 "FstDskViewSCN:  %"ID_UINT64_FMT"\n"
+                                 "FetchVersion:   %"ID_UINT32_FMT"\n",
+                                 smxTrans::getTransID( aTrans ),
+                                 SM_SCN_TO_LONG( smxTrans::getFstDskViewSCN( aTrans ) ),
+                                 aFetchVersion );
+                }
 
                 (void)sdpPhyPage::tracePage( IDE_ERR_0,
                                              aSlotPtr,
@@ -9141,6 +9161,10 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( err_no_head_row_piece );
+    {
+        ideLog::log( IDE_SM_0, "sdcRow::fetch() - No Head Row Piece");
+    }
     IDE_EXCEPTION_END;
 
     *aIsPageLatchReleased = sIsPageLatchReleased;
@@ -9183,6 +9207,7 @@ IDE_RC sdcRow::fetch( idvSQL                      *aStatistics,
  **********************************************************************/
 IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
                               void                        *aTrans,
+                              scSpaceID                    aTableSpaceID,
                               UChar                       *aCurrSlotPtr,
                               idBool                       aIsPersSlot,
                               const smiFetchColumnList    *aFetchColumnList,
@@ -9197,17 +9222,20 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
                               sdcRowFetchStatus           *aFetchStatus,
                               UChar                       *aDestRowBuf,
                               idBool                      *aIsRowDeleted,
-                              sdSID                       *aNextRowPieceSID )
+                              sdSID                       *aNextRowPieceSID,
+                              idBool                       aIsSkipAssert )
 {
     UChar                * sSlotPtr;
     sdcRowHdrInfo          sRowHdrInfo;
     UChar                  sTmpBuffer[SD_PAGE_SIZE];
-    idBool                 sDoMakeOldVersion;
+    idBool                 sDoMakeOldVersion = ID_FALSE;
     UShort                 sFetchColCount;
     sdSID                  sUndoSID = SD_NULL_SID;
     smiFetchColumnList   * sLstFetchedColumn;
     UShort                 sLstFetchedColumnLen;
     UChar                * sColPiecePtr;
+    UChar                * sCurPageHdr = NULL;
+    scPageID               sCorruptedPID = 0;
 
     IDE_ASSERT( (aTrans != NULL) || (aFetchVersion == SMI_FETCH_VERSION_LAST) );
     IDE_ASSERT( aCurrSlotPtr     != NULL );
@@ -9255,6 +9283,37 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
              * sTmpBuffer에 최신 버전을 복사하지 않는다.)
              * 그래서 인자로 넘어온 slot pointer를 이용해야 한다. */
             sSlotPtr = aCurrSlotPtr;
+        }
+    }
+
+    /* BUG-45598: fetch해야할 row가 여러 페이지에 걸쳐 있을 때, 페이지들 중에
+     * inconsistent한 페이지가 존재할 경우 fetch중에만 판별 가능. 이 때 설정에
+     * 따라서 skip 할 것
+     */
+    if ( sdrCorruptPageMgr::getCorruptPageReadPolicy() != SDB_CORRUPTED_PAGE_READ_FATAL )
+    {
+        if ( sDoMakeOldVersion != ID_TRUE )
+        {
+            sCurPageHdr = sdpPhyPage::getPageStartPtr( sSlotPtr );
+
+            /* oldVersion이면 getValidVersion에서 undoRecord를 만들면서 문제가
+             * 되는 페이지에 대해서 처리함( 페이지가 Corrupt 되었으면 여기까지
+             * 진행될 수 없음. )
+             */
+
+            if ( ( sdbBufferMgr::isPageReadError( sSlotPtr ) == ID_TRUE ) )
+            {
+                sCorruptedPID = ( (sdpPhyPageHdr*)sCurPageHdr )->mPageID;
+
+                if ( smuProperty::getCrashTolerance() != 0 )
+                {
+                    IDE_CONT( skip_inconsistent_row );
+                }
+                else
+                {
+                    IDE_RAISE( error_page_corrupted );
+                }
+            }
         }
     }
 
@@ -9325,7 +9384,8 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
                            aDestRowBuf,
                            &sFetchColCount,
                            &sLstFetchedColumnLen,
-                           &sLstFetchedColumn ) 
+                           &sLstFetchedColumn,
+                           aIsSkipAssert ) 
                   != IDE_SUCCESS );
 
         /* fetch 진행상태 정보를 갱신한다. */
@@ -9340,6 +9400,7 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
     IDE_EXCEPTION_CONT( skip_header_only_rowpiece );
     IDE_EXCEPTION_CONT( skip_null_row );
     IDE_EXCEPTION_CONT( skip_no_fetch_column );
+    IDE_EXCEPTION_CONT( skip_inconsistent_row );
 
     if ( aIsRowDeleted != NULL )
     {
@@ -9349,6 +9410,25 @@ IDE_RC sdcRow::fetchRowPiece( idvSQL                      *aStatistics,
     *aNextRowPieceSID = getNextRowPieceSID(sSlotPtr);
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( error_page_corrupted )
+    {
+        switch( sdrCorruptPageMgr::getCorruptPageReadPolicy() )
+        {
+            case SDB_CORRUPTED_PAGE_READ_FATAL :
+                IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
+                                          aTableSpaceID,
+                                          sCorruptedPID ));
+                break;
+            case SDB_CORRUPTED_PAGE_READ_ABORT :
+                IDE_SET( ideSetErrorCode( smERR_ABORT_PageCorrupted,
+                                          aTableSpaceID,
+                                          sCorruptedPID ));
+                break;
+            default:
+                break;
+        }
+    }
 
     IDE_EXCEPTION_END;
 
@@ -9371,7 +9451,8 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
                         UChar               * aDestRowBuf,
                         UShort              * aFetchColumnCount,
                         UShort              * aLstFetchedColumnLen,
-                        smiFetchColumnList ** aLstFetchedColumn )
+                        smiFetchColumnList ** aLstFetchedColumn,
+                        idBool                aIsSkipAssert )
 {
     const smiFetchColumnList   * sCurrFetchCol;
     const smiFetchColumnList   * sLstFetchedCol;
@@ -9417,10 +9498,10 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
     /* fetch하려는 컬럼이 prev rowpiece에서 이어진 경우,
      * offset을 계산해서 callback 함수를 호출해야 한다.
      * 이에 대한 검증 코드 이다.*/
-    IDE_ASSERT( (sCopyOffset == 0) ||
-                ((sCopyOffset       != 0) && 
-                 (sIsPrevFlag       == ID_TRUE) && 
-                 (sColSeqInRowPiece == 0)) );
+    IDE_TEST_RAISE( !((sCopyOffset == 0) ||
+                     ((sCopyOffset       != 0) &&
+                      (sIsPrevFlag       == ID_TRUE) &&
+                      (sColSeqInRowPiece == 0))), error_connected_rowpiece );
 
     sColTemplate          = &aRowTemplate->mColTemplate[ sFstColumnSeq ];
     sFstColumnStartOffset = sColTemplate->mColStartOffset;
@@ -9561,7 +9642,7 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
                                          aRowHdrInfo );
 
                 (void)smcTable::dumpRowTemplate( aRowTemplate );
-  
+
                 IDE_ASSERT( 0 );
             }
         }
@@ -9592,26 +9673,39 @@ IDE_RC sdcRow::doFetch( UChar               * aColPiecePtr,
     *aFetchColumnCount    = sFetchCount;
 
     return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( error_connected_rowpiece )
+    {
+        IDE_ASSERT_MSG( ( aIsSkipAssert == ID_TRUE ),
+                          "CopyOffset       : %"ID_UINT32_FMT"\n"
+                          "Is Prev          : %"ID_UINT32_FMT"\n"
+                          "ColSeqInRowPiece : %"ID_UINT32_FMT"\n",
+                          sCopyOffset, 
+                          sIsPrevFlag, 
+                          sColSeqInRowPiece );
+    }
 
     IDE_EXCEPTION( error_disk_column_size )
     {
-        dumpErrorDiskColumnSize( aColPiecePtr,
-                                 sFetchColumn,
-                                 aUndoSID,
-                                 aDestRowBuf,
-                                 &sFetchColumnValue,
-                                 sCopyOffset,
-                                 sColSeqInRowPiece,
-                                 aRowHdrInfo );
+        if( aIsSkipAssert == ID_FALSE )
+        {
+            dumpErrorDiskColumnSize( aColPiecePtr,
+                                     sFetchColumn,
+                                     aUndoSID,
+                                     aDestRowBuf,
+                                     &sFetchColumnValue,
+                                     sCopyOffset,
+                                     sColSeqInRowPiece,
+                                     aRowHdrInfo );
 
-        (void)smcTable::dumpRowTemplate( aRowTemplate );
+            (void)smcTable::dumpRowTemplate( aRowTemplate );
 
-        IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL_ARG, 
-                                 "fail to copy disk column") );
+            IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL_ARG, 
+                                     "fail to copy disk column") );
 
-        IDE_DASSERT( 0 );
+            IDE_DASSERT( 0 );
+        }
     }
-
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -12819,7 +12913,6 @@ void sdcRow::copyPKInfo( const UChar                   *aSlotPtr,
 
     SDC_GET_ROWHDR_1B_FIELD(aSlotPtr, SDC_ROWHDR_FLAG, sRowFlag);
 
-    sPKColSeq     = aPKInfo->mCopyDonePKColCount;
     sPKColCount   = aPKInfo->mTotalPKColCount;
     sFstColumnSeq = aPKInfo->mFstColumnSeq;
 
@@ -14807,12 +14900,13 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
     void            * sObjPtr;
     SShort            sFSCreditSize = 0;
     smSCN             sFstDskViewSCN;
+    smxTrans        * sTrans = (smxTrans*)aStartInfo->mTrans;
 
     IDE_ASSERT( aTargetRow != NULL );
     IDE_ASSERT( aUptState  != NULL );
     IDE_ASSERT( SM_SCN_IS_VIEWSCN(*aStmtSCN) );
     IDE_ASSERT( SM_SCN_IS_INFINITE(*aCSInfiniteSCN) );
-    IDE_ASSERT( isHeadRowPiece(aTargetRow) == ID_TRUE );
+    IDE_ERROR_RAISE( isHeadRowPiece(aTargetRow) == ID_TRUE, err_no_head_row_piece );
 
     *aWaitTransID    = SM_NULL_TID;
     sPagePtr         = sdpPhyPage::getPageStartPtr(aTargetRow);
@@ -14941,6 +15035,16 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
             if ( (sIsLockBit == ID_TRUE) ||
                  (SM_SCN_IS_GT( aCSInfiniteSCN, &sRowInfSCN )) )
             {
+                /* PROJ-2694 Fetch Across Rollback
+                 * 동일 Tx에서 holdable cursor가 열리기 전 생성한 row라면
+                 * 해당 Tx를 rollback시 cursor를 재활용할 수 없다. */
+                if ( ( sTrans != NULL ) &&
+                     ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
+                     ( SM_SCN_IS_GT( &sTrans->mCursorOpenInfSCN, &sRowInfSCN ) == ID_TRUE ) )
+                {
+                    sTrans->mIsReusableRollback = ID_FALSE;
+                }
+
                 sUptState = SDC_UPTSTATE_UPDATABLE;
             }
             else
@@ -14974,6 +15078,10 @@ IDE_RC sdcRow::canUpdateRowPieceInternal( idvSQL            * aStatistics,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( err_no_head_row_piece );
+    {
+        ideLog::log( IDE_SM_0, "sdcRow::canUpdateRowPieceInternal() - No Head Row Piece");
+    }
     IDE_EXCEPTION_END;
 
     if ( sState != 0 )
@@ -15073,6 +15181,7 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
     idBool           sTrySuccess;
     SShort           sFSCreditSize;
     void            *sObjPtr;
+    smxTrans        *sTrans            = (smxTrans*)aTrans;
 
     IDE_ASSERT( SM_SCN_IS_NOT_INFINITE(*aMyViewSCN) );
     IDE_ASSERT( aTargetRow        != NULL );
@@ -15173,6 +15282,14 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
                 /* normal fetch */
                 if ( SM_SCN_IS_GT( aCSInfiniteSCN, &sRowInfSCN ) )
                 {
+                    if( ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
+                        ( SM_SCN_IS_GT( &sTrans->mCursorOpenInfSCN, &sRowInfSCN ) ) )
+                    {
+                        /* PROJ-2694 Fetch Across Rollback
+                         * 동일 Tx에서 holdable cursor가 열리기 전 생성한 row라면 
+                         * 해당 Tx를 rollback시 cursor를 재활용할 수 없다.*/
+                        sTrans->mIsReusableRollback = ID_FALSE;
+                    }
                     break; // It's a valid version
                 }
             }
@@ -15192,6 +15309,14 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
                      * infinite scn 비교할때 GT가 아닌 GE로 비교한다. */
                     if ( SM_SCN_IS_GE( aCSInfiniteSCN, &sRowInfSCN ) )
                     {
+                        if ( ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
+                             ( SM_SCN_IS_GE( &sTrans->mCursorOpenInfSCN, &sRowInfSCN ) ) )
+                        {
+                            /* PROJ-2694 Fetch Across Rollback
+                             * 동일 Tx에서 holdable cursor가 열리기 전 생성한 row라면 
+                             * 해당 Tx를 rollback시 cursor를 재활용할 수 없다.*/
+                            sTrans->mIsReusableRollback = ID_FALSE;
+                        }
                         break; // It's a valid version
                     }
                 }
@@ -15200,6 +15325,11 @@ IDE_RC sdcRow::getValidVersion( idvSQL              *aStatistics,
                     /* lobdesc fetch(READ MODE) */
                     if ( SM_SCN_IS_GT( aCSInfiniteSCN, &sRowInfSCN ) )
                     {
+                        /* PROJ-2694 Fetch Across Rollback
+                         * 동일 Tx에서 cursor가 열리기 전 생성한 row라면 
+                         * 해당 Tx를 rollback시 cursor를 재활용할 수 없다.*/
+                        sTrans->mIsReusableRollback = ID_FALSE;
+
                         break; // It's a valid version
                     }
                 }

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: utString.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: utString.h 84392 2018-11-21 00:08:16Z bethy $
  **********************************************************************/
 
 #ifndef _O_UTSTRING_H_
@@ -28,6 +28,7 @@
 class utString
 {
 public:
+    static void rtrim(SChar *aStr);  // BUG-46396
     static void eraseWhiteSpace(SChar *a_Str);
     static void removeLastSpace(SChar *a_Str);
     static void removeLastCR(SChar *a_Str);

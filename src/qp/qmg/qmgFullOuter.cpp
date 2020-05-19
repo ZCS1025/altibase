@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgFullOuter.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgFullOuter.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
  *
  * Description :
  *     FullOuter Graph를 위한 수행 함수
@@ -1274,7 +1274,7 @@ qmgFullOuter::makeHashJoin( qcStatement * aStatement,
     //-----------------------
     // init right HASH
     //-----------------------
-
+    qmc::disableSealTrueFlag( aMyGraph->graph.myPlan->resultDesc );
     IDE_TEST( qmoOneMtrPlan::initHASH( aStatement,
                                        aMyGraph->graph.myQuerySet,
                                        sHashFilter,
@@ -1291,7 +1291,6 @@ qmgFullOuter::makeHashJoin( qcStatement * aStatement,
         //-----------------------
         // init left HASH
         //-----------------------
-
         IDE_TEST( qmoOneMtrPlan::initHASH( aStatement,
                                            aMyGraph->graph.myQuerySet,
                                            sHashFilter,

@@ -45,8 +45,8 @@ IDE_RC rpnPollAddSocket( rpnPoll      * aPoll,
                          void         * aData,
                          SInt           aEvent );
 
-IDE_RC rpnPollRemoveSocket( rpnPoll     * aPoll,
-                            rpnSocket   * aSocket );
+void rpnPollRemoveSocket( rpnPoll     * aPoll,
+                          rpnSocket   * aSocket );
 
 IDE_RC rpnPollDispatch( rpnPoll         * aPoll,
                         SLong             aTimeoutMilliSec,

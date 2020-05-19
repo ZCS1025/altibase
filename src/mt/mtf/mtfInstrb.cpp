@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfInstrb.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfInstrb.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -96,6 +96,7 @@ const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfInstrbCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -107,6 +108,7 @@ const mtcExecute mtfExecuteFor3Args = {
     mtf::calculateNA,
     mtfInstrbCalculateFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -118,6 +120,7 @@ const mtcExecute mtfExecuteFor4Args = {
     mtf::calculateNA,
     mtfInstrbCalculateFor4Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

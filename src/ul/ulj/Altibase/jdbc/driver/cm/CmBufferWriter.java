@@ -29,6 +29,8 @@ import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.util.CharsetUtils;
 
+import static Altibase.jdbc.driver.cm.CmChannel.CHAR_VARCHAR_COLUMN_SIZE;
+
 // PROJ-2368
 /**
  * @author pss4you
@@ -47,6 +49,9 @@ public abstract class CmBufferWriter
     protected ByteBuffer     mBuffer;
     protected ByteBuffer     mCharVarcharColumnBuffer;
     private ByteBuffer       mEncodingBuf;
+    // BUG-46465 String encoding시 재사용하기 위한 CharBuffer 선언
+    private CharBuffer       mTempCharWrapper = CharBuffer.allocate(CHAR_VARCHAR_COLUMN_SIZE);
+    private char[]           mTempChars       = mTempCharWrapper.array();
     
     /**
      * Buffer 에 쓸 데이터 공간이 충분한지 여부를 확인하여, 충분하지 않으면 필요한 공간을 만드는 함수 
@@ -66,17 +71,17 @@ public abstract class CmBufferWriter
      */
     public abstract void writeBytes(ByteBuffer aValue) throws SQLException;
     
-    public int prepareToWriteString(String aValue, int aConvType) throws SQLException
+    public int prepareToWriteString(String aValue, int aConvType)
     {
         ensureAllocEncodingBuffer(getMaxEncodingBufferSize(aConvType, aValue.length()));
         if (aConvType == CmOperation.WRITE_STRING_MODE_DB)
         {
-            CoderResult sResult = encodeString(aValue);
+            CoderResult sResult = encodeWithCharsetEncoder(aValue, mEncodingBuf, mDBEncoder);
             throwErrorForBufferOverFlow(sResult);
         }
         else if (aConvType == CmOperation.WRITE_STRING_MODE_NCHAR)
         {
-            CoderResult sResult = encodeNCharString(aValue);
+            CoderResult sResult = encodeWithCharsetEncoder(aValue, mEncodingBuf, mNCharEncoder);
             throwErrorForBufferOverFlow(sResult);
         }
         else if (aConvType == CmOperation.WRITE_STRING_MODE_NLITERAL)
@@ -94,11 +99,11 @@ public abstract class CmBufferWriter
             {
                 if ((i % 2) == 0) // sSubStrings[]가 짝수번째 인 것들은 DB_CHARSET으로 encoding한다.
                 {
-                    sResult = encodeString(sSubStrings[i]);
+                    sResult = encodeWithCharsetEncoder(sSubStrings[i], mEncodingBuf, mDBEncoder);
                 }
                 else
                 {
-                    sResult = encodeNLiteralString(sSubStrings[i]);
+                    sResult = encodeWithCharsetEncoder(sSubStrings[i], mEncodingBuf, mNLiteralEncoder);
                 }
                 throwErrorForBufferOverFlow(sResult);
             }
@@ -202,26 +207,43 @@ public abstract class CmBufferWriter
         return (String[])sResult.toArray(new String[0]);
     }
 
-    public CoderResult encodeString(String aValue, ByteBuffer aBuf) throws SQLException
+    public CoderResult encodeString(String aValue, ByteBuffer aBuf)
     {
-        return mDBEncoder.encode(CharBuffer.wrap(aValue), aBuf, true);
+        return encodeWithCharsetEncoder(aValue, aBuf, mDBEncoder);
     }
 
-    private CoderResult encodeString(String aValue) throws SQLException
+    /**
+     * String 객체를 인코딩하여 aBuf 객체에 저장한다. 이때 String.getchars를 호출하여 내부 CharBuffer를 재사용한다.
+     * @param aValue 인코딩할 String 객체
+     * @param aBuf 인코딩 결과가 저장될 ByteBuffer 객체
+     * @param aEncoder 인코딩에 사용할 CharsetEncoder 객체
+     * @return encode 결과
+     */
+    private CoderResult encodeWithCharsetEncoder(String aValue, ByteBuffer aBuf, CharsetEncoder aEncoder)
     {
-        return encodeString(aValue, mEncodingBuf);
+        CoderResult sResult = null;
+        int sReadOffset = 0;
+        boolean sDone = false;
+        while (!sDone)
+        {
+            int sReadLength = aValue.length() - sReadOffset;
+            if (sReadLength > mTempChars.length)
+            {
+                sReadLength = mTempChars.length;
+            }
+            // BUG-46465 chunk를 내부의 temporary char버퍼에 복사한다.
+            aValue.getChars(sReadOffset, sReadOffset + sReadLength, mTempChars, 0);
+            mTempCharWrapper.clear();
+            mTempCharWrapper.limit(sReadLength);
+            sReadOffset += sReadLength;
+
+            sDone = (sReadOffset == aValue.length());
+            sResult = aEncoder.encode(mTempCharWrapper, aBuf, sDone);
+        }
+
+        return sResult;
     }
 
-    private CoderResult encodeNCharString(String aValue) throws SQLException
-    {
-        return mNCharEncoder.encode(CharBuffer.wrap(aValue), mEncodingBuf, true);
-    }
-
-    private CoderResult encodeNLiteralString(String aValue) throws SQLException
-    {
-        return mNLiteralEncoder.encode(CharBuffer.wrap(aValue), mEncodingBuf, true);
-    }
-    
     public void writeByte(byte aValue) throws SQLException
     {
         checkWritable(1);

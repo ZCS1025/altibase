@@ -22,6 +22,7 @@ public class NCharColumn extends CommonCharVarcharColumn
 {
     NCharColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.NCHAR);
     }
 
     protected boolean isNationalCharset()
@@ -34,11 +35,6 @@ public class NCharColumn extends CommonCharVarcharColumn
         return ColumnTypes.NCHAR;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.NCHAR };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "NCHAR";

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnbModule.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnbModule.h 82855 2018-04-19 05:53:31Z emlee $
  **********************************************************************/
 
 #ifndef _O_SDNB_MODULE_H_
@@ -116,18 +116,18 @@ public:
 
     static IDE_RC dest( sdnbIterator* /*aIterator*/ );
 
-    static IDE_RC traverse( idvSQL          *aStatistics,
-                            sdnbHeader *     aIndex,
-                            sdrMtx *         aMtx,
-                            sdnbKeyInfo *    aKeyInfo,
-                            sdnbStack *      aStack,
-                            sdnbStatistic *  aIndexStat,
+    static IDE_RC traverse( idvSQL         * aStatistics,
+                            sdnbHeader     * aIndex,
+                            sdrMtx         * aMtx,
+                            sdnbKeyInfo    * aKeyInfo,
+                            sdnbStack      * aStack,
+                            sdnbStatistic  * aIndexStat,
                             idBool           aIsPessimistic,
                             sdpPhyPageHdr ** aLeafNode,
-                            SShort *         aLeafKeySeq ,
-                            sdrSavePoint *   aLeafSP,  
-                            idBool *         aIsSameKey,
-                            SLong *          aTotalTraverseLength );
+                            SShort         * aLeafKeySeq ,
+                            sdrSavePoint   * aLeafSP,  
+                            idBool         * aIsSameKey,
+                            SLong          * aTotalTraverseLength );
 
     static IDE_RC findValidStackDepth( idvSQL          *aStatistics,
                                        sdnbStatistic *  aIndexStat,

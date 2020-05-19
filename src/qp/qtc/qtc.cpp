@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qtc.cpp 85120 2019-04-02 01:27:30Z khkwak $
  *
  * Description :
  *     QP layer와 MT layer의 중간에 위치하는 layer로
@@ -52,6 +52,7 @@
 #include <qsxArray.h>
 #include <qmv.h>
 #include <qmvQTC.h>
+#include <qsvProcStmts.h>
 
 extern mtdModule mtdBoolean;
 extern mtdModule mtdUndef;
@@ -1025,6 +1026,35 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
         /* Nothing to do */
     }
 
+    // PROJ-2204 Join Update, Delete
+    if ( sSFWGHOfCallBack != NULL )
+    {
+        switch ( sSFWGHOfCallBack->validatePhase )
+        {
+            case QMS_VALIDATE_FROM:
+                IDE_TEST( qmsPreservedTable::addOnCondPredicate( sStatement,
+                                                                 sSFWGHOfCallBack,
+                                                                 sCallBackInfo->from,
+                                                                 aNode )
+                          != IDE_SUCCESS );
+                break;
+ 
+            case QMS_VALIDATE_WHERE:
+                IDE_TEST( qmsPreservedTable::addPredicate( sStatement,
+                                                           sSFWGHOfCallBack,
+                                                           aNode )
+                          != IDE_SUCCESS );
+                break;
+ 
+            default:
+                break;
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_STACK_OVERFLOW );
@@ -1577,24 +1607,38 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
                                 & aNode->depInfo ) != IDE_SUCCESS );
     }
 
-    if( ( ( aNode->node.lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) &&
-        ( QTC_IS_TERMINAL( aNode ) == ID_FALSE ) )
+    if( ( aNode->node.lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST )
     {
-        //------------------------------------------------------
-        // PROJ-1492
-        // 하위 노드가 있는 해당 Node의 bind관련 lflag를 설정한다.
-        //    1. Argument에 BIND_TYPE_FALSE가 하나라도 있으면 BIND_TYPE_FALSE가 된다.
-        //       (단, 해당 Node가 CAST함수 노드일 경우 항상 BIND_TYPE_TRUE가 된다.)
-        //------------------------------------------------------
-        aNode->node.lflag |= sLflag & MTC_NODE_BIND_TYPE_MASK;
-
-        if( aNode->node.module == & mtfCast )
+        if( QTC_IS_TERMINAL( aNode ) == ID_FALSE )
         {
-            aNode->node.lflag |= MTC_NODE_BIND_TYPE_TRUE;
+            //------------------------------------------------------
+            // PROJ-1492
+            // 하위 노드가 있는 해당 Node의 bind관련 lflag를 설정한다.
+            //    1. Argument에 BIND_TYPE_FALSE가 하나라도 있으면 BIND_TYPE_FALSE가 된다.
+            //       (단, 해당 Node가 CAST함수 노드일 경우 항상 BIND_TYPE_TRUE가 된다.)
+            //------------------------------------------------------
+            aNode->node.lflag |= sLflag & MTC_NODE_BIND_TYPE_MASK;
+
+            if( aNode->node.module == & mtfCast )
+            {
+                aNode->node.lflag |= MTC_NODE_BIND_TYPE_TRUE;
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
         else
         {
-            // Nothing to do.
+            sInfo = (qtcCallBackInfo*)aCallBack->info;
+            if ( (sInfo->statement != NULL) &&
+                 (sInfo->statement->spvEnv->createProc != NULL) )
+            {
+                IDE_TEST( qsvProcStmts::makeUsingParam( NULL,
+                                                        aNode,
+                                                        aCallBack )
+                          != IDE_SUCCESS );
+            }
         }
     }
     else
@@ -3923,10 +3967,14 @@ IDE_RC qtc::nextTable( UShort          *aRow,
         sTemplate->tmplate.rows[sCurRowID].lflag |= MTC_TUPLE_TYPE_TABLE;
         sTemplate->tmplate.rows[sCurRowID].lflag &= ~MTC_TUPLE_ROW_SKIP_MASK;
         sTemplate->tmplate.rows[sCurRowID].lflag |= MTC_TUPLE_ROW_SKIP_TRUE;
-        
+
         sTemplate->tmplate.rows[sCurRowID].columnCount
             = sTemplate->tmplate.rows[sCurRowID].columnMaximum
             = 0;
+        /* BUG-46023 fix */
+        sTemplate->tmplate.rows[sCurRowID].columns = NULL;
+        sTemplate->tmplate.rows[sCurRowID].columnLocate = NULL;
+        sTemplate->tmplate.rows[sCurRowID].execute = NULL;
     }
 
     // PROJ-1789 PROWID
@@ -12931,7 +12979,7 @@ IDE_RC qtc::isEquivalentExpression(
                 //-------------------------------
                 // arguments 검사
                 //-------------------------------
-                
+
                 sArgu1 = (qtcNode *)(aNode1->node.arguments);
                 sArgu2 = (qtcNode *)(aNode2->node.arguments);
 
@@ -12951,7 +12999,7 @@ IDE_RC qtc::isEquivalentExpression(
                         break; // exit while loop
                     }
                 }
-                
+
                 if ( (sArgu1 != NULL) || (sArgu2 != NULL) )
                 {
                     // arguments->next의 수가 맞지 않는 경우
@@ -13001,6 +13049,76 @@ IDE_RC qtc::isEquivalentExpression(
                     else
                     {
                         // Nothing to do.
+                    }
+                    /* BUG-46805 */
+                    if ( ( aNode1->node.lflag & MTC_NODE_OPERATOR_MASK )
+                        == MTC_NODE_OPERATOR_SUBQUERY ) // subquery
+                    {
+                        if ( ( aNode1->subquery->myPlan->graph != NULL ) &&
+                             ( aNode2->subquery->myPlan->graph != NULL ) )
+                        {
+                            if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) ||
+                                 ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) )
+                            {
+                                 if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) &&
+                                      ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) )
+                                {
+                                    sArgu1 = (qtcNode *)aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where;
+                                    sArgu2 = (qtcNode *)aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where;
+
+                                    while ( ( sArgu1 != NULL ) && ( sArgu2 != NULL ) )
+                                    {
+                                        IDE_TEST(isEquivalentExpression( aStatement, sArgu1, sArgu2, &sIsTrue)
+                                                 != IDE_SUCCESS);
+
+                                        if ( sIsTrue == ID_TRUE)
+                                        {
+                                            if ( ( sArgu1->node.lflag & MTC_NODE_OPERATOR_MASK )
+                                                == MTC_NODE_OPERATOR_SUBQUERY ) // subquery
+                                            {
+                                                sIsTrue = ID_FALSE;
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                sArgu1 = (qtcNode *)(sArgu1->node.next);
+                                                sArgu2 = (qtcNode *)(sArgu2->node.next);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            break; // exit while loop
+                                        }
+                                    }
+
+                                    if ( (sArgu1 != NULL) || (sArgu2 != NULL) )
+                                    {
+                                        // arguments->next의 수가 맞지 않는 경우
+                                        sIsTrue = ID_FALSE;
+                                    }
+                                    else
+                                    {
+                                        // Nothing to do.
+                                    }
+                                }
+                                else
+                                {
+                                    sIsTrue = ID_FALSE;
+                                }
+                            }
+                            else
+                            {
+                                /* Nothing to do */
+                            }
+                        }
+                        else
+                        {
+                            /* Nothing to do */
+                        }
+                    }
+                    else
+                    {
+                        /* Nothing to do */
                     }
                 }
                 else
@@ -15456,3 +15574,907 @@ IDE_RC qtc::changeKeepNode( qcStatement  * aStatement,
     return IDE_FAILURE;
 }
 
+// BUG-45745
+idBool qtc::isSameType( mtcColumn * aColumn1,
+                        mtcColumn * aColumn2 )
+{
+    idBool  sIsSameType = ID_FALSE;
+    
+    if ( mtc::isSameType( aColumn1, aColumn2 ) )
+    {
+        sIsSameType = ID_TRUE;
+    }
+    else
+    {
+        sIsSameType = ID_FALSE;
+    }
+    
+    return sIsSameType;
+}
+
+IDE_RC qtc::estimateSerializeFilter( qcStatement * aStatement,
+                                     mtcNode     * aNode,
+                                     UInt        * aCount )
+{
+    qcTemplate           * sTemplate  = QC_SHARED_TMPLATE( aStatement );
+    mtcNode              * sNode      = NULL;
+    mtcNode              * sArgument  = NULL;
+    mtxSerialExecuteFunc   sExecute   = mtx::calculateNA;
+    UChar                  sEntryType = QTC_ENTRY_TYPE_NONE;
+    UInt                   sArgCount  = 0;
+    UInt                   sCount     = 0;
+
+    IDE_TEST( checkSerializeFilterType( sTemplate,
+                                        aNode,
+                                        &( sArgument ),
+                                        &( sExecute ),
+                                        &( sEntryType ) )
+              != IDE_SUCCESS );
+
+    for ( sNode  = sArgument;
+          sNode != NULL;
+          sNode  = sNode->next )
+    {
+        IDE_TEST( estimateSerializeFilter( aStatement,
+                                           sNode,
+                                           aCount )
+                  != IDE_SUCCESS );
+
+        sArgCount += 1;
+    }
+
+    if ( ( sEntryType == QTC_ENTRY_TYPE_AND ) ||
+         ( sEntryType == QTC_ENTRY_TYPE_OR  ) )
+    {
+        sCount += sArgCount;
+    }
+    else
+    {
+        IDE_TEST( sArgCount > 2 );
+
+        sCount += 1;
+    }
+
+    for ( sNode  = aNode->conversion;
+          sNode != NULL;
+          sNode  = sNode->conversion )
+    {
+        sExecute = sTemplate->tmplate.rows[sNode->table].execute[sNode->column].mSerialExecute;
+
+        IDE_TEST( sExecute == mtx::calculateNA );
+
+        sCount += 1;
+    }
+
+    *aCount += sCount;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::allocateSerializeFilter( qcStatement          * aStatement,
+                                     UInt                   aCount,
+                                     mtxSerialFilterInfo ** aInfo )
+{
+    IDU_FIT_POINT( "qtc::allocateSerializeFilter::alloc",
+                   idERR_ABORT_InsufficientMemory );
+    IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( mtxSerialFilterInfo ) * aCount,
+                                               (void **) aInfo )
+              != IDE_SUCCESS );
+
+    QTC_SET_SERIAL_FILTER_INFO( (*aInfo),
+                                NULL,
+                                mtx::calculateNA,
+                                0,
+                                NULL,
+                                NULL );
+
+    QTC_SET_ENTRY_HEADER( (*aInfo)->mHeader,
+                          0,
+                          0,
+                          0,
+                          0 );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::recursiveSerializeFilter( qcStatement          * aStatement,
+                                      mtcNode              * aNode,
+                                      mtxSerialFilterInfo  * aFense,
+                                      mtxSerialFilterInfo ** aInfo )
+{
+    qcTemplate           * sTemplate    = QC_SHARED_TMPLATE( aStatement );
+    mtcNode              * sNode        = NULL;
+    mtcNode              * sArgument    = NULL;
+    UInt                   sIndex       = 0;
+    mtxSerialFilterInfo  * sOffset[2]   = { NULL, NULL };
+    UChar                  sEntryType   = QTC_ENTRY_TYPE_NONE;
+    mtxSerialExecuteFunc   sExecute     = mtx::calculateNA;
+    mtxSerialFilterInfo  * sPrev        = NULL;
+
+    IDE_TEST( checkSerializeFilterType( sTemplate,
+                                        aNode,
+                                        &( sArgument ),
+                                        &( sExecute ),
+                                        &( sEntryType ) )
+              != IDE_SUCCESS );
+
+    /* Host Constant Wrapper
+     *  \
+     *   [CHECK] [?] [?] [?]
+     *     \       \   \   \
+     *      sPrev    Unknown
+     */
+    if ( sEntryType == QTC_ENTRY_TYPE_CHECK )
+    {
+        IDE_TEST( setSerializeFilter( QTC_ENTRY_TYPE_CHECK,
+                                      QTC_ENTRY_COUNT_ONE,
+                                      aNode,
+                                      sExecute,
+                                      NULL,
+                                      NULL,
+                                      aFense,
+                                      aInfo )
+                  != IDE_SUCCESS );
+
+        sPrev = (*aInfo);
+    }
+    else
+    {
+        sPrev = NULL;
+    }
+
+    for ( sNode  = sArgument;
+          sNode != NULL;
+          sNode  = sNode->next )
+    {
+        IDE_TEST( recursiveSerializeFilter( aStatement ,
+                                            sNode,
+                                            aFense,
+                                            aInfo )
+                  != IDE_SUCCESS );
+
+        if ( ( sEntryType == QTC_ENTRY_TYPE_AND ) ||
+             ( sEntryType == QTC_ENTRY_TYPE_OR ) )
+        {
+            IDE_TEST( setSerializeFilter( sEntryType,
+                                          QTC_ENTRY_COUNT_TWO,
+                                          aNode,
+                                          sExecute,
+                                          (*aInfo),
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            /* Linking AND / OR
+             *  \
+             *   [OP1] [AND'] [OP2] [AND''] [OP 3] [AND''']
+             *             ^         /   ^         /
+             *              \ mRight      \ mRight
+             */
+            if ( sPrev == NULL )
+            {
+                sPrev = (*aInfo);
+            }
+            else
+            {
+                (*aInfo)->mRight = sPrev;
+                sPrev            = (*aInfo);
+            }
+        }
+        else
+        {
+            IDE_TEST( sIndex >= 2 );
+
+            sOffset[sIndex++] = (*aInfo);
+        }
+    }
+
+    IDE_TEST( setParentSerializeFilter( sEntryType,
+                                        sIndex,
+                                        aNode,
+                                        sExecute,
+                                        sOffset[0],
+                                        sOffset[1],
+                                        aFense,
+                                        aInfo )
+                      != IDE_SUCCESS );
+
+    IDE_TEST( adjustSerializeFilter( sEntryType,
+                                     sPrev,
+                                     aInfo )
+                   != IDE_SUCCESS );
+
+    if ( aNode->conversion != NULL )
+    {
+        IDE_TEST( recursiveConversionSerializeFilter( aStatement ,
+                                                      aNode->conversion,
+                                                      aFense,
+                                                      aInfo )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::recursiveConversionSerializeFilter( qcStatement          * aStatement,
+                                                mtcNode              * aNode,
+                                                mtxSerialFilterInfo  * aFense,
+                                                mtxSerialFilterInfo ** aInfo )
+{
+    qcTemplate         * sTemplate  = QC_SHARED_TMPLATE( aStatement );
+    UChar                sEntryType = QTC_ENTRY_TYPE_NONE;
+    mtxSerialExecuteFunc sExecute   = mtx::calculateNA;
+
+    if ( aNode->conversion != NULL )
+    {
+        IDE_TEST( recursiveConversionSerializeFilter( aStatement ,
+                                                      aNode->conversion,
+                                                      aFense,
+                                                      aInfo )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_TEST( checkConversionSerializeFilterType( sTemplate,
+                                                  aNode,
+                                                  (*aInfo)->mNode,
+                                                  &( sExecute ),
+                                                  &( sEntryType ) )
+              != IDE_SUCCESS );
+
+    IDE_TEST( setConversionSerializeFilter( sEntryType,
+                                            aNode,
+                                            sExecute,
+                                            aFense,
+                                            aInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::checkSerializeFilterType( qcTemplate           * aTemplate,
+                                      mtcNode              * aNode,
+                                      mtcNode             ** aArgument,
+                                      mtxSerialExecuteFunc * aExecute,
+                                      UChar                * aEntryType )
+{
+    mtcNode            * sArgument  = aNode->arguments;
+    UChar                sEntryType = QTC_ENTRY_TYPE_NONE;
+    mtxSerialExecuteFunc sExecute   = mtx::calculateNA;
+
+    if ( ( aNode->module->lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_AND )
+    {
+        IDE_TEST( sArgument == NULL );
+
+        if ( sArgument->next != NULL )
+        {
+            sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+            sEntryType = QTC_ENTRY_TYPE_AND;
+        }
+        else
+        {
+            sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+            sEntryType = QTC_ENTRY_TYPE_AND_SINGLE;
+        }
+    }
+    else if ( ( aNode->module->lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_OR )
+    {
+        IDE_TEST( sArgument == NULL );
+
+        if ( sArgument->next != NULL )
+        {
+            sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+            sEntryType = QTC_ENTRY_TYPE_OR;
+        }
+        else
+        {
+            sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+            sEntryType = QTC_ENTRY_TYPE_OR_SINGLE;
+        }
+    }
+    else if ( ( aNode->module->lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_NOT )
+    {
+        sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+        sEntryType = QTC_ENTRY_TYPE_NOT;
+    }
+    else
+    {
+        IDE_TEST( checkNodeModuleForNormal( aTemplate,
+                                            aNode,
+                                            &( sArgument ),
+                                            &( sExecute ),
+                                            &( sEntryType ) )
+                  != IDE_SUCCESS );
+    }
+
+    *aExecute   = sExecute;
+    *aArgument  = sArgument;
+    *aEntryType = sEntryType;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::checkNodeModuleForNormal( qcTemplate           * aTemplate,
+                                      mtcNode              * aNode,
+                                      mtcNode             ** aArgument,
+                                      mtxSerialExecuteFunc * aExecute,
+                                      UChar                * aEntryType )
+{
+    mtcNode            * sArgument  = aNode->arguments;
+    UChar                sEntryType = QTC_ENTRY_TYPE_NONE;
+    mtxSerialExecuteFunc sExecute   = mtx::calculateNA;
+
+    if ( aNode->module == &gQtcRidModule )
+    {
+        sExecute   = aTemplate->tmplate.rows[aNode->table].ridExecute->mSerialExecute;
+        sEntryType = QTC_ENTRY_TYPE_RID;
+
+        IDE_TEST( sExecute == mtx::calculateNA );
+    }
+    else if ( aNode->module == &qtc::columnModule )
+    {
+        sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+        sEntryType = QTC_ENTRY_TYPE_COLUMN;
+
+        IDE_TEST( sExecute == mtx::calculateNA );
+    }
+    else if ( aNode->module == &qtc::valueModule )
+    {
+        sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+        sEntryType = QTC_ENTRY_TYPE_VALUE;
+
+        if ( ( aNode->orgNode != NULL ) &&
+             ( sArgument      != NULL ) )
+        {
+            sArgument = NULL;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        IDE_TEST( checkNodeModuleForEtc( aTemplate,
+                                         aNode,
+                                         &( sArgument ),
+                                         &( sExecute ),
+                                         &( sEntryType ) )
+                  != IDE_SUCCESS );
+    }
+
+    *aExecute   = sExecute;
+    *aArgument  = sArgument;
+    *aEntryType = sEntryType;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::checkNodeModuleForEtc( qcTemplate           * aTemplate,
+                                   mtcNode              * aNode,
+                                   mtcNode             ** aArgument,
+                                   mtxSerialExecuteFunc * aExecute,
+                                   UChar                * aEntryType )
+{
+    mtcNode            * sArgument  = aNode->arguments;
+    UChar                sEntryType = QTC_ENTRY_TYPE_NONE;
+    mtxSerialExecuteFunc sExecute   = mtx::calculateNA;
+
+    if ( aNode->module == &qtc::hostConstantWrapperModule )
+    {
+        sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+        sEntryType = QTC_ENTRY_TYPE_CHECK;
+    }
+    else if ( aNode->module == &mtfLnnvl )
+    {
+        sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+        sEntryType = QTC_ENTRY_TYPE_LNNVL;
+    }
+    else
+    {
+        IDE_TEST( sArgument == NULL );
+
+        if ( sArgument->next != NULL )
+        {
+            sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+            sEntryType = QTC_ENTRY_TYPE_FUNCTION;
+        }
+        else
+        {
+            sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+            sEntryType = QTC_ENTRY_TYPE_SINGLE;
+        }
+
+        IDE_TEST( sExecute == mtx::calculateNA );
+    }
+
+    *aExecute   = sExecute;
+    *aArgument  = sArgument;
+    *aEntryType = sEntryType;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::checkConversionSerializeFilterType( qcTemplate           * aTemplate,
+                                                mtcNode              * aNode,
+                                                mtcNode              * aArgument,
+                                                mtxSerialExecuteFunc * aExecute,
+                                                UChar                * aEntryType )
+{
+    UChar                sEntryType = QTC_ENTRY_TYPE_NONE;
+    mtcColumn          * sColumn    = aTemplate->tmplate.rows[aNode->table].columns + aNode->column;
+    mtcColumn          * sArgument  = aTemplate->tmplate.rows[aArgument->table].columns + aArgument->column;
+    mtxSerialExecuteFunc sExecute   = aTemplate->tmplate.rows[aNode->table].execute[aNode->column].mSerialExecute;
+
+    IDE_DASSERT( ( sColumn   != NULL ) &&
+                 ( sArgument != NULL ) );
+
+    IDE_TEST( sExecute == mtx::calculateNA );
+
+    switch( sColumn->module->id )
+    {
+        case MTD_NCHAR_ID:
+        case MTD_NVARCHAR_ID:
+            switch( sArgument->module->id )
+            {
+                case MTD_CHAR_ID:
+                case MTD_VARCHAR_ID:
+                    sEntryType = QTC_ENTRY_TYPE_CONVERT_CHAR;
+
+                    break;
+
+                default:
+                    sEntryType = QTC_ENTRY_TYPE_CONVERT;
+
+                    break;
+            }
+
+            break;
+
+        case MTD_CHAR_ID:
+        case MTD_VARCHAR_ID:
+            switch( sArgument->module->id )
+            {
+                case MTD_NCHAR_ID:
+                case MTD_NVARCHAR_ID:
+                    sEntryType = QTC_ENTRY_TYPE_CONVERT_CHAR;
+
+                    break;
+
+                case MTD_DATE_ID:
+                    sEntryType = QTC_ENTRY_TYPE_CONVERT_DATE;
+
+                    break;
+
+                default:
+                    sEntryType = QTC_ENTRY_TYPE_CONVERT;
+
+                    break;
+            }
+
+            break;
+
+        case MTD_DATE_ID:
+            sEntryType = QTC_ENTRY_TYPE_CONVERT_DATE;
+
+            break;
+
+        default:
+            sEntryType = QTC_ENTRY_TYPE_CONVERT;
+
+            break;
+    }
+
+    *aExecute   = sExecute;
+    *aEntryType = sEntryType;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::adjustSerializeFilter( UChar                  aType,
+                                   mtxSerialFilterInfo  * aPrev,
+                                   mtxSerialFilterInfo ** aInfo )
+{
+    mtxSerialFilterInfo * sAnd  = (*aInfo)->mRight;
+    mtxSerialFilterInfo * sPrev = NULL;
+    mtxSerialFilterInfo * sLast = (*aInfo);
+
+    switch( aType )
+    {
+        case QTC_ENTRY_TYPE_CHECK:
+            IDE_TEST_RAISE( ( ( aPrev    == NULL ) ||
+                              ( (*aInfo) == NULL ) ),
+                            INVALID_ACCESS_FILTER );
+
+            /* Host Constant Wrapper
+             *  \
+             *   [CHECK] [OP1] [OP2] [OP3]
+             *     \                     \
+             *      sPrev                 aInfo = sLast
+             *
+             * After Adjust
+             *  \
+             *   [CHECK] [OP1] [OP2] [OP3]
+             *     \                  ^
+             *      mLeft -----------/
+             */
+            aPrev->mLeft = sLast;
+
+            break;
+
+        case QTC_ENTRY_TYPE_AND:
+        case QTC_ENTRY_TYPE_OR:
+            IDE_TEST_RAISE( (*aInfo) == NULL,
+                            INVALID_ACCESS_FILTER );
+
+            /* AND / OR Optimize
+             *  \
+             *   [OP1] [AND'] [OP2] [AND''] [OP 3] [AND''']
+             *             ^         /   ^         /      \
+             *              \ mRight      \ mRight         aInfo = sLast
+             *
+             * After Adjust
+             *  \
+             *   [OP1] [AND'] [OP2] [AND''] [OP 3] [AND''']
+             *          \            \              \     ^
+             *           mRight ----- mRight ------- mRight = sLast
+             */
+            while ( sAnd != NULL )
+            {
+                sPrev        = sAnd->mRight;
+                sAnd->mRight = sLast;
+                sAnd         = sPrev;
+            }
+
+            sLast->mRight = sLast;
+
+            break;
+
+        case QTC_ENTRY_TYPE_RID:
+        case QTC_ENTRY_TYPE_COLUMN:
+        case QTC_ENTRY_TYPE_VALUE:
+        case QTC_ENTRY_TYPE_FUNCTION:
+        case QTC_ENTRY_TYPE_SINGLE:
+        case QTC_ENTRY_TYPE_AND_SINGLE:
+        case QTC_ENTRY_TYPE_OR_SINGLE:
+        case QTC_ENTRY_TYPE_NOT:
+        case QTC_ENTRY_TYPE_LNNVL:
+
+            break;
+
+        default:
+            IDE_TEST( 1 );
+
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( INVALID_ACCESS_FILTER )
+    {
+        ideLog::log( IDE_QP_0,
+                     "Serial Filter Failure: %s: %s",
+                     "qtc::adjustSerializeFilter",
+                     "invalid access filter" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::setConversionSerializeFilter( UChar                  aType,
+                                          mtcNode              * aNode,
+                                          mtxSerialExecuteFunc   aExecute,
+                                          mtxSerialFilterInfo  * aFense,
+                                          mtxSerialFilterInfo ** aInfo )
+{
+    switch( aType )
+    {
+        case QTC_ENTRY_TYPE_CONVERT:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_ONE,
+                                          aNode,
+                                          aExecute,
+                                          (*aInfo),
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                  != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_CONVERT_CHAR:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_TWO,
+                                          aNode,
+                                          aExecute,
+                                          (*aInfo),
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                  != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_CONVERT_DATE:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_THREE,
+                                          aNode,
+                                          aExecute,
+                                          (*aInfo),
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_RID:
+        case QTC_ENTRY_TYPE_COLUMN:
+        case QTC_ENTRY_TYPE_VALUE:
+        case QTC_ENTRY_TYPE_FUNCTION:
+        case QTC_ENTRY_TYPE_SINGLE:
+        case QTC_ENTRY_TYPE_AND_SINGLE:
+        case QTC_ENTRY_TYPE_OR_SINGLE:
+        case QTC_ENTRY_TYPE_NOT:
+        case QTC_ENTRY_TYPE_LNNVL:
+        case QTC_ENTRY_TYPE_CHECK:
+        case QTC_ENTRY_TYPE_AND:
+        case QTC_ENTRY_TYPE_OR:
+        default:
+
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::setParentSerializeFilter( UChar                  aType,
+                                      UChar                  aCount,
+                                      mtcNode              * aNode,
+                                      mtxSerialExecuteFunc   aExecute,
+                                      mtxSerialFilterInfo  * aLeft,
+                                      mtxSerialFilterInfo  * aRight,
+                                      mtxSerialFilterInfo  * aFense,
+                                      mtxSerialFilterInfo ** aInfo  )
+{
+    switch( aType )
+    {
+        case QTC_ENTRY_TYPE_VALUE:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_ZERO,
+                                          aNode,
+                                          aExecute,
+                                          NULL,
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_RID:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_ONE,
+                                          aNode,
+                                          aExecute,
+                                          NULL,
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_COLUMN:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_TWO,
+                                          aNode,
+                                          aExecute,
+                                          NULL,
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_FUNCTION:
+            IDE_TEST( setSerializeFilter( aType,
+                                          aCount,
+                                          aNode,
+                                          aExecute,
+                                          aLeft,
+                                          aRight,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_AND_SINGLE:
+        case QTC_ENTRY_TYPE_OR_SINGLE:
+        case QTC_ENTRY_TYPE_NOT:
+        case QTC_ENTRY_TYPE_LNNVL:
+            IDE_TEST( setSerializeFilter( aType,
+                                          QTC_ENTRY_COUNT_ONE,
+                                          aNode,
+                                          aExecute,
+                                          (*aInfo),
+                                          NULL,
+                                          aFense,
+                                          aInfo )
+                      != IDE_SUCCESS );
+
+            break;
+
+        case QTC_ENTRY_TYPE_CHECK:
+        case QTC_ENTRY_TYPE_AND:
+        case QTC_ENTRY_TYPE_OR:
+        default:
+
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::setSerializeFilter( UChar                  aType,
+                                UChar                  aCount,
+                                mtcNode              * aNode,
+                                mtxSerialExecuteFunc   aExecute,
+                                mtxSerialFilterInfo  * aLeft,
+                                mtxSerialFilterInfo  * aRight,
+                                mtxSerialFilterInfo  * aFense,
+                                mtxSerialFilterInfo ** aInfo )
+{
+    mtxSerialFilterInfo * sInfo   = (*aInfo);
+    mtxSerialFilterInfo * sLeft   = aLeft;
+    mtxSerialFilterInfo * sRight  = aRight;
+    UInt                  sNumber = 1;
+    UChar                 sSize   = aCount;
+    UInt                  sOffset = 0;
+
+    switch( aType )
+    {
+        case QTC_ENTRY_TYPE_CHECK:
+            sSize += QTC_ENTRY_SIZE_ONE;
+            break;
+
+        case QTC_ENTRY_TYPE_VALUE:
+        case QTC_ENTRY_TYPE_RID:
+        case QTC_ENTRY_TYPE_COLUMN:
+        case QTC_ENTRY_TYPE_AND:
+        case QTC_ENTRY_TYPE_OR:
+        case QTC_ENTRY_TYPE_AND_SINGLE:
+        case QTC_ENTRY_TYPE_OR_SINGLE:
+        case QTC_ENTRY_TYPE_NOT:
+        case QTC_ENTRY_TYPE_LNNVL:
+            sSize += QTC_ENTRY_SIZE_TWO;
+            break;
+
+        case QTC_ENTRY_TYPE_FUNCTION:
+        case QTC_ENTRY_TYPE_SINGLE:
+        case QTC_ENTRY_TYPE_CONVERT:
+        case QTC_ENTRY_TYPE_CONVERT_CHAR:
+        case QTC_ENTRY_TYPE_CONVERT_DATE:
+            sSize += QTC_ENTRY_SIZE_THREE;
+            break;
+
+        default:
+            sSize += QTC_ENTRY_SIZE_ZERO;
+            break;
+    }
+
+    if ( sInfo->mHeader.mId == 0 )
+    {
+        QTC_SET_SERIAL_FILTER_INFO( sInfo,
+                                    aNode,
+                                    aExecute,
+                                    sOffset,
+                                    sLeft,
+                                    sRight );
+
+        QTC_SET_ENTRY_HEADER( sInfo->mHeader,
+                              sNumber,
+                              aType,
+                              sSize,
+                              aCount );
+    }
+    else
+    {
+        sNumber = sInfo->mHeader.mId + 1;
+        sOffset = sInfo->mOffset + sInfo->mHeader.mSize;
+
+        IDE_TEST_RAISE( sNumber >= ID_USHORT_MAX,
+                        TOO_MANY_FILTER );
+
+        *aInfo = *aInfo + 1;
+
+        IDE_TEST_RAISE( (*aInfo) > aFense,
+                        INVALID_ACCESS_FILTER );
+
+        sInfo = (*aInfo);
+
+        QTC_SET_SERIAL_FILTER_INFO( sInfo,
+                                    aNode,
+                                    aExecute,
+                                    sOffset,
+                                    sLeft,
+                                    sRight );
+
+        QTC_SET_ENTRY_HEADER( sInfo->mHeader,
+                              sNumber,
+                              aType,
+                              sSize,
+                              aCount );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( TOO_MANY_FILTER )
+    {
+        ideLog::log( IDE_QP_0,
+                     "Serial Filter Failure: %s: %s",
+                     "qtc::setSerializeFilter",
+                     "too many filter node" );
+    }
+    IDE_EXCEPTION( INVALID_ACCESS_FILTER )
+    {
+        ideLog::log( IDE_QP_0,
+                     "Serial Filter Failure: %s: %s",
+                     "qtc::setSerializeFilter",
+                     "invalid access filter" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

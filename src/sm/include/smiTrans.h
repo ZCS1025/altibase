@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: smiTrans.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smiTrans.h 85343 2019-04-30 01:50:33Z returns $
  **********************************************************************/
 
 #ifndef _O_SMI_TRANS_H_
@@ -28,6 +28,8 @@
 # include <smiStatement.h>
 
 # define SMI_TRANS_SLOT_ID_NULL ID_UINT_MAX
+
+# define SMI_MAX_SVPNAME_SIZE SMX_MAX_SVPNAME_SIZE
 
 typedef enum smiTransInitOpt
 {
@@ -51,6 +53,11 @@ class smiTrans
     //PROJ-1608
     smLSN             mBeginLSN;
     smLSN             mCommitLSN;
+
+    /* BUG-46786 : FOR SHARDING
+       smiStatement::end() 시 implicit savepoint를 해제하지 않고, 이 변수에 저장해둔다.
+       샤딩에서 rollback 시 사용한다. */
+    smxSavepoint    * mImpSVP4Shard;
 
  public:
     IDE_RC initialize();
@@ -128,6 +135,13 @@ class smiTrans
     UInt getReplTransLockTimeout( );
 
     idBool isBegin();
+
+    idBool isReusableRollback( void );
+    void   setCursorHoldable( void );
+
+    /* BUG-46786 */
+    static idBool checkImpSVP4Shard( smiTrans * aTrans );
+    static IDE_RC abortToImpSVP4Shard( smiTrans * aTrans );
 };
 
 inline void* smiTrans::getTrans( void )

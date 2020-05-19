@@ -32,6 +32,7 @@
 #include <mtf.h>
 #include <mtk.h>
 #include <mtl.h>
+#include <mtx.h>
 
 #include <mtdTypes.h>
 #include <stdTypes.h>
@@ -69,6 +70,7 @@ static const mtcExecute stvGeo2BinaryExecute = {
     mtf::calculateNA,
     stvCalculate_Geometry2Binary,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

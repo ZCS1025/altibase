@@ -28,6 +28,7 @@ import Altibase.jdbc.driver.datatype.RowHandle;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
 public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
@@ -298,6 +299,15 @@ public class AltibaseForwardOnlyResultSet extends AltibaseReadableResultSet
                 }
             }
         }
+
+        // BUG-46513 serverside shard fetch 인 경우 SMN의 값 변화를 체크해야 한다.
+        AltibaseShardingConnection sMetaConn = mStatement.getMetaConn();
+        if (sMetaConn != null && !sResult && sMetaConn.getAutoCommit() &&
+            sMetaConn.shouldUpdateShardMetaNumber())
+        {
+            sMetaConn.updateShardMetaNumber();
+        }
+
         return sResult;
     }
 

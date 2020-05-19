@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: qcuProperty.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcuProperty.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
  *
  * QP 및 MM에서 사용할 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 관리한다.
@@ -81,16 +81,6 @@ IDE_RC qcuProperty::load()
     //    - Writable Property이므로 CallBack을 등록한다.
     //    - Atomic Operation이므로, BeforeCallBack은 필요 없다.
     //--------------------------------------------------------
-
-    // SHARD 관련 설정
-    IDE_ASSERT( idp::read( "SHARD_META_ENABLE",
-                           & QCU_PROPERTY(mShardMetaEnable) ) == IDE_SUCCESS );
-
-    IDE_ASSERT( idp::read( "__SHARD_TEST_ENABLE",
-                           & QCU_PROPERTY(mShardTestEnable) ) == IDE_SUCCESS );
-
-    IDE_ASSERT( idp::read( "__SHARD_AGGREGATION_TRANSFORM_DISABLE",
-                           & QCU_PROPERTY(mShardAggrTransformDisable) ) == IDE_SUCCESS );
 
     // TRCLOG_DML_SENTENCE 관련 설정
 
@@ -830,6 +820,27 @@ IDE_RC qcuProperty::load()
     
     IDE_ASSERT( idp::read( "__OPTIMIZER_SEMI_JOIN_REMOVE",
                            &QCU_PROPERTY(mOptimizerSemiJoinRemove) ) == IDE_SUCCESS);
+    
+    IDE_ASSERT( idp::read( "__PRINT_OUT_ENABLE",
+                           & QCU_PROPERTY(mPrintOutEnable) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "__KEY_PRESERVED_TABLE",
+                           & QCU_PROPERTY(mKeyPreservedTable) ) == IDE_SUCCESS );
+
+    /* BUG-46544 unnest hint */
+    IDE_ASSERT( idp::read( "__OPTIMIZER_UNNEST_COMPATIBILITY",
+                           &QCU_PROPERTY(mOptimizerUnnestCompatibility) ) == IDE_SUCCESS );
+
+    /* PROJ-2632 */
+    IDE_ASSERT( idp::read( "SERIAL_EXECUTE_MODE",
+                           & QCU_PROPERTY( mSerialExecuteMode ) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "TRCLOG_DETAIL_INFORMATION",
+                           & QCU_PROPERTY( mTraceLogDetailInformation ) ) == IDE_SUCCESS );
+
+    /* BUG-46932 */ 
+    IDE_ASSERT( idp::read( "__OPTIMIZER_INVERSE_JOIN_ENABLE",
+                           &QCU_PROPERTY(mOptimizerInverseJoinEnable) ) == IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1483,9 +1494,26 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                             qcuProperty::changeOPTIMIZER_SEMI_JOIN_REMOVE)
               != IDE_SUCCESS );
 
-    /* PROJ-2687 Shard aggregation transform */ 
-    IDE_TEST( idp::setupAfterUpdateCallback("__SHARD_AGGREGATION_TRANSFORM_DISABLE",
-                                            qcuProperty::changeSHARD_AGGREGATION_TRANSFORM_DISABLE)
+    IDE_TEST( idp::setupAfterUpdateCallback( "__PRINT_OUT_ENABLE",
+                                             qcuProperty::change__PRINT_OUT_ENABLE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback( "__KEY_PRESERVED_TABLE",
+                                             qcuProperty::change__KEY_PRESERVED_TABLE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_UNNEST_COMPATIBILITY",
+                                             qcuProperty::change__OPTIMIZER_UNNEST_COMPATIBILITY )
+              != IDE_SUCCESS );
+
+    /* PROJ-2632 */
+    IDE_TEST( idp::setupBeforeUpdateCallback( "SERIAL_EXECUTE_MODE",
+                                              qcuProperty::changeSERIAL_EXECUTE_MODE )
+              != IDE_SUCCESS);
+
+    /* BUG-46932 */ 
+    IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_INVERSE_JOIN_ENABLE",
+                                             qcuProperty::changeOPTIMIZER_INVERSE_JOIN_ENABLE )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3514,16 +3542,84 @@ IDE_RC qcuProperty::changeOPTIMIZER_SEMI_JOIN_REMOVE(idvSQL* /* aStatistics */,
     return IDE_SUCCESS;
 }
 
-/* PROJ-2687 Shard aggregation transform */
-IDE_RC qcuProperty::changeSHARD_AGGREGATION_TRANSFORM_DISABLE( idvSQL* /* aStatistics */,
-                                                               SChar * /* aName */,
-                                                               void  * /* aOldValue */,
-                                                               void  * aNewValue,
-                                                               void  * /* aArg */)
+IDE_RC qcuProperty::change__PRINT_OUT_ENABLE( idvSQL* /* aStatistics */,
+                                              SChar * /* aName */,
+                                              void  * /* aOldValue */,
+                                              void  * aNewValue,
+                                              void  * /* aArg */ )
 {
-    idlOS::memcpy( &QCU_PROPERTY(mShardAggrTransformDisable),
+    idlOS::memcpy( &QCU_PROPERTY(mPrintOutEnable),
                    aNewValue,
-                   ID_SIZEOF(SInt) );
+                   ID_SIZEOF(UInt) );
 
     return IDE_SUCCESS;
 }
+
+IDE_RC qcuProperty::change__KEY_PRESERVED_TABLE( idvSQL* /* aStatistics */,
+                                                 SChar * /* aName */,
+                                                 void  * /* aOldValue */,
+                                                 void  * aNewValue,
+                                                 void  * /* aArg */ )
+{
+    idlOS::memcpy( &QCU_PROPERTY(mKeyPreservedTable),
+                   aNewValue,
+                   ID_SIZEOF(UInt) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC qcuProperty::change__OPTIMIZER_UNNEST_COMPATIBILITY( idvSQL* /* aStatistics */,
+                                                            SChar * /* aName */,
+                                                            void  * /* aOldValue */,
+                                                            void  * aNewValue,
+                                                            void  * /* aArg */ )
+{
+    idlOS::memcpy( &QCU_PROPERTY(mOptimizerUnnestCompatibility),
+                   aNewValue,
+                   ID_SIZEOF(UInt) );
+
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2632 */
+IDE_RC qcuProperty::changeSERIAL_EXECUTE_MODE( idvSQL * /* aStatistics */,
+                                               SChar  * /* aName */,
+                                               void   * /* aOldValue */,
+                                               void   * aNewValue,
+                                               void   * /* aArg */ )
+{
+    idlOS::memcpy( & QCU_PROPERTY( mSerialExecuteMode ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2632 */
+IDE_RC qcuProperty::changeTRCLOG_DETAIL_INFORMATION( idvSQL * /* aStatistics */,
+                                                     SChar  * /* aName */,
+                                                     void   * /* aOldValue */,
+                                                     void   * aNewValue,
+                                                     void   * /* aArg */ )
+{
+    idlOS::memcpy( & QCU_PROPERTY( mTraceLogDetailInformation ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+/* BUG-46932 */
+IDE_RC qcuProperty::changeOPTIMIZER_INVERSE_JOIN_ENABLE( idvSQL* /* aStatistics */,
+                                                         SChar * /* aName */,
+                                                         void  * /* aOldValue */,
+                                                         void  * aNewValue,
+                                                         void  * /* aArg */ )
+{
+    idlOS::memcpy( &QCU_PROPERTY(mOptimizerInverseJoinEnable),
+                   aNewValue,
+                   ID_SIZEOF(UInt) );
+
+    return IDE_SUCCESS;
+}
+

@@ -251,6 +251,7 @@ ACI_RC ulpDynamicBindParameter( ulpLibConnNode *aConnNode,
         sUlpHostVar.mHostInd = (SQLLEN*)aBinda->I[sI];
 
         sRes = ulpBindParamCore( aConnNode,
+                                 aStmtNode,
                                  aHstmt,
                                  aSqlstmt,
                                  &sUlpHostVar,
@@ -397,13 +398,13 @@ ACI_RC ulpDynamicBindCol( ulpLibConnNode *aConnNode,
     return ACI_FAILURE;
 }
 
-ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
-                            ulpLibStmtNode *aStmtNode,
-                            SQLHSTMT    *aHstmt,
-                            ulpSqlstmt  *aSqlstmt,
-                            ulpSqlca    *aSqlca,
-                            ulpSqlcode  *aSqlcode,
-                            ulpSqlstate *aSqlstate )
+ACI_RC ulpBindHostVarCore ( ulpLibConnNode  *aConnNode,
+                            ulpLibStmtNode  *aStmtNode,
+                            SQLHSTMT        *aHstmt,
+                            ulpSqlstmt      *aSqlstmt,
+                            ulpSqlca        *aSqlca,
+                            ulpSqlcode      *aSqlcode,
+                            ulpSqlstate     *aSqlstate )
 {
 /***********************************************************************
  *
@@ -418,9 +419,49 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
     acp_uint32_t sInCount ;
     acp_uint32_t sOutCount;
     acp_uint32_t sInOutCount;
+    /* BUG-46593 */
+    acp_uint32_t sHostVarArrSize = 0;
     ACI_RC       sRc;
 
     sInCount = sOutCount = sInOutCount = 0 ;
+
+    /* BUG-45779 Bind하기전에 PSM Array Binding에 해당하는 이전 Bind된 정보를 초기화한다. */
+    if( aStmtNode != NULL)
+    {
+        (void)ulpPSMArrayMetaFree(&aStmtNode->mUlpPSMArrInfo);
+    }
+
+    /* BUG-46593 PSM Array가 아닐경우 arraySize가 모두 동일해야 한다. */
+    if ( aStmtNode->mUlpPSMArrInfo.mIsPSMArray == ACP_FALSE )
+    {
+        /* BUG-46593 PSM일 경우 INOUT Type에 상관없이
+         * 전체 size를 check 한다. */
+        if ( aSqlstmt->stmttype == S_DirectPSM )
+        {
+            for ( sI = 0; sI < ( aSqlstmt->numofhostvar ); sI++ )
+            {
+                if ( sI == 0 )
+                {
+                    /* BUG-46593 array 일경우에만 arraySize 저장 */
+                    if ( aSqlstmt->hostvalue[sI].isarr == 1 )
+                    {
+                        sHostVarArrSize = aSqlstmt->hostvalue[sI].arrsize;
+                    }
+                    continue;
+                }
+
+                if ( aSqlstmt->hostvalue[sI].isarr == 1 )
+                {
+                    ACI_TEST_RAISE( sHostVarArrSize != aSqlstmt->hostvalue[sI].arrsize, InvalidArraySize );
+                }
+                else
+                {
+                    /* BUG-46593 array type이 아닐경우에는 size가 0이여야 한다. */
+                    ACI_TEST_RAISE( sHostVarArrSize != 0, InvalidArraySize );
+                }
+            }
+        }
+    }
 
     for ( sI =0 ; sI < ( aSqlstmt->numofhostvar ) ; sI++ )
     {
@@ -430,6 +471,7 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
                 /* Input host variable */
 
                 sRc = ulpBindParamCore( aConnNode,
+                                        aStmtNode,
                                         aHstmt,
                                         aSqlstmt,
                                         &( aSqlstmt->hostvalue[sI] ),
@@ -459,6 +501,7 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
             case H_INOUT:
                 /* In&Out host variable */
                 sRc = ulpBindParamCore( aConnNode,
+                                        aStmtNode,
                                         aHstmt,
                                         aSqlstmt,
                                         &( aSqlstmt->hostvalue[sI] ),
@@ -473,6 +516,7 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
             case H_OUT_4PSM:
                 /* Out host variable for PSM */
                 sRc = ulpBindParamCore( aConnNode,
+                                        aStmtNode,
                                         aHstmt,
                                         aSqlstmt,
                                         &( aSqlstmt->hostvalue[sI] ),
@@ -606,6 +650,493 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
                             &sErrorMgr);
         ACE_ASSERT(0);
     }
+    ACI_EXCEPTION (InvalidArraySize);
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr,
+                         ulpERR_ABORT_Invalid_Array_Size_Error, sHostVarArrSize );
+
+        ulpSetErrorInfo4PCOMP( aSqlca,
+                               aSqlcode,
+                               aSqlstate,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               SQL_ERROR,
+                               NULL );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulpCheckPackagePSMArray(ulpLibConnNode *aConnNode,
+                               ulpSqlstmt     *aSqlstmt,
+                               acp_char_t     *aUserName,
+                               acp_uint32_t    aUserNameLen,
+                               acp_char_t     *aPackageName,
+                               acp_uint32_t    aPackageNameLen,
+                               acp_char_t     *aPSMName,
+                               acp_uint32_t    aPSMNameLen,
+                               acp_bool_t     *aIsPSMArray)
+{
+    /***********************************************************************
+     * BUG-46572
+     *
+     * Description :
+     *    System Table을 통해서 package.procedure 형태의 procedure의 존재 유무를
+     *    확인하고, PSM Array로 정의되어 있는지 확인한다.
+     *
+     *    SYSTEM_.SYS_USERS_, YSTEM_.SYS_PACKAGE_PARAS_ 두개의 테이블 조인.
+     *
+     * Implementation :
+     *
+     ***********************************************************************/
+    SQLHSTMT     sStmt  = SQL_NULL_HSTMT;
+
+    acp_uint32_t sDataType                             = 0;
+
+    SQLLEN       sDataTypeInd;
+
+    SQLRETURN sRc;
+
+    acp_char_t *sQueryString = (acp_char_t*)"SELECT PACKAGE_PARAS.DATA_TYPE FROM "
+                                            "SYSTEM_.SYS_USERS_ USERS, SYSTEM_.SYS_PACKAGE_PARAS_ PACKAGE_PARAS WHERE "
+                                            "USERS.USER_NAME = ? AND USERS.USER_ID = PACKAGE_PARAS.USER_ID AND "
+                                            "PACKAGE_PARAS.PACKAGE_NAME = ? AND PACKAGE_PARAS.OBJECT_NAME = ?";
+
+    ACI_TEST( SQLAllocStmt( aConnNode->mHdbc, &sStmt ) == SQL_ERROR );
+
+    ACI_TEST( SQLPrepare(sStmt, (SQLCHAR*)sQueryString, SQL_NTS) == SQL_ERROR );
+
+    ACI_TEST( SQLBindCol(sStmt, 1, SQL_C_SLONG, &sDataType, sizeof(acp_uint32_t), &sDataTypeInd) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               1,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aUserNameLen,
+                               0,
+                               aUserName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               2,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aPackageNameLen,
+                               0,
+                               aPackageName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               3,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aPSMNameLen,
+                               0,
+                               aPSMName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLExecute(sStmt) == SQL_ERROR );
+
+    while ( ACP_TRUE )
+    {
+        sRc = SQLFetch( sStmt );
+        ACI_TEST( sRc == SQL_ERROR );
+
+        if (sRc == SQL_SUCCESS || sRc == SQL_SUCCESS_WITH_INFO )
+        {
+            if ( sDataTypeInd != SQL_NULL_DATA && sDataType == ULP_PSM_ARRAY_DATA_TYPE)
+            {
+                *aIsPSMArray = ACP_TRUE;
+                break;
+            }
+        }
+        else if (sRc == SQL_NO_DATA )
+        {
+            break;
+        }
+    }
+
+    ACI_TEST( SQLFreeStmt( sStmt, SQL_DROP ) == SQL_ERROR );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    ulpSetErrorInfo4CLI( aConnNode,
+                         sStmt,
+                         SQL_ERROR,
+                         aSqlstmt->sqlcaerr,
+                         aSqlstmt->sqlcodeerr,
+                         aSqlstmt->sqlstateerr,
+                         ERR_TYPE3 );
+
+    if (sStmt != SQL_NULL_HSTMT)
+    {
+        SQLFreeStmt( sStmt, SQL_DROP );
+    }
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulpCheckUserPSMArray(ulpLibConnNode *aConnNode,
+                            ulpSqlstmt     *aSqlstmt,
+                            acp_char_t     *aUserName,
+                            acp_uint32_t    aUserNameLen,
+                            acp_char_t     *aPSMName,
+                            acp_uint32_t    aPSMNameLen,
+                            acp_bool_t     *aIsPSMArray)
+{
+    SQLHSTMT    sStmt  = SQL_NULL_HSTMT;
+
+    acp_uint32_t sDataType    = 0;
+
+    SQLLEN       sDataTypeInd;
+
+    SQLRETURN sRc;
+
+    /* BUG-45779
+     * BUG-46572
+     *
+     * 1. 리턴값의 type이 array일경우(function에 해당)
+     * dba_users, procedure, 2개의 테이블을 user_name과 proc_name을 조건으로 조인,
+     *
+     * 2. 인자의 type이 array일경우(procedure, function 둘다 해당)
+     * dba_users, procedure, proc_paras, 3개의 테이블을 user_name과 proc_name을 조건으로 조인,
+     *
+     * 1과 2의 결과를 union하여 전체결과중에 하나라도 결과 값이 있으면 psm이 존재.
+     * psm이 존재할경우 data_type을 통하여 psm array인지 확인
+     */
+     /* BUG-46516 DBA_USER는 system, sys 유저만 접근 가능하므로, sys_users를 통해서 조회하도록 변경 */
+    acp_char_t *sQueryString = (acp_char_t*)"SELECT PROC_PARAS.DATA_TYPE FROM "
+                                            "SYSTEM_.SYS_USERS_ SYS_USERS, SYSTEM_.SYS_PROCEDURES_ PROCEDURES, SYSTEM_.SYS_PROC_PARAS_ PROC_PARAS "
+                                            "WHERE SYS_USERS.USER_NAME=? AND SYS_USERS.USER_ID = PROCEDURES.USER_ID AND PROCEDURES.PROC_NAME = ? AND PROCEDURES.PROC_OID = PROC_PARAS.PROC_OID "
+                                            "UNION SELECT PROCEDURES.RETURN_DATA_TYPE FROM "
+                                            "SYSTEM_.SYS_USERS_ SYS_USERS, SYSTEM_.SYS_PROCEDURES_ PROCEDURES WHERE "
+                                            "SYS_USERS.USER_NAME=? AND SYS_USERS.USER_ID = PROCEDURES.USER_ID AND PROCEDURES.PROC_NAME = ?";
+
+
+    ACI_TEST( SQLAllocStmt( aConnNode->mHdbc, &sStmt ) == SQL_ERROR );
+
+    ACI_TEST( SQLPrepare(sStmt, (SQLCHAR*)sQueryString, SQL_NTS) == SQL_ERROR );
+
+    ACI_TEST( SQLBindCol(sStmt, 1, SQL_C_SLONG, &sDataType, sizeof(acp_uint32_t), &sDataTypeInd) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               1,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aUserNameLen,
+                               0,
+                               aUserName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               2,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aPSMNameLen,
+                               0,
+                               aPSMName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               3,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aUserNameLen,
+                               0,
+                               aUserName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLBindParameter(sStmt,
+                               4,
+                               SQL_PARAM_INPUT,
+                               SQL_C_CHAR,
+                               SQL_VARCHAR,
+                               aPSMNameLen,
+                               0,
+                               aPSMName,
+                               ULP_MAX_OBJECT_NAME_LEN,
+                               NULL) == SQL_ERROR );
+
+    ACI_TEST( SQLExecute(sStmt) == SQL_ERROR );
+
+    while ( ACP_TRUE )
+    {
+        sRc = SQLFetch( sStmt );
+        ACI_TEST( sRc == SQL_ERROR );
+
+        if ( sRc == SQL_SUCCESS || sRc == SQL_SUCCESS_WITH_INFO )
+        {
+            if ( sDataTypeInd != SQL_NULL_DATA && sDataType == ULP_PSM_ARRAY_DATA_TYPE )
+            {
+                *aIsPSMArray = ACP_TRUE;
+                break;
+            }
+        }
+        else if (sRc == SQL_NO_DATA )
+        {
+            break;
+        }
+    }
+
+    ACI_TEST( SQLFreeStmt( sStmt, SQL_DROP ) == SQL_ERROR );
+
+    return ACI_SUCCESS;
+
+    ulpSetErrorInfo4CLI( aConnNode,
+                         sStmt,
+                         SQL_ERROR,
+                         aSqlstmt->sqlcaerr,
+                         aSqlstmt->sqlcodeerr,
+                         aSqlstmt->sqlstateerr,
+                         ERR_TYPE3 );
+    ACI_EXCEPTION_END;
+
+    if (sStmt != SQL_NULL_HSTMT)
+    {
+        SQLFreeStmt( sStmt, SQL_DROP );
+    }
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulpCheckPSMArray ( ulpLibConnNode *aConnNode,
+                          ulpSqlstmt  *aSqlstmt,
+                          acp_bool_t  *aIsPSMArray )
+{
+/***********************************************************************
+ * BUG-45779
+ *
+ * Description :
+ *    System Table을 통해서 해당 PSM이 Array Type의 인자를 포함하고 있는지 확인한다.
+ *    Array Type을 포함하고 있을경우에만 Meta정보를 포함하여 Bind하게 된다.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    acp_char_t  sUserName[ULP_MAX_OBJECT_NAME_LEN]    = { '\0', };
+    acp_char_t  sFirstName[ULP_MAX_OBJECT_NAME_LEN]   = { '\0', };
+    acp_char_t  sSecondName[ULP_MAX_OBJECT_NAME_LEN]  = { '\0', };
+
+    acp_uint32_t    sStmtStrLen    = 0;
+    acp_uint32_t    sUserNameLen   = 0;
+    acp_uint32_t    sFirstNameLen  = 0;
+    acp_uint32_t    sSecondNameLen = 0;
+
+    acp_char_t  sTmpStr1[ULP_MAX_OBJECT_NAME_LEN]      = { '\0', };
+    acp_char_t  sTmpStr2[ULP_MAX_OBJECT_NAME_LEN]      = { '\0', };
+    acp_char_t  sTmpStr3[ULP_MAX_OBJECT_NAME_LEN]      = { '\0', };
+
+    acp_uint32_t    sTmpStrIndex1 = 0;
+    acp_uint32_t    sTmpStrIndex2 = 0;
+    acp_uint32_t    sTmpStrIndex3 = 0;
+
+    acp_uint8_t     sDotCount     = 0;
+
+    acp_uint32_t    i             = 0;
+    acp_char_t      sChar;
+
+    sStmtStrLen = acpCStrLen( aSqlstmt->stmt, 1024 );
+
+    /* BUG-45779
+     * BUG-46572
+     * BUG-46600
+     *
+     * execute psm(); 일경우
+     * dotCount는 0이며
+     * sTmpStr1=EXECUTEPSM
+     * sTmpStr2='\0'
+     * sTmpStr3='\0' 이 저장됨.
+     *
+     * execute user.psm(); 인경우
+     * dotCount이 1이며
+     * sTmpStr1=EXECUTEUSER
+     * sTmpStr2=PSM
+     * sTmpStr3='\0' 으로 저장
+     *
+     * execute user.pkg1.psm(); 인경우
+     * dotCount는 2이며
+     * sTmpStr1=EXECUTEUSER
+     * sTmpStr2=PKG1
+     * sTmpStr3=PSM 으로 저장
+     */
+    for (i=0; i < sStmtStrLen; i++ )
+    {
+        sChar =  aSqlstmt->stmt[i];
+
+        if( sChar == '.')
+        {
+            sDotCount++;
+            continue;
+        }
+        else if( sChar == '(' )
+        {
+            break;
+        }
+
+        if ( (sChar != ' ') &&
+             (sChar != '?') &&
+             (sChar != ':') &&
+             (sChar != '=') &&
+             (sChar != '\t') )
+        {
+            if ( sDotCount == 0 )
+            {
+                sTmpStr1[sTmpStrIndex1] = acpCharToUpper(sChar);
+                sTmpStrIndex1++;
+            }
+            else if ( sDotCount == 1 )
+            {
+                sTmpStr2[sTmpStrIndex2] = acpCharToUpper(sChar);
+                sTmpStrIndex2++;
+            }
+            else if ( sDotCount == 2 )
+            {
+                sTmpStr3[sTmpStrIndex3] = acpCharToUpper(sChar);
+                sTmpStrIndex3++;
+            }
+        }
+    }
+
+    if ( sDotCount == 0 )
+    {
+        /* BUG-46600 UserName = ConnectionUserName, PSMName = SecondName */
+        /* BUG-45779 EXECUTE 문자 제거후 */
+        ACI_TEST( acpCStrCpy(sSecondName,
+                             ULP_MAX_OBJECT_NAME_LEN,
+                             sTmpStr1 + 7,
+                             acpCStrLen(sTmpStr1, ULP_MAX_OBJECT_NAME_LEN) - 7)
+                  == ACI_FAILURE );
+
+    }
+    else if (sDotCount ==  1 )
+    {
+        /* BUG-46600
+         * UserName = ConnectionUserName, packageName = FirstName, PSMName = SecondName 또는
+         * UserName = FirstName, PSMName = SecondName */
+        /* BUG-45779 EXECUTE 문자 제거 */
+        ACI_TEST( acpCStrCpy(sFirstName,
+                             ULP_MAX_OBJECT_NAME_LEN,
+                             sTmpStr1 + 7,
+                             acpCStrLen(sTmpStr1, ULP_MAX_OBJECT_NAME_LEN) - 7 )
+                  == ACI_FAILURE );
+
+        ACI_TEST( acpCStrCpy(sSecondName,
+                             ULP_MAX_OBJECT_NAME_LEN,
+                             sTmpStr2,
+                             acpCStrLen(sTmpStr2, ULP_MAX_OBJECT_NAME_LEN))
+                  == ACI_FAILURE );
+    }
+    else
+    {
+        /* BUG-46600
+         * UserName = TmpStr1, packageName = FirstName, PSMName = SecondName */
+        /* BUG-46600 EXECUTE 문자 제거 */
+        ACI_TEST( acpCStrCpy(sUserName,
+                             ULP_MAX_OBJECT_NAME_LEN,
+                             sTmpStr1 + 7,
+                             acpCStrLen(sTmpStr1, ULP_MAX_OBJECT_NAME_LEN) - 7 )
+                  == ACI_FAILURE );
+
+        ACI_TEST( acpCStrCpy(sFirstName,
+                             ULP_MAX_OBJECT_NAME_LEN,
+                             sTmpStr2,
+                             acpCStrLen(sTmpStr2, ULP_MAX_OBJECT_NAME_LEN) - 7 )
+                  == ACI_FAILURE );
+
+        ACI_TEST( acpCStrCpy(sSecondName,
+                             ULP_MAX_OBJECT_NAME_LEN,
+                             sTmpStr3,
+                             acpCStrLen(sTmpStr3, ULP_MAX_OBJECT_NAME_LEN))
+                  == ACI_FAILURE );
+    }
+
+    if ( sUserName[0] == '\0' )
+    {
+        sUserNameLen = acpCStrLen(aConnNode->mUser, ULP_MAX_OBJECT_NAME_LEN);
+        for ( i = 0; i < sUserNameLen; i++ )
+        {
+            sUserName[i] = acpCharToUpper(aConnNode->mUser[i]);
+        }
+    }
+    else
+    {
+        sUserNameLen = acpCStrLen(sUserName, ULP_MAX_OBJECT_NAME_LEN);
+    }
+
+    if ( sFirstName[0] != '\0' )
+    {
+        sFirstNameLen = acpCStrLen(sFirstName, ULP_MAX_OBJECT_NAME_LEN);
+    }
+
+    sSecondNameLen  = acpCStrLen(sSecondName, ULP_MAX_OBJECT_NAME_LEN);
+
+    if ( sDotCount == 0 )
+    {
+        /* BUG-46572 가장먼저 connect_user_name, packget_name.psm_name으로 조회 */
+        /* BUG-46572 . 없이 procedure name만 있으므로 바로 procedure를 조회한다. */
+        ACI_TEST( ulpCheckUserPSMArray(aConnNode,
+                                       aSqlstmt,
+                                       sUserName,
+                                       sUserNameLen,
+                                       sSecondName,
+                                       sSecondNameLen,
+                                       aIsPSMArray ) == ACI_FAILURE );
+    }
+    else if ( sDotCount == 1 )
+    {
+        ACI_TEST( ulpCheckPackagePSMArray(aConnNode,
+                                          aSqlstmt,
+                                          sUserName,
+                                          sUserNameLen,
+                                          sFirstName,
+                                          sFirstNameLen,
+                                          sSecondName,
+                                          sSecondNameLen,
+                                          aIsPSMArray ) == ACI_FAILURE );
+
+        if ( *aIsPSMArray == ACP_FALSE )
+        {
+            /* BUG-46572 psm이 존재하지 않을시, user_name.psm_name으로 한번더 조회 */
+            ACI_TEST( ulpCheckUserPSMArray(aConnNode,
+                                           aSqlstmt,
+                                           sFirstName,
+                                           sFirstNameLen,
+                                           sSecondName,
+                                           sSecondNameLen,
+                                           aIsPSMArray ) == ACI_FAILURE );
+        }
+    }
+    else
+    {
+        ACI_TEST( ulpCheckPackagePSMArray(aConnNode,
+                                          aSqlstmt,
+                                          sUserName,
+                                          sUserNameLen,
+                                          sFirstName,
+                                          sFirstNameLen,
+                                          sSecondName,
+                                          sSecondNameLen,
+                                          aIsPSMArray ) == ACI_FAILURE );
+    }
+
+    return ACI_SUCCESS;
+
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -613,8 +1144,8 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
 
 ACI_RC ulpExecuteCore( ulpLibConnNode *aConnNode,
                        ulpLibStmtNode *aStmtNode,
-                       ulpSqlstmt  *aSqlstmt,
-                       SQLHSTMT    *aHstmt )
+                       ulpSqlstmt     *aSqlstmt,
+                       SQLHSTMT       *aHstmt )
 {
 /***********************************************************************
  *
@@ -632,12 +1163,26 @@ ACI_RC ulpExecuteCore( ulpLibConnNode *aConnNode,
     acp_bool_t        sIsAtomic;
     acp_bool_t        sIsAlloc;
 
+    /* BUG-45779 */
+    acp_list_node_t     *sPSMMetaIterator   = NULL;
+    acp_list_node_t     *sPSMMetaNodeNext   = NULL;
+    ulpPSMArrDataInfo   *sUlpPSMArrDataInfo = NULL;
+
     sParamStatus = NULL;
     sIsAlloc     = ACP_FALSE;
-    sIsParamArr = ((aStmtNode->mBindInfo.mIsArray == ACP_TRUE) &&
-                   (aSqlstmt->stmttype != S_DirectSEL) &&
-                   (aSqlstmt->stmttype != S_Open))? ACP_TRUE : ACP_FALSE;
-    sIsAtomic    = aStmtNode->mBindInfo.mIsAtomic;
+
+    if ( aStmtNode->mUlpPSMArrInfo.mIsPSMArray == ACP_TRUE )
+    {
+        sIsParamArr = ACP_FALSE;
+        sIsAtomic   = ACP_FALSE;
+    }
+    else
+    {
+        sIsParamArr = ((aStmtNode->mBindInfo.mIsArray == ACP_TRUE) &&
+                       (aSqlstmt->stmttype != S_DirectSEL) &&
+                       (aSqlstmt->stmttype != S_Open))? ACP_TRUE : ACP_FALSE;
+        sIsAtomic    = aStmtNode->mBindInfo.mIsAtomic;
+    }
 
     /* array binding인지 확인. */
     if ( sIsParamArr == ACP_TRUE )
@@ -686,6 +1231,14 @@ ACI_RC ulpExecuteCore( ulpLibConnNode *aConnNode,
                             ERR_INVALID_INDICATOR_VALUE
                           );
         }
+    }
+
+    /* BUG-45779 User Data Copy */
+    ACP_LIST_ITERATE_SAFE(&aStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList, sPSMMetaIterator, sPSMMetaNodeNext)
+    {
+        sUlpPSMArrDataInfo = (ulpPSMArrDataInfo *)sPSMMetaIterator->mObj;
+
+        ACI_TEST( ulpPSMArrayWrite(aSqlstmt, sUlpPSMArrDataInfo->mUlpHostVar, sUlpPSMArrDataInfo->mData) != ACI_SUCCESS );
     }
 
     sSqlResExec = SQLExecute( *aHstmt );

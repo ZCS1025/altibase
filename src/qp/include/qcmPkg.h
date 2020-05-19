@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmPkg.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmPkg.h 84053 2018-09-20 09:40:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QCM_PKG_H_
@@ -216,7 +216,8 @@ public:
                   UInt             aRelatedUserID,
                   SChar          * aRelatedObjectName,
                   UInt             aRelatedObjectNameSize,
-                  qsObjectType     aRelatedObjectType);
+                  qsObjectType     aRelatedObjectType,
+                  idBool           aIsUseTx = ID_FALSE ); // BUG-46416
 
     /* BUG-39340
        alter package ~ compile specification하면,

@@ -17,6 +17,7 @@
 #include <idl.h>
 #include <idp.h>
 #include <qci.h>
+#include <rpi.h>
 #include <mmErrorCode.h>
 #include <mmuProperty.h>
 #include <mmuAccessList.h>
@@ -169,6 +170,18 @@ UInt   mmuProperty::mTcpEnable;
 /* PROJ-2626 Snapshot Export */
 UInt   mmuProperty::mSnapshotMemThreshold;
 UInt   mmuProperty::mSnapshotDiskUndoThreshold;
+
+/* PROJ-2677 DDL synchronization */
+UInt   mmuProperty::mReplicationDDLSync;
+UInt   mmuProperty::mReplicationDDLSyncTimeout;
+
+/* PROJ-2681 */
+UInt   mmuProperty::mIBEnable;
+UInt   mmuProperty::mIBPortNo;
+UInt   mmuProperty::mIBMaxListen;
+UInt   mmuProperty::mIBListenerDisable;
+UInt   mmuProperty::mIBLatency;
+UInt   mmuProperty::mIBConChkSpin;
 
 IDE_RC mmuProperty::callbackLoginTimeout(idvSQL * /*aStatistics*/,
                                          SChar * /*aName*/,
@@ -679,6 +692,33 @@ IDE_RC mmuProperty::callbackSnapshotDiskUndoThreshold(idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
+/* PROJ-2677 */
+IDE_RC mmuProperty::callbackReplicationDDLSync( idvSQL * /*aStatistics*/,
+                                                SChar  * /*aName*/,
+                                                void   * /*aOldValue*/,
+                                                void   * aNewValue,
+                                                void   * /*aArg*/ )
+{
+    mReplicationDDLSync = *( (UInt *)aNewValue );
+
+    rpi::setReplicationDDLSync( mReplicationDDLSync );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC mmuProperty::callbackReplicationDDLSyncTimeout( idvSQL * /*aStatistics*/,
+                                                       SChar  * /*aName*/,
+                                                       void   * /*aOldValue*/,
+                                                       void   * aNewValue,
+                                                       void   * /*aArg*/ )
+{
+    mReplicationDDLSyncTimeout = *( (UInt *)aNewValue );
+
+    rpi::setReplicationDDLSyncTimeout( mReplicationDDLSyncTimeout );
+
+    return IDE_SUCCESS;
+}
+
 void mmuProperty::initialize()
 {
 }
@@ -936,6 +976,18 @@ void mmuProperty::load()
     /* PROJ-2626 Snapshot Export */
     IDE_ASSERT(idp::read("SNAPSHOT_DISK_UNDO_THRESHOLD", &mSnapshotDiskUndoThreshold ) == IDE_SUCCESS);
 
+    /* PROJ-2677 */
+    IDE_ASSERT( idp::read( "REPLICATION_DDL_SYNC", &mReplicationDDLSync ) == IDE_SUCCESS );
+    IDE_ASSERT( idp::read( "REPLICATION_DDL_SYNC_TIMEOUT", &mReplicationDDLSyncTimeout ) == IDE_SUCCESS );
+
+    /* PROJ-2681 */
+    IDE_ASSERT(idp::read("IB_ENABLE", &mIBEnable) == IDE_SUCCESS);
+    IDE_ASSERT(idp::read("IB_PORT_NO", &mIBPortNo) == IDE_SUCCESS);
+    IDE_ASSERT(idp::read("IB_MAX_LISTEN", &mIBMaxListen) == IDE_SUCCESS);
+    IDE_ASSERT(idp::read("IB_LISTENER_DISABLE", &mIBListenerDisable) == IDE_SUCCESS);
+    IDE_ASSERT(idp::read("IB_LATENCY", &mIBLatency) == IDE_SUCCESS);
+    IDE_ASSERT(idp::read("IB_CONCHKSPIN", &mIBConChkSpin) == IDE_SUCCESS);
+
     /* proj-1538 ipv6: initialize all entries. */
     mmuAccessList::clear();
 
@@ -1038,7 +1090,7 @@ void mmuProperty::load()
             }
             else
             {
-                sIPACLMask = idlOS::atoi(sTk);
+                sIPACLMask = (UInt)idlOS::atoi(sTk);
                 if (sIPACLMask > 128)
                 {
                     sIPACLMask = 128; /* max ipv6 addr bits: 128 */
@@ -1167,6 +1219,9 @@ void mmuProperty::load()
     /* PROJ-2626 Snapshot Export */
     ( void )idp::setupAfterUpdateCallback("SNAPSHOT_MEM_THRESHOLD", callbackSnapshotMemThreshold );
     ( void )idp::setupAfterUpdateCallback("SNAPSHOT_DISK_UNDO_THRESHOLD", callbackSnapshotDiskUndoThreshold );
+
+    ( void )idp::setupAfterUpdateCallback( "REPLICATION_DDL_SYNC", callbackReplicationDDLSync );
+    ( void )idp::setupAfterUpdateCallback( "REPLICATION_DDL_SYNC_TIMEOUT", callbackReplicationDDLSyncTimeout );
 }
 
 /* ------------------------------------------------

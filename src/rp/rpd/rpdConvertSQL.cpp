@@ -1208,7 +1208,7 @@ IDE_RC rpdConvertSQL::getUpdateSQL( rpdMetaItem * aMetaItemForSource,
 
     idlOS::snprintf( aQueryString,
                      aQueryStringLength,
-                     "UPDATE /*+ NO_EXEC_FAST */%s.%s SET ",
+                     "UPDATE /*+ NO_EXEC_FAST NO_SERIAL_FILTER */%s.%s SET ",
                      aMetaItemForTarget->mItem.mLocalUsername,
                      aMetaItemForTarget->mItem.mLocalTablename );
     sTempString = aQueryString + idlOS::strlen( aQueryString );

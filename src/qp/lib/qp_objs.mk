@@ -1,5 +1,5 @@
 #
-# $Id: qp_objs.mk 82186 2018-02-05 05:17:56Z lswhh $
+# $Id: qp_objs.mk 83637 2018-08-07 05:40:38Z khkwak $
 #
 
 QCI_SRCS = $(QP_DIR)/qci/qci.cpp  \
@@ -370,7 +370,12 @@ QSF_SRCS = $(QP_DIR)/qsf/qsf.cpp \
            $(QP_DIR)/qsf/qsfRecvText.cpp \
            $(QP_DIR)/qsf/qsfCheckConnectState.cpp \
            $(QP_DIR)/qsf/qsfCheckConnectReply.cpp \
-           $(QP_DIR)/qsf/qsfSetPrevMetaVersion.cpp
+           $(QP_DIR)/qsf/qsfSetPrevMetaVersion.cpp \
+           $(QP_DIR)/qsf/dbms_sql_plan_cache/qsfKeepPlan.cpp \
+           $(QP_DIR)/qsf/dbms_sql_plan_cache/qsfUnkeepPlan.cpp \
+           $(QP_DIR)/qsf/dbms_standard/qsfInserting.cpp \
+           $(QP_DIR)/qsf/dbms_standard/qsfUpdating.cpp \
+           $(QP_DIR)/qsf/dbms_standard/qsfDeleting.cpp
 
 QSV_SRCS = $(QP_DIR)/qsv/qsv.cpp \
            $(QP_DIR)/qsv/qsvProcStmts.cpp \

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdMeta.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpdMeta.h 85321 2019-04-25 04:58:40Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RPD_META_H_
@@ -91,15 +91,19 @@ class smiStatement;
 typedef enum
 {
     RP_META_DICTTABLECOUNT  = 0,
+    RP_META_PARTITIONCOUNT  = 1,
+    RP_META_XSN             = 2,
     RP_META_MAX
 } RP_PROTOCOL_OP_CODE;
 
 typedef struct rpdReplHosts
 {
-    SInt    mHostNo;
-    UInt    mPortNo;
-    SChar   mRepName[QC_MAX_OBJECT_NAME_LEN + 1];
-    SChar   mHostIp [QC_MAX_IP_LEN + 1];
+    SInt           mHostNo;
+    UInt           mPortNo;
+    SChar          mRepName[QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar          mHostIp [QC_MAX_IP_LEN + 1];
+    RP_SOCKET_TYPE mConnType;
+    rpIBLatency    mIBLatency;
 } rpdReplHosts;
 
 /* PROJ-1915 SYS_REP_OFFLINE_DIR_ */
@@ -115,6 +119,23 @@ typedef struct rpdVersion
     ULong   mVersion;
 }rpdVersion;
 
+typedef struct rpdOldItem
+{
+    SChar  mRepName[QC_MAX_OBJECT_NAME_LEN + 1];
+    ULong  mTableOID;
+    ULong  mOldTableOID;
+    SChar  mUserName[QC_MAX_OBJECT_NAME_LEN + 1];  
+    SChar  mTableName[QC_MAX_OBJECT_NAME_LEN + 1]; 
+    SChar  mPartName[QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar  mRemoteUserName[QC_MAX_OBJECT_NAME_LEN + 1];  
+    SChar  mRemoteTableName[QC_MAX_OBJECT_NAME_LEN + 1]; 
+    SChar  mRemotePartName[QC_MAX_OBJECT_NAME_LEN + 1];
+    UInt   mPartitionOrder;
+    SChar  mPartCondMinValues[QC_MAX_PARTKEY_COND_VALUE_LEN + 1]; 
+    SChar  mPartCondMaxValues[QC_MAX_PARTKEY_COND_VALUE_LEN + 1]; 
+    UInt   mPKIndexID;
+    ULong  mInvalidMaxSN;
+} rpdOldItem;
 
 typedef struct rpdReplications
 {
@@ -173,6 +194,7 @@ typedef struct rpdReplications
     ULong                 mApplierInitBufferSize;
 
     smSN                  mRemoteXSN;
+    smSN                  mRemoteLastDDLXSN;
 } rpdReplications;
 
 typedef struct rpdReplItems
@@ -254,6 +276,7 @@ public:
     UInt                  mPartitionOrder;
     SChar                 mPartCondMinValues[QC_MAX_PARTKEY_COND_VALUE_LEN + 1];
     SChar                 mPartCondMaxValues[QC_MAX_PARTKEY_COND_VALUE_LEN + 1];
+    UInt                  mPartitionCount;
 
     /* PROJ-1442 Replication Online 중 DDL 허용
      * Column 추가/삭제 지원을 위해 추가한다.
@@ -262,13 +285,14 @@ public:
     UInt                  mMapColID[SMI_COLUMN_ID_MAXIMUM];
     idBool                mIsReplCol[SMI_COLUMN_ID_MAXIMUM];
     idBool                mHasOnlyReplCol;  // Replication 대상 Column만 있는가
+    idBool                mNeedCompact;
 
     UInt                  mCompressColCount;
     UInt                  mCompressCID[SMI_COLUMN_ID_MAXIMUM];
 
 private:
     idBool                mNeedConvertSQL;
-
+    idBool                mIsDummyItem;
 // Method
 public :
     void   initialize( void );
@@ -345,6 +369,14 @@ public :
     idBool      needConvertSQL( void );
     void        setNeedConvertSQL( idBool aNeedConvertSQL );
 
+    idBool      isDummyItem( void );
+    void        setIsDummyItem( idBool aIsDummyItem );
+
+    inline idBool needCompact( void )
+    {
+        return mNeedCompact;
+    }
+
 private:
     /* BUG-34360 Check Constraint */
     IDE_RC equalCheck( const SChar    * aTableName,
@@ -371,21 +403,39 @@ class rpdMeta
 public:
     rpdMeta();
 
-    static void setTableOId(rpdMeta* aMeta);
-    static IDE_RC equals( idBool    aIsLocalReplication,
-                          rpdMeta * aMeta1,
-                          rpdMeta * aMeta2 );
+    static IDE_RC checkLocalNRemoteName( rpdReplItems * aItems );
+
+    static IDE_RC equals( idvSQL  * aStatistics,
+                          idBool    aIsLocalReplication,
+                          UInt      aSqlApplyEnable,
+                          rpdMeta * aRemoteMeta,
+                          rpdMeta * aLocalMeta );
+
     static IDE_RC equalRepl( idBool            aIsLocalReplication,
-                             rpdReplications * aRepl1,
-                             rpdReplications * aRepl2 );
-    static IDE_RC equalItem( UInt             aReplMode,
+                             UInt              aSqlApplyEnable,
+                             rpdReplications * aRemoteRepl,
+                             rpdReplications * aLocalRepl );
+    static IDE_RC equalItemsAndMakeDummy( idvSQL  * aStatistics,
+                                          idBool    aIsLocalReplication,
+                                          UInt      aSqlApplyEnable,
+                                          rpdMeta * aRemoteMeta,
+                                          rpdMeta * aLocalMeta );
+    static IDE_RC equalItems( idvSQL  * aStatistics,
+                              idBool    aIsLocalReplication,
+                              UInt      aSqlApplyEnable,
+                              rpdMeta * aRemoteMeta,
+                              rpdMeta * aLocalMeta );
+    static IDE_RC equalItem( idvSQL         * aStatistics,
+                             UInt             aReplMode,
                              idBool           aIsLocalReplication,
+                             UInt             aSqlApplyEnable,
                              rpdMetaItem    * aItem1, 
                              rpdMetaItem    * aItem2 );
-    static IDE_RC equalPartCondValues(SChar *aTableName,
-                                      SChar *aUserName,
-                                      SChar *aPartCondValues1,
-                                      SChar *aPartCondValues2 );
+    static IDE_RC equalPartCondValues( idvSQL * aStatistics,
+                                       SChar  * aTableName,
+                                       SChar  * aUserName,
+                                       SChar  * aPartCondValues1,
+                                       SChar  * aPartCondValues2 );
     static IDE_RC equalColumn(SChar      *aTableName1,
                               rpdColumn  *aCol1,
                               SChar      *aTableName2,
@@ -442,6 +492,8 @@ public:
     static IDE_RC removeOldMetaRepl(smiStatement * aSmiStmt,
                                     SChar        * aRepName);
 
+    static IDE_RC insertReplOldPartItem( smiStatement * aSmiStmt, rpdMetaItem * aItem );
+
     void   initialize();
     void   freeMemory();
     void   finalize();
@@ -450,7 +502,8 @@ public:
                  idBool               aForUpdateFlag,
                  RP_META_BUILD_TYPE   aMetaBuildType,
                  smiTBSLockValidType  aTBSLvType);
-    IDE_RC buildWithNewTransaction( SChar              * aRepName,
+    IDE_RC buildWithNewTransaction( idvSQL             * aStatistics,
+                                    SChar              * aRepName,
                                     idBool               aForUpdateFlag,
                                     RP_META_BUILD_TYPE   aMetaBuildType );
     static IDE_RC buildTableInfo(smiStatement *aSmiStmt,
@@ -467,11 +520,22 @@ public:
                                     qcmTableInfo * aItemInfo,
                                     rpdMetaItem  * aMetaItem,
                                     smiTBSLockValidType aTBSLvType);
+
+    IDE_RC buildLastItemInfo( smiStatement * aSmiStmt, smiTBSLockValidType aTBSLvType );
+
     IDE_RC buildOldItemsInfo(smiStatement * aSmiStmt);
     IDE_RC buildOldColumnsInfo(smiStatement * aSmiStmt,
                                rpdMetaItem  * aMetaItem);
     IDE_RC buildOldIndicesInfo(smiStatement * aSmiStmt,
                                rpdMetaItem  * aMetaItem);
+
+    rpdMetaItem * findMatchMetaItem( smiTableMeta * aOldItem );
+
+    IDE_RC buildOldPartitonInfo( smiStatement * aSmiStmt,
+                                 rpdMetaItem  * aMetaItem,
+                                 rpdOldItem   * aOldItem,
+                                 qcmTableInfo * aItemInfo,
+                                 smiTBSLockValidType aTBSLvType );
 
     IDE_RC buildOldCheckInfo( smiStatement * aSmiStmt,
                               rpdMetaItem  * aMetaItem );
@@ -479,17 +543,34 @@ public:
     static IDE_RC writeTableMetaLog(void        * aQcStatement,
                                     smOID         aOldTableOID,
                                     smOID         aNewTableOID);
+
+    IDE_RC insertNewTableInfo( smiStatement * aSmiStmt, 
+                               smiTableMeta * aItemMeta,
+                               const void   * aLogBody,
+                               smSN           aDDLCommitSN,
+                               idBool         aIsUpdate );
+
     IDE_RC updateOldTableInfo( smiStatement   * aSmiStmt,
                                rpdMetaItem    * aItemCache,
                                smiTableMeta   * aItemMeta,
-                               const void     * aLogBody,
+                               const void     * aLogBody,                                    
+                               smSN             aDDLCommitSN,
                                idBool           aIsUpdateOldItem );
+
+    IDE_RC deleteOldTableInfo( smiStatement * aSmiStmt, smOID aOldTableOID );
+
     void sortItemsAfterBuild();
 
     IDE_RC sendMeta( void               * aHBTResource,
-                     cmiProtocolContext * aProtocolContext ); // BUGBUG : add return flag
+                     cmiProtocolContext * aProtocolContext,
+                     idBool             * aExitFlag,
+                     idBool               aMetaInitFlag,
+                     UInt                 aTimeoutSec ); // BUGBUG : add return flag
     IDE_RC recvMeta( cmiProtocolContext * aProtocolContext,
-                     rpdVersion           aVersion );    // BUGBUG : add return flag
+                     idBool             * aExitFlag,
+                     rpdVersion           aVersion,
+                     UInt                 aTimeoutSec,
+                     idBool             * aMetaInitFlag );    // BUGBUG : add return flag
     idBool needToProcessProtocolOperation( RP_PROTOCOL_OP_CODE aOpCode, 
                                            rpdVersion          aRemoteVersion ); 
     void sort( void );
@@ -501,7 +582,7 @@ public:
 
     /* PROJ-1915 Meta를 복제한다. */
     IDE_RC copyMeta(rpdMeta * aDestMeta);
-    
+ 
     idBool isLobColumnExist( void );
 
     // PROJ-1624 non-partitioned index
@@ -689,6 +770,8 @@ public:
         aRepl->mFlags &= ~RP_OFFLINE_SENDER_MASK;
     }
 
+    static idBool isUseV6Protocol( rpdReplications * aReplication );
+
     smOID getTableOID( UInt aIndex );
 
     idBool  hasLOBColumn( void );
@@ -698,6 +781,8 @@ public:
     UInt  getMaxPkColCountInAllItem( void );
 
     smSN  getRemoteXSN( void );
+
+    smSN  getRemoteLastDDLXSN( void );
 
     /* BUG-42851 */
     static idBool isTransWait( rpdReplications * aRepl );
@@ -711,11 +796,18 @@ public:
 
     /* PROJ-2642 */
     UInt             getSqlApplyTableCount( void );
-    void             printNeedConvertSQLTable( void );
+    void             printItemActionInfo( void );
+
+    idBool           isTargetItem( SChar * aUserName,
+                                   SChar * aTargetTableName,
+                                   SChar * aTargetPartName );
+
+    rpdMetaItem    * findTableMetaItem( SChar * aLocalUserName, SChar * aLocalTableName );
 
 private:
 
-    static IDE_RC       equalPartitionInfo( rpdMetaItem    * aItem1,
+    static IDE_RC       equalPartitionInfo( idvSQL         * aStatistics,
+                                            rpdMetaItem    * aItem1,
                                             rpdMetaItem    * aItem2 );
     static void         initializeAndMappingColumn( rpdMetaItem   * aItem1,
                                                     rpdMetaItem   * aItem2 );
@@ -746,6 +838,63 @@ private:
 
     static IDE_RC       checkSqlApply( rpdMetaItem    * aItem1,
                                        rpdMetaItem    * aItem2 );
+
+    static idBool       equalReplTables( rpdMeta * aMeta1, rpdMeta * aMeta2 );
+    static idBool       equalReplItemsCount( rpdMeta * aMeta1, rpdMeta * aMeta2 );
+
+    static idBool       isMetaItemMatch( rpdMetaItem * aMetaItem1, rpdMetaItem * aMetaItem2 );
+
+    static void         copyPartCondValue( SChar * aDst, SChar * aSrc );
+
+    static IDE_RC       copyTableInfo( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem );
+
+    static IDE_RC       copyColumns( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem );
+
+    static IDE_RC       copyIndice( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem );
+
+    static IDE_RC       copyIndexTableRef( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem );
+
+    static IDE_RC       isNeedDummyItems( UInt      aSqlApplyEnable,
+                                          rpdMeta * aRemoteMeta, 
+                                          rpdMeta * aLocalMeta,
+                                          idBool  * aIsNeed );
+
+    IDE_RC              getLastReplItems( smiStatement * aSmiStmt, rpdMetaItem ** aLastItems );
+
+    SInt                getMetaItemMatchCount( rpdMeta * aMeta );
+
+    IDE_RC              makeDummyMetaItem( rpdMetaItem * aRemoteItem, rpdMetaItem * aItem );
+
+    void                fillOldMetaItem( rpdMetaItem * aItem, rpdOldItem * aOldItem );
+
+    IDE_RC              removeDummyMetaItems( void );
+
+    IDE_RC              getTableInfoByName( smiStatement  * aSmiStmt,
+                                            SChar         * aUserName,
+                                            SChar         * aTableName,
+                                            qciTableInfo ** aItemInfo );
+
+    IDE_RC              insertNewItem( smiStatement * aSmiStmt, 
+                                       smiTableMeta * aItemMeta,
+                                       const void   * aLogBody,
+                                       smSN           aDDLCommitSN,
+                                       idBool         aIsUpdate );
+    IDE_RC              deleteOldItem( smiStatement * aSmiStmt, smOID aOldTableOID );
+
+    IDE_RC              allocSortItems( void );
+
+    IDE_RC              reallocSortItems( void );
+
+    IDE_RC              buildDictTables( void );
+
+    IDE_RC              rebuildDictTables( void );
+
+    void                freeDictTables( void );
+
+    void                freeItems( void );
+
+    void                freeSortItems( void );
+
     // Attribute
 public:
     rpdReplications       mReplication;

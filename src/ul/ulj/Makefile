@@ -57,12 +57,14 @@ JAVA_PARAM= -Xincgc
 
 # JNI
 EXT_DIR  := $(UL_DIR_JDBC)/ext
-JNI_CLASSES := Altibase.jdbc.driver.JniExt
+JNI_CLASSES := Altibase.jdbc.driver.JniExt              \
+               Altibase.jdbc.driver.JniExtRdmaSocket
 INCLUDES += $(IDROPT)$(UL_DIR_JDBC)/include       \
             $(IDROPT)$(JAVA_HOME)/include         \
             $(IDROPT)$(JAVA_HOME)/include/linux
 
 include jdbc_jdk14.mk
+include jdbc_shard.mk
 
 ifeq  "$(debug)"  "0"
 JAVAC = $(JDK)/bin/javac -g:none -O -nowarn
@@ -98,32 +100,36 @@ jdbc: genErrMsg_check jdbc_trace_jar jdbc_jar
 genErrMsg_check:
 	@VERSION_STR=`$(ALTI_HOME)/bin/genErrMsg -f`;
 
-jdbc_jar: class-clean jdbc_compile
+jdbc_jar: class-clean jdbc_compile copy_service_provider
 	$(S_)echo "[JDBC JAR]"
-	$(S_)$(JAR) -cmf  $(DRIVER_DIR)/MANIFEST.MF  $(JDBC_JAR) -C $(JDBC_OUTPUT) $(DRIVER_DIR)
+	$(S_)$(JAR) -cmf  $(DRIVER_DIR)/MANIFEST.MF  $(JDBC_JAR) -C $(JDBC_OUTPUT) $(DRIVER_DIR) -C $(JDBC_OUTPUT) META-INF
 
-jdbc_trace_jar:  class-clean jdbc_trace_compile
+jdbc_trace_jar:  class-clean jdbc_trace_compile copy_service_provider
 	$(S_)echo "[JDBC Trace JAR]"
-	$(S_)$(JAR) -cmf  $(DRIVER_DIR)/MANIFEST.MF  $(JDBC_TRACE_JAR) -C $(JDBC_OUTPUT) $(DRIVER_DIR)
+	$(S_)$(JAR) -cmf  $(DRIVER_DIR)/MANIFEST.MF  $(JDBC_TRACE_JAR) -C $(JDBC_OUTPUT) $(DRIVER_DIR) -C $(JDBC_OUTPUT) META-INF
 
 jdbc_compile: $(VERSION_SRC) $(SQLSTATEMAP_SRC) trace_flag_false
 	$(S_)echo "[JDBC compile]"
 	$(S_)mkdir -p $(JDBC_OUTPUT)
-	$(S_)$(JAVAC) $(JDBC_SRC) -d $(JDBC_OUTPUT)
+	$(S_)$(JAVAC) $(JDBC_SRC) $(JDBC_SHARD_SRC) -d $(JDBC_OUTPUT)
 	$(S_)$(RM) $(JDBC_OUTPUT)/Altibase/jdbc/driver/logging
 
 jdbc_trace_compile: $(VERSION_SRC) $(SQLSTATEMAP_SRC) trace_flag_true
 	$(S_)echo "[JDBC Trace compile]"
 	$(S_)mkdir -p $(JDBC_OUTPUT)
-	$(S_)$(JAVAC) $(JDBC_SRC) -d $(JDBC_OUTPUT)
+	$(S_)$(JAVAC) $(JDBC_SRC) $(JDBC_SHARD_SRC) -d $(JDBC_OUTPUT)
+
+copy_service_provider:
+	$(S_)mkdir -p $(JDBC_OUTPUT)/META-INF/services
+	$(S_)cp $(DRIVER_DIR)/java.sql.Driver $(JDBC_OUTPUT)/META-INF/services
 
 # A4, A5 support both JDBC.
 
 jdbc4was: jdbc4was_jar
 
-jdbc4was_jar: jdbc4was_compile
+jdbc4was_jar: jdbc4was_compile copy_service_provider
 	$(S_)echo "[JDBC2WAS JAR]"
-	$(S_)$(JAR) -cmf  $(DRIVER_DIR4WAS)/MANIFEST.MF  $(JDBC_JAR4WAS) -C $(JDBC_OUTPUT) $(DRIVER_DIR4WAS)
+	$(S_)$(JAR) -cmf  $(DRIVER_DIR4WAS)/MANIFEST.MF  $(JDBC_JAR4WAS) -C $(JDBC_OUTPUT) $(DRIVER_DIR4WAS) -C $(JDBC_OUTPUT) META-INF
 
 jdbc4was_compile: $(VERSION_SRC) $(SQLSTATEMAP_SRC) trace_flag_false
 	$(S_)echo "[JDBC4WAS compile]"
@@ -132,7 +138,7 @@ jdbc4was_compile: $(VERSION_SRC) $(SQLSTATEMAP_SRC) trace_flag_false
 	$(S_)cd Altibase$(VERSION_STR)/jdbc/driver; find . -name "*.java" -exec perl -pi -e 's/Altibase.jdbc.driver/Altibase$(VERSION_STR).jdbc.driver/g' {} \;
 	$(S_)cd Altibase$(VERSION_STR)/jdbc/driver; find . -name "*.MF" -exec perl -pi -e 's/Altibase.jdbc.driver/Altibase$(VERSION_STR).jdbc.driver/g' {} \;
 	$(S_)mkdir -p $(JDBC_OUTPUT)
-	$(S_)$(JAVAC) $(JDBC_SRC4WAS) -d $(JDBC_OUTPUT)
+	$(S_)$(JAVAC) $(JDBC_SRC4WAS) $(JDBC_SHARD_SRC4WAS)  -d $(JDBC_OUTPUT)
 	$(S_)$(RM) $(JDBC_OUTPUT)/Altibase$(VERSION_STR)/jdbc/driver/logging
 
 # JDBC version generation
@@ -267,7 +273,7 @@ doc:
 	$(S_)echo "[JDBC doc]"
 	$(S_)rm -rf $(JDBC_DOC)
 	$(S_)mkdir $(JDBC_DOC)
-	$(S_)javadoc $(JDBC_SRC) -d $(JDBC_DOC) -package
+	$(S_)javadoc $(JDBC_SRC) $(JDBC_SHARD_SRC) -d $(JDBC_DOC) -package
 
 # Prevent parallel build.
 .NOTPARALLEL: compile

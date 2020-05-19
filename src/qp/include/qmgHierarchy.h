@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgHierarchy.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgHierarchy.h 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     Hierarchy Graph를 위한 정의
@@ -71,6 +71,7 @@ public:
     // Graph 의 초기화
     static IDE_RC  init( qcStatement  * aStatement,
                          qmsQuerySet  * aQuerySet,
+                         qmgGraph     * aChildGraph,
                          qmsFrom      * aFrom,
                          qmsHierarchy * aHierarchy,
                          qmgGraph    ** aGraph );
@@ -92,6 +93,15 @@ private:
                                      qmgHIER     * aMyGraph,
                                      qmsTableRef * aTableRef,
                                      UInt          aIndexCnt );
+
+    static IDE_RC searchTableID( qtcNode * aNode,
+                                 UShort  * aTableID,
+                                 idBool  * aFind );
+
+    static IDE_RC searchFrom( UShort     aTableID,
+                              qmsFrom  * aFrom,
+                              qmsFrom ** aFindFrom,
+                              idBool   * aFind );
 };
 
 #endif /* _O_QMG_HIERARCHY_H_ */

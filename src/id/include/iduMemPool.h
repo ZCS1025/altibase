@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemPool.h 81424 2017-10-24 09:20:55Z minku.kang $
+ * $Id: iduMemPool.h 84032 2018-09-19 05:32:05Z kclee $
  **********************************************************************/
 
 #ifndef _O_IDU_MEM_POOL_H_
@@ -14,6 +14,12 @@
 #include <iduMemMgr.h>
 
 #include <iduMemList.h>
+
+/* BUG-46165 */
+typedef enum iduMemPoolType{
+    IDU_MEMPOOL_TYPE_LEGACY,
+    IDU_MEMPOOL_TYPE_TIGHT 
+}iduMemPoolType;
 
 #define IDU_AUTOFREE_CHUNK_LIMIT         5
 
@@ -50,17 +56,35 @@ class iduMemList;
 class iduMemPool
 {
 public:
+  /*************************************************************
+   * BUG-46165 
+   *   [MUST]
+   *   when IDU_MEMPOOL_TYPE_TIGHT,the following specifications "MUST" be met.
+   *   otherwise, you will encounter assert error.
+   *    -  aElemSize must be 2^n, 
+   *    -  aElemCount must be 2^n,
+   *    -  aElemSize == aAlignByte
+   *    -  aElemSize >=8
+   *   
+   *   [INFO] 
+   *   (following things are just for your information.)
+   *   In IDU_MEMPOOL_TYPE_TIGHT,
+   *   - aHWCacheLine is ignored  
+   *   - aElemCount is set to 2 if it is 1.
+   *   - __MEMPOOL_MINIMUM_SLOT_COUNT is ignored.
+   *************************************************************/
     IDE_RC  initialize( iduMemoryClientIndex aIndex,
-                        SChar* aStrName,
-                        UInt   aListCount,
-                        vULong aObjSize,
-                        vULong aElemCount,
-                        vULong aChunkLimit,        /* IDU_AUTOFREE_CHUNK_LIMIT,*/
-                        idBool aUseMutex,          /* ID_TRUE, */
-                        UInt   aAlignByte,         /* IDU_MEM_POOL_DEFAULT_ALIGN_SIZE, */
-                        idBool aForcePooling,      /* ID_FALSE, */
-                        idBool aGarbageCollection, /* ID_TRUE, */
-                        idBool aHWCacheLine );     /* ID_TRUE  */
+                        SChar*         aStrName,
+                        UInt           aListCount,
+                        vULong         aObjSize,
+                        vULong         aElemCount,
+                        vULong         aChunkLimit,        /* IDU_AUTOFREE_CHUNK_LIMIT,*/
+                        idBool         aUseMutex,          /* ID_TRUE, */
+                        UInt           aAlignByte,         /* IDU_MEM_POOL_DEFAULT_ALIGN_SIZE, */
+                        idBool         aForcePooling,      /* ID_FALSE, */
+                        idBool         aGarbageCollection, /* ID_TRUE, */
+                        idBool         aHWCacheLine,       /* ID_TRUE  */
+                        iduMemPoolType aType );            /*IDU_MEMPOOL_TYPE_LEGACY*/
     IDE_RC  destroy(idBool aCheck = ID_TRUE);
 
     IDE_RC  cralloc(void **);
@@ -74,8 +98,8 @@ public:
     /* added by mskim for check memory statement */
     ULong   getMemorySize();
 
-    //util
-    ULong   roundUp2n(ULong size); 
+    //check if the size is 2^n.
+    idBool  checkSize4Tight(UInt  aSize);
 
 
 public: /* POD class type should make non-static data members as public */
@@ -92,6 +116,7 @@ public: /* POD class type should make non-static data members as public */
     iduMemPool         * mNext;
     iduMemList        ** mMemList;
     SChar                mName[IDU_MEM_POOL_NAME_LEN];
+    iduMemPoolType       mType;
 };
 
 #endif  // _O_MEM_POOL_H_

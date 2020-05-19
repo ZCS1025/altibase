@@ -185,13 +185,15 @@ IDE_RC rpxAheadAnalyzer::initializeThread( void )
                                             8,                        //align byte(default)
                                             ID_FALSE,				  //ForcePooling
                                             ID_TRUE,				  //GarbageCollection
-                                            ID_TRUE )                 //HWCacheLine
-              != IDE_SUCCESS );
+                                            ID_TRUE,                  /* HWCacheLine */
+                                            IDU_MEMPOOL_TYPE_LEGACY   /* mempool type*/) 
+              != IDE_SUCCESS);			
     sStage = 2;
 
     mMeta.initialize();
 
-    IDE_TEST( mMeta.buildWithNewTransaction( mSender->mRepName,
+    IDE_TEST( mMeta.buildWithNewTransaction( NULL,
+                                             mSender->mRepName,
                                              ID_FALSE,
                                              RP_META_BUILD_AUTO )
               != IDE_SUCCESS );
@@ -256,10 +258,12 @@ void rpxAheadAnalyzer::run( void )
 {
     idBool              sIsLocked = ID_FALSE;
     PDL_Time_Value      sCheckTime;
+    PDL_Time_Value      sSleepTime;
 
     IDE_CLEAR();
 
     sCheckTime.initialize();
+    sSleepTime.initialize();
 
     ideLog::log( IDE_RP_0, RP_TRC_X_AHEAD_ANALYZER_IS_START );
 
@@ -298,11 +302,13 @@ void rpxAheadAnalyzer::run( void )
              */
             mStatus = RPX_AHEAD_ANALYZER_STATUS_WAIT_ANALYZE;
 
-            sCheckTime.set( idlOS::time() + RPX_AHEAD_ANALYZER_SLEEP_SEC );
+            sSleepTime.set( RPX_AHEAD_ANALYZER_SLEEP_SEC );
+
+            sCheckTime = idlOS::gettimeofday() + sSleepTime;
 
             IDU_FIT_POINT( "rpxAheadAnalyzer::run::lock::mCV",
-                    rpERR_ABORT_RP_INTERNAL_ARG,
-                    "mCV.timedwait" );
+                           rpERR_ABORT_RP_INTERNAL_ARG,
+                           "mCV.timedwait" );
             if ( mCV.timedwait( &mMutex, &sCheckTime ) != IDE_SUCCESS )
             {
                 IDE_TEST_RAISE( mCV.isTimedOut() != ID_TRUE, ERR_TIMED_WAIT );
@@ -1089,7 +1095,8 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
                                SMI_COMMIT_WRITE_NOWAIT;
 
     rpdItemMetaEntry * sItemMetaEntry = NULL;
-    rpdMetaItem      * sMetaItem = NULL;
+    smOID              sOldTableOID = SM_OID_NULL;
+    smOID              sNewTableOID = SM_OID_NULL;
 
     IDU_FIT_POINT( "rpxAheadAnalyzer::applyTableMetaLog::initialize::sTrans",
                    rpERR_ABORT_RP_INTERNAL_ARG,
@@ -1111,12 +1118,8 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
     {
         mTransTable.getFirstItemMetaEntry( aTID, &sItemMetaEntry );
 
-        IDE_TEST( mMeta.searchTable( &sMetaItem,
-                                     sItemMetaEntry->mItemMeta.mOldTableOID )
-                  != IDE_SUCCESS );
-
-        //BUG-26720 : serchTable에서 sMetaItem이 NULL일수 있음
-        IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_FOUND_TABLE );
+        sOldTableOID = sItemMetaEntry->mItemMeta.mOldTableOID;
+        sNewTableOID = sItemMetaEntry->mItemMeta.mTableOID;
 
         IDU_FIT_POINT( "rpxAheadAnalyzer::applyTableMetaLog::begin::sSmiStmt",
                        rpERR_ABORT_RP_INTERNAL_ARG,
@@ -1130,15 +1133,14 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
                   != IDE_SUCCESS );
         sStage = 3;
 
-        /* PROJ-1915 off-line sender의 경우 Meta를 갱신하지 않는다. */
-        IDE_TEST( mMeta.updateOldTableInfo( &sSmiStmt,
-                                            sMetaItem,
-                                            &sItemMetaEntry->mItemMeta,
-                                            (const void *)sItemMetaEntry->mLogBody,
-                                            ID_FALSE )
+        IDE_TEST( updateMeta( &sSmiStmt,
+                              sItemMetaEntry,
+                              sOldTableOID,
+                              sNewTableOID )
                   != IDE_SUCCESS );
-        sStage = 2;
+
         IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+        sStage = 2;
 
         mTransTable.removeFirstItemMetaEntry( aTID );
     }
@@ -1151,10 +1153,6 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_NOT_FOUND_TABLE );
-    {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_META_NO_SUCH_DATA ) );
-    }
     IDE_EXCEPTION_END;
 
     // 이후 Sender가 종료되므로, Table Meta Cache를 복원하지 않는다
@@ -1185,6 +1183,77 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
     IDE_POP();
 
     return IDE_FAILURE;
+}
+
+IDE_RC rpxAheadAnalyzer::updateMeta( smiStatement     * aSmiStmt,
+                                     rpdItemMetaEntry * aItemMetaEntry,
+                                     smOID              aOldTableOID,
+                                     smOID              aNewTableOID )
+{
+    rpdMetaItem  * sMetaItem = NULL;
+
+    switch( getTableMetaType( aOldTableOID, aNewTableOID ) )
+    {
+        case RP_META_INSERT_ITEM:
+            IDE_TEST( mMeta.insertNewTableInfo( aSmiStmt,
+                                                &( aItemMetaEntry->mItemMeta ),
+                                                (const void *)aItemMetaEntry->mLogBody,
+                                                SM_SN_NULL, // INVALID_MAX_SN
+                                                ID_FALSE )
+                      != IDE_SUCCESS );
+            break;
+        case RP_META_DELETE_ITEM:
+            IDE_TEST( mMeta.deleteOldTableInfo( aSmiStmt, aOldTableOID ) != IDE_SUCCESS );
+            break;
+        case RP_META_UPDATE_ITEM:
+            IDE_TEST( mMeta.searchTable( &sMetaItem, aOldTableOID ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( sMetaItem == NULL,  ERR_NOT_FOUND_TABLE );
+
+            IDE_TEST( mMeta.updateOldTableInfo( aSmiStmt,
+                                                sMetaItem,
+                                                &( aItemMetaEntry->mItemMeta ),
+                                                (const void *)aItemMetaEntry->mLogBody,
+                                                SM_SN_NULL, // INVALID_MAX_SN
+                                                ID_FALSE )
+                      != IDE_SUCCESS );
+            break;
+        default:
+            IDE_DASSERT( 0 );
+    }
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_NOT_FOUND_TABLE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_META_NO_SUCH_DATA ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+rpdTableMetaType rpxAheadAnalyzer::getTableMetaType( smOID aOldTableOID, smOID aNewTableOID )
+{
+    rpdTableMetaType sType = RP_META_NONE_ITEM;
+
+    if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = RP_META_INSERT_ITEM;
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
+    {
+        sType = RP_META_DELETE_ITEM;
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = RP_META_UPDATE_ITEM;
+    }
+    else
+    {
+        sType = RP_META_NONE_ITEM;
+    }
+
+    return sType;
 }
 
 idBool rpxAheadAnalyzer::isThereGroupNode( void )

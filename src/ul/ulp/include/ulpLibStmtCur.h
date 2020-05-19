@@ -62,6 +62,31 @@ typedef struct  ulpHostVarPtr
 
 } ulpHostVarPtr;
 
+/* BUG-45779 APRE에서 PSM 인자로 Array type을 지원해야 합니다. */
+#define APRE_PSM_ARRAY_META_VERSION 808377001
+
+/* BUG-45779 server와의 통신을 위한 meta정의이며, 전체 size가  8의 배수여야 한다. */
+typedef struct psmArrayMetaInfo
+{
+    acp_uint32_t    mUlpVersion;            /* VERSION                       */
+    acp_sint32_t    mUlpSqltype;            /* SQL TYPE                      */
+    acp_uint32_t    mUlpElemCount;          /* from client to server         */
+    acp_uint32_t    mUlpReturnElemCount;    /* from server to client         */
+    acp_uint32_t    mUlpHasNull;            /* out parameter has null        */
+    acp_uint8_t     mUlpPadding[20];        /* padding & reserved            */
+} psmArrayMetaInfo;
+
+typedef struct ulpPSMArrDataInfo
+{
+    void         *mData;            /* Meta Data + Host Variable Data */
+    ulpHostVar   *mUlpHostVar;      /* Host Variable Point address */
+} ulpPSMArrDataInfo;
+
+typedef struct ulpPSMArrInfo
+{
+    acp_bool_t         mIsPSMArray;             /* PSM이 array type 인자를 가지고 있는지? */
+    acp_list_t         mPSMArrDataInfoList;     /* ulpPSMArrDataInfo List */
+} ulpPSMArrInfo;
 
 /* statement에 대한 상태 정보 type */
 typedef enum ulpStmtState
@@ -123,6 +148,9 @@ struct ulpLibStmtNode
     /* BUG-31467 : APRE should consider the thread safety of statement */
     /* unnamed statement에 대한 thread-safty 고려 */
     acp_thr_rwlock_t mLatch;
+
+    /* BUG-45779 */
+    ulpPSMArrInfo    mUlpPSMArrInfo;
 };
 
 

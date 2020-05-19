@@ -373,6 +373,10 @@ ace_rc_t initializeJDBCApplier( oaContext                 * aContext,
     ACE_TEST( oaJDBCApplierConnect( aContext, sApplierHandle ) != ACE_RC_SUCCESS );
     sStage = 2;
     
+    ACE_TEST( oaJDBCExecuteLogInSql(aContext, sApplierHandle) != ACE_RC_SUCCESS );
+    
+    ACE_TEST( oaJDBCInitializeSkipErrorList(aContext, sApplierHandle) != ACE_RC_SUCCESS );
+
     *aJDBCApplierHandle = sApplierHandle;
  
     return ACE_RC_SUCCESS;
@@ -463,6 +467,8 @@ void oaJDBCApplierFinalize( oaJDBCApplierHandle * aHandle )
 
 void finalizeJDBCApplier( oaJDBCApplierHandle * aApplierHandle )
 {
+    oaJDBCFinalizeSkipErrorList( aApplierHandle );
+
     oaJDBCClosePrepareStmt( aApplierHandle );
     
     oaJDBCApplierDisconnect( aApplierHandle );
@@ -781,11 +787,11 @@ static ace_rc_t applyInsertLogRecord( oaContext           * aContext,
     }
     else
     {
-        ACE_TEST( oaJNIPreparedStmtExecuteBatch( aContext, 
-                                                 &(aHandle->mJNIInterfaceHandle), 
-                                                 sPrepareStmtObject )
-                  != ACE_RC_SUCCESS );
-
+        ACE_TEST_RAISE( oaJNIPreparedStmtExecuteBatch( aContext, 
+                                                       &(aHandle->mJNIInterfaceHandle), 
+                                                       sPrepareStmtObject )
+                        != ACE_RC_SUCCESS, ERR_EXECUTE_BATCH_EXCEPTION );
+        
         ACE_TEST( oaJNIPreparedStmtClearBatch( aContext,
                                                &(aHandle->mJNIInterfaceHandle),
                                                sPrepareStmtObject )
@@ -794,6 +800,13 @@ static ace_rc_t applyInsertLogRecord( oaContext           * aContext,
     
     return ACE_RC_SUCCESS;
      
+    // BUG-46551 611이하 jdbcDriver에서는 exception시 내부적으로 clearBatch를 해주지 않음
+    ACE_EXCEPTION( ERR_EXECUTE_BATCH_EXCEPTION )
+    {
+        oaJNIPreparedStmtClearBatch( aContext,
+                                     &(aHandle->mJNIInterfaceHandle),
+                                     sPrepareStmtObject );
+    }    
     ACE_EXCEPTION_END;
     
     sParamStatusArray = oaJNIGetDMLStatusArray( &(aHandle->mJNIInterfaceHandle) );
@@ -1296,8 +1309,9 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
     acp_list_t  * sIterator   = NULL;
     acp_uint32_t  sRetryCount = 0;
     
-    oaLogSN       sProcessedLogSN = 0;
-    oaLogRecord * sLogRecord      = NULL;
+    oaLogSN       sProcessedLogSN  = 0;
+    oaLogRecord * sLogRecord       = NULL;
+    acp_bool_t    sIsSkipList      = ACP_FALSE;
 
     ACP_LIST_ITERATE( aLogRecordList, sIterator )
     {
@@ -1307,6 +1321,8 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
 
         oaJDBCInitializeDMLResultArray( aHandle->mDMLResultArray, aHandle->mBatchDMLMaxSize );
         
+        sIsSkipList      = ACP_FALSE;
+
         while ( oaJDBCApplierApplyLogRecord( aContext,
                                               aHandle,
                                               sLogRecord )
@@ -1345,8 +1361,13 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
                     (void)applyAbortLogRecord( aContext, aHandle );
                 }
 
-                ACE_TEST_RAISE( aHandle->mSkipError == ACP_FALSE, ERR_RETRY_END );
-
+                sIsSkipList = oaJNIIsSkipList( &(aHandle->mJNIInterfaceHandle) );
+                ACE_TEST_RAISE( ( aHandle->mSkipError == 0 ) &&
+                                ( sIsSkipList == ACP_FALSE ),
+                                ERR_RETRY_END );
+                ACE_TEST_RAISE( ( aHandle->mSkipError == 1 ) &&
+                                ( sIsSkipList == ACP_TRUE  ),
+                                ERR_RETRY_END );
                 break;
             }
         }
@@ -1429,3 +1450,563 @@ void oaJDBCInitializeDMLResultArray( acp_bool_t * aDMLResultArray, acp_uint32_t 
         aDMLResultArray[i] = ACP_FALSE;
     }
 }
+
+static ace_rc_t openFile( oaContext          * aContext,
+                          acp_char_t         * aFileName,
+                          acp_std_file_t     * aFile,
+                          acp_bool_t         * aIsExistFile )
+{
+    acp_rc_t            sAcpRC = ACP_RC_EEXIST;
+    acp_char_t          sErrMsg[1024];
+    acp_char_t        * sHome = NULL;
+    acp_stat_t          sStat;
+    acp_bool_t          sIsExistFile = ACP_FALSE;
+    acp_std_file_t      sFile = {NULL};
+
+    ACP_STR_DECLARE_DYNAMIC( sFilePath );
+    ACP_STR_INIT_DYNAMIC( sFilePath, 128, 128 );
+
+    sAcpRC = acpEnvGet( OA_ADAPTER_HOME_ENVIRONMENT_VARIABLE, &sHome );
+    if ( ACP_RC_NOT_ENOENT(sAcpRC) && (sAcpRC == ACP_RC_SUCCESS) )
+    {
+        (void)acpStrCpyFormat( &sFilePath, "%s/conf/", sHome );
+    }
+    else
+    {
+        (void)acpStrCpyCString( &sFilePath, "./conf/" );
+    }
+
+    (void)acpStrCatCString( &sFilePath, aFileName );
+
+    sAcpRC = acpFileStatAtPath( (char *)acpStrGetBuffer( &sFilePath ),
+                                &sStat,
+                                ACP_TRUE);
+    if ( ACP_RC_NOT_ENOENT( sAcpRC ) )
+    {
+        sAcpRC = acpStdOpen( &sFile,
+                             (char *)acpStrGetBuffer( &sFilePath ),
+                             ACP_STD_OPEN_READ_TEXT );
+        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS( sAcpRC ), ERROR_FILE_OPEN );
+        sIsExistFile = ACP_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    ACP_STR_FINAL( sFilePath );
+
+    *aIsExistFile = sIsExistFile;
+    *aFile = sFile;
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_FILE_OPEN )
+    {
+        acpErrorString( sAcpRC, sErrMsg, 1024 );
+        oaLogMessage( OAM_ERR_FILE_OPEN, aFileName, sErrMsg );
+    }
+    ACE_EXCEPTION_END;
+
+    ACP_STR_FINAL( sFilePath );
+
+    return ACE_RC_FAILURE;
+}
+
+static void closeFile( acp_std_file_t * aFile )
+{
+    (void)acpStdClose( aFile );
+}
+
+static acp_bool_t isSQLEndLineAndTrim( acp_char_t* aBuffer )
+{
+    acp_uint32_t        i = 0;
+    acp_bool_t          sIsEndSQL = ACP_FALSE;
+    
+    for ( i = 0 ; aBuffer[i] != '\0' ; i++ )
+    {
+        if ( (aBuffer[i] == '\r') || (aBuffer[i] == '\n') )
+        {
+            aBuffer[i] = ' ';
+            break;
+        }
+        else if ( aBuffer[i] == ';' )
+        {
+            aBuffer[i] = '\0';
+            sIsEndSQL = ACP_TRUE;            
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    
+    return sIsEndSQL;
+}
+
+static ace_rc_t readSQLFile( oaContext          * aContext,
+                             acp_std_file_t     * aFile,
+                             acp_str_t          * aQueryStr,
+                             acp_bool_t         * aIsSQLEnd,
+                             acp_bool_t         * aIsEOF )
+{
+    acp_char_t      sLineBuffer[OA_ADAPTER_SQL_READ_BUFF_SIZE + 1];
+    acp_char_t      sErrMsg[1024];
+    acp_sint32_t    sNewSize = 0;
+    acp_sint32_t    sBufferSize = 0;
+    acp_bool_t      sIsEOF = ACP_FALSE;
+    acp_bool_t      sIsSQLEnd = ACP_FALSE;
+    ace_rc_t        sAcpRC =  ACE_RC_SUCCESS;
+        
+    while ( (sIsEOF == ACP_FALSE) && (sIsSQLEnd == ACP_FALSE) )
+    {
+        sLineBuffer[0] = '\0';
+        
+        sAcpRC = acpStdGetCString( aFile,
+                                   sLineBuffer,
+                                   OA_ADAPTER_SQL_READ_BUFF_SIZE + 1 );
+        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_LOGIN_FILE_READ );
+        
+        sBufferSize = (acp_sint32_t)acpCStrLen( sLineBuffer, OA_ADAPTER_SQL_READ_BUFF_SIZE + 1 );
+        sNewSize += sBufferSize;
+        
+        ACE_TEST_RAISE( OA_ADAPTER_SQL_READ_BUFF_SIZE < sNewSize, ERROR_LOGIN_SQL_MAX_SIZE );
+        
+        sIsSQLEnd = isSQLEndLineAndTrim( sLineBuffer );
+        
+        acpStrCatCString( aQueryStr, sLineBuffer );
+        
+        (void)acpStdIsEOF( aFile, &sIsEOF );
+    }
+        
+    *aIsSQLEnd = sIsSQLEnd;
+    *aIsEOF = sIsEOF;
+    
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_LOGIN_FILE_READ )
+    {        
+        acpErrorString( sAcpRC, sErrMsg, 1024 );
+        oaLogMessage( OAM_ERR_FILE_READ, OA_ADAPTER_LOGIN_SQL_FILE_NAME, sErrMsg );
+    }
+    ACE_EXCEPTION( ERROR_LOGIN_SQL_MAX_SIZE )
+    {
+        oaLogMessage( OAM_ERR_LOGIN_SQL_MAX_SIZE );
+    }
+    ACE_EXCEPTION_END;
+
+    return ACE_RC_FAILURE;
+}
+
+static ace_rc_t executeLogInSqlFile( oaContext           * aContext, 
+                                     oaJDBCApplierHandle * aHandle,
+                                     acp_std_file_t      * aFile )
+{
+    acp_bool_t      sIsSQLEnd = ACP_FALSE;
+    acp_bool_t      sIsEOF = ACP_FALSE;
+    acp_bool_t      sIsCreateStmt = ACP_FALSE;
+    
+    ACP_STR_DECLARE_DYNAMIC( sQueryStr );
+    ACP_STR_INIT_DYNAMIC( sQueryStr, 
+                          OA_ADAPTER_SQL_READ_BUFF_SIZE + 1, 
+                          OA_ADAPTER_SQL_READ_BUFF_SIZE + 1 );
+    
+    ACE_TEST( oaJNICreateStatement( aContext, 
+                                    &(aHandle->mJNIInterfaceHandle) ) 
+              != ACE_RC_SUCCESS );
+    sIsCreateStmt = ACP_TRUE;
+    
+    while ( sIsEOF == ACP_FALSE )
+    {
+        acpStrClear( &sQueryStr );
+        
+        ACE_TEST( readSQLFile( aContext,
+                               aFile,
+                               &sQueryStr,
+                               &sIsSQLEnd, 
+                               &sIsEOF ) != ACE_RC_SUCCESS );
+            
+        if ( sIsSQLEnd == ACP_TRUE )
+        {
+            ACE_TEST( oaJNIStmtExecute( aContext, 
+                                        &(aHandle->mJNIInterfaceHandle),
+                                        &sQueryStr ) 
+                      != ACE_RC_SUCCESS );
+        }
+        else
+        {   
+            /* Nothing to do */
+        }
+    }
+    
+    sIsCreateStmt = ACP_FALSE;
+    ACE_TEST( oaJNIStatementClose( aContext, 
+                                   &(aHandle->mJNIInterfaceHandle) ) 
+              != ACE_RC_SUCCESS );
+    
+    ACP_STR_FINAL( sQueryStr );
+    
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION_END;
+
+    if ( sIsCreateStmt == ACP_TRUE )
+    {
+         (void)oaJNIStatementClose( aContext, 
+                                    &(aHandle->mJNIInterfaceHandle) );        
+    }
+    
+    ACP_STR_FINAL( sQueryStr );
+    
+    return ACE_RC_FAILURE;
+}
+
+ace_rc_t oaJDBCExecuteLogInSql( oaContext * aContext, oaJDBCApplierHandle * aHandle )
+{
+    acp_std_file_t      sFile = {NULL};
+    acp_bool_t          sIsExistFile = ACP_FALSE;
+    acp_bool_t          sIsOpenFile = ACP_FALSE;
+    
+    ACE_TEST( openFile( aContext,
+                        OA_ADAPTER_LOGIN_SQL_FILE_NAME,
+                        &sFile,
+                        &sIsExistFile ) != ACE_RC_SUCCESS );
+    if ( sIsExistFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_TRUE;
+        
+        ACE_TEST( executeLogInSqlFile( aContext, 
+                                       aHandle, 
+                                       &sFile ) != ACE_RC_SUCCESS );
+        sIsOpenFile = ACP_FALSE;
+        closeFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION_END;
+    
+    if ( sIsOpenFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_FALSE;
+        closeFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    
+    return ACE_RC_FAILURE;
+}
+
+
+static ace_rc_t readSkipErrorList( oaContext           * aContext,
+                                   acp_std_file_t      * aFile,
+                                   oaJDBCApplierHandle * aHandle,
+                                   acp_str_t           * aStr,
+                                   acp_bool_t          * aIsEOF )
+{
+    acp_char_t      sLineBuffer[OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1];
+    acp_char_t      sErrMsg[1024];
+    acp_bool_t      sIsEOF = ACP_FALSE;
+    ace_rc_t        sAcpRC =  ACE_RC_SUCCESS;
+
+    sLineBuffer[0] = '\0';
+
+    sAcpRC = acpStdGetCString( aFile,
+                               sLineBuffer,
+                               OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1 );
+    ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_LOGIN_FILE_READ );
+
+    sAcpRC = acpStrCpyBuffer( aStr,
+                              sLineBuffer,
+                              acpCStrLen( sLineBuffer, OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1 ) );
+    ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_LOGIN_FILE_READ );    
+
+    (void)acpStdIsEOF( aFile, &sIsEOF );
+
+    *aIsEOF = sIsEOF;
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_LOGIN_FILE_READ )
+    {
+        acpErrorString( sAcpRC, sErrMsg, 1024 );
+
+        if ( aHandle->mSkipError == 0 )
+        {
+            oaLogMessage( OAM_ERR_FILE_READ, OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME, sErrMsg );
+        }
+        else
+        {
+            oaLogMessage( OAM_ERR_FILE_READ, OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME, sErrMsg );
+        }
+    }
+    ACE_EXCEPTION_END;
+
+    return ACE_RC_FAILURE;
+}
+
+static ace_rc_t trimSkipError( oaContext            * aContext,
+                               oaJDBCApplierHandle  * aHandle, 
+                               acp_str_t            * aStr )
+{
+    acp_uint32_t        i       = 0;
+    acp_uint32_t        j       = 0;
+    acp_uint32_t        sStrLen = 0;
+    acp_char_t        * sBuffer = NULL;
+
+    sStrLen = acpStrGetLength( aStr );
+    sBuffer = acpStrGetBuffer( aStr );
+    
+    if ( sStrLen != 0 )
+    {    
+        for ( i = 0 ; i < sStrLen ; i++ )
+        {
+            if (sBuffer[i] != ' ' )
+            {
+                break;
+            }
+        }
+        
+        for ( ; ( i < sStrLen ) && ( sBuffer[i] != '\0' ) ; i++ )
+        {
+            if ( (sBuffer[i] == '\r') || (sBuffer[i] == '\n') ||
+                 (sBuffer[i] == '#' ) || (sBuffer[i] == ' ' ) )
+            {
+                break;
+            }
+            else
+            {
+                if ( i != j )
+                {
+                    sBuffer[j] = sBuffer[i];
+                }
+                else
+                {
+                    /* nothing to do */
+                }
+                j++;
+            }
+        }
+
+        sBuffer[j] = '\0';
+        
+        ACE_TEST_RAISE( ( j != 0 ) && ( j != SQLSTATE_STR_LEN ),
+                        ERROR_INVALID_SKIP_LIST );
+        
+        acpStrResetLength( aStr );
+
+    }
+    
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_INVALID_SKIP_LIST )
+    {
+        if ( aHandle->mSkipError == 0 )
+        {
+            oaLogMessage( OAM_ERR_INVALID_SKIP_LIST, OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME );
+        }
+        else
+        {
+            oaLogMessage( OAM_ERR_INVALID_SKIP_LIST, OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME );
+        }
+    }
+    ACE_EXCEPTION_END;
+    
+    return ACE_RC_FAILURE;
+}
+
+static ace_rc_t setSkipError( oaContext            * aContext,
+                              oaJDBCApplierHandle  * aHandle,
+                              acp_list_t           * aLogRecordList,
+                              acp_str_t            * aStr )
+{
+    acp_list_node_t * sSkipErrorNode    = NULL;
+    acp_char_t      * sSkipError        = NULL;
+    acp_rc_t          sAcpRC            = ACP_RC_SUCCESS;
+    ace_rc_t          sAceRC            = ACE_RC_SUCCESS;
+    
+    sAceRC = trimSkipError( aContext, 
+                            aHandle, 
+                            aStr );
+    ACE_TEST( sAceRC != ACE_RC_SUCCESS );
+    
+    if ( acpStrGetLength( aStr ) != 0 )
+    {
+        sAcpRC = acpMemCalloc( (void **)&sSkipErrorNode,
+                               1,
+                               ACI_SIZEOF(acp_list_node_t) );
+        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_MEM_CALLOC );
+        
+        sAcpRC = acpMemCalloc( (void **)&sSkipError,
+                               (SQLSTATE_STR_LEN + 1),
+                               ACI_SIZEOF(acp_char_t) );
+        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_MEM_CALLOC );
+        
+        sAcpRC = acpCStrCpy( sSkipError,
+                             ACI_SIZEOF(sSkipError),
+                             acpStrGetBuffer( aStr ),
+                             acpStrGetLength( aStr ) );
+        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_INVALID_SKIP_ERR );
+        
+        acpListInitObj( sSkipErrorNode, (void *)sSkipError );
+        acpListAppendNode( aLogRecordList, sSkipErrorNode );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_MEM_CALLOC )
+    {
+        oaLogMessage( OAM_ERR_MEM_CALLOC );
+    }
+    ACE_EXCEPTION( ERROR_INVALID_SKIP_ERR )
+    {
+        oaLogMessage( OAM_MSG_DUMP_LOG, "setSkipError ERROR_INVALID_SKIP_ERR ");
+
+        if ( aHandle->mSkipError == 0 )
+        {
+            oaLogMessage( OAM_ERR_INVALID_SKIP_LIST, OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME );
+        }
+        else
+        {
+            oaLogMessage( OAM_ERR_INVALID_SKIP_LIST, OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME );
+        }
+    }    
+    ACE_EXCEPTION_END;
+
+    if ( sSkipError != NULL )
+    {
+        acpMemFree( sSkipError );
+        sSkipError = NULL;
+    }
+    
+    if ( sSkipErrorNode != NULL )
+    {
+        acpMemFree( sSkipErrorNode );
+        sSkipErrorNode = NULL;
+    }
+
+    return ACE_RC_FAILURE;
+}
+
+static ace_rc_t setSkipErrorList( oaContext           * aContext,
+                                  oaJDBCApplierHandle * aHandle,
+                                  acp_list_t          * aLogRecordList,
+                                  acp_std_file_t      * aFile )
+{
+    acp_bool_t      sIsEOF = ACP_FALSE;
+
+    ACP_STR_DECLARE_DYNAMIC( sErrStr );
+    ACP_STR_INIT_DYNAMIC( sErrStr,
+                          OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1,
+                          OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1 );
+
+    while ( sIsEOF == ACP_FALSE )
+    {
+        acpStrClear( &sErrStr );
+
+        ACE_TEST( readSkipErrorList( aContext,
+                                     aFile,
+                                     aHandle,
+                                     &sErrStr,
+                                     &sIsEOF ) != ACE_RC_SUCCESS );
+
+        ACE_TEST( setSkipError( aContext,
+                                aHandle,
+                                aLogRecordList,
+                                &sErrStr )
+                  != ACE_RC_SUCCESS );
+    }
+
+    ACP_STR_FINAL( sErrStr );
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION_END;
+
+    ACP_STR_FINAL( sErrStr );
+
+    return ACE_RC_FAILURE;
+}
+
+ace_rc_t oaJDBCInitializeSkipErrorList( oaContext * aContext, oaJDBCApplierHandle * aHandle )
+{
+    acp_std_file_t      sFile = {NULL};
+    acp_bool_t          sIsExistFile = ACP_FALSE;
+    acp_bool_t          sIsOpenFile = ACP_FALSE;
+    acp_char_t        * sFileName;
+    acp_list_t        * sListHead = &(aHandle->mJNIInterfaceHandle.mSkipErrorList);
+
+    acpListInit( sListHead );
+
+    if ( aHandle->mSkipError == 0 )
+    {
+        sFileName = OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME;
+    }
+    else
+    {
+        sFileName = OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME;
+    }
+
+    ACE_TEST( openFile( aContext,
+                        sFileName,
+                        &sFile,
+                        &sIsExistFile ) != ACE_RC_SUCCESS );
+    if ( sIsExistFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_TRUE;
+
+        ACE_TEST( setSkipErrorList( aContext,
+                                    aHandle,
+                                    sListHead,
+                                    &sFile ) != ACE_RC_SUCCESS );
+        sIsOpenFile = ACP_FALSE;
+        closeFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION_END;
+
+    if ( sIsOpenFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_FALSE;
+        closeFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return ACE_RC_FAILURE;
+}
+
+void oaJDBCFinalizeSkipErrorList( oaJDBCApplierHandle * aHandle )
+{
+    acp_list_node_t   * sNodeNext   = NULL;
+    acp_list_node_t   * sIterator   = NULL;
+    acp_list_t        * sListHead   =  &(aHandle->mJNIInterfaceHandle.mSkipErrorList);
+    
+    ACP_LIST_ITERATE_SAFE(sListHead, sIterator, sNodeNext)
+    {
+        if ( sIterator->mObj != NULL )
+        {
+            acpListDeleteNode(sIterator);
+            acpMemFree( sIterator->mObj );
+            acpMemFree( sIterator );
+        }
+    }
+}
+

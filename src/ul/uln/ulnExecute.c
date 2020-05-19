@@ -375,33 +375,15 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
                                 void               *aServiceSession,
                                 void               *aUserContext)
 {
-    ulnFnContext          *sFnContext  = (ulnFnContext *)aUserContext;
-    ulnStmt               *sStmt       = sFnContext->mHandle.mStmt;
-    ulnResult             *sResult     = NULL;
-
     acp_uint32_t           sStatementID;
     acp_uint32_t           sRowNumber;
     acp_uint16_t           sResultSetCount;
     acp_sint64_t           sAffectedRowCount;
     acp_sint64_t           sFetchedRowCount;
-    ulnResultType          sResultType = ULN_RESULT_TYPE_UNKNOWN;
     acp_uint8_t            sIsSimpleSelectExecute = 0;
-
-    /* PROJ-2616 */
-    acp_uint64_t           sDataLength            = 0;
-    acp_uint8_t           *sSimpleQueryFetchBlock = aPtContext->mSimpleQueryFetchIPCDAReadBlock.mData;
 
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
-
-    if (sStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON)
-    {
-        ulnUpdateDeferredState(sFnContext, sStmt);
-    }
-
-    /* PROJ-2616 */
-    sStmt->mCacheIPCDA.mRemainingLength = 0;
-    sStmt->mCacheIPCDA.mReadLength   = 0;
 
     CMI_RD4(aPtContext, &sStatementID);
     CMI_RD4(aPtContext, &sRowNumber);
@@ -413,7 +395,57 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
     if (cmiGetLinkImpl(aPtContext) == CMI_LINK_IMPL_IPCDA)
     {
         CMI_RD1(aPtContext, sIsSimpleSelectExecute);
-        sStmt->mIsSimpleQuerySelectExecuted = (sIsSimpleSelectExecute==1) ? ACP_TRUE : ACP_FALSE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    return ulnCallbackExecuteResultInternal(aPtContext,
+                                            aUserContext,
+                                            sStatementID,
+                                            sRowNumber,
+                                            sResultSetCount,
+                                            sAffectedRowCount,
+                                            sFetchedRowCount,
+                                            sIsSimpleSelectExecute);
+}
+
+ACI_RC ulnCallbackExecuteResultInternal(cmiProtocolContext *aProtocolContext,
+                                        void               *aUserContext,
+                                        acp_uint32_t        aStatementID,
+                                        acp_uint32_t        aRowNumber,
+                                        acp_uint16_t        aResultSetCount,
+                                        acp_sint64_t        aAffectedRowCount,
+                                        acp_sint64_t        aFetchedRowCount,
+                                        acp_uint8_t         aIsSimpleSelectExecute)
+{
+    ulnFnContext          *sFnContext  = (ulnFnContext *)aUserContext;
+    ulnStmt               *sStmt       = sFnContext->mHandle.mStmt;
+    ulnResult             *sResult     = NULL;
+
+    ulnResultType          sResultType = ULN_RESULT_TYPE_UNKNOWN;
+
+    /* PROJ-2616 */
+    acp_uint64_t           sDataLength            = 0;
+    acp_uint8_t           *sSimpleQueryFetchBlock = aProtocolContext->mSimpleQueryFetchIPCDAReadBlock.mData;
+
+    ACP_UNUSED(aStatementID);
+
+    if (sStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON)
+    {
+        ulnUpdateDeferredState(sFnContext, sStmt);
+    }
+
+    /* PROJ-2616 */
+    sStmt->mCacheIPCDA.mRemainingLength = 0;
+    sStmt->mCacheIPCDA.mReadLength   = 0;
+
+    /* PROJ-2616 */
+    if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
+    {
+        sStmt->mIsSimpleQuerySelectExecuted = (aIsSimpleSelectExecute==1) ? ACP_TRUE : ACP_FALSE;
 
         if (sStmt->mIsSimpleQuerySelectExecuted == ACP_TRUE)
         {
@@ -457,7 +489,7 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
      * -----------------------
      */
 
-    ulnStmtSetResultSetCount(sStmt, sResultSetCount);
+    ulnStmtSetResultSetCount(sStmt, aResultSetCount);
 
     /*
      * -----------------------
@@ -468,13 +500,13 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
     sResult = ulnStmtGetNewResult(sStmt);
     ACI_TEST_RAISE(sResult == NULL, LABEL_MEM_MAN_ERR);
 
-    sResult->mAffectedRowCount = sAffectedRowCount;
-    sResult->mFetchedRowCount  = sFetchedRowCount;
-    sResult->mFromRowNumber    = sRowNumber - 1;
-    sResult->mToRowNumber      = sRowNumber - 1;
+    sResult->mAffectedRowCount = aAffectedRowCount;
+    sResult->mFetchedRowCount  = aFetchedRowCount;
+    sResult->mFromRowNumber    = aRowNumber - 1;
+    sResult->mToRowNumber      = aRowNumber - 1;
 
     // BUG-38649
-    if (sAffectedRowCount != ULN_DEFAULT_ROWCOUNT)
+    if (aAffectedRowCount != ULN_DEFAULT_ROWCOUNT)
     {
         sResultType |= ULN_RESULT_TYPE_ROWCOUNT;
     }
@@ -482,7 +514,7 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
     {
         /* do nothing */
     }
-    if ( sResultSetCount > 0 )
+    if ( aResultSetCount > 0 )
     {
         ulnCursorSetServerCursorState(&sStmt->mCursor, ULN_CURSOR_STATE_OPEN);
         sResultType |= ULN_RESULT_TYPE_RESULTSET;
@@ -495,31 +527,31 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
 
     ulnStmtAddResult(sStmt, sResult);
 
-    if (sAffectedRowCount == 0)
+    if (aAffectedRowCount == 0)
     {
         ulnStmtUpdateAttrParamsRowCountsValue(sStmt, SQL_NO_DATA);
 
         if (ulnStmtGetAttrParamsSetRowCounts(sStmt) == SQL_ROW_COUNTS_ON)
         {
-            ulnStmtSetAttrParamStatusValue(sStmt, sRowNumber - 1, 0);
+            ulnStmtSetAttrParamStatusValue(sStmt, aRowNumber - 1, 0);
         }
         else if (ulnStmtGetStatementType(sStmt) == ULN_STMT_UPDATE ||
                  ulnStmtGetStatementType(sStmt) == ULN_STMT_DELETE)
         {
-            ulnStmtSetAttrParamStatusValue(sStmt, sRowNumber - 1, SQL_NO_DATA);
+            ulnStmtSetAttrParamStatusValue(sStmt, aRowNumber - 1, SQL_NO_DATA);
             if (ULN_FNCONTEXT_GET_RC((sFnContext)) != SQL_ERROR)
             {
                 ULN_FNCONTEXT_SET_RC((sFnContext), SQL_NO_DATA);
             }
         }
     }
-    else if (sAffectedRowCount > 0)
+    else if (aAffectedRowCount > 0)
     {
         if (ulnStmtGetAttrParamsSetRowCounts(sStmt) == SQL_ROW_COUNTS_ON)
         {
-            ulnStmtSetAttrParamStatusValue(sStmt, sRowNumber - 1, ACP_MIN(sAffectedRowCount, SQL_USHRT_MAX - 1));
+            ulnStmtSetAttrParamStatusValue(sStmt, aRowNumber - 1, ACP_MIN(aAffectedRowCount, SQL_USHRT_MAX - 1));
         }
-        sStmt->mTotalAffectedRowCount += sAffectedRowCount;
+        sStmt->mTotalAffectedRowCount += aAffectedRowCount;
     }
     else
     {
@@ -530,7 +562,7 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aPtContext,
 
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
     {
-        ulnError(sFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnCallbackExecuteResult");
+        ulnError(sFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnCallbackExecuteResultInternal");
     }
 
     ACI_EXCEPTION_END;
@@ -689,6 +721,12 @@ ACI_RC ulnExecuteCore(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 
     /* PROJ-2616 */
     cmiProtocolContext *sCtx = &aPtContext->mCmiPtContext;
+
+    /* BUG-46011 If deferred prepare is exists, process it first */
+    if (ulnStmtIsSetDeferredQstr(sStmt) == ACP_TRUE)
+    {
+        ACI_TEST( ulnPrepareDeferComplete(aFnContext, ACP_FALSE) );
+    }
     
     /*
      * Note : SQL_NO_DATA 리턴을 위해 총 affected row count 를 유지해야 한다.
@@ -1238,7 +1276,8 @@ static ACI_RC ulnExecProcessMemLobParamNormal(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * BUFFER 초기화 및 준비
@@ -1284,6 +1323,11 @@ static ACI_RC ulnExecProcessMemLobParamNormal(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_BUFFER_TYPE)
     {
         ulnErrorExtended(aFnContext,
@@ -1544,7 +1588,8 @@ SQLRETURN ulnExecute(ulnStmt *aStmt)
     ULN_FLAG_UP(sNeedExit);
 
     ULN_FNCONTEXT_GET_DBC(&sFnContext, sDbc);
-    ACI_TEST(sDbc == NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     //fix BUG-17722
     ACI_TEST( ulnInitializeProtocolContext(&sFnContext,
@@ -1637,6 +1682,11 @@ SQLRETURN ulnExecute(ulnStmt *aStmt)
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     // fix BUG-19349

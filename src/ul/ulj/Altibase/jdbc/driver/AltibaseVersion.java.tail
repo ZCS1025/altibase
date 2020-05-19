@@ -55,6 +55,6 @@
                            + " with CMP " + CM_VERSION_STRING
                            + " for JDBC 3.0"
                            + (TraceFlag.TRACE_COMPILE ? " trace" : "")
-                           + " compiled with JDK " + JDK_VERSION_STRING);
+                           + " compiled with JDK " + JDK_VERSION_STRING + "(sharding included)");
     }
 }

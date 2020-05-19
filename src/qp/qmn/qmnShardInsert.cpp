@@ -300,7 +300,8 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     // 수행 정보의 상세 출력
     //----------------------------
 
-    if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) &&
+    if ( ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) ||
+           ( SDU_SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE == 1 ) ) &&
          ( sClientInfo != NULL ) )
     {
         //---------------------------------------------
@@ -363,6 +364,7 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
     sdiBindParam   * sBindParams = NULL;
     sdiDataNode      sDataNodeArg;
     smiValue       * sInsertedRow;
+    sdiSVPStep       sSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
 
     //---------------------------------
     // 기본 설정
@@ -415,6 +417,15 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
     //-------------------------------
     // shard 수행을 위한 준비
     //-------------------------------
+    
+    if ( QCG_GET_SESSION_IS_AUTOCOMMIT( aTemplate->stmt ) == ID_TRUE )
+    {
+        sSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
+    }
+    else
+    {
+        sSVPStep = SDI_SVP_STEP_NEED_SAVEPOINT;
+    }
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
@@ -431,6 +442,10 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
                                 aCodePlan,
                                 sDataNodeArg.mBindParams )
                   != IDE_SUCCESS );
+
+        sDataNodeArg.mRemoteStmt = NULL;
+
+        sDataNodeArg.mSVPStep= sSVPStep;
 
         IDE_TEST( sdi::initShardDataInfo( aTemplate,
                                           aCodePlan->shardAnalysis,
@@ -452,18 +467,19 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
                                     aCodePlan,
                                     sBindParams )
                       != IDE_SUCCESS );
-
-            IDE_TEST( sdi::reuseShardDataInfo( aTemplate,
-                                               sClientInfo,
-                                               aDataPlan->mDataInfo,
-                                               sBindParams,
-                                               aCodePlan->shardParamCount )
-                      != IDE_SUCCESS );
         }
         else
         {
             // Nothing to do.
         }
+
+        IDE_TEST( sdi::reuseShardDataInfo( aTemplate,
+                                           sClientInfo,
+                                           aDataPlan->mDataInfo,
+                                           sBindParams,
+                                           aCodePlan->shardParamCount,
+                                           sSVPStep )
+                  != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
@@ -510,6 +526,9 @@ IDE_RC qmnSDIN::setParamInfo( qcTemplate   * aTemplate,
             aBindParams[j].mDataSize  = sMtcColumn->column.size;
             aBindParams[j].mPrecision = sMtcColumn->precision;
             aBindParams[j].mScale     = sMtcColumn->scale;
+
+            /* BUG-46623 padding 변수를 0으로 초기화 해야 한다. */
+            aBindParams[j].padding    = 0;
 
             j++;
             IDE_DASSERT( j <= aCodePlan->shardParamCount );
@@ -1027,11 +1046,12 @@ IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
                                      smiValue     * aInsertedRow,
                                      mtcTuple     * aTuple )
 {
-    qcmColumn  * sColumn = NULL;
+    qcmColumn  * sColumn          = NULL;
     SInt         sColumnOrder;
     mtcColumn  * sCanonizedColumn = NULL;
-    void       * sCanonizedValue = NULL;
-    void       * sValue = NULL;
+    mtcColumn  * sStoringColumn   = NULL;
+    void       * sCanonizedValue  = NULL;
+    void       * sValue           = NULL;
     UInt         sActualSize;
 
     IDE_DASSERT( aTableInfo != NULL );
@@ -1048,6 +1068,11 @@ IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
             sColumnOrder = sColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
 
             sCanonizedColumn = &(aTuple->columns[sColumnOrder]);
+            sStoringColumn = sColumn->basicInfo;
+
+            IDE_TEST_RAISE( ( sStoringColumn->column.flag & SMI_COLUMN_TYPE_MASK )
+                            == SMI_COLUMN_TYPE_LOB,
+                            UNSUPPORTED_COLUMN_ERROR );
 
             IDE_DASSERT( sCanonizedColumn != NULL );
             sCanonizedValue = (void*)
@@ -1094,7 +1119,23 @@ IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( UNSUPPORTED_COLUMN_ERROR )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_NOT_APPLICABLE_TYPE_IN_TARGET,
+                                  sStoringColumn->module->names->string ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+void qmnSDIN::shardStmtPartialRollbackUsingSavepoint( qcTemplate  * aTemplate,
+                                                      qmnPlan     * aPlan )
+{
+    qmndSDIN        * sDataPlan = (qmndSDIN*)(aTemplate->tmplate.data + aPlan->offset);
+    sdiClientInfo   * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
+
+    sdi::shardStmtPartialRollbackUsingSavepoint( aTemplate->stmt,
+                                                 sClientInfo, 
+                                                 sDataPlan->mDataInfo );
 }

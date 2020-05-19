@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcRecordUpdate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcRecordUpdate.cpp 82855 2018-04-19 05:53:31Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -4436,7 +4436,7 @@ IDE_RC smcRecordUpdate::writeUInplaceColumnLog( void              *aTrans,
     
                         if( aOpt == SMC_UI_LOG_WRITE_TYPE_BEFORIMG )
                         {
-                            /* Before Image일 fst piece OID만 기록. */
+                            /* Before Image일 경우 fst piece OID만 기록. */
                             IDE_TEST( smLayerCallback::writeLogToBuffer( aTrans,
                                                                          &sVCPieceOID,
                                                                          *aLogOffset,
@@ -4805,7 +4805,7 @@ IDE_RC smcRecordUpdate::makeLogFlag(void                 *aTrans,
         if( smcTable::needReplicate(aHeader, aTrans ) == ID_TRUE )
         {
             //replication이 사용할 필요가 있다면
-            /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+            /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
              * Partial Rollback을 지원해야 합니다. */
             if ( smLayerCallback::checkAndSetImplSVPStmtDepth4Repl( aTrans )
                  == ID_FALSE )

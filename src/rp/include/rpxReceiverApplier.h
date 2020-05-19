@@ -36,7 +36,8 @@ typedef enum rpxRecevierApplyStatus
     RECV_APPLIER_STATUS_INITIALIZE  = 0,
     RECV_APPLIER_STATUS_WORKING     = 1,
     RECV_APPLIER_STATUS_DEQUEUEING  = 2,
-    RECV_APPLIER_STATUS_IDLE        = 3
+    RECV_APPLIER_STATUS_WAITING     = 3,
+    RECV_APPLIER_STATUS_STOP        = 4
 } rpxRecevierApplyStatus;
 
 class rpxReceiverApplier : public idtBaseThread
@@ -56,6 +57,7 @@ private:
 
     iduMutex                mMutex;
     iduCond                 mCV;
+    idBool                  mIsWait;
 
     rpxRecevierApplyStatus  mStatus;
 
@@ -99,7 +101,7 @@ public:
     void        finalizeThread( void );
 
     void        enqueue( rpdXLog     * aXLog );
-    void        dequeue( rpdXLog    ** aXLog );
+    IDE_RC      dequeue( rpdXLog    ** aXLog );
 
     void        setTransactionFlagReplReplicated( void );
     void        setTransactionFlagReplRecovery( void );
@@ -128,18 +130,20 @@ public:
 
     IDE_RC      allocRangeColumn( UInt   aCount );
 
-    void   setParallelApplyInfo( rpxReceiverParallelApplyInfo * aApplierInfo );
+    void        setParallelApplyInfo( rpxReceiverParallelApplyInfo * aApplierInfo );
 
-    IDE_RC buildRecordForReplReceiverParallelApply( void                * aHeader,
-                                                    void                * aDumpObj,
-                                                    iduFixedTableMemory * aMemory );
+    IDE_RC      buildRecordForReplReceiverParallelApply( void                * aHeader,
+                                                         void                * aDumpObj,
+                                                         iduFixedTableMemory * aMemory );
 
-    IDE_RC buildRecordForReplReceiverTransTbl( void                    * aHeader,
-                                               void                    * aDumpObj,
-                                               iduFixedTableMemory     * aMemory,
-                                               UInt                      aParallelID );
+    IDE_RC      buildRecordForReplReceiverTransTbl( void                    * aHeader,
+                                                    void                    * aDumpObj,
+                                                    iduFixedTableMemory     * aMemory,
+                                                    UInt                      aParallelID );
 
-    UInt getQueSize( void );
+    UInt        getQueSize( void );
+
+    void        wakeup( void );
 };
 
 inline UInt rpxReceiverApplier::getQueSize()

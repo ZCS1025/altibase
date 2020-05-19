@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutexEntry.h 81183 2017-09-25 08:31:43Z yoonhee.kim $
+ * $Id: iduMutexEntry.h 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 #ifndef _O_IDU_MUTEX_ENTRY_H_
 #define _O_IDU_MUTEX_ENTRY_H_ 1
@@ -34,7 +34,7 @@ public:
     iduMutexEntry   *mInfoPrev;
 
     idBool           mIdle;
-
+    UInt             mRecursiveCount;
 public:
 
     IDE_RC create(iduMutexKind);
@@ -79,8 +79,8 @@ public:
     inline void unlock()
     {
         mStat.mAccLockCount--;
-        mOP->mUnlock(&mMutex,&mStat);
         mStat.mOwner = (ULong)PDL_INVALID_HANDLE;
+        mOP->mUnlock(&mMutex,&mStat);
     }
 
     inline void* getMutexForCondWait()
@@ -88,7 +88,48 @@ public:
         IDE_ASSERT(mKind == IDU_MUTEX_KIND_POSIX);
         return &(mMutex.mPosix.mMutex);
     }
-    
+
+    inline void lockRecursive( idvSQL * aStatSQL )
+    {
+        idBool sRet;
+        trylock( &sRet );
+        if ( sRet != ID_TRUE )
+        {
+            /* Not locked */
+            if ( mStat.mOwner == (ULong)idlOS::thr_self() )
+            {
+                /* already locked by me*/
+                mStat.mAccLockCount++;
+            }
+            else
+            {
+                lock(aStatSQL);
+            }
+        }
+        mRecursiveCount++;
+    }
+
+    inline void unlockRecursive()
+    {
+        if( mStat.mOwner == (ULong)idlOS::thr_self() )
+        {
+            mRecursiveCount--;
+            if ( mRecursiveCount == 0 )
+            {
+                unlock();
+            }
+            else
+            {
+                /*do nothing, already done recursive count --*/
+                mStat.mAccLockCount--;
+            }
+        }
+        else
+        {
+            IDE_DASSERT( mStat.mOwner == (ULong)idlOS::thr_self() );
+        }
+    }
+
     inline idBool setIdle(idBool aIdle) {return (mIdle = aIdle);}
     inline idBool getIdle() {return mIdle;}
 
@@ -108,6 +149,7 @@ public:
 
     /* BUG-43940 V$mutex에서 mutex lock을 획득한 스레드 ID출력 */
     void             setThreadID();
+    ULong            getOwner() { return mStat.mOwner; } 
 };
 
 

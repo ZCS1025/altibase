@@ -1233,10 +1233,15 @@ IDE_RC sdbBufferPool::createPage( idvSQL          *aStatistics,
     sdbBCB                   *sBCB = NULL;
     sdbBCB                   *sAlreadyExistBCB  = NULL;
     sdbHashChainsLatchHandle *sHashChainsHandle = NULL;
+    sdrMtx                   *sMtx = NULL;
+    smxTrans                 *sTrans = NULL;
 
     IDE_DASSERT( aSpaceID <= SC_MAX_SPACE_COUNT - 1);
     IDE_DASSERT( aMtx     != NULL );
     IDE_DASSERT( aPagePtr != NULL );
+
+    sMtx = (sdrMtx*)aMtx;
+    sTrans = (smxTrans*)sMtx->mTrans;
 
     /* 생성하기에 앞서 이미 hash에 존재하는지 알아본다. 만약
      * 존재한다면? 그것을 리턴하면 된다. */
@@ -1268,7 +1273,22 @@ IDE_RC sdbBufferPool::createPage( idvSQL          *aStatistics,
         sBCB->lockBCBMutex( aStatistics );
 
         IDE_DASSERT( sBCB->mSBCB == NULL );
-        
+
+        /* BUG-45904 victim으로 받아오는 BCB는 fix count가 0이어야 한다. */
+        if( sBCB->mFixCnt != 0 )
+        {
+            ideLog::log( IDE_ERR_0,"Invalid fixed BCB founded.");
+            sdbBCB::dump( sBCB );
+
+            if( sTrans != NULL )
+            {
+                sTrans->dumpTransInfo();
+            }
+            IDE_DASSERT( 0 );
+
+            sBCB->mFixCnt = 0;
+        }
+
         sBCB->incFixCnt();
 
         sBCB->mSpaceID     = aSpaceID;
@@ -1401,8 +1421,15 @@ IDE_RC sdbBufferPool::createPage( idvSQL          *aStatistics,
             // 이것은 이미 다른 쓰레드로 부터 접근이 끝난 이후다.
             if ( isFixedBCB( sAlreadyExistBCB ) == ID_TRUE )
             {
+                ideLog::log( IDE_ERR_0,"Invalid fixed BCB detected.");
                 sdbBCB::dump(sAlreadyExistBCB);
-                IDE_ASSERT( 0 );
+                
+                if( sTrans != NULL )
+                {
+                    sTrans->dumpTransInfo();
+                }
+
+                IDE_ERROR( 0 );
             }
         }
 
@@ -1543,12 +1570,23 @@ IDE_RC sdbBufferPool::readPageFromDisk( idvSQL                 *aStatistics,
 
     IDE_EXCEPTION( page_corruption_error );
     {
+        /* BUG-45598: BCB까지 셋팅 했지만 Corrupt 페이지 인 경우 false 리턴.
+         * 만약 aIsCorruptPage가 NULL이 아닌 경우라면 이 함수가 redo 과정의
+         * sdrRedoMgr::applyHashedLogRec에서 불린 경우다. 이 경우 BCB 정보를
+         * 세팅해주어야 한다. Corrupt 페이지에 대한 처리가 상위 함수에서
+         * 수행되기 때문이다.
+         */
+        if ( aIsCorruptPage != NULL )
+        {
+            setFrameInfoAfterReadPage( aBCB, sOnlineTBSLSN4Idx );
+        }
+
         switch ( smLayerCallback::getCorruptPageReadPolicy() )
         {
             case SDB_CORRUPTED_PAGE_READ_FATAL :
-            IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
-                                      aBCB->mSpaceID,
-                                      aBCB->mPageID ));
+                IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
+                                        aBCB->mSpaceID,
+                                        aBCB->mPageID ));
 
                 break;
             case SDB_CORRUPTED_PAGE_READ_ABORT :
@@ -1668,6 +1706,7 @@ IDE_RC sdbBufferPool::readPage( idvSQL                   *aStatistics,
     sBCB->lockBCBMutex( aStatistics );
 
     IDE_DASSERT( sBCB->mSBCB == NULL );
+    IDE_DASSERT( sBCB->mFixCnt == 0 );
 
     sBCB->incFixCnt();
     sBCB->mSpaceID   = aSpaceID;
@@ -1759,11 +1798,12 @@ IDE_RC sdbBufferPool::readPage( idvSQL                   *aStatistics,
         {
             sdsBufferMgr::applyGetPages();
 
-            IDE_TEST( sdsBufferMgr::findBCB( aStatistics, 
-                                             aSpaceID,
-                                             aPageID,
-                                             &sSBCB )
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( sdsBufferMgr::findBCB( aStatistics, 
+                                                   aSpaceID,
+                                                   aPageID,
+                                                   &sSBCB )
+                            != IDE_SUCCESS,
+                            ERROR_READ_PAGE_FAULT );
         }
 
         if ( sSBCB != NULL )
@@ -1940,19 +1980,30 @@ retry:
     // BUG-21576 page corruption 에러 처리중, 버퍼매니저에서 deadlock 가능성있음
     if( sBCB->mPageReadError == ID_TRUE )
     {
-        /* 페이지 에러가 난경우 */
-        /* 자신이 디스크에서 읽어와서 실제 에러를 만나서 튕길때 까지
-         * 계속 수행한다. 왜냐면, 무슨 에러가 발생했는지는 실제 에러를
-         * 만날때 까지는 모르기 때문이다. */
-        if( sLatchSuccess == ID_TRUE )
+        /* BUG-45598: CorruptPageErrPolicy가 FATAL일 때만 서버가 Corrupt페이지
+         * 만나서 사망하도록 재시도 함.
+         */
+        if ( smLayerCallback::getCorruptPageReadPolicy()
+             == SDB_CORRUPTED_PAGE_READ_FATAL )
         {
-            releasePage( aStatistics, sBCB, aLatchMode );
+            /* 페이지 에러가 난경우 */
+            /* 자신이 디스크에서 읽어와서 실제 에러를 만나서 튕길때 까지
+             * 계속 수행한다. 왜냐면, 무슨 에러가 발생했는지는 실제 에러를
+             * 만날때 까지는 모르기 때문이다. */
+            if( sLatchSuccess == ID_TRUE )
+            {
+                releasePage( aStatistics, sBCB, aLatchMode );
+            }
+            else
+            {
+                unfixPage(aStatistics, sBCB);
+            }
+            goto retry;
         }
         else
         {
-            unfixPage(aStatistics, sBCB);
+            /* do nothing */
         }
-        goto retry;
     }
 
     if( sLatchSuccess == ID_TRUE )
@@ -2042,12 +2093,20 @@ IDE_RC sdbBufferPool::fixPage( idvSQL              *aStatistics,
 
     if( sBCB->mPageReadError == ID_TRUE )
     {
-        /* 페이지 에러가 난경우 */
-        /* 자신이 디스크에서 읽어와서 실제 에러를 만나서 튕길때 까지
-         * 계속 수행한다. 왜냐면, 무슨 에러가 발생했는지는 실제 에러를
-         * 만날때 까지는 모르기 때문이다. */
-        unfixPage(aStatistics, sBCB );
-        goto retry;
+        if ( smLayerCallback::getCorruptPageReadPolicy()
+             == SDB_CORRUPTED_PAGE_READ_FATAL )
+        {
+            /* 페이지 에러가 난경우 */
+            /* 자신이 디스크에서 읽어와서 실제 에러를 만나서 튕길때 까지
+             * 계속 수행한다. 왜냐면, 무슨 에러가 발생했는지는 실제 에러를
+             * 만날때 까지는 모르기 때문이다. */
+            unfixPage(aStatistics, sBCB );
+            goto retry;
+        }
+        else
+        {
+            /* do nothing */
+        }
     }
 
     if( sHit == ID_TRUE )
@@ -2455,9 +2514,12 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
 {
     sdbBCB    * sBCB;
     sdbBCB    * sAlreadyExistBCB;
+    sdbBCB    * sFixedBCB;
     SInt        sUnitIndex  = -1;
     idBool      sContReadIO = ID_FALSE;
-    UInt        i;
+    UInt        i = 0;
+    UInt        j = 0;
+    UInt        sMPRSetBCBCnt = 0;
     scPageID    sPID;
     idBool      sIsNeedIO = ID_FALSE;
 
@@ -2474,8 +2536,8 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
                                                        aSpaceID,
                                                        sPID);
 
-        IDE_TEST( mHashTable.findBCB( aSpaceID, sPID, (void**)&sBCB )
-                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( ( mHashTable.findBCB( aSpaceID, sPID, (void**)&sBCB )
+                          != IDE_SUCCESS ), FAIL_MPR_BCB_SETTING );
 
         if ( sBCB != NULL )
         {
@@ -2545,8 +2607,8 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
             sBCB = aKey->removeLastFreeBCB();
             if ( sBCB == NULL )
             {
-                IDE_TEST( getVictim( aStatistics, (UInt)sPID, &sBCB )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( ( getVictim( aStatistics, (UInt)sPID, &sBCB )
+                                  != IDE_SUCCESS ), FAIL_MPR_BCB_SETTING );
             }
             /* 디스크에서 data를 읽어 오기 위한 readPageFromDisk를 수행하기 위해
              * 해야 하는 작업들은 readPage에서의 그것과 매우 유사하다.
@@ -2554,6 +2616,7 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
             sBCB->lockBCBMutex( aStatistics );
 
             IDE_DASSERT( sBCB->mSBCB == NULL );
+            IDE_DASSERT( sBCB->mFixCnt == 0 );
 
             /* 기존에 존재하는 BCB에 대한 접근이 아닌 경우엔 touch count를 증가
              * 시키지 않습니다. (touch count는 0)
@@ -2582,7 +2645,7 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
             /* 실제 disk에서 읽어 올 것이므로 아래 두 래치를 잡는다.
              * 래치에 대한 자세한 설명은 sdbBufferPool::readPage를 참조. */
             sBCB->lockPageXLatch(aStatistics);
-            sBCB->mReadIOMutex.lock(aStatistics);
+            (void)sBCB->mReadIOMutex.lock(aStatistics);
 
             IDU_FIT_POINT( "1.BUG-29643@sdbBufferPool::fetchPagesByMPR" );
 
@@ -2600,6 +2663,7 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
                  * */
                 sAlreadyExistBCB->updateTouchCnt();
                 sAlreadyExistBCB->unlockBCBMutex();
+
                 mHashTable.unlockHashChainsLatch( sLatchHandle );
                 sLatchHandle = NULL;
 
@@ -2650,6 +2714,7 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
 
                 sContReadIO = ID_FALSE;
                 IDE_ASSERT( aKey->mBCBs[i].mBCB->mFixCnt != 0 );
+
                 continue;
             }
 
@@ -2659,8 +2724,8 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
             /* 1. 먼저 Secondatry Buffer에서 검색한다. */
             if( isSBufferServiceable() == ID_TRUE )
             { 
-                IDE_TEST( sdsBufferMgr::findBCB( aStatistics, aSpaceID, sPID, &sSBCB )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( ( sdsBufferMgr::findBCB( aStatistics, aSpaceID, sPID, &sSBCB )
+                          != IDE_SUCCESS ), FAIL_MPR_BCB_SETTING );
             }   
 
             if ( sSBCB != NULL )
@@ -2675,11 +2740,11 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
                  * 하지만.. single page로 읽는다고 하더라도 성능의 문제는 없음.
                  * SSD를 고려한 SB이므로.
                  */
-                IDE_TEST( sdsBufferMgr::moveUpbySinglePage( aStatistics, 
-                                                            &sSBCB, 
-                                                            sBCB, 
-                                                            &sIsCorruptRead )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( ( sdsBufferMgr::moveUpbySinglePage( aStatistics, 
+                                                                    &sSBCB, 
+                                                                    sBCB, 
+                                                                    &sIsCorruptRead )
+                                  != IDE_SUCCESS ), FAIL_MPR_BCB_SETTING );
 
                 if( sIsCorruptRead == ID_FALSE )
                 {
@@ -2699,8 +2764,8 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
                     sBCB->mReadyToRead = ID_TRUE;
                     (void)sBCB->mReadIOMutex.unlock();
                     sBCB->unlockPageLatch();
-
-                  continue;
+                    
+                    continue;
                 }
             }
 
@@ -2728,12 +2793,15 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
         }
     }
 
-    IDU_FIT_POINT( "2.BUG-29643@sdbBufferPool::fetchPagesByMPR" );
-
     aKey->mReadUnitCount = (UInt)sUnitIndex + 1;
     aKey->mSpaceID       = aSpaceID;
     aKey->mIOBPageCount  = aPageCount;
     aKey->mCurrentIndex  = 0;
+
+    sMPRSetBCBCnt        = aPageCount; 
+
+    /* 해당 FIT point는 BUG-45904에서도 사용 */
+    IDU_FIT_POINT( "2.BUG-29643@sdbBufferPool::fetchPagesByMPR" );
 
     if( sIsNeedIO == ID_TRUE )
     {
@@ -2766,7 +2834,22 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
     aKey->mState = SDB_MPR_KEY_FETCHED;
 
     return IDE_SUCCESS;
-    
+
+    /* BUG-45959: MPRKey에 BCB를 setting하던 중 예외처리가 발생하는 경우 
+     * setting된 BCB 개수 만큼 unfix 해주어야 함.   
+     */
+    IDE_EXCEPTION( FAIL_MPR_BCB_SETTING )
+    {
+        if( i != 0 )
+        {
+            sMPRSetBCBCnt = i;
+        }
+        else
+        {
+            sMPRSetBCBCnt = 0;
+        }
+    }
+ 
     IDE_EXCEPTION_END;
 
     if ( sLatchHandle != NULL )
@@ -2777,6 +2860,54 @@ IDE_RC sdbBufferPool::fetchPagesByMPR( idvSQL               *aStatistics,
     else
     {
         /* nothing to do */
+    }
+
+    /* BUG-45904 예외처리시 증가시킨 fix count를 감소시켜야 한다. */
+    for( j = 0 ; j < sMPRSetBCBCnt ; j++ )
+    {
+        sFixedBCB = aKey->mBCBs[j].mBCB;
+
+        sLatchHandle = mHashTable.lockHashChainsXLatch( aStatistics,
+                                                        aSpaceID,
+                                                        sFixedBCB->mPageID);
+
+        sFixedBCB->lockBCBMutex(aStatistics);
+
+        if ( aKey->mBCBs[j].mType == SDB_MRPBCB_TYPE_NEWFETCH )
+        {
+            if( ( sFixedBCB->mFixCnt == 1 ) &&
+                ( ( sFixedBCB->mState == SDB_BCB_CLEAN ) || ( sFixedBCB->mState == SDB_BCB_FREE ) ) )
+            {
+                /* 해당 BCB가 이 함수( fetchPagesByMPR )를 통해서 처음 버퍼에 올라온 
+                 * 경우 해시에서 제거한다. */
+                sFixedBCB->decFixCnt();
+                sFixedBCB->setToFree();
+                sFixedBCB->unlockBCBMutex();
+
+                mHashTable.removeBCB( sFixedBCB );
+
+                /* BCB를 재활용할 수 있도록 freeBCB에 삽입한다. */
+                aKey->addFreeBCB( sFixedBCB );
+
+            }
+            else
+            {
+                /* 자신만 보고 있지 않거나 dirty일 경우 해시에서 제거하지 않고 LRU에 삽입한다. */
+                sFixedBCB->decFixCnt();
+                sFixedBCB->unlockBCBMutex();
+                mLRUList[getLRUListIdx((UInt)sFixedBCB->mPageID)].insertBCB2BehindMid(
+                    aStatistics,
+                    sFixedBCB );
+            }
+        }
+        else
+        {
+            /* 기존에 이미 버퍼에 올라와 있던 BCB라면 fix count만 감소시킨다. */
+            sFixedBCB->decFixCnt();
+            sFixedBCB->unlockBCBMutex();
+        }
+
+        mHashTable.unlockHashChainsLatch( sLatchHandle );
     }
 
     return IDE_FAILURE;
@@ -2824,6 +2955,9 @@ IDE_RC sdbBufferPool::copyToFrame(
     sdbBCB  *sBCB = NULL;
     UInt     i    = 0;
     smLSN    sOnlineTBSLSN4Idx;
+    UInt            sCorruptPageReadCnt = 0;
+    scSpaceID       sCurruptSpaceID;
+    scPageID        sCurruptPageID;
 
     for ( i = 0;
           i < aReadUnit->mReadBCBCount;
@@ -2838,7 +2972,22 @@ IDE_RC sdbBufferPool::copyToFrame(
         if ( smLayerCallback::isPageCorrupted( aSpaceID,
                                                sBCB->mFrame ) == ID_TRUE )
         {
-            IDE_RAISE( page_corruption_error );
+            if( ( smuProperty::getCorruptPageErrPolicy()
+              & SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
+            != SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
+            {
+                // BUG-45598: copyToFrame @ page corrupt 상황 처리
+                sBCB->mPageReadError = ID_TRUE;
+                sCurruptSpaceID = sBCB->mSpaceID;
+                sCurruptPageID  = sBCB->mPageID;
+                sCorruptPageReadCnt++;
+            }
+            else
+            {
+                sCurruptSpaceID = sBCB->mSpaceID;
+                sCurruptPageID  = sBCB->mPageID;
+                IDE_RAISE( page_corruption_error );
+            }
         }
 
         SM_LSN_INIT( sOnlineTBSLSN4Idx );
@@ -2859,6 +3008,10 @@ IDE_RC sdbBufferPool::copyToFrame(
         sBCB->unlockPageLatch();
     }
 
+    // BUG-45598: corrupt 페이지가 있으면 에러
+    IDE_TEST_RAISE(   ( sCorruptPageReadCnt != 0 )
+                    &&( smuProperty::getCrashTolerance() == 0 ),  page_corruption_error );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( page_corruption_error );
@@ -2866,15 +3019,15 @@ IDE_RC sdbBufferPool::copyToFrame(
         switch( smLayerCallback::getCorruptPageReadPolicy() )
         {
             case SDB_CORRUPTED_PAGE_READ_FATAL :
-            IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
-                                      sBCB->mSpaceID,
-                                      sBCB->mPageID ));
-
+                IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
+                                          sCurruptSpaceID,
+                                          sCurruptPageID));
                 break;
             case SDB_CORRUPTED_PAGE_READ_ABORT :
                 IDE_SET( ideSetErrorCode( smERR_ABORT_PageCorrupted,
-                                          sBCB->mSpaceID,
-                                          sBCB->mPageID));
+                                          sCurruptSpaceID,
+                                          sCurruptPageID));
+
                 break;
             default:
                 break;
@@ -3070,6 +3223,7 @@ IDE_RC sdbBufferPool::fetchSinglePage(
     idvTime   sEndTime;
     ULong     sReadTime;
     ULong     sCalcChecksumTime;
+    UInt      sCorruptPageReadCnt = 0;
 
     sBCB = aKey->mReadUnit[0].mReadBCB[0].mBCB;
 
@@ -3095,7 +3249,18 @@ IDE_RC sdbBufferPool::fetchSinglePage(
     if ( smLayerCallback::isPageCorrupted( aKey->mSpaceID,
                                            sBCB->mFrame ) == ID_TRUE )
     {
-        IDE_RAISE( page_corruption_error );
+        // BUG-45598: mpr 이용하여 페이지 하나 씩 fetch 할 경우 고려
+        if( ( smuProperty::getCorruptPageErrPolicy()
+              & SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
+            != SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
+        {
+            sBCB->mPageReadError = ID_TRUE;
+            sCorruptPageReadCnt++;
+        }
+        else
+        {
+            IDE_RAISE( page_corruption_error );
+        }
     }
 
     SM_LSN_INIT( sOnlineTBSLSN4Idx );
@@ -3124,6 +3289,10 @@ IDE_RC sdbBufferPool::fetchSinglePage(
                                 sReadTime,
                                 1 );
 
+    // BUG-45598: corrupt 페이지가 있으면 에러( MPR이용하여 Single 페이지 fetch 일 경우 )
+    IDE_TEST_RAISE(   ( sCorruptPageReadCnt != 0 )
+                    &&( smuProperty::getCrashTolerance() == 0 ),  page_corruption_error );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( page_corruption_error );
@@ -3131,9 +3300,9 @@ IDE_RC sdbBufferPool::fetchSinglePage(
         switch( smLayerCallback::getCorruptPageReadPolicy() )
         {
             case SDB_CORRUPTED_PAGE_READ_FATAL :
-            IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
-                                      sBCB->mSpaceID,
-                                      sBCB->mPageID ));
+                IDE_SET( ideSetErrorCode( smERR_FATAL_PageCorrupted,
+                                          sBCB->mSpaceID,
+                                          sBCB->mPageID ));
 
                 break;
             case SDB_CORRUPTED_PAGE_READ_ABORT :

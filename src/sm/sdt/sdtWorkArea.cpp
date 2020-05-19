@@ -181,8 +181,9 @@ IDE_RC sdtWorkArea::createWA()
                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                   ID_FALSE,							/* ForcePooling */
                   ID_TRUE,							/* GarbageCollection */
-                  ID_TRUE )							/* HWCacheLine */
-              != IDE_SUCCESS);
+                  ID_TRUE,                          /* HWCacheLine */
+                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+              != IDE_SUCCESS);			
     sState = 6;
 
     mWAState = SDT_WASTATE_RUNNING;
@@ -523,6 +524,9 @@ IDE_RC sdtWorkArea::assignWAFlusher( sdtWASegment * aWASegment )
             sWAFlushQueue->mWASegment    = aWASegment;
 
             sWAFlushQueue->mNextTarget   = sWAFlusher->mTargetHead;
+            sWAFlushQueue->mWriteCount   = 0;
+            sWAFlushQueue->mWritePageCount = 0;
+            sWAFlushQueue->mRedirtyCount = 0;
             sWAFlusher->mTargetHead      = sWAFlushQueue;
 
             sLockState = 0;
@@ -751,7 +755,7 @@ void sdtWorkArea::flusherRun( void * aParam )
         default:
             break;
     }
-    ideLog::log( IDE_SM_0,
+    ideLog::log( IDE_DUMP_0,
                  "STOP WAFlusher %u",
                  sWAFlusher->mIdx );
     if( sWAFlushQueue != NULL )
@@ -813,10 +817,9 @@ IDE_RC sdtWorkArea::flushTempPages( sdtWAFlushQueue * aWAFlushQueue )
         {
             // 연속적이지 못한 페이지를 만나게 되면,
             // 기존의 연속된 페이지들을 Flush함
-            IDE_TEST( flushTempPagesInternal( aWAFlushQueue->mStatistics,
-                                              *aWAFlushQueue->mStatsPtr,
-                                              (sdtWASegment*)
-                                              aWAFlushQueue->mWASegment,
+            IDU_FIT_POINT( "1.BUG-46670@sdbWorkArea::flushTempPages::sleep" );
+
+            IDE_TEST( flushTempPagesInternal( aWAFlushQueue,
                                               sPrevWCBPtr,
                                               sSiblingPageCount )
                       != IDE_SUCCESS );
@@ -831,10 +834,9 @@ IDE_RC sdtWorkArea::flushTempPages( sdtWAFlushQueue * aWAFlushQueue )
 
     if( ( sSiblingPageCount > 0 ) && ( aWAFlushQueue->mFQDone == ID_FALSE ) )
     {
-        IDE_TEST( flushTempPagesInternal( aWAFlushQueue->mStatistics,
-                                          *aWAFlushQueue->mStatsPtr,
-                                          (sdtWASegment*)
-                                          aWAFlushQueue->mWASegment,
+        IDU_FIT_POINT( "2.BUG-46670@sdbWorkArea::flushTempPages::sleep" );
+
+        IDE_TEST( flushTempPagesInternal( aWAFlushQueue,
                                           sPrevWCBPtr,
                                           sSiblingPageCount )
                   != IDE_SUCCESS );
@@ -866,9 +868,7 @@ IDE_RC sdtWorkArea::flushTempPages( sdtWAFlushQueue * aWAFlushQueue )
  * aPageCount     - 위 WCB로부터, N개의 Page를 한번에 Flush한다.
  *                  위 WCB의 PID가 10, N의 4이면, 7,8,9,10 이다.
  ***************************************************************************/
-IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
-                                            smiTempTableStats * aStats,
-                                            sdtWASegment      * aWASegment,
+IDE_RC sdtWorkArea::flushTempPagesInternal( sdtWAFlushQueue   * aWAFlushQueue,
                                             sdtWCB            * aWCBPtr,
                                             UInt                aPageCount )
 {
@@ -879,8 +879,8 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
     scPageID         sPageID;
     UInt             i;
 
-    aStats->mWriteCount ++;
-    aStats->mWritePageCount  += aPageCount;
+    aWAFlushQueue->mWriteCount ++;
+    aWAFlushQueue->mWritePageCount  += aPageCount;
 
     sWAPagePtr = aWCBPtr->mWAPagePtr - SD_PAGE_SIZE * ( aPageCount - 1 );
 #if defined(DEBUG)
@@ -892,9 +892,9 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
 
     sPageID  = aWCBPtr->mNPageID - aPageCount + 1;
     sSpaceID = aWCBPtr->mNSpaceID;
-    IDE_ERROR( sSpaceID == aWASegment->mSpaceID );
+    IDE_ERROR( sSpaceID == ((sdtWASegment*)aWAFlushQueue->mWASegment)->mSpaceID );
 
-    IDE_TEST( sddDiskMgr::write4DPath( aStatistics,
+    IDE_TEST( sddDiskMgr::write4DPath( aWAFlushQueue->mStatistics,
                                        sSpaceID,
                                        sPageID,
                                        aPageCount,
@@ -916,7 +916,7 @@ IDE_RC sdtWorkArea::flushTempPagesInternal( idvSQL            * aStatistics,
             /* ServiceThread가 다시금 Flush를 요청하였다. 그러면서 Queue에
              * Job을 등록하였을 뿐이기 때문에, 현 시점에서는 정리만 한다.
              * 단순히 통계 누적 용이다. */
-            aStats->mRedirtyCount ++;
+            aWAFlushQueue->mRedirtyCount ++;
         }
 
         /* Writing 상태만은 아니어야 한다.
@@ -1038,7 +1038,8 @@ IDE_RC   sdtWorkArea::pushJob( sdtWASegment    * aWASeg,
         idlOS::thr_yield();
     }
 
-    sWAFQ->mSlotPtr[ sEnd ] = aWPID;
+    // BUG-45811 cache miss occurs in the Numa system.
+    (void)idCore::acpAtomicSet32( &sWAFQ->mSlotPtr[ sEnd ], aWPID );
 
     (void)idCore::acpAtomicSet32( &sWAFQ->mFQEnd, sNextEnd );
     IDE_ERROR( sWAFQ->mFQEnd < (SInt)mWAFlushQueueSize );
@@ -1086,7 +1087,9 @@ IDE_RC     sdtWorkArea::popJob( sdtWAFlushQueue  * aWAFQ,
     while( isEmptyQueue( aWAFQ ) == ID_FALSE )
     {
         sBeginSeq = idCore::acpAtomicGet32( &aWAFQ->mFQBegin );
-        *aWPID    = aWAFQ->mSlotPtr[ sBeginSeq ];
+
+        // BUG-45811 cache miss occurs in the Numa system.
+        *aWPID = idCore::acpAtomicGet32( &aWAFQ->mSlotPtr[ sBeginSeq ] );
 
         sWCBPtr = sdtWASegment::getWCBInternal( sWASeg, *aWPID );
 

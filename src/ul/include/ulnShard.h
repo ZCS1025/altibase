@@ -19,6 +19,10 @@
 
 void ulnShardDbcContextInitialize(ulnDbc *aDbc);
 
+#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+void ulnShardDbcContextFinalize( ulnDbc *aDbc );
+#endif /* COMPILE_SHARDCLI */
+
 void ulnShardStmtContextInitialize(ulnStmt *aStmt);
 
 #endif /* _O_ULN_SHARD_H_ */

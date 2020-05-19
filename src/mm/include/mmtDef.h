@@ -30,7 +30,6 @@ do                                                          \
 {                                                           \
     if (cmiGetLinkImpl(aCtx) == CMI_LINK_IMPL_IPCDA)        \
     {                                                       \
-        IDL_MEM_BARRIER;                                    \
         cmiIPCDAIncDataCount(aCtx);                         \
     }                                                       \
 } while(0)

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfMod.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfMod.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -131,8 +131,25 @@ static mtfSubModule* mtfGroupTableHighPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAX
 /* INTERVAL */ { mtfNP, mtfNP, mtfNP, mtfNP, mtfNP }
 };
 
+/* BUG-46195 */
+static mtfSubModule mtfNF[1] = {
+    { NULL, mtfModEstimateFloat }
+};
+
+static mtfSubModule * mtfGroupTableMaxPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
+/*               MISC   TEXT   NUMBE  DATE   INTER */
+/* MISC     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* TEXT     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* NUMBER   */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* DATE     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* INTERVAL */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF }
+};
+
 static mtfSubModule*** mtfTable = NULL;
 static mtfSubModule*** mtfTableHighPrecision = NULL;
+
+/* BUG-46195 */
+static mtfSubModule*** mtfTableMaxPrecision = NULL;
 
 IDE_RC mtfModInitialize( void )
 {
@@ -145,7 +162,13 @@ IDE_RC mtfModInitialize( void )
                                                  mtfGroupTableHighPrecision,
                                                  mtfXX )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::initializeComparisonTemplate( &mtfTableMaxPrecision,
+                                                 mtfGroupTableMaxPrecision,
+                                                 mtfXX )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -157,10 +180,14 @@ IDE_RC mtfModFinalize( void )
 {
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTable )
               != IDE_SUCCESS );
-    
+
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableHighPrecision )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableMaxPrecision )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -192,11 +219,16 @@ IDE_RC mtfModEstimate( mtcNode*     aNode,
     {
         sTable = mtfTableHighPrecision;
     }
+    /* BUG-46195 */
+    else if ( aTemplate->arithmeticOpMode == MTC_ARITHMETIC_OPERATION_MAX_PRECISION )
+    {
+        sTable = mtfTableMaxPrecision;
+    }
     else
     {
         sTable = mtfTable;
     }
-    
+
     IDE_TEST( mtf::getSubModule2Args( &sSubModule,
                                       sTable,
                                       aStack[1].column->module->no,
@@ -240,6 +272,7 @@ static const mtcExecute mtfModExecuteInteger = {
     mtf::calculateNA,
     mtfModCalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -334,6 +367,7 @@ static const mtcExecute mtfModExecuteSmallint = {
     mtf::calculateNA,
     mtfModCalculateSmallint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -429,6 +463,7 @@ static const mtcExecute mtfModExecuteBigint = {
     mtf::calculateNA,
     mtfModCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -523,6 +558,7 @@ static const mtcExecute mtfModExecuteFloat = {
     mtf::calculateNA,
     mtfModCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -619,6 +655,7 @@ static const mtcExecute mtfModExecuteReal = {
     mtf::calculateNA,
     mtfModCalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -734,6 +771,7 @@ static const mtcExecute mtfModExecuteDouble = {
     mtf::calculateNA,
     mtfModCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -21,8 +21,10 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import Altibase.jdbc.driver.cm.CmConnType;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.sharding.core.ShardTransactionLevel;
 
 /**
  * Altibase용 <tt>Properties</tt> 클래스.
@@ -72,6 +74,8 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final String  PROP_TXI_LEVEL                       = "isolation_level";
     /** Failover를 위한 대안 서버 목록 */
     public static final String  PROP_ALT_SERVERS                     = "alternateservers";
+    public static final String  PROP_LOAD_BALANCE                    = "loadbalance";
+    public static final boolean DEFAULT_LOAD_BALANCE                 = false;
     public static final String  PROP_CTF_RETRY_COUNT                 = "connectionretrycount";
     public static final String  PROP_CTF_RETRY_DELAY                 = "connectionretrydelay";
     public static final String  PROP_FAILOVER_USE_STF                = "sessionfailover";
@@ -91,13 +95,26 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final String  DEFAULT_TIME_ZONE                    = DB_TIME_ZONE;
     
     public static final String  PROP_LOB_CACHE_THRESHOLD             = "lob_cache_threshold";
+    public static final int     MIN_LOB_CACHE_THRESHOLD              = 0;
+    public static final int     MAX_LOB_CACHE_THRESHOLD              = 512 * 1024;  /* BUG-46411 */
+
     public static final String  PROP_REMOVE_REDUNDANT_TRANSMISSION   = "remove_redundant_transmission";
     public static final int     DEFAULT_REMOVE_REDUNDANT_TRANSMISSION = 0;
     
     /** deferred prepare 사용 여부 */
     public static final String  PROP_DEFERRED_PREPARE                = "defer_prepares";
     public static final boolean DEFAULT_DEFERRED_PREPARE             = false;
-    
+
+    /** PROJ-2681 */
+    public static final String PROP_CONNTYPE                         = "conntype";
+    public static final String DEFAULT_CONNTYPE                      = "TCP";
+
+    public static final String PROP_IB_LATENCY                       = "ib_latency";
+    public static final int DEFAULT_IB_LATENCY                       = 0;
+
+    public static final String PROP_IB_CONCHKSPIN                    = "ib_conchkspin";
+    public static final int DEFAULT_IB_CONCHKSPIN                    = 0;
+
     /** PROJ-2474 ssl 보안 통신을 사용할지 여부 */
     public static final String  PROP_SSL_ENABLE                      = "ssl_enable";
     public static final boolean DEFAULT_SSL_ENABLE                   = false;
@@ -106,6 +123,15 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final String  PROP_FETCH_ENOUGH                    = "fetch_enough";
     /** 딱히 갯수를 정해두지 않고, 한번 통신으로 얻을 수 있을 만큼 얻는다. */
     public static final int     DEFAULT_FETCH_ENOUGH                 = 0;
+
+    /* PROJ-2690 ShardJDBC */
+    public static final String PROP_SHARD_CONNTYPE                   = "shard_conntype";
+    public static final String PROP_SHARD_TRANSACTION_LEVEL          = "shard_transaction_level";
+    public static final int    DEFAULT_SHARD_TRANSACTION_LEVEL       = 1;     // Multi-node transaction
+    public static final String PROP_SHARD_PIN                        = "shardpin";
+    public static final String PROP_SHARD_NODE_NAME                  = "shard_node_name";
+    public static final String PROP_SHARD_META_NUMBER                = "shard_meta_number";
+    public static final String PROP_SHARD_LAZYCONNECT                = "shard_lazy_connect";
 
     /* BUG-37642 Improve performance to fetch */
     public static final int     MAX_FETCH_ENOUGH                     = Integer.MAX_VALUE;
@@ -137,6 +163,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final int     DEFAULT_PORT                         = 20300;
     // PROJ-2474 SSL 통신을 위한 기본포트 선언 (기본값:20443)
     public static final int     DEFAULT_SSL_PORT                     = 20443;
+    public static final int     DEFAULT_IB_PORT                      = DEFAULT_PORT;
     public static final String  DEFAULT_DBNAME                       = "mydb";
     public static final int     DEFAULT_LOGIN_TIMEOUT                = 0;
     public static final boolean DEFAULT_AUTO_COMMIT                  = true;
@@ -173,7 +200,12 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     public static final byte    PROP_CODE_FETCH_PROTOCOL_TYPE           = 27;
     public static final byte    PROP_CODE_REMOVE_REDUNDANT_TRANSMISSION = 28;
     public static final byte    PROP_CODE_LOB_CACHE_THRESHOLD           = 29; /* PROJ-2047 */
-    public static final byte    PROP_CODE_MAX                           = 30;
+    public static final byte    PROP_CODE_SHARD_NODE_NAME               = 32; /* PROJ-2690 ShardJDBC */
+    public static final byte    PROP_CODE_SHARD_PIN                     = 33; /* PROJ-2690 ShardJDBC */
+    public static final byte    PROP_CODE_SHARD_TRANSACTION_LEVEL       = 34; /* PROJ-2690 ShardJDBc */
+    public static final byte    PROP_CODE_SHARD_META_NUMBER             = 35; /* PROJ-2690 ShardJDBc */
+    public static final byte    PROP_CODE_SHARD_CLIENT_TYPE             = 36; /* PROJ-2690 ShardJDBc */
+    public static final byte    PROP_CODE_MAX                           = 37;
 
     public AltibaseProperties()
     {
@@ -223,6 +255,10 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         else if (PROP_SOCK_RCVBUF_BLOCK_RATIO.equalsIgnoreCase(sKey)) // PROJ-2625
         {
             checkValueAndThrow(sKey, aValue, MIN_SOCK_RCVBUF_BLOCK_RATIO, MAX_SOCK_RCVBUF_BLOCK_RATIO);
+        }
+        else if (PROP_LOB_CACHE_THRESHOLD.equalsIgnoreCase(sKey))  /* BUG-46411 */
+        {
+            checkValueAndThrow(sKey, aValue, MIN_LOB_CACHE_THRESHOLD, MAX_LOB_CACHE_THRESHOLD);
         }
         return super.put(aKey, aValue);
     }
@@ -531,6 +567,16 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         return getProperty(PROP_DATASOURCE_NAME);
     }
 
+    public String getShardNodeName()
+    {
+        return getProperty(PROP_SHARD_NODE_NAME);
+    }
+
+    public long getShardPin()
+    {
+        return getLongProperty(PROP_SHARD_PIN);
+    }
+
     public void setDataSource(String aDataSource)
     {
         setProperty(PROP_DATASOURCE_NAME, aDataSource);
@@ -666,6 +712,16 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         setProperty(PROP_ALT_SERVERS, aAlternateServer);
     }
 
+    public boolean useLoadBalance()
+    {
+        return getBooleanProperty(PROP_LOAD_BALANCE, DEFAULT_LOAD_BALANCE);
+    }
+
+    public void setLoadBalance(boolean aLoadBalance)
+    {
+        setProperty(PROP_LOAD_BALANCE, aLoadBalance);
+    }
+
     public int getConnectionRetryCount()
     {
         return getIntProperty(PROP_CTF_RETRY_COUNT);
@@ -721,6 +777,12 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         return getIntProperty(PROP_FETCH_ENOUGH, DEFAULT_FETCH_ENOUGH);
     }
 
+    public ShardTransactionLevel getShardTransactionLevel()
+    {
+        int sTransactionLevel = getIntProperty(PROP_SHARD_TRANSACTION_LEVEL, DEFAULT_SHARD_TRANSACTION_LEVEL);
+        return ShardTransactionLevel.get(sTransactionLevel);
+    }
+
     /* unused */
     public void setFetchEnough(int aFetchEnough)
     {
@@ -754,21 +816,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     {
         return getBooleanProperty(PROP_DEFERRED_PREPARE, DEFAULT_DEFERRED_PREPARE);
     }
-    
-    /**
-     * PROJ-2474 ssl_enable 프로퍼티가 활성화 되어 있는지 체크한다.
-     * @return
-     */
-    public boolean isSslEnabled()
-    {
-        return getBooleanProperty(PROP_SSL_ENABLE, DEFAULT_SSL_ENABLE);
-    }
-    
-    public void setSslEnable(boolean aSslEnable)
-    {
-        setProperty(PROP_SSL_ENABLE, aSslEnable);
-    }
-    
+
     public boolean isOnRedundantDataTransmission()
     {
         return getIntProperty(PROP_REMOVE_REDUNDANT_TRANSMISSION, DEFAULT_REMOVE_REDUNDANT_TRANSMISSION) == 1 ? true : false;
@@ -848,7 +896,45 @@ public class AltibaseProperties extends CaseInsensitiveProperties
     {
         setProperty(PROP_SOCK_RCVBUF_BLOCK_RATIO, aSockRcvBufBlockRatio);
     }
-    
+
+    public void sslEnabledToConnType()
+    {
+        if (getBooleanProperty(PROP_SSL_ENABLE, DEFAULT_SSL_ENABLE))
+        {
+            setConnType(CmConnType.SSL.toString());
+        }
+    }
+
+    public String getConnType()
+    {
+        return getProperty(PROP_CONNTYPE, DEFAULT_CONNTYPE);
+    }
+
+    public String getShardConnType()
+    {
+        return getProperty(PROP_SHARD_CONNTYPE, DEFAULT_CONNTYPE);
+    }
+
+    public boolean isShardLazyConnectEnabled()
+    {
+        return getBooleanProperty(PROP_SHARD_LAZYCONNECT, true);
+    }
+
+    public void setConnType(String aConnType)
+    {
+        setProperty(PROP_CONNTYPE, aConnType);
+    }
+
+    public int getIBLatency()
+    {
+        return getIntProperty(PROP_IB_LATENCY, DEFAULT_IB_LATENCY);
+    }
+
+    public int getIBConChkSpin()
+    {
+        return getIntProperty(PROP_IB_CONCHKSPIN, DEFAULT_IB_CONCHKSPIN);
+    }
+
     private static final String  PROP_PAIR_PATTERN_STR = "([a-zA-Z_][\\w]*\\s*)=(\\s*(?:\\([^\\)]*\\)|[^,\\{\\}\\(\\)]*))";
     private static final Pattern PROP_PAIR_PATTERN     = Pattern.compile(PROP_PAIR_PATTERN_STR);
     private static final Pattern PROP_STR_PATTERN      = Pattern.compile("^\\s*\\{\\s*" + PROP_PAIR_PATTERN_STR + "(?:\\s*,\\s*" + PROP_PAIR_PATTERN_STR + ")*\\s*\\}\\s*$");
@@ -887,6 +973,11 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         new AltibaseDriverPropertyInfo( PROP_DBNAME                     , DEFAULT_DBNAME                , null                              , true  , null ),
         new AltibaseDriverPropertyInfo( PROP_USER                       , null                          , null                              , true  , null ),
         new AltibaseDriverPropertyInfo( PROP_PASSWORD                   , null                          , null                              , true  , null ),
+        new AltibaseDriverPropertyInfo( PROP_CONNTYPE                   , DEFAULT_CONNTYPE              , new String[] {"tcp", "1",
+                                                                                                                        "ssl", "6",
+                                                                                                                        "ib", "8" }         , false , null ),
+        new AltibaseDriverPropertyInfo( PROP_IB_LATENCY                 , DEFAULT_IB_LATENCY            , null                              , false , null ),
+        new AltibaseDriverPropertyInfo( PROP_IB_CONCHKSPIN              , DEFAULT_IB_CONCHKSPIN         , null                              , false , null ),
         new AltibaseDriverPropertyInfo( PROP_CONNECT_MODE               , null                          , new String[] {"normal", "sysdba"} , false , null ),
         new AltibaseDriverPropertyInfo( PROP_DESCRIPTION                , null                          , null                              , false , null ),
         new AltibaseDriverPropertyInfo( PROP_DATASOURCE_NAME            , null                          , null                              , false , null ),
@@ -904,6 +995,7 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         new AltibaseDriverPropertyInfo( PROP_APP_INFO                   , null                          , null                              , false , null ),
         new AltibaseDriverPropertyInfo( PROP_TXI_LEVEL                  , null                          , new String[] {"2", "4", "8"}      , false , null ),
         new AltibaseDriverPropertyInfo( PROP_ALT_SERVERS                , null                          , null                              , false , null ),
+        new AltibaseDriverPropertyInfo( PROP_LOAD_BALANCE               , DEFAULT_LOAD_BALANCE                                              , false , null ),
         new AltibaseDriverPropertyInfo( PROP_CTF_RETRY_COUNT            , null                          , null                              , false , null ),
         new AltibaseDriverPropertyInfo( PROP_CTF_RETRY_DELAY            , null                          , null                              , false , null ),
         new AltibaseDriverPropertyInfo( PROP_FAILOVER_USE_STF           , DEFAULT_FAILOVER_USE_STF                                          , false , null ),

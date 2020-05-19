@@ -223,10 +223,8 @@ static IDE_RC buildRecordForMemBase(idvSQL              * /*aStatistics*/,
 
     while( sCurTBS != NULL )
     {
-        if( (sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-             != ID_TRUE) ||
-            ( sCurTBS->mRestoreType ==
-              SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
+        if ( ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) ||
+             ( sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -403,9 +401,8 @@ static IDE_RC buildRecordForMemBaseMgr(idvSQL              * /*aStatistics*/,
 
     while( sCurTBS != NULL )
     {
-        if((sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE) ||
-           ( sCurTBS->mRestoreType ==
-             SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
+        if( ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) ||
+            ( sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -554,10 +551,8 @@ IDE_RC buildRecordForMemTBSFreePageList(
     sNeedRecCount = sCurTBS->mMemBase->mFreePageListCount;
     while( sCurTBS != NULL )
     {
-        if((sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE) ||
-           ( sCurTBS->mRestoreType ==
-             SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
+        if ( ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) ||
+             ( sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -572,15 +567,15 @@ IDE_RC buildRecordForMemTBSFreePageList(
                 sCurTBS->mMemBase->mFreePageLists[i].mFreePageCount;
             /* BUG-31881 예약된 사용불가 페이지의 개수를 출력함 */
             IDE_TEST( smmFPLManager::getUnusablePageCount(
-                    & sCurTBS->mArrPageReservation[i],
-                    NULL, // Transaction
-                    &(sPerfMemTBSFreeList.mReservedPageCount) )
-                    == IDE_FAILURE );
+                                        & sCurTBS->mArrPageReservation[i],
+                                        NULL, // Transaction
+                                        &(sPerfMemTBSFreeList.mReservedPageCount) )
+                      == IDE_FAILURE );
 
             IDE_TEST(iduFixedTable::buildRecord(
-                         aHeader,
-                         aMemory,
-                         (void *) &sPerfMemTBSFreeList )
+                                         aHeader,
+                                         aMemory,
+                                         (void *) &sPerfMemTBSFreeList )
                      != IDE_SUCCESS);
         }
         sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
@@ -718,9 +713,7 @@ static IDE_RC buildRecordMemTBSPCHDump(idvSQL              * /*aStatistics*/,
     //MEM_TABLESPACE가 맞는지 검사한다.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( sTBSID ) == ID_TRUE );
 
-
     sTBSNode = (smmTBSNode*)sctTableSpaceMgr::getSpaceNodeBySpaceID( sTBSID );
-
 
     sDBMaxPageCount = sTBSNode->mDBMaxPageCount;
 
@@ -942,8 +935,7 @@ IDE_RC buildRecordForMemTablespaceDesc(
 
     while( sCurTBS != NULL )
     {
-        if( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE )
+        if( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -954,9 +946,9 @@ IDE_RC buildRecordForMemTablespaceDesc(
                   != IDE_SUCCESS);
 
         IDE_TEST(iduFixedTable::buildRecord(
-                     aHeader,
-                     aMemory,
-                     (void *) &sTBSDesc )
+                                     aHeader,
+                                     aMemory,
+                                     (void *) &sTBSDesc )
                  != IDE_SUCCESS);
 
         // Drop된 Tablespace는 SKIP한다
@@ -1097,8 +1089,7 @@ IDE_RC buildRecordForCheckpointPath(
 
     while( sCurTBS != NULL )
     {
-        if((sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE))
+        if ( (sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE) )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;

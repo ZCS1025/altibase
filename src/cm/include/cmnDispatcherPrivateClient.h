@@ -21,9 +21,20 @@
  * WaitLink Functions Implemented by Each Subclasses
  */
 
-ACI_RC cmnDispatcherWaitLinkSOCK(cmnLink *aLink, cmnDirection aDirection, acp_time_t aTimeout);
-ACI_RC cmnDispatcherWaitLinkIPC(cmnLink *aLink, cmnDirection aDirection, acp_time_t aTimeout);
-ACI_RC cmnDispatcherWaitLinkIPCDA(cmnLink *aLink, cmnDirection aDirection, acp_time_t aTimeout);/*PROJ-2616*/
+ACI_RC cmnDispatcherWaitLinkSOCK( cmnLink      *aLink,
+                                  cmnDirection  aDirection,
+                                  acp_time_t    aTimeout );
 
+ACI_RC cmnDispatcherWaitLinkIPC( cmnLink      *aLink,
+                                 cmnDirection  aDirection,
+                                 acp_time_t    aTimeout );
+/* PROJ-2616 */
+ACI_RC cmnDispatcherWaitLinkIPCDA( cmnLink      *aLink,
+                                   cmnDirection  aDirection,
+                                   acp_time_t    aTimeout );
+/* PROJ-2681 */
+ACI_RC cmnDispatcherWaitLinkIB( cmnLink      *aLink,
+                                cmnDirection  aDirection,
+                                acp_time_t    aTimeout );
 
 #endif

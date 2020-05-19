@@ -203,8 +203,9 @@ IDE_RC svmManager::initTBS(svmTBSNode *aTBSNode)
                      IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                      ID_FALSE,							/* ForcePooling */
                      ID_TRUE,							/* GarbageCollection */
-                     ID_TRUE)							/* HWCacheLine */
-                 != IDE_SUCCESS);
+                     ID_TRUE,                           /* HWCacheLine */
+                     IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+                 != IDE_SUCCESS);			
 
         // PCH Memory Pool초기화
         IDE_TEST(aTBSNode->mPCHMemPool.initialize(
@@ -218,8 +219,9 @@ IDE_RC svmManager::initTBS(svmTBSNode *aTBSNode)
                      IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                      ID_FALSE,							/* ForcePooling */
                      ID_TRUE,							/* GarbageCollection */
-                     ID_TRUE)							/* HWCacheLine */
-                 != IDE_SUCCESS);
+                     ID_TRUE,                           /* HWCacheLine */
+                     IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+                != IDE_SUCCESS);			
     }
 
     return IDE_SUCCESS;
@@ -835,7 +837,7 @@ IDE_RC svmManager::freeFreePageMemoryList( svmTBSNode * aTBSNode,
 }
 
 
-
+#if 0  //not used
 /** DB로부터 하나의 Page를 할당받는다.
  *
  * aAllocatedPage  [OUT] 할당받은 페이지
@@ -861,6 +863,7 @@ IDE_RC svmManager::allocatePersPage (void        *aTrans,
     return IDE_FAILURE;
 
 }
+#endif
 
 /** DB로부터 Page를 여러개 할당받는다.
  *

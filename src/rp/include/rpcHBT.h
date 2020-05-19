@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpcHBT.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpcHBT.h 82897 2018-04-25 00:24:10Z returns $
  **********************************************************************/
 
 /*
@@ -69,6 +69,7 @@ typedef struct rpcHostRsc
                                                it should not delete in unregistHost function */
 
     iduListNode          mNode;
+    UInt                 mErrorNumber;
 } rpcHostRsc ;
 
 class rpcHBT : public idtBaseThread

@@ -35,9 +35,13 @@ import Altibase.jdbc.driver.datatype.ColumnInfo;
 import Altibase.jdbc.driver.datatype.ListBufferHandle;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.sharding.core.ShardVersion;
 import Altibase.jdbc.driver.util.AltibaseProperties;
+
+import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 public class CmOperation extends CmOperationDef
 {
@@ -65,6 +69,16 @@ public class CmOperation extends CmOperationDef
         aChannel.writeByte(HANDSHAKE_FLAG);
     }
 
+    static void writeShardHandshake(CmChannel aChannel) throws SQLException
+    {
+        aChannel.checkWritable(5);
+        aChannel.writeOp(DB_OP_SHARD_HANDSHAKE);
+        aChannel.writeByte(ShardVersion.SHARD_MAJOR_VERSION);
+        aChannel.writeByte(ShardVersion.SHARD_MINOR_VERSION);
+        aChannel.writeByte(ShardVersion.SHARD_PATCH_VERSION);
+        aChannel.writeByte((byte)0);    // flag
+    }
+
     static void readHandshake(CmChannel aChannel, CmHandshakeResult aResult) throws SQLException
     {
         byte sOp = aChannel.readOp();
@@ -82,6 +96,43 @@ public class CmOperation extends CmOperationDef
         else
         {
             Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL, String.valueOf(DB_OP_HANDSHAKE));
+        }
+    }
+
+    /**
+     * 프로토콜을 통해 DB ShardHandshake(93) 결과를 저장한다.
+     * @param aChannel CmChannel객체
+     * @param aShardHandshakeResult shard handshake 컨텍스트 객체
+     * @throws SQLException shard handshake프로토콜을 전송받는 중 에러가 발생한 경우
+     */
+    static void readShardHandshake(CmChannel aChannel,
+                                   CmShardHandshakeResult aShardHandshakeResult) throws SQLException
+    {
+        byte sOp = aChannel.readOp();
+        if (sOp == DB_OP_SHARD_HANDSHAKE_RESULT)
+        {
+            byte sMajorVersion = aChannel.readByte();
+            byte sMinorVersion = aChannel.readByte();
+            byte sPatchVersion = aChannel.readByte();
+            byte sFlag         = aChannel.readByte();
+            /*
+                PROJ-2690 서버로부터 shard handshake의 결과로 major version, minor version, patch version, flag가 넘어오지만
+                특별히 사용하는 곳은 없다.
+             */
+            aShardHandshakeResult.setResult(sMajorVersion, sMinorVersion, sPatchVersion, sFlag);
+        }
+        else if (sOp == DB_OP_ERROR_RESULT)
+        {
+            aChannel.readByte();   // skip ErrOpID
+            aChannel.readInt();    // skip ErrIndex
+            int sErrCode = aChannel.readInt();
+            String sErrMsg = aChannel.readStringForErrorResult();
+            aShardHandshakeResult.setError(sErrCode, sErrMsg);
+        }
+        else
+        {
+            /* Invalid protocol seq error 처리 */
+            Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL, String.valueOf(DB_OP_SHARD_HANDSHAKE));
         }
     }
 
@@ -221,7 +272,7 @@ public class CmOperation extends CmOperationDef
         aChannel.readAndPrintServerMessage();
     }
 
-    private static void readErrorResult(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
+    public static void readErrorResult(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
     {
         CmErrorResult sError = new CmErrorResult();
         sError.readFrom(aChannel);
@@ -358,7 +409,7 @@ public class CmOperation extends CmOperationDef
         aResult.setStatementType(aChannel.readInt());
         aResult.setParameterCount(aChannel.readShort());
         aResult.setResultSetCount(aChannel.readShort());
-        aResult.setDataArrived(true);    // BUG-42424 서버로부터 값을 전달받은 후 flag를 enable해준다.
+        aResult.setPrepared(true);    // BUG-42424 서버로부터 값을 전달받은 후 flag를 enable해준다.
     }
 
     static void writeExecuteV2(CmChannel aChannel, int aStatementId, int aRowNumber, byte aMode) throws SQLException
@@ -706,9 +757,13 @@ public class CmOperation extends CmOperationDef
      * @param aStatementId Statement ID
      * @param aBufferHandle  List protocol 의 data buffer 를 handle 하는 객체
      * @param aIsAtomic Atomic Operation 사용 여부
+     * @param aIsArray Array mode 적용 여부
      * @throws SQLException channel에 쓰지 못한 경우
      */
-    static void writeBindParamDataInListV2(CmChannel aChannel, int aStatementId, ListBufferHandle aBufferHandle, boolean aIsAtomic) throws SQLException
+    static void writeBindParamDataInListV2(CmChannel aChannel, int aStatementId,
+                                           ListBufferHandle aBufferHandle,
+                                           boolean aIsAtomic,
+                                           boolean aIsArray) throws SQLException
     {
         aChannel.checkWritable(22);
         aChannel.writeOp(DB_OP_PARAM_DATA_IN_LIST_V2);
@@ -716,7 +771,17 @@ public class CmOperation extends CmOperationDef
         // List Protocol 에서 FromRowNumber 는 항상 1
         aChannel.writeInt(1);
         aChannel.writeInt(aBufferHandle.size());
-        aChannel.writeByte(aIsAtomic ? CmOperation.EXECUTION_MODE_ATOMIC : CmOperation.EXECUTION_MODE_ARRAY);
+
+        // BUG-46443 batch모드일때만 array 모드로 실행한다.
+        if (aIsArray)
+        {
+            aChannel.writeByte(aIsAtomic ? CmOperation.EXECUTION_MODE_ATOMIC : CmOperation.EXECUTION_MODE_ARRAY);
+        }
+        else
+        {
+            aChannel.writeByte(CmOperation.EXECUTION_MODE_NORMAL);
+        }
+
         aChannel.writeLong(aBufferHandle.getBufferPosition());
 
         aBufferHandle.flipBuffer();
@@ -774,7 +839,7 @@ public class CmOperation extends CmOperationDef
         {
             case (AltibaseProperties.PROP_CODE_NLS):
                 sLength = aChannel.readInt();
-                sStrValue = aChannel.readString(sLength, 0);
+                sStrValue = aChannel.readDecodedString(sLength, 0);
                 sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
                 sValueContainer.setValue(sStrValue);
                 break;
@@ -830,7 +895,7 @@ public class CmOperation extends CmOperationDef
                 break;
             case (AltibaseProperties.PROP_CODE_DATE_FORMAT):
                 sLength = aChannel.readInt();
-                sStrValue = aChannel.readString(sLength, 0);
+                sStrValue = aChannel.readDecodedString(sLength, 0);
                 sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
                 sValueContainer.setValue(sStrValue);
                 break;
@@ -841,7 +906,7 @@ public class CmOperation extends CmOperationDef
                 break;
             case (AltibaseProperties.PROP_CODE_SERVER_PACKAGE_VERSION):
                 sLength = aChannel.readInt();
-                sStrValue = aChannel.readString(sLength, 0);
+                sStrValue = aChannel.readDecodedString(sLength, 0);
                 sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
                 sValueContainer.setValue(sStrValue);
                 break;
@@ -852,13 +917,13 @@ public class CmOperation extends CmOperationDef
                 break;
             case (AltibaseProperties.PROP_CODE_NLS_CHARACTERSET):
                 sLength = aChannel.readInt();
-                sStrValue = aChannel.readString(sLength, 0);
+                sStrValue = aChannel.readDecodedString(sLength, 0);
                 sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
                 sValueContainer.setValue(sStrValue);
                 break;
             case (AltibaseProperties.PROP_CODE_NLS_NCHAR_CHARACTERSET):
                 sLength = aChannel.readInt();
-                sStrValue = aChannel.readString(sLength, 0);
+                sStrValue = aChannel.readDecodedString(sLength, 0);
                 sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
                 sValueContainer.setValue(sStrValue);
                 break;
@@ -1213,6 +1278,17 @@ public class CmOperation extends CmOperationDef
     {
         aResult.setStatementId(aChannel.readInt());
         int sPlanTextSize = aChannel.readInt();
-        aResult.setPlanText(aChannel.readString(sPlanTextSize, 0));
+        aResult.setPlanText(aChannel.readDecodedString(sPlanTextSize, 0));
+    }
+
+    public static void throwShardFailoverIsNotAvailableException(String aNodeName) throws ShardFailoverIsNotAvailableException
+    {
+        int sErrorCode = ErrorDef.SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
+        String sErrorMsg = ErrorDef.getErrorMessage(ErrorDef.SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE);
+        ShardFailoverIsNotAvailableException sFailoverException =
+                new ShardFailoverIsNotAvailableException(sErrorMsg, sErrorCode, aNodeName);
+        shard_log(Level.SEVERE, "(THROW SHARD FAILOVER EXCEPTION) ", sFailoverException);
+
+        throw sFailoverException;
     }
 }

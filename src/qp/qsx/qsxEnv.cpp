@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxEnv.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxEnv.cpp 83637 2018-08-07 05:40:38Z khkwak $
  **********************************************************************/
 /*
   NAME
@@ -124,6 +124,10 @@ void qsxEnv::reset ( qsxEnvInfo   * aEnv )
 
     // BUG-44856
     SET_EMPTY_POSITION( aEnv->mSqlInfo );
+
+    // BUG-46074 Multiple trigger event
+    aEnv->mTriggerUptColList = NULL;
+    aEnv->mTriggerEventType  = QCM_TRIGGER_EVENT_NONE;
 }
 
 void qsxEnv::backupReturnValue( qsxEnvInfo        * aEnv,
@@ -845,17 +849,33 @@ IDE_RC qsxEnv::rollback(
     qcStatement  * aQcStmt,
     const SChar  * aSavePoint )
 {
+    smiTrans    * sTrans = NULL;
+
 #define IDE_FN "IDE_RC qsxEnv::rollback()"
+    sTrans = qci::mSessionCallback.mGetTrans( aQcStmt->session->mMmSession );
+
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     QSX_ENV_CHECK_INITIALIZED( aEnv );
 
     if ( (aEnv)-> mSession != NULL)
     {
-        // close all procedure cursors
-        IDE_TEST( qsxEnv::closeCursorsInUse( aEnv,
-                                             aQcStmt )
-                  != IDE_SUCCESS);
+        if( sTrans != NULL )
+        {
+            if( sTrans->isReusableRollback() == ID_FALSE )
+            {
+                // close all procedure cursors
+                IDE_TEST( qsxEnv::closeCursorsInUse( aEnv,
+                                                     aQcStmt )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                /* PROJ-2964 Fetch Across Rollback 
+                 * fetch across rollback을 위해 rollback 후에
+                 * view가 깨지지 않는 경우 rollback을 수행해도 cursor를 닫지 않는다. */
+            }
+        }
 
         // rollback with preserving session-statements.
         if ( aSavePoint != NULL )
@@ -907,55 +927,6 @@ IDE_RC qsxEnv::rollback(
 
 #undef IDE_FN
 
-}
-
-
-IDE_RC qsxEnv::print(
-    qsxEnvInfo   * aEnv,
-    qcStatement  * aQcStmt,
-    UChar        * aMsg,
-    UInt aLength )
-{
-#define IDE_FN "IDE_RC qsxEnv::print(UChar *aMsg, UInt aLength )"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
-
-    SInt    sLen = 0;
-
-    if ( (aEnv)-> mSession != NULL )
-    {
-        if ( QC_SMI_STMT_SESSION_IS_JOB( aQcStmt ) == ID_FALSE )
-        {
-            IDE_TEST( QCG_SESSION_PRINT_TO_CLIENT( aQcStmt, aMsg, aLength )
-                    != IDE_SUCCESS);
-        }
-        else
-        {
-            sLen = (SInt)aLength;
-            ideLog::log( IDE_QP_2, "[JOB : PRINT] %.*s\n", sLen, aMsg );
-        }
-    }
-    else
-    {
-        IDE_RAISE(err_both_session_and_dbc_is_null);
-    }
-
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(err_both_session_and_dbc_is_null);
-    {
-        IDE_SET(ideSetErrorCode(
-                qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
-                "[qsxEnv::print]err_both_session_and_dbc_is_null"));
-    }
-    IDE_EXCEPTION_END;
-
-
-    return IDE_FAILURE;
-
-
-#undef IDE_FN
 }
 
 // critical errors are not catched by others clause

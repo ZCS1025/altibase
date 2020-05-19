@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrLogFileMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrLogFileMgr.cpp 85250 2019-04-16 07:15:32Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -178,15 +178,17 @@ IDE_RC smrLogFileMgr::initialize( const SChar     * aLogPath,
                                  IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
     IDE_TEST( mMemPool.initialize(IDU_MEM_SM_SMR,
                                  (SChar*)"OPEN_LOGFILE_MEM_LIST",
-                                 1, 
-                                 ID_SIZEOF(smrLogFile),
-                                 SMR_LOG_FULL_SIZE,
+                                 1,                                 /* aListCount */
+                                 ID_SIZEOF(smrLogFile),             /* aElemSize  */
+                                 SMR_LOG_FULL_SIZE,                 /* aElemCount */
                                  IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
-                                 ID_TRUE,							/* UseMutex */
-                                 IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
+                                 ID_TRUE,							/* UseMutex   */
+                                 IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte  */
                                  ID_FALSE,							/* ForcePooling */
                                  ID_TRUE,							/* GarbageCollection */
-                                 ID_TRUE) != IDE_SUCCESS );			/* HWCacheLine */
+                                 ID_TRUE,                           /* HWCacheLine */
+                                 IDU_MEMPOOL_TYPE_LEGACY            /* mempool type */) 
+               != IDE_SUCCESS);			
     
     IDE_TEST_RAISE( mCV.initialize((SChar *)"LOGFILE_MANAGER_COND")
                     != IDE_SUCCESS, err_cond_var_init );

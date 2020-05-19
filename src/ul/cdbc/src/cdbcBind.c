@@ -431,7 +431,6 @@ ALTIBASE_RC altibase_result_bind_init (cdbcABRes *aABRes, ALTIBASE_BIND *aBaseBi
 
     CDBC_EXCEPTION(InvalidBindType);
     {
-        CDBC_ASSERT(sBaseBind != NULL);
         altibase_set_errinfo(aABRes->mDiagRec,
                              ulERR_ABORT_INVALID_USE_OF_BIND_TYPE,
                              sBaseBind->buffer_type);

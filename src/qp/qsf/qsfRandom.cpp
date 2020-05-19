@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfRandom.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsfRandom.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description : BUG-43605 [mt] random함수의 seed 설정을 session 단위로 변경해야 합니다.
  *
@@ -91,6 +91,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_Random,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

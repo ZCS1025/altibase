@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfEqual.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfEqual.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -33,6 +33,9 @@ extern mtfModule mtfNotEqual;
 extern mtfModule mtfEqual;
 
 extern mtdModule mtdList;
+
+/* PROJ-2632 */
+extern mtxModule mtxEqual;
 
 static mtcName mtfEqualFunctionName[1] = {
     { NULL, 1, (void*)"=" }
@@ -81,6 +84,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfEqualCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefault,
     mtfEqualExtractRange
 };
@@ -92,6 +96,7 @@ static const mtcExecute mtfExecuteList = {
     mtf::calculateNA,
     mtfEqualCalculateList,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -184,6 +189,10 @@ IDE_RC mtfEqualEstimate( mtcNode*     aNode,
                       != IDE_SUCCESS );
 
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
+
+            /* PROJ-2632 */
+            aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+                = mtxEqual.mGetExecute( sModules[0]->id, sModules[1]->id );
         }
         else
         {

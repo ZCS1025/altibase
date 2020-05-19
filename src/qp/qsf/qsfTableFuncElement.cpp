@@ -78,6 +78,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfTableFuncElementCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

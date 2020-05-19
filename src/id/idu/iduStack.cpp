@@ -602,17 +602,19 @@ int iduStack::walker(uintptr_t ptr, int, void*)
 }
 # endif
 
+/* aDumpStackPrefix is for dumping callstacks in Linux.(BUG-45982) */
 void iduStack::dumpStack( const iduSignalDef    *aSignal,
                           siginfo_t             *aSigInfo,
                           ucontext_t            *aContext,
                           idBool                 aIsFaultTolerate, /* PROJ-2617 */
-                          SChar                 *aSqlString )
+                          SChar                 *aSqlString,
+                          idBool                 aDumpStackPrefix )
 {
 #if defined(COMPILE_64BIT)
     SInt        i;
     SInt        sLen;
     SChar*      sTemp;
-    SChar       sLine[512] = "[0x";
+    SChar       sLine[512] = "\n[0x"; //BUG-46515
         
     void*       sIP;
     void**      sSP;
@@ -625,7 +627,7 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
     mFD = ideLog::getErrFD();
     sTime = idlOS::time(NULL);
 
-    convertHex64(sTime, sLine + 3, &sTemp);
+    convertHex64(sTime, sLine + 4, &sTemp);
     *sTemp = ' '; sTemp++;
     convertHex64(ideLogEntry::getLogSerial(), sTemp, &sTemp);
     idlOS::strcpy(sTemp, "] Dump of Stack\n");
@@ -640,12 +642,22 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         idlOS::thr_yield();
     }
 
+    IDL_MEM_BARRIER; //BUG-46567
+
+    if( aDumpStackPrefix == ID_TRUE )
+    {
+        writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+    }
     writeString(sLine, sTemp - sLine);
 
     if(aSignal == NULL)
     {
         IDE_TEST(getcontext(&sRealContext) != 0);
         sContext = &sRealContext;
+        if( aDumpStackPrefix == ID_TRUE )
+        {
+            writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+        }
         writeString("BEGIN-STACK [NORMAL] ============================\n", 50);
     }
     else
@@ -807,6 +819,10 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         mCallDepth = tracestack(mCallStack, IDU_MAX_CALL_DEPTH);
         for(i = 0; i < mCallDepth; i++)
         {
+            if( aDumpStackPrefix == ID_TRUE )
+            {
+                writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+            }
             writeString("Caller[", 7);
             writeDec32(i);
             writeString("] ", 2);
@@ -856,7 +872,14 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
 #  endif
 
 # endif
+    if( aDumpStackPrefix == ID_TRUE )
+    {
+        writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+    }
     writeString("END-STACK =======================================\n", 50);
+
+    IDL_MEM_BARRIER; //BUG-46567
+
     /*
      * BUG-44297
      * Critical section end
@@ -867,6 +890,9 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
 
     IDE_EXCEPTION_END;
     writeString("ERROR : Could not get context ===================\n", 50);
+
+    IDL_MEM_BARRIER; //just in case..
+
     /*
      * BUG-44297
      * Critical section end
@@ -880,6 +906,66 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
     PDL_UNUSED_ARG(aContext);
 #endif
 }
+/* BUG-45182 */
+IDE_RC iduStack::dumpAllCallstack()
+{
+#if defined(ALTI_CFG_OS_LINUX)
+    idtContainer* sBase     = NULL;
+    UInt          sID;
 
+    if ( iduProperty::getUseDumpCallstacks() == ID_TRUE )
+    {
+        if ( idtContainer::getThreadReuseEnable() == ID_FALSE )
+        {
+            IDE_ASSERT( idtContainer::mMainThread.mInfoLock.lock( NULL ) == IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
+        }
+
+        sBase = idtContainer::getFirstInfo();
+
+        do
+        {
+            if ( sBase->isStarted() == ID_TRUE )
+            {
+                sID = sBase->getSysLWPNo(); 
+                idlOS::kill(sID, IDU_SIGNUM_DUMP_CALLSTACKS);
+            }
+            else
+            {
+                /* do nothing */
+            }
+
+            sBase = sBase->getNextInfo();
+        } while(sBase != NULL);
+
+        if ( idtContainer::getThreadReuseEnable() == ID_FALSE )
+        {
+            IDE_ASSERT( idtContainer::mMainThread.mInfoLock.unlock() == IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
+        }
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    return IDE_SUCCESS; 
+
+#else
+    ideLog::log(IDE_SERVER_0,"Dumping callstacks is not supported in this platform.");
+
+    IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerError ));
+
+    return IDE_FAILURE;
 #endif
 
+
+}
+
+#endif

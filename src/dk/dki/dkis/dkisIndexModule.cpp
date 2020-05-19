@@ -54,7 +54,8 @@ static IDE_RC dkisPrepareIteratorMem( const smnIndexModule * )
                                         IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                         ID_FALSE,							/* ForcePooling */
                                         ID_TRUE,							/* GarbageCollection */
-                                        ID_TRUE )							/* HWCacheLine */
+                                        ID_TRUE,                          /* HWCacheLine */
+                                        IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
               != IDE_SUCCESS );
     
     return IDE_SUCCESS;

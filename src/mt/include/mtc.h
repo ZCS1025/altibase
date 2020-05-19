@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtc.h 85313 2019-04-24 05:52:44Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_MTC_H_
@@ -229,6 +229,11 @@ public:
     static SInt weekOfYearForStandard( SInt aYear,
                                        SInt aMonth,
                                        SInt aDay );
+
+    /* BUG-46727 TO_CHAR()에 IYYY 추가 */
+    static SInt yearForStandard( SInt aYear,
+                                 SInt aMonth,
+                                 SInt aDay );
 
     static const UInt  hashInitialValue;
 

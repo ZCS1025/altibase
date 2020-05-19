@@ -415,13 +415,19 @@ IDE_RC qdpRole::getRoleCountByUserID( qcStatement  * aStatement,
     qtcMetaRangeColumn     sFirstMetaRange;
     mtdIntegerType         sIntDataOfGranteeID;
     smiTableCursor         sCursor;
-    SInt                   sStage = 0;
+    volatile SInt          sStage;
     const void           * sRow = NULL;
     smiCursorProperties    sCursorProperty;
     scGRID                 sRid;
     UInt                   sRoleCount = 0;
     mtcColumn            * sFirstMtcColumn;
     
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdpRole::getRoleCountByUserID::__FT__" );
+
+    sStage = 0;
+
     sIntDataOfGranteeID = (mtdIntegerType) aGranteeID;
 
     IDE_TEST( smiGetTableColumns( gQcmUserRoles,
@@ -454,6 +460,8 @@ IDE_RC qdpRole::getRoleCountByUserID( qcStatement  * aStatement,
               != IDE_SUCCESS );
     sStage = 1;
 
+    IDU_FIT_POINT_FATAL( "qdpRole::getRoleCountByUserID::__FT__::STAGE1" );
+
     IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
     IDE_TEST( sCursor.readRow( & sRow, & sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
         
@@ -469,9 +477,17 @@ IDE_RC qdpRole::getRoleCountByUserID( qcStatement  * aStatement,
     
     *aRoleCount = sRoleCount;
     
+    IDE_FT_END();
+
     return IDE_SUCCESS;
     
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
     
     if ( sStage != 0 )
     {
@@ -481,6 +497,8 @@ IDE_RC qdpRole::getRoleCountByUserID( qcStatement  * aStatement,
     {
         /* Nothing to do */
     }
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 }

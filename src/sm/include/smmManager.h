@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: smmManager.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmManager.h 84434 2018-11-27 00:10:34Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMM_MANAGER_H_
@@ -108,8 +108,6 @@ typedef enum smmGetDBFileOption
 class smmManager
 {
 private:
-
-    static iduMemPool              mIndexMemPool;
 
     // 각 데이터베이스 Page의 non-durable한 데이터를 지니는 PCH 배열
     static smmPCH                **mPCHArray[SC_MAX_SPACE_COUNT];
@@ -264,8 +262,8 @@ public:
     static idBool isValidSpaceID( scSpaceID aSpaceID );
     // Page ID가 Valid한 값인지 체크한다.
     static idBool isValidPageID( scSpaceID aSpaceID, scPageID aPageID );
-    // PCH 가 메모리에 있는지 체크한다.
-    static idBool isExistPCH( scSpaceID aSpaceID, scPageID aPageID );
+//    // PCH 가 메모리에 있는지 체크한다.
+//    static idBool isExistPCH( scSpaceID aSpaceID, scPageID aPageID );
 
     // 테이블에 할당된 페이지이면서 메모리가 없는 경우 있는지 체크
     // Free Page이면서 페이지 메모리 설정된 경우 있는지 체크
@@ -605,12 +603,12 @@ public:
                                           scPageID      aNewChunkLastPID,
                                           idBool        aSetFreeListOfMembase,
                                           idBool        aSetNextFreePageOfFPL );
-
+#if 0 // not used
     // DB로부터 하나의 Page를 할당받는다.
     static IDE_RC allocatePersPage (void       *  aTrans,
                                     scSpaceID     aSpaceID,
                                     void      **  aAllocatedPage);
-
+#endif
 
     // DB로부터 Page를 여러개 할당받아 트랜잭션에게 Free Page를 제공한다.
     // aHeadPage부터 aTailPage까지
@@ -644,11 +642,6 @@ public:
     static IDE_RC freeTempPage ( smmTBSNode *  aTBSNode,
                                  smmTempPage  *a_head,
                                  smmTempPage  *a_tail = NULL);
-
-    //allocate  memory index node
-    static IDE_RC allocateIndexPage(smmTempPage **aAllocated);
-    static IDE_RC freeIndexPage (smmTempPage  *aHead,
-                                 smmTempPage  *aTail=NULL);
 
     /* -----------------------
      * [*] selective loading..
@@ -1083,27 +1076,27 @@ smmManager::isValidSpaceID( scSpaceID aSpaceID )
 }
 
 // Page ID가 Valid한 값인지 체크한다.
+// 이함수는 Validation작업이 없습니다. 사용하는 곳에서 aSpaceID 가 정상인지 확인이 필요합니다. 
 inline idBool
 smmManager::isValidPageID( scSpaceID  aSpaceID ,
                            scPageID   aPageID )
 {
     smmTBSNode *sTBSNode;
 
-    sTBSNode = (smmTBSNode*)sctTableSpaceMgr::getSpaceNodeBySpaceID(
-        aSpaceID );
+    sTBSNode = (smmTBSNode*)sctTableSpaceMgr::getSpaceNodeBySpaceID( aSpaceID );
 
     if( sTBSNode != NULL )
     {
         IDE_DASSERT( sTBSNode->mDBMaxPageCount > 0 );
 
-        return ( aPageID <= sTBSNode->mDBMaxPageCount ) ?
-            ID_TRUE : ID_FALSE;
+        return ( aPageID <= sTBSNode->mDBMaxPageCount ) ? ID_TRUE : ID_FALSE;
 
     }
 
     return ID_TRUE;
 }
 
+#if 0 // not used
 /***********************************************************************
  * Description : 찾는 PCH가 메모리에 존재하고 있는지 확인한다.
  *
@@ -1125,6 +1118,7 @@ smmManager::isExistPCH( scSpaceID aSpaceID, scPageID aPageID )
 
     return ID_FALSE;
 }
+#endif 
 
 #endif // _O_SMM_MANAGER_H_
 

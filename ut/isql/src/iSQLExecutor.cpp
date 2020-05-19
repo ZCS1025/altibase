@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLExecutor.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLExecutor.cpp 85120 2019-04-02 01:27:30Z khkwak $
  **********************************************************************/
 
 /* ====================================================================
@@ -246,11 +246,7 @@ IDE_RC iSQLCommand::executeProc()
     }
 
     /* bug 18731 */
-    /* BUG-37166 isql does not consider double quotation when it parses
-     * stored procedure's arguments */
     IDE_TEST( gSQLCompiler->ParsingExecProc( gCommand->GetQuery(),
-                gCommand->GetArgList(),
-                sIsFunc,
                 gProperty.GetCommandLen() ) != IDE_SUCCESS );
 
     /* BUG-37002 isql cannot parse package as a assigned variable */
@@ -266,6 +262,16 @@ IDE_RC iSQLCommand::executeProc()
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/* BUG-46733 Need to support Anomymous Block */
+IDE_RC iSQLCommand::executeAnonymBlock()
+{
+    gCommand->setUserName((SChar*)"");
+    gCommand->SetPkgName((SChar*)"");
+    gCommand->setProcName((SChar*)"");
+
+    return executeProc();
 }
 
 IDE_RC iSQLCommand::executeHelp()
@@ -705,7 +711,7 @@ IDE_RC iSQLCommand::executeShowDumpTables()
 {
     return gExecuteCommand->DisplayFixedTableList(
                                 gCommand->GetCommandStr(),
-			                    "D$", 	 
+                                "D$", 	 
                                 "DUMP TABLE"); 	 
 }
 
@@ -713,8 +719,17 @@ IDE_RC iSQLCommand::executeShowPerfViews()
 {
     return gExecuteCommand->DisplayFixedTableList(
                                 gCommand->GetCommandStr(),
-                                "V$",
+                                "V$", 	 
                                 "PERFORMANCE VIEW");
+}
+
+/* BUG-45646 */
+IDE_RC iSQLCommand::executeShowShardPerfViews()
+{
+    return gExecuteCommand->DisplayFixedTableList(
+                                gCommand->GetCommandStr(),
+                                "S$", 	 
+                                "SHARD PERFORMANCE VIEW");
 }
 
 IDE_RC iSQLCommand::executeShowSequences()
@@ -749,8 +764,6 @@ IDE_RC iSQLCommand::executeStartup()
                                     gCommand->GetCommandKind(),
                                     FORKONLYDAEMON);
 
-    return IDE_SUCCESS;
-
     IDE_EXCEPTION_END;
 
     uteSetErrorCode(&gErrorMgr, utERR_ABORT_sysdba_privilege_Error);
@@ -766,8 +779,6 @@ IDE_RC iSQLCommand::executeShutdown()
 
     return gExecuteCommand->Shutdown(gCommand->GetCommandStr(),
                                      gCommand->GetCommandKind());
-
-    return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 

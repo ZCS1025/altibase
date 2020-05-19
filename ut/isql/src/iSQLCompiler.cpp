@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCompiler.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLCompiler.cpp 85096 2019-03-28 04:04:46Z bethy $
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -117,8 +117,6 @@ iSQLCompiler::SetInputStr( SChar * a_Str )
  * when it parses stored procedure's arguments */
 IDE_RC
 iSQLCompiler::ParsingExecProc( SChar * a_Buf,
-                               SChar * /* a_ArgList */,
-                               idBool  /* a_IsFunc */,
                                SInt    a_bufSize )
 {
     // for execute procedure/function
@@ -598,9 +596,20 @@ iSQLCompiler::PrintCommand()
 {
     SChar *sSqlPrompt = ISQL_PROMPT_OFF_STR;
 
+    /* BUG-45722 Renewal of Echo On|OFF */
+    idBool sDisplayOut = ID_FALSE;
+    idBool sSpoolOut = ID_FALSE;
+
     if ( IsFileRead() == ID_TRUE &&
          g_glogin     != ID_TRUE &&
-         g_login      != ID_TRUE )
+         g_login      != ID_TRUE &&
+         gProperty.GetEcho() == ID_TRUE )
+    {
+        sDisplayOut = ID_TRUE;
+    }
+    sSpoolOut = m_Spool->IsSpoolOut();
+
+    if (sDisplayOut == ID_TRUE || sSpoolOut == ID_TRUE )
     {
         idlOS::strcpy(gTmpBuf, gBufMgr->GetBuf());
 
@@ -624,7 +633,7 @@ iSQLCompiler::PrintCommand()
         idlOS::sprintf(m_Spool->m_Buf, "%s%s", 
                 sSqlPrompt,
                 gBufMgr->GetBuf());
-        m_Spool->Print();
+        m_Spool->PrintCommand2(sDisplayOut, sSpoolOut);
     }
 }
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmSlotList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmSlotList.cpp 84166 2018-10-15 07:54:37Z justin.kwon $
  **********************************************************************/
 
 #include <ide.h>
@@ -24,12 +24,12 @@
 
 #include <smmSlotList.h>
 
-IDE_RC smmSlotList::initialize( UInt aSlotSize,
-                                UInt         aMaximum,
-                                UInt         aCache,
-                                smmSlotList* aParent )
+IDE_RC smmSlotList::initialize( iduMemoryClientIndex aIndex, /* mempool idx */
+                                const SChar        * aName,  /* mempool name */
+                                UInt                 aSlotSize,
+                                UInt                 aMaximum,
+                                UInt                 aCache )
 {
-    //fix BUG-23007
     aSlotSize    = aSlotSize > ID_SIZEOF(smmSlot) ? aSlotSize : ID_SIZEOF(smmSlot) ;
     mSlotSize    = idlOS::align(aSlotSize);
     mSlotPerPage = SMM_TEMP_PAGE_BODY_SIZE / mSlotSize;
@@ -37,19 +37,31 @@ IDE_RC smmSlotList::initialize( UInt aSlotSize,
     IDE_TEST( mMutex.initialize( (SChar*) "SMM_SLOT_LIST_MUTEX",
                                  IDU_MUTEX_KIND_NATIVE,
                                  IDV_WAIT_INDEX_NULL) != IDE_SUCCESS );
-    
+
+    mAllocSlotCount = 0;
+
     mMaximum = aMaximum > SMM_SLOT_LIST_MAXIMUM_MINIMUM ?
       aMaximum : SMM_SLOT_LIST_MAXIMUM_MINIMUM          ;
     mCache   = aCache   > SMM_SLOT_LIST_CACHE_MINIMUM   ?
       aCache   : SMM_SLOT_LIST_CACHE_MINIMUM            ;
     mCache   = mCache   < mMaximum                      ?
       mCache   : mMaximum - SMM_SLOT_LIST_CACHE_MINIMUM ;
+
+    IDE_TEST(mMemPool.initialize( aIndex,
+                                  (SChar *)aName,
+                                  1,
+                                  mSlotSize,
+                                  smuProperty::getTempPageChunkCount(),
+                                  IDU_AUTOFREE_CHUNK_LIMIT,            /* ChunkLimit */
+                                  ID_TRUE,                             /* UseMutex */
+                                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,     /* AlignByte */
+                                  ID_FALSE,                            /* ForcePooling */
+                                  ID_TRUE,                             /* GarbageCollection */
+                                  ID_TRUE,                             /* HWCacheLine */
+                                  IDU_MEMPOOL_TYPE_LEGACY )
+            != IDE_SUCCESS);
     
-    mParent    = aParent;
-    mPageCount = 0;
-    mPagesBody.m_header.m_prev = NULL;
-    mPagesBody.m_header.m_next = NULL;
-    mPages                     = (smmTempPage*)&mPagesBody;
+    mParent      = NULL;
     mNumber      = 0;
     mSlots.prev  = &mSlots;
     mSlots.next  = &mSlots;
@@ -63,27 +75,94 @@ IDE_RC smmSlotList::initialize( UInt aSlotSize,
     IDE_EXCEPTION_END;
     
     return IDE_FAILURE;
+}
 
+IDE_RC smmSlotList::makeChild( UInt          aMaximum,
+                               UInt          aCache,
+                               smmSlotList * aChild )
+{
+    aChild->mSlotSize = mSlotSize;
+    
+    aChild->mMaximum = aMaximum > SMM_SLOT_LIST_MAXIMUM_MINIMUM ?
+                       aMaximum : SMM_SLOT_LIST_MAXIMUM_MINIMUM;
+    aChild->mCache   = aCache   > SMM_SLOT_LIST_CACHE_MINIMUM ?
+                       aCache   : SMM_SLOT_LIST_CACHE_MINIMUM;
+    aChild->mCache   = aChild->mCache < aChild->mMaximum ?
+                       aChild->mCache : ( aChild->mMaximum - SMM_SLOT_LIST_CACHE_MINIMUM ) ;
+
+    IDE_TEST( aChild->mMutex.initialize( (SChar*) "SMM_SLOT_LIST_MUTEX",
+                                         IDU_MUTEX_KIND_NATIVE,
+                                         IDV_WAIT_INDEX_NULL) != IDE_SUCCESS );
+
+    aChild->mParent        = this;
+    aChild->mNumber        = 0;
+    aChild->mSlots.prev    = &(aChild->mSlots);
+    aChild->mSlots.next    = &(aChild->mSlots);
+
+    aChild->mTotalAllocReq = (ULong)0;
+    aChild->mTotalFreeReq  = (ULong)0;
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
 }
 
 IDE_RC smmSlotList::destroy( void )
 {
+    if ( isParent() == ID_TRUE )
+    {
+        IDE_TEST( mMemPool.destroy() != IDE_SUCCESS );
+    }
 
-    return mMutex.destroy();
+    IDE_TEST( mMutex.destroy() != IDE_SUCCESS );
 
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+/* node list를 mempool free한다. */
+IDE_RC smmSlotList::freeSlots( UInt       aNumber,
+                               smmSlot  * aNodes )
+{
+    UInt      i;
+    smmSlot * sCurr;
+    smmSlot * sNext;
+
+    sCurr = aNodes;
+
+    IDE_ASSERT( aNumber != 0 );
+
+    for ( i = 0 ; i < aNumber; i++ )
+    {
+        sNext = sCurr->next;
+
+        IDE_TEST( mMemPool.memfree( sCurr )
+                  != IDE_SUCCESS );
+
+        sCurr = sNext;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC smmSlotList::allocateSlots( UInt         aNumber,
                                    smmSlot**    aSlots,
                                    UInt         aFlag )
 {
-    
     UInt         sNumber;
-    smmTempPage* sPage;
+    UInt         i;
     smmSlot*     sSlots;
     smmSlot*     sSlot;
     smmSlot*     sPrev;
-    smmSlot*     sFence;
     idBool       sLocked = ID_FALSE;
 
     if( ( aFlag & SMM_SLOT_LIST_MUTEX_MASK ) == SMM_SLOT_LIST_MUTEX_ACQUIRE )
@@ -95,7 +174,8 @@ IDE_RC smmSlotList::allocateSlots( UInt         aNumber,
     if( aNumber > mNumber )
     {
         sNumber = aNumber + mCache - mNumber;
-        if( mParent != NULL )
+
+        if( isParent() == ID_FALSE )
         {
             IDE_TEST( mParent->allocateSlots( sNumber, &sSlots )
                       != IDE_SUCCESS );
@@ -109,31 +189,22 @@ IDE_RC smmSlotList::allocateSlots( UInt         aNumber,
         }
         else
         {
-            for( sNumber = ( sNumber + mSlotPerPage - 1 ) / mSlotPerPage;
-                 sNumber > 0;
-                 sNumber-- )
-            {
-                IDE_TEST( smmManager::allocateIndexPage( &sPage )
-                          != IDE_SUCCESS );
-                
-                sPage->m_header.m_next  = mPages->m_header.m_next;
-                mPages->m_header.m_next = sPage;
-                mPageCount++;
+            sPrev = mSlots.prev;
 
-                for( sPrev   = mSlots.prev,
-                     sSlot   = (smmSlot*)(sPage->m_body),
-                     sFence  = (smmSlot*)((UChar*)sSlot+mSlotPerPage*mSlotSize);
-                     sSlot  != sFence;
-                     sSlot   = (smmSlot*)((UChar*)sSlot+mSlotSize) )
-                {
-                    sPrev->next = sSlot;
-                    sSlot->prev = sPrev;
-                    sPrev       = sSlot;
-                }
-                sPrev->next = &mSlots;
-                mSlots.prev = sPrev;
-                mNumber += mSlotPerPage;
+            for ( i = 0; i < sNumber; i++ )
+            { 
+                IDE_TEST( mMemPool.alloc( (void **)&sSlot ) != IDE_SUCCESS );
+
+                sPrev->next = sSlot;
+                sSlot->prev = sPrev;
+                sPrev       = sSlot;
+
+                mAllocSlotCount++;
             }
+
+            sPrev->next = &mSlots;
+            mSlots.prev = sPrev;
+            mNumber += sNumber;
         }
     }
 
@@ -199,9 +270,9 @@ IDE_RC smmSlotList::releaseSlots( UInt     aNumber,
 
     mNumber += aNumber;
 
-    if( mParent != NULL )
+    if ( mNumber > mMaximum )
     {
-        if( mNumber > mMaximum )
+        if ( isParent() == ID_FALSE )
         {
             sNumber = mNumber + mCache - mMaximum;
             for( aNumber = sNumber - 1, aSlots = sSlot = mSlots.next;
@@ -213,6 +284,27 @@ IDE_RC smmSlotList::releaseSlots( UInt     aNumber,
             sSlot->prev       = aSlots;
             IDE_TEST_RAISE( mParent->releaseSlots( sNumber, aSlots )
                             != IDE_SUCCESS, ERR_RELEASE );
+            mNumber -= sNumber;
+        }
+        else
+        {
+            /* PARENT */
+
+            sNumber = mNumber + mCache - mMaximum;
+
+            IDE_ASSERT( sNumber <= mNumber );
+
+            for( aNumber = sNumber - 1, aSlots = sSlot = mSlots.next;
+                 aNumber > 0;
+                 aNumber--, aSlots = aSlots->next ) ;
+            mSlots.next       = aSlots->next;
+            mSlots.next->prev = &mSlots;
+            aSlots->next      = sSlot;
+            sSlot->prev       = aSlots;
+
+            IDE_TEST( freeSlots( sNumber, aSlots )
+                      != IDE_SUCCESS );
+
             mNumber -= sNumber;
         }
     }
@@ -252,34 +344,42 @@ IDE_RC smmSlotList::releaseSlots( UInt     aNumber,
 IDE_RC smmSlotList::release( )
 {
 
-    smmTempPage* sPageHead;
-    smmTempPage* sPageTail;
-    smmSlot*     sSlots;
-    idBool       sLocked = ID_FALSE;
+    smmSlot * sSlots  = NULL;
+    idBool    sLocked = ID_FALSE;
 
     IDE_TEST( lock() != IDE_SUCCESS );
 
     sLocked = ID_TRUE;
 
-    if( mParent != NULL && mNumber > 0 )
+    if ( mNumber > 0 )
     {
-        mSlots.prev->next = mSlots.next;
-        mSlots.next->prev = mSlots.prev;
-        sSlots            = mSlots.next;
-        IDE_TEST( mParent->releaseSlots( mNumber, sSlots ) != IDE_SUCCESS );
-        mNumber = 0;
-    }
+        if ( isParent() == ID_FALSE )
+        {
+            /* CHILD */
+            /* 내 list를 모두 PARENT에게 반납 */
+            mSlots.prev->next = mSlots.next;
+            mSlots.next->prev = mSlots.prev;
+            sSlots            = mSlots.next;
 
-    sPageHead = mPages->m_header.m_next;
-    if( sPageHead != NULL )
-    {
-        for( sPageTail = sPageHead;
-             sPageTail->m_header.m_next != NULL;
-             sPageTail = sPageTail->m_header.m_next ) ;
-        IDE_TEST( smmManager::freeIndexPage( sPageHead, sPageTail )
-                  != IDE_SUCCESS );
-        
-        mPages->m_header.m_next = NULL;
+            mSlots.next = &mSlots;
+            mSlots.prev = &mSlots;
+
+            IDE_TEST( mParent->releaseSlots( mNumber, sSlots )
+                      != IDE_SUCCESS );
+            mNumber = 0;
+        }
+        else
+        {
+            /* PARENT */
+
+            IDE_TEST( freeSlots( mNumber, mSlots.next )
+                      != IDE_SUCCESS );
+
+            mSlots.next = &mSlots;
+            mSlots.prev = &mSlots;
+
+            mNumber = 0;
+        }
     }
 
     sLocked = ID_FALSE;

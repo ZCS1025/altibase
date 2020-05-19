@@ -68,8 +68,7 @@ SChar* sgmManager::getVarColumn( SChar           * aRow,
     }
     else
     {
-        IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( sSpaceID )
-                    == ID_TRUE );
+        IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( sSpaceID ) == ID_TRUE );
 
         sRet = svcRecord::getVarRow( aRow,
                                      aColumn,
@@ -144,6 +143,8 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
     }
     else
     {
+        IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( aColumn->colSpace ) == ID_TRUE );
+
         sSpaceID = aColumn->colSpace;
     }
 

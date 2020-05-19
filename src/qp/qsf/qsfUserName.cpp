@@ -60,6 +60,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfUserNameCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

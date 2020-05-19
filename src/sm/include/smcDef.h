@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcDef.h 84802 2019-01-25 05:01:12Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMC_DEF_H_
@@ -474,6 +474,16 @@ typedef struct smcLobDesc
     ULong          mLobVersion; // Lob Version
     smcLPCH       *mFirstLPCH;  // 첫번째 LPCH(Lob Piece Control Header)
 }smcLobDesc;
+
+#define SMC_LOB_DESC_INIT( aLobDesc ) \
+{   \
+        aLobDesc->flag        = SM_VCDESC_MODE_IN; \
+        aLobDesc->length      = 0; \
+        aLobDesc->fstPieceOID = SM_NULL_OID; \
+        aLobDesc->mLPCHCount  = 0; \
+        aLobDesc->mLobVersion = 0; \
+        aLobDesc->mFirstLPCH  = NULL; \
+}
 
 // lob column이 table에서 몇번째 column인지를 나타냄.
 typedef struct smcLobColIdxNode

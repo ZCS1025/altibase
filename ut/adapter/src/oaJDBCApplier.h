@@ -108,4 +108,10 @@ void oaJDBCInitializeDMLResultArray( acp_bool_t * aDMLResultArray, acp_uint32_t 
 
 void oaFinalizeJAVAVM();
 
+ace_rc_t oaJDBCExecuteLogInSql( oaContext * aContext, oaJDBCApplierHandle * aHandle );
+
+ace_rc_t oaJDBCInitializeSkipErrorList( oaContext * aContext, oaJDBCApplierHandle * aHandle );
+
+void oaJDBCFinalizeSkipErrorList( oaJDBCApplierHandle * aHandle );
+
 #endif /* __OA_JDBC_APPLIER_H__ */

@@ -76,6 +76,8 @@
 #include <cmi.h>
 #include <cmxXid.h>
 #include <cmnOpenssl.h>
+#include <cmnIB.h>
+#include <cmnSockIB.h>
 
 
 #endif

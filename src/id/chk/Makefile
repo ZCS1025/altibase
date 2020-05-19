@@ -66,6 +66,9 @@ $(ALTI_HOME)/bin/checkCond: $(TARGET_DIR)/src/id/chk/checkCond.$(OBJEXT) $(TARGE
 $(ALTI_HOME)/bin/checkType: $(TARGET_DIR)/src/id/chk/checkType.$(OBJEXT) $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT)
 	$(CXX) $(CCFLAGS) $(CPPFLAGS) $(DEFINES) $(PTDIRS) $(INCLUDES) $(LFLAGS) $(LIBDIRS) -o $@ $< $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT) $(ID_DIR)/idu/iduVersion.cpp -lpd $(LIBS)
 
+$(ALTI_HOME)/bin/crackPurify: $(TARGET_DIR)/src/id/chk/crackPurify.$(OBJEXT) $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT)
+	$(CXX) $(CCFLAGS) $(CPPFLAGS) $(DEFINES) $(PTDIRS) $(INCLUDES) $(LFLAGS) $(LIBDIRS) -o $@ $< $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT) $(ID_DIR)/idu/iduVersion.cpp -lpd $(LIBS)
+
 check :
 	@for i in $(SRCS); do (gawk -v API_INPUT=$(TOOL_DIR)/coding_chk/API.txt -v SRC_INPUT=$$i -f $(TOOL_DIR)/coding_chk/apiCheck.awk ) done
 

@@ -509,207 +509,42 @@ ACI_RC ulncNumericToNumeric(ulncNumeric *aDst, ulncNumeric *aSrc)
     return ACI_FAILURE;
 }
 
-/**
- * BUG-42606 - Server에서 Numeric의 double 변환의 오차와 Client에서 Numeric의
- * double 변환 오차가 달라서 client에서 변환된 값으로 서버 값을 찾을 수
- * 없습니다.
- *
- * 256 진법의 CM Numeric을 100진법의 MT Numeric으로 변환한다.
- */
-void ulncCmtNumericToMtNumeric( cmtNumeric * aNumeric, mtdNumericType * aMtNumeric )
-{
-    acp_sint32_t   i;
-    acp_sint32_t   sScale       = 0;
-    acp_sint32_t   sSize        = 0;
-    acp_sint32_t   sPrecision   = 0;
-    ulncNumeric    sSrc;
-    ulncNumeric    sDst;
-    acp_uint8_t  * sConvMantissa;
-    acp_uint8_t    sConvBuffer[ULN_NUMERIC_BUFFER_SIZE]; // 20
-
-    sScale = aNumeric->mScale;
-
-    ulncNumericInitFromData( &sSrc,
-                             256,
-                             ULNC_ENDIAN_LITTLE,
-                             aNumeric->mData,
-                             aNumeric->mSize,
-                             aNumeric->mSize );
-    ulncNumericInitialize( &sDst,
-                           100,
-                           ULNC_ENDIAN_BIG,
-                           sConvBuffer,
-                           MTD_NUMERIC_MANTISSA_MAXIMUM );
-
-    ( void )ulncNumericToNumeric( &sDst, &sSrc );
-
-    if ( ( sScale % 2 ) == 1 )
-    {
-        ( void )ulncShiftLeft( &sDst );
-        sScale++;
-    }
-    else if ( ( sScale % 2 ) == -1 )
-    {
-        ( void )ulncShiftLeft( &sDst );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    sConvMantissa = sDst.mBuffer + sDst.mAllocSize - sDst.mSize;
-    sSize = sDst.mSize;
-
-    for ( i = sSize - 1; ( i >= 0 ) && ( sConvMantissa[i] == 0 ); i-- )
-    {
-        sSize  -= 1;
-        sScale -= 2;
-    }
-
-    sPrecision = sSize * 2;
-
-    if ( sConvMantissa[0] < 10 )
-    {
-        sPrecision--;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    if ( ( sConvMantissa[sSize - 1] % 10 ) == 0 )
-    {
-        sPrecision--;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    if ( aNumeric->mSign != 1 )
-    {
-        for ( i = 0; i < sSize; i++ )
-        {
-            sConvMantissa[i] = 99 - sConvMantissa[i];
-        }
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    aMtNumeric->length        = sSize + 1;
-    aMtNumeric->signExponent  = ( aNumeric->mSign == 1 ) ? 0x80 : 0;
-    aMtNumeric->signExponent |= ( sSize - sScale / 2 ) * ( ( aNumeric->mSign == 1 ) ? 1 : -1 ) + 64;
-    acpMemCpy( aMtNumeric->mantissa, sConvMantissa, sSize );
-}
-
 acp_double_t ulncCmtNumericToDouble( cmtNumeric * aNumeric )
 {
-    acp_sint32_t     i;
-    acp_double_t     sDoubleValue = 0;
-    acp_double_t     sTempValue   = 1.0;
-    acp_sint16_t     sScale       = 0;
-    acp_sint16_t     sExponent    = 0;
-    acp_sint16_t     sArgExponent = 0;
-    acp_bool_t       sIsZero      = ACP_TRUE;
-    acp_uint8_t      sConvBuffer[ULN_NUMERIC_BUFFER_SIZE]; // 20
-    mtdNumericType * sMtNumeric = (mtdNumericType*)sConvBuffer;
-    acp_uint8_t    * sMantissa;
-    acp_uint8_t      sMantissaLen = 0;
+    acp_sint32_t i;
+    acp_double_t sDoubleValue = 0;
+    acp_double_t sTempValue   = 1.0;
 
     // BUG-21610: NUMERIC을 double로 올바로 변환하지 못할 수 있다.
     // double은 비록 NUMERIC보다 표현가능한 precision은 작지만
     // 더 넓은 scale을 지원하므로 그냥 변환해도 문제없다.
-    /* BUG-42606 - Server에서 Numeric의 double 변환의 오차와 Client에서 Numeric의
-     * double 변환 오차가 달라서 client에서 변환된 값으로 서버 값을 찾을 수
-     * 없습니다.
-     */
-    for ( i = 0; i < aNumeric->mSize; i++ )
+    for (i = aNumeric->mSize - 1; i >= 0; i--)
     {
-        if ( aNumeric->mData[i] > 0 )
-        {
-            sIsZero = ACP_FALSE;
-            break;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+        sDoubleValue *= 256;
+        sDoubleValue += aNumeric->mData[i];
     }
 
-    if ( sIsZero == ACP_FALSE )
+    if (aNumeric->mScale > 0)
     {
-        ulncCmtNumericToMtNumeric( aNumeric, sMtNumeric );
-
-        /* BUG-42606
-         * CM Numeric을 MT Numeric으로 변환후 100진법의 Numeric
-         * 을 Server에서 Double로 변환하는 방식으로 변환시킨다.
-         */
-        sArgExponent = ( sMtNumeric->signExponent & 0x80 );
-        sScale       = ( sMtNumeric->signExponent & 0x7F );
-
-        sMantissaLen = sMtNumeric->length - 1;
-
-        if ( sArgExponent == 0x80 )
+        for (i = 0; i < aNumeric->mScale; i++)
         {
-            for ( i = 0, sMantissa = sMtNumeric->mantissa;
-                  i < sMantissaLen;
-                  i++, sMantissa++ )
-            {
-                sDoubleValue = sDoubleValue * 100.0 + *sMantissa;
-            }
-            sExponent = sScale - 64 - sMantissaLen;
+            sTempValue *= 10.0;
         }
-        else
-        {
-            for ( i = 0, sMantissa = sMtNumeric->mantissa;
-                  i < sMantissaLen;
-                  i++, sMantissa++ )
-            {
-                sDoubleValue = sDoubleValue * 100.0 + ( 99 - *sMantissa );
-            }
-            sExponent = 64 - sScale - sMantissaLen;
-        }
-
-        if ( sExponent >= 0 )
-        {
-            for ( i = 0; i < sExponent; i++ )
-            {
-                sTempValue *= 100.0;
-            }
-            sDoubleValue *= sTempValue;
-        }
-        else
-        {
-            if ( sExponent < -63 )
-            {
-                sDoubleValue = 0.0;
-            }
-            else
-            {
-                for ( i = 0; i > sExponent; i-- )
-                {
-                    sTempValue *= 100.0;
-                }
-                sDoubleValue /= sTempValue;
-            }
-        }
-
-        if ( sArgExponent != 0x80 )
-        {
-            sDoubleValue *= -1;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+        sDoubleValue /= sTempValue;
     }
-    else
+    else if (aNumeric->mScale < 0)
     {
-        sDoubleValue = 0.0;
+        for (i = 0; i > aNumeric->mScale; i--)
+        {
+            sTempValue *= 10.0;
+        }
+        sDoubleValue *= sTempValue;
     }
 
+    if (aNumeric->mSign == 0)
+    {
+        sDoubleValue *= -1;
+    }
 
     return sDoubleValue;
 }
@@ -717,47 +552,8 @@ acp_double_t ulncCmtNumericToDouble( cmtNumeric * aNumeric )
 acp_float_t ulncCmtNumericToFloat(cmtNumeric *aNumeric)
 {
     acp_float_t  sFloatValue = 0;
-    acp_double_t sDoubleValue = 0;
-    acp_sint32_t i;
 
-    // BUG-21610: NUMERIC을 double로 올바로 변환하지 못할 수 있다.
-    // double은 비록 NUMERIC보다 표현가능한 precision은 작지만
-    // 더 넓은 scale을 지원하므로 그냥 변환해도 문제없다.
-    for ( i = aNumeric->mSize - 1; i >= 0; i-- )
-    {
-        sDoubleValue *= 256;
-        sDoubleValue += aNumeric->mData[i];
-    }
-
-    if ( aNumeric->mScale > 0 )
-    {
-        for ( i = 0; i < aNumeric->mScale; i++ )
-        {
-            sDoubleValue /= 10;
-        }
-    }
-    else if ( aNumeric->mScale < 0 )
-    {
-        for ( i = 0; i > aNumeric->mScale; i-- )
-        {
-            sDoubleValue *= 10;
-        }
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    if ( aNumeric->mSign == 0 )
-    {
-        sDoubleValue *= -1;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    sFloatValue = (acp_float_t)sDoubleValue;
+    sFloatValue = (acp_float_t)ulncCmtNumericToDouble( aNumeric );
 
     return sFloatValue;
 }

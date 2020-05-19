@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutex.h 64196 2014-03-27 10:26:23Z djin $
+ * $Id: iduMutex.h 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 #ifndef _O_IDU_MUTEX_H_
 #define _O_IDU_MUTEX_H_ 1
@@ -36,6 +36,9 @@ public:
     inline IDE_RC lock( idvSQL        * aStatSQL );
 
     inline IDE_RC unlock();
+
+    inline IDE_RC lockRecursive( idvSQL * aStatSQL );
+    inline IDE_RC unlockRecursive();
 
     void  status() {}
     
@@ -101,6 +104,19 @@ inline IDE_RC iduMutex::unlock()
     return IDE_SUCCESS;
 }
 
+inline IDE_RC iduMutex::lockRecursive( idvSQL * aStatSQL )
+{
+    mEntry->lockRecursive( aStatSQL );
+
+    return IDE_SUCCESS;
+}
+
+inline IDE_RC iduMutex::unlockRecursive()
+{
+    mEntry->unlockRecursive();
+
+    return IDE_SUCCESS;
+}
 /* --------------------------------------------------------------------
  * mtx commit 시에 latch를 풀어주기 위한 함수
  * sdbBufferMgr과 i/f를 맞추기 위해 2개의 인자가 추가되었으나

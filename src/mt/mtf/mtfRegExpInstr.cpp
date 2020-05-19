@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRegExpInstr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfRegExpInstr.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -115,6 +115,7 @@ const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfRegExpInstrCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -126,6 +127,7 @@ const mtcExecute mtfExecuteFor3Args = {
     mtf::calculateNA,
     mtfRegExpInstrCalculateFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -137,6 +139,7 @@ const mtcExecute mtfExecuteFor4Args = {
     mtf::calculateNA,
     mtfRegExpInstrCalculateFor4Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -395,9 +398,16 @@ IDE_RC mtfRegExpFindPosition( const mtlModule*  aLanguage,
     }
     
     /* 글자수를 구한다. */
-    if ( sPosition != 0 )
+    if ( sPosition > 0 )
     {
-        *aPosition = mtfRegExpGetCharCount( aLanguage, aSource, sPosition );
+        if ( aSourceLen < sPosition )
+        {
+            *aPosition = mtfRegExpGetCharCount( aLanguage, aSource, aSourceLen ) + 1;
+        }
+        else
+        {
+            *aPosition = mtfRegExpGetCharCount( aLanguage, aSource, sPosition );
+        }
     }
     else
     {

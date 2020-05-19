@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rp.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rp.h 85321 2019-04-25 04:58:40Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RP_H_
@@ -32,7 +32,7 @@
 
 #define REPLICATION_MAJOR_VERSION       (7)
 #define REPLICATION_MINOR_VERSION       (4)
-#define REPLICATION_FIX_VERSION         (2)
+#define REPLICATION_FIX_VERSION         (5)
 
 #ifdef ENDIAN_IS_BIG_ENDIAN
 
@@ -60,7 +60,7 @@
 
 #define RP_GET_MAJOR_VERSION(a) (UInt)(((ULong)(a) >> 48) & 0xFFFF)
 #define RP_GET_MINOR_VERSION(a) (UInt)(((ULong)(a) >> 32) & 0xFFFF)
-#define RP_GET_FIX_VERSION(a)   (UInt)((ULong)(a) >> 16)  & 0xFFFF)
+#define RP_GET_FIX_VERSION(a)   (UInt)(((ULong)(a) >> 16)  & 0xFFFF)
 #define RP_GET_ENDIAN_64BIT(a)  (UInt)((ULong)(a) & 0xFFFF)
 
 /* Base protocol*/
@@ -131,6 +131,12 @@
 #define RP_SOCKET_UNIX_DOMAIN_LEN       (11)
 #define RP_SOCKET_FILE_LEN              (250 + 1)
 
+#define RP_SOCKET_TCP_STR               (SChar *)"TCP"
+#define RP_SOCKET_TCP_LEN               (3)
+
+#define RP_SOCKET_IB_STR                (SChar *)"IB"
+#define RP_SOCKET_IB_LEN                (2)
+
 // PROJ-1442 Replication Online 중 DDL 허용
 #define RP_INVALID_COLUMN_ID            (ID_UINT_MAX)
 
@@ -141,6 +147,8 @@
 #define RP_OPTION_PARALLEL              (3)
 #define RP_OPTION_GROUPING              (4)
 #define RP_OPTION_LOCAL                 (5)
+#define RP_OPTION_DDL_REPLICATE         (6)
+#define RP_OPTION_V6_PROTOCOL           (7)
 
 //PROJ-1608 recovery from replication
 #define RP_OPTION_RECOVERY_MASK         (0x00000001)
@@ -171,6 +179,16 @@
 #define RP_OPTION_LOCAL_MASK            (0x00000020)
 #define RP_OPTION_LOCAL_SET             (0x00000020)
 #define RP_OPTION_LOCAL_UNSET           (0x00000000)
+
+/* BUG-46252 DDL Synchronization Lazy */
+#define RP_OPTION_DDL_REPLICATE_MASK    (0x00000040)
+#define RP_OPTION_DDL_REPLICATE_SET     (0x00000040)
+#define RP_OPTION_DDL_REPLICATE_UNSET   (0x00000000)
+
+/* BUG-46528 Apply __REPLICATION_USE_V6_PROTOCOL to each replication  */
+#define RP_OPTION_V6_PROTOCOL_MASK         (0x00000080)
+#define RP_OPTION_V6_PROTOCOL_SET          (0x00000080)
+#define RP_OPTION_V6_PROTOCOL_UNSET        (0x00000000)
 
 //for Invalid_recovery
 #define RP_CAN_RECOVERY                 (0)
@@ -218,13 +236,13 @@
                                             RP_BLOB_VALUSE_HEADER_SIZE_FOR_CM )
 
 #define RP_GET_BYTE_GAP(aDestLSN, aSrcLSN) \
-        ( ( ( (aDestLSN.mFileNo) - (aSrcLSN.mFileNo) ) * (smuProperty::getLogFileSize()) ) + \
-          ( (aDestLSN.mOffset) - (aSrcLSN.mOffset) ) )
+    ( ( ( (ULong)( (aDestLSN.mFileNo) - (aSrcLSN.mFileNo) ) * (ULong)(smuProperty::getLogFileSize()) ) + \
+        (ULong)(aDestLSN.mOffset) ) - (ULong)(aSrcLSN.mOffset) )
 
 typedef enum
 {
     RP_INTR_NONE = 0,
-    RP_INTR_NETWORK,
+    RP_INTR_RETRY,
     RP_INTR_FAULT,
     RP_INTR_EXIT
 } RP_INTR_LEVEL;
@@ -239,17 +257,45 @@ typedef enum
 
 typedef enum
 {
-    RP_ROLE_REPLICATION = 0,
-    RP_ROLE_ANALYSIS    = 1,
-    RP_ROLE_PROPAGABLE_LOGGING = 2,
-    RP_ROLE_PROPAGATION    = 3
+    RP_ROLE_REPLICATION          = 0,
+    RP_ROLE_ANALYSIS             = 1,
+    RP_ROLE_PROPAGABLE_LOGGING   = 2,
+    RP_ROLE_PROPAGATION          = 3,
+    RP_ROLE_ANALYSIS_PROPAGATION = 4
 } RP_ROLE;
 
 typedef enum
 {
     RP_SOCKET_TYPE_TCP  = 0,
-    RP_SOCKET_TYPE_UNIX = 1
+    RP_SOCKET_TYPE_UNIX = 1,
+    RP_SOCKET_TYPE_IB   = 2
 } RP_SOCKET_TYPE;
+
+typedef enum
+{
+    RP_IB_LATENCY_0  = 0,
+    RP_IB_LATENCY_1,
+    RP_IB_LATENCY_NONE
+} rpIBLatency;
+
+
+typedef enum
+{
+    RP_LINK_IMPL_TCP       = 0,
+    RP_LINK_IMPL_IB        = 1,
+    RP_LINK_IMPL_INVALID   = 2,
+    RP_LINK_IMPL_BASE      = RP_LINK_IMPL_TCP,
+    RP_LINK_IMPL_MAX       = RP_LINK_IMPL_INVALID
+} rpLinkImpl;
+
+typedef enum
+{
+    RP_DISPATCHER_IMPL_SOCK      = 0,
+    RP_DISPATCHER_IMPL_IB        = 1,
+    RP_DISPATCHER_IMPL_INVALID   = 2,
+    RP_DISPATCHER_IMPL_BASE      = RP_DISPATCHER_IMPL_SOCK,
+    RP_DISPATCHER_IMPL_MAX       = RP_DISPATCHER_IMPL_INVALID
+} rpDispatcherImpl;
 
 typedef enum
 {
@@ -348,7 +394,7 @@ typedef enum
     RP_X_FLUSH_ACK,         // Replication Flush ack
     RP_X_STOP_ACK,          // Stop Ack
     RP_X_HANDSHAKE,         // Handshake
-    RP_X_HANDSHAKE_READY,   // Handshake Ready
+    RP_X_HANDSHAKE_ACK,     // Handshake Ack
     RP_X_SYNC_PK_BEGIN,     // Incremental Sync Primary Key Begin
     RP_X_SYNC_PK,           // Incremental Sync Primary Key
     RP_X_SYNC_PK_END,       // Incremental Sync Primary Key End
@@ -360,6 +406,10 @@ typedef enum
     RP_X_LOB_TRIM,          // LOB Trim
     RP_X_ACK_ON_DML,        // Ack on DML
     RP_X_ACK_EAGER,         // Ack Eater
+    RP_X_DDL_REPLICATE_HANDSHAKE,     // DDL REPLICATE_HANDSHAKE
+    RP_X_DDL_REPLICATE_HANDSHAKE_ACK, // DDL REPLICATE_HANDSHAKEACK
+    RP_X_DDL_REPLICATE_EXECUTE,       // DDL REPLICATE_EXECUTE
+    RP_X_DDL_REPLICATE_EXECUTE_ACK,   // DDL REPLICATE_EXECUTE_ACK
     RP_X_MAX
 } rpXLogType;
 

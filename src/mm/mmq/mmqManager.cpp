@@ -37,7 +37,9 @@ IDE_RC mmqManager::initialize()
                                        IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                        ID_FALSE,						/* ForcePooling */
                                        ID_TRUE,							/* GarbageCollection */
-                                       ID_TRUE) != IDE_SUCCESS);		/* HWCacheLine */
+                                       ID_TRUE,                          /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     IDE_TEST(smuHash::initialize(&mQueueInfoHash,
                                  ID_SCALABILITY_CPU,

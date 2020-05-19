@@ -11,6 +11,8 @@
 #include <ulnPrivate.h>
 
 #include <ulsd.h>
+#include <ulsdFailover.h>
+
 
 ACI_RC ulsdModuleHandshake_COORD(ulnFnContext *aFnContext)
 {
@@ -173,13 +175,45 @@ void ulsdModuleOnCmError_COORD(ulnFnContext     *aFnContext,
                                ulnDbc           *aDbc,
                                ulnErrorMgr      *aErrorMgr)
 {
-    ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
+    ulsdDbc      *sShard = NULL;
+
+    (void)ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
+
+    if ( aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
+    {
+        sShard = aDbc->mShardDbcCxt.mShardDbc;
+        ulsdSetTouchedToAllNodes( sShard );
+    }
+
+    return;
 }
 
 ACI_RC ulsdModuleUpdateNodeList_COORD(ulnFnContext  *aFnContext,
                                       ulnDbc        *aDbc)
 {
     return ulsdUpdateNodeList(aFnContext, &(aDbc->mPtContext));
+}
+
+ACI_RC ulsdModuleNotifyFailOver_COORD( ulnDbc *aDbc )
+{
+    return ulsdNotifyFailoverOnMeta( aDbc );
+}
+
+void ulsdModuleAlignDataNodeConnection_COORD( ulnFnContext * aFnContext,
+                                              ulnDbc       * aNodeDbc )
+{
+    ulsdAlignDataNodeConnection( aFnContext,
+                                 aNodeDbc );
+}
+
+void ulsdModuleErrorCheckAndAlignDataNode_COORD( ulnFnContext * aFnContext )
+{
+    ulsdErrorCheckAndAlignDataNode( aFnContext );
+}
+
+acp_bool_t ulsdModuleHasNoData_COORD( ulnStmt * aStmt )
+{
+    return ulnCursorHasNoData( ulnStmtGetCursor( aStmt ) );
 }
 
 ulsdModule gShardModuleCOORD =
@@ -196,5 +230,9 @@ ulsdModule gShardModuleCOORD =
     ulsdModuleMoreResults_COORD,
     ulsdModuleGetPreparedStmt_COORD,
     ulsdModuleOnCmError_COORD,
-    ulsdModuleUpdateNodeList_COORD
+    ulsdModuleUpdateNodeList_COORD,
+    ulsdModuleNotifyFailOver_COORD,
+    ulsdModuleAlignDataNodeConnection_COORD,
+    ulsdModuleErrorCheckAndAlignDataNode_COORD,
+    ulsdModuleHasNoData_COORD
 };

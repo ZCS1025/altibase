@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnScan.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmnScan.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     SCAN Plan Node
@@ -1317,6 +1317,10 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.callBackDataAnd = & aDataPlan->callBackDataAnd;
     sPredicateInfo.callBackData = aDataPlan->callBackData;
 
+    /* PROJ-2632 */
+    sPredicateInfo.mSerialFilterInfo  = aCodePlan->mSerialFilterInfo;
+    sPredicateInfo.mSerialExecuteData = aDataPlan->mSerialExecuteData;
+
     //-------------------------------------
     // Key Range, Key Filter, Filter의 생성
     //-------------------------------------
@@ -1324,6 +1328,18 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     IDE_TEST( qmn::makeKeyRangeAndFilter( aTemplate,
                                           & sPredicateInfo )
               != IDE_SUCCESS );
+
+    /* PROJ-2632 */
+    if ( sPredicateInfo.mSerialExecuteData != NULL )
+    {
+        *aDataPlan->flag &= ~QMND_SCAN_SERIAL_EXECUTE_MASK;
+        *aDataPlan->flag |= QMND_SCAN_SERIAL_EXECUTE_TRUE;
+    }
+    else
+    {
+        *aDataPlan->flag &= ~QMND_SCAN_SERIAL_EXECUTE_MASK;
+        *aDataPlan->flag |= QMND_SCAN_SERIAL_EXECUTE_FALSE;
+    }
 
     aDataPlan->keyRange = sPredicateInfo.keyRange;
     aDataPlan->keyFilter = sPredicateInfo.keyFilter;
@@ -1599,6 +1615,21 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     else
     {
         /* Nothing to do */
+    }
+
+
+    /* PROJ-2632 */
+    if ( aCodePlan->mSerialFilterInfo != NULL )
+    {
+        QTC_SERIAL_EXEUCTE_DATA_INITIALIZE( aDataPlan->mSerialExecuteData,
+                                            aTemplate->tmplate.data,
+                                            aCodePlan->mSerialFilterSize,
+                                            aCodePlan->mSerialFilterCount,
+                                            aCodePlan->mSerialFilterOffset );
+    }
+    else
+    {
+        aDataPlan->mSerialExecuteData = NULL;
     }
 
     //---------------------------------
@@ -3004,7 +3035,8 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
  ***********************************************************************/
 
     UInt i;
-    qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
+    qmncScanMethod * sMethod   = getScanMethod( aTemplate, aCodePlan );
+    qmndSCAN       * sDataPlan = (qmndSCAN*)(aTemplate->tmplate.data + aCodePlan->plan.offset); /* PROJ-2632 */
 
     // Constant Filter 출력
     if (sMethod->constantFilter != NULL)
@@ -3035,8 +3067,28 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
             iduVarStringAppend( aString,
                                 " " );
         }
-        iduVarStringAppend( aString,
-                            " [ FILTER ]\n" );
+        /* PROJ-2632 */
+        if ( ( ( *sDataPlan->flag & QMND_SCAN_INIT_DONE_MASK ) == QMND_SCAN_INIT_DONE_TRUE ) &&
+             ( ( *sDataPlan->flag & QMND_SCAN_SERIAL_EXECUTE_MASK ) == QMND_SCAN_SERIAL_EXECUTE_TRUE ) )
+        {
+            if ( QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( aTemplate->stmt ) == 0 )
+            {
+                iduVarStringAppend( aString,
+                                    " [ FILTER SERIAL EXECUTE ]\n" );
+            }
+            else
+            {
+                iduVarStringAppendFormat( aString,
+                                          " [ FILTER SERIAL EXECUTE, SIZE: %"ID_UINT32_FMT" ]\n",
+                                          QTC_GET_SERIAL_EXECUTE_DATA_SIZE( aCodePlan->mSerialFilterSize ) );
+            }
+        }
+        else
+        {
+            iduVarStringAppend( aString,
+                                " [ FILTER ]\n" );
+        }
+        
         IDE_TEST(qmoUtil::printPredInPlan(aTemplate,
                                           aString,
                                           aDepth + 1,

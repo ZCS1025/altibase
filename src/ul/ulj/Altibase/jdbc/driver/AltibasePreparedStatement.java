@@ -33,24 +33,11 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import Altibase.jdbc.driver.cm.CmBufferWriter;
-import Altibase.jdbc.driver.cm.CmExecutionResult;
-import Altibase.jdbc.driver.cm.CmGetBindParamInfoResult;
-import Altibase.jdbc.driver.cm.CmOperation;
-import Altibase.jdbc.driver.cm.CmPrepareResult;
-import Altibase.jdbc.driver.cm.CmProtocol;
-import Altibase.jdbc.driver.cm.CmProtocolContextDirExec;
-import Altibase.jdbc.driver.cm.CmProtocolContextPrepExec;
+import Altibase.jdbc.driver.cm.*;
 import Altibase.jdbc.driver.datatype.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
@@ -77,7 +64,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     private List mTempArgValueList = new ArrayList();
     private static Logger mLogger;
 
-    AltibasePreparedStatement(AltibaseConnection aConnection, String aSql, int aResultSetType, int aResultSetConcurrency, int aResultSetHoldability) throws SQLException
+    public AltibasePreparedStatement(AltibaseConnection aConnection, String aSql, int aResultSetType, int aResultSetConcurrency, int aResultSetHoldability) throws SQLException
     {
         super(aConnection, aResultSetType, aResultSetConcurrency, aResultSetHoldability);
 
@@ -98,7 +85,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         setSql(aSql);
 
         CmProtocolContextPrepExec sContext = (CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex);
-        
+
         try
         {
             aSql = procDowngradeAndGetTargetSql(aSql);
@@ -130,7 +117,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         }
         catch (SQLException ex)
         {
-            AltibaseFailover.trySTF(mConnection.failoverContext(), ex);
+            tryFailOver(ex);
         }
 
         if (sContext.getError() != null)
@@ -467,8 +454,9 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             if (!(sColumnInfo.shouldChangeType()) || sColumnInfo.getDataType() == ColumnTypes.CLOB_LOCATOR || 
                     sColumnInfo.getDataType() == ColumnTypes.BLOB_LOCATOR)
             {
+                Set<Integer> sMappedJdbcTypeSet = mBindColumns.get(aIndex - 1).getMappedJDBCTypes();
                 Error.throwSQLException(ErrorDef.CANNOT_BIND_THE_DATA_TYPE_DURING_ADDING_BATCH_JOB,
-                                        String.valueOf(mBindColumns.get(aIndex - 1).getMappedJDBCTypes()[0]),
+                                        String.valueOf(sMappedJdbcTypeSet.iterator().next()),
                                         String.valueOf(aSqlType));
             }
             else 
@@ -556,10 +544,10 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
             {
                 mBatchRowHandle = new ListBufferHandle();
                 // ListBufferHandle 의 Encoder 에 적용할 charset name 들을 가져와야한다.
-                ((CmBufferWriter)mBatchRowHandle).setCharset(mConnection.channel().getCharset(), 
+                ((CmBufferWriter)mBatchRowHandle).setCharset(mConnection.channel().getCharset(),
                                                              mConnection.channel().getNCharset());
             }
-            
+
             mBatchRowHandle.setColumns(mBindColumns);
             mBatchRowHandle.initToStore();
         }        
@@ -744,19 +732,20 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         checkParameters();
 
         clearAllResults();
+        CmProtocolContextPrepExec sContext = (CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex);
 
         try
         {
             // PROJ-2427 cursor를 닫아야 하는 조건을 같이 넘겨준다.
-            CmProtocol.preparedExecute((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex), 
-                                       mBindColumns, 
-                                       mConnection.isClientSideAutoCommit(), 
+            CmProtocol.preparedExecute(sContext,
+                                       mBindColumns,
+                                       mConnection.isClientSideAutoCommit(),
                                        mPrepareResult != null && mPrepareResult.isSelectStatement(),
                                        mDeferredRequests);
         }
         catch (SQLException ex)
         {
-            AltibaseFailover.trySTF(mConnection.failoverContext(), ex);
+            tryFailOver(ex);
         }
         super.afterExecution();
 
@@ -788,12 +777,13 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         }
         checkParameters();
 
+        CmProtocolContextPrepExec sContext = (CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex);
         super.clearAllResults();
 
         try
         {
             // PROJ-2427 cursor를 닫아야 하는 조건을 같이 넘겨준다.
-            CmProtocol.preparedExecuteAndFetch((CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex),
+            CmProtocol.preparedExecuteAndFetch(sContext,
                                                 mBindColumns, 
                                                 mFetchSize, 
                                                 mMaxRows, 
@@ -803,7 +793,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         }
         catch (SQLException ex)
         {
-            AltibaseFailover.trySTF(mConnection.failoverContext(), ex);
+            tryFailOver(ex);
         }
         super.afterExecution();
 
@@ -1015,7 +1005,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
 
     public void setObject(int aParameterIndex, Object aValue, int aTargetSqlType, int aScale) throws SQLException
     {
-        if (aTargetSqlType == Types.NUMERIC || aTargetSqlType == Types.DECIMAL)
+        if ((aValue != null) && (aTargetSqlType == Types.NUMERIC || aTargetSqlType == Types.DECIMAL))  /* BUG-45838 */
         {
             // oracle이 scale을 무시한다. 우리도 무시;
             BigDecimal sDecimalValue = new BigDecimal(aValue.toString());
@@ -1073,7 +1063,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         CmProtocolContextPrepExec sContext = (CmProtocolContextPrepExec)mContext.get(mCurrentResultIndex);
         CmPrepareResult sPrepareResult = (CmPrepareResult)sContext.getCmResult(CmPrepareResult.MY_OP);
         // BUG-42424 PrepareResult가 없을 경우 defer 요청을 무시하고 prepare요청을 먼저 보낸다.
-        if (!sPrepareResult.isDataArrived()) 
+        if (!sPrepareResult.isPrepared())
         {
             if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
             {
@@ -1340,6 +1330,7 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "URL type");
     }
 
+    @SuppressWarnings("deprecation")
     public void setUnicodeStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException
     {
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "Deprecated: setUnicodeStream");
@@ -1439,5 +1430,16 @@ public class AltibasePreparedStatement extends AltibaseStatement implements Prep
     String getTraceUniqueId()
     {
         return "[StmtId #" + getStmtId() + "] ";
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuilder sSb = new StringBuilder("AltibasePreparedStatement{");
+        sSb.append("mStmtCID=").append(mStmtCID);
+        sSb.append(", mStmtID=").append(getStmtId());
+        sSb.append(", mQstr='").append(mQstr).append('\'');
+        sSb.append('}');
+        return sSb.toString();
     }
 }

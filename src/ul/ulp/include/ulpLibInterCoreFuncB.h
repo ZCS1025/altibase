@@ -65,6 +65,7 @@ ACI_RC ulpSetStmtAttrDynamicRowCore( ulpLibConnNode *aConnNode,
                                      ulpSqlstate    *aSqlstate );
 
 ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
+                         ulpLibStmtNode *aStmtNode,
                          SQLHSTMT       *aHstmt,
                          ulpSqlstmt     *aSqlstmt,
                          ulpHostVar     *aHostVar,
@@ -97,5 +98,14 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
                                acp_sint32_t   *aErrCode );
 
 ACI_RC ulpAdjustArraySize(ulpSqlstmt *aSqlstmt);
+
+/* BUG-45779 PSM Array Bind 관련 함수 추가 */
+ACI_RC ulpPSMArrayWrite(ulpSqlstmt *aSqlstmt, ulpHostVar *aHostVar, void* aBuffer);
+
+ACI_RC ulpPSMArrayRead(ulpSqlstmt *aSqlstmt, ulpHostVar *aHostVar, void* aBuffer);
+
+ACI_RC ulpPSMArrayHasNullCheck(ulpSqlstmt *aSqlstmt, void* aBuffer);
+
+void ulpPSMArrayMetaFree(ulpPSMArrInfo  *aUlpPSMArrInfo);
 
 #endif

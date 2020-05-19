@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: ideMsgLogFT.cpp 81531 2017-11-03 09:32:29Z jinku.ko $
+ * $Id: ideMsgLogFT.cpp 83474 2018-07-13 08:21:28Z hykim $
  **********************************************************************/
 #include <idl.h>
 #include <ide.h>
@@ -29,7 +29,7 @@ typedef struct ideTrcStat
  *  32 => 32nd bit..
  * ----------------------------------------------*/
 
-// SERVER : WARNING!!!! << under 64 charters >>
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gServerTrcDesc[32] = 
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -67,7 +67,7 @@ static SChar *gServerTrcDesc[32] =
     /* 32 bit */ (SChar *)"---"
 };
 
-// SERVER : WARNING!!!! << under 64 charters >>
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gQpTrcDesc[32] = 
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -105,7 +105,45 @@ static SChar *gQpTrcDesc[32] =
     /* 32 bit */ (SChar *)"---"
 };
 
-// SERVER : WARNING!!!! << under 64 charters >>
+// BUG-46138 SERVER : WARNING!!!! << under 64 characters >>
+static SChar *gSdTrcDesc[32] = 
+{
+                         //0123456789012345678901234567890123456789012345678901234567890123
+    /*  1 bit */ (SChar *)"Shard Meta Error Trace Log",
+    /*  2 bit */ (SChar *)"---",
+    /*  3 bit */ (SChar *)"---",
+    /*  4 bit */ (SChar *)"---",
+    /*  5 bit */ (SChar *)"---",
+    /*  6 bit */ (SChar *)"---",
+    /*  7 bit */ (SChar *)"---",
+    /*  8 bit */ (SChar *)"---",
+    /*  9 bit */ (SChar *)"---",
+    /* 10 bit */ (SChar *)"---",
+    /* 11 bit */ (SChar *)"---",
+    /* 12 bit */ (SChar *)"---",
+    /* 13 bit */ (SChar *)"---",
+    /* 14 bit */ (SChar *)"---",
+    /* 15 bit */ (SChar *)"---",
+    /* 16 bit */ (SChar *)"---",
+    /* 17 bit */ (SChar *)"---",
+    /* 18 bit */ (SChar *)"---",
+    /* 19 bit */ (SChar *)"---",
+    /* 20 bit */ (SChar *)"---",
+    /* 21 bit */ (SChar *)"---",
+    /* 22 bit */ (SChar *)"---",
+    /* 23 bit */ (SChar *)"---",
+    /* 24 bit */ (SChar *)"---",
+    /* 25 bit */ (SChar *)"---",
+    /* 26 bit */ (SChar *)"---",
+    /* 27 bit */ (SChar *)"---",
+    /* 28 bit */ (SChar *)"---",
+    /* 29 bit */ (SChar *)"---",
+    /* 30 bit */ (SChar *)"---",
+    /* 31 bit */ (SChar *)"---",
+    /* 32 bit */ (SChar *)"---"
+};
+
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gSmTrcDesc[32] = 
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -143,7 +181,7 @@ static SChar *gSmTrcDesc[32] =
     /* 32 bit */ (SChar *)"Debug"
 };
 
-// SERVER : WARNING!!!! << under 64 charters >>
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gRpTrcDesc[32] = 
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -182,7 +220,7 @@ static SChar *gRpTrcDesc[32] =
 };
 
 
-// SERVER : WARNING!!!! << under 64 charters >>
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gRpConflictTrcDesc[32] = 
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -220,7 +258,7 @@ static SChar *gRpConflictTrcDesc[32] =
     /* 32 bit */ (SChar *)"---"
 };
 
-// SERVER : WARNING!!!! << under 64 charters >>
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gDkTrcDesc[32] =
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -259,7 +297,7 @@ static SChar *gDkTrcDesc[32] =
 };
 
 /* BUG-45274 reference http://nok.altibase.com/pages/viewpage.action?pageId=40570104  */
-// SERVER : WARNING!!!! << under 64 charters >>
+// SERVER : WARNING!!!! << under 64 characters >>
 static SChar *gLbTrcDesc[32] =
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
@@ -378,7 +416,16 @@ IDE_RC buildRecordCallback(idvSQL              */* aStatistics */,
                             gQpTrcDesc,
                             aHeader,
                             aMemory) != IDE_SUCCESS);
-    
+
+    /* ------------------------------------------------
+     * SD   BUG-46138 
+     * ----------------------------------------------*/
+    IDE_TEST(buildTrcRecord((SChar *)"SD",
+                            iduProperty::getSdTrcFlag(),
+                            gSdTrcDesc,
+                            aHeader,
+                            aMemory) != IDE_SUCCESS);
+
     /* ------------------------------------------------
      * RP 
      * ----------------------------------------------*/

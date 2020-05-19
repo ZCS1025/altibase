@@ -29,6 +29,8 @@
 #include <ulnwCPool.h>
 
 #include <ulsd.h>
+#include <ulsdnFailover.h>
+#include <ulsdShardLoader.h>
 
 #ifndef SQL_API
 #define SQL_API
@@ -307,7 +309,7 @@ SQLRETURN  SQL_API SQLFreeHandle(SQLSMALLINT HandleType, SQLHANDLE Handle)
 
     if ( HandleType == SQL_HANDLE_DBC )
     {
-        ACI_TEST(ulsdShardDestroy((ulnDbc *)Handle) != ACI_SUCCESS);
+        ulsdShardDestroy( (ulnDbc *)Handle );
     }
     else
     {
@@ -315,10 +317,6 @@ SQLRETURN  SQL_API SQLFreeHandle(SQLSMALLINT HandleType, SQLHANDLE Handle)
     }
 
     return ulnFreeHandle((acp_sint16_t)HandleType, (ulnObject *)Handle);
-
-    ACI_EXCEPTION_END;
-
-    return SQL_ERROR;
 }
 #endif
 
@@ -332,28 +330,64 @@ SQLRETURN  SQL_API SQLFreeConnect(SQLHDBC ConnectionHandle)
 {
     ULN_TRACE(SQLFreeConnect);
 
-    ACI_TEST(ulsdShardDestroy((ulnDbc *)ConnectionHandle) != ACI_SUCCESS);
+    ulsdShardDestroy( (ulnDbc *)ConnectionHandle );
 
     return ulnFreeHandle(SQL_HANDLE_DBC, (ulnObject *)ConnectionHandle);
-
-    ACI_EXCEPTION_END;
-
-    return SQL_ERROR;
 }
 
 SQLRETURN  SQL_API SQLFreeStmt(SQLHSTMT StatementHandle,
                                SQLUSMALLINT Option)
 {
+    ulnStmt         * sStmt = (ulnStmt *)StatementHandle;
+    acp_list_node_t * sNode = NULL;
+    acp_list_node_t * sNext = NULL;
+    SQLRETURN         sRet  = SQL_ERROR;
+
     ULN_TRACE(SQLFreeStmt);
 
-    ACI_TEST(!SQL_SUCCEEDED(ulsdNodeFreeStmt((ulnStmt *)StatementHandle,
-                                             (acp_uint16_t)Option)));
+    sRet = ulsdNodeFreeStmt( sStmt,
+                             (acp_uint16_t)Option );
 
-    return ulnFreeStmt((ulnStmt *)StatementHandle, (acp_uint16_t)Option);
+    ACI_TEST( !SQL_SUCCEEDED( sRet ) );
+
+    sRet = ulnFreeStmt( sStmt,
+                        (acp_uint16_t)Option );
+
+    ACI_TEST( !SQL_SUCCEEDED( sRet ) );
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    if ( Option == SQL_RESET_PARAMS )
+    {
+        ACP_LIST_ITERATE_SAFE( & sStmt->mShardStmtCxt.mBindParameterList, sNode, sNext )
+        {
+            acpListDeleteNode( sNode );
+            acpMemFree( sNode->mObj );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    if ( Option == SQL_UNBIND )
+    {
+        ACP_LIST_ITERATE_SAFE( & sStmt->mShardStmtCxt.mBindColList, sNode, sNext )
+        {
+            acpListDeleteNode( sNode );
+            acpMemFree( sNode->mObj );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sRet;
 
     ACI_EXCEPTION_END;
 
-    return SQL_ERROR;
+    return sRet;
 }
 
 #if (ODBCVER >= 0x0300)
@@ -1965,27 +1999,36 @@ SQLRETURN  SQL_API SQLPrepare(SQLHSTMT   StatementHandle,
                               SQLCHAR   *StatementText,
                               SQLINTEGER TextLength)
 {
-    ulnDbc      *sDbc = ((ulnStmt *)StatementHandle)->mParentDbc;
-    SQLRETURN    sRet = SQL_ERROR;
+    ulnFnContext sFnContext;
+    ulnDbc      *sDbc  = ((ulnStmt *)StatementHandle)->mParentDbc;
+    ulnStmt     *sStmt = (ulnStmt *)StatementHandle;
+    SQLRETURN    sRet  = SQL_ERROR;
 
     ULN_TRACE(SQLPrepare);
+
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_PREPARE, StatementHandle, ULN_OBJ_TYPE_STMT);
 
     /* shard module 설정 */
     if ( sDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_ONE_NODE )
     {
-        sRet = ulsdAnalyze((ulnStmt *)StatementHandle,
+        sRet = ulsdAnalyze(&sFnContext,
+                           sStmt,
                            (acp_char_t *)StatementText,
                            (acp_sint32_t)TextLength);
         ACI_TEST(!SQL_SUCCEEDED(sRet));
     }
     else
     {
-        sRet = ulsdAnalyze((ulnStmt *)StatementHandle,
+        sRet = ulsdAnalyze(&sFnContext,
+                           sStmt,
                            (acp_char_t *)StatementText,
                            (acp_sint32_t)TextLength);
         if (!SQL_SUCCEEDED(sRet))
         {
-            ulsdSetCoordQuery((ulnStmt *)StatementHandle);
+            ACI_TEST( ulnDbcIsConnected( sDbc ) == ACP_FALSE );
+            ACI_TEST( sFnContext.mIsFailoverSuccess == ACP_TRUE );
+
+            ulsdSetCoordQuery(sStmt);
         }
         else
         {
@@ -1993,7 +2036,8 @@ SQLRETURN  SQL_API SQLPrepare(SQLHSTMT   StatementHandle,
         }
     }
 
-    sRet = ulsdPrepare((ulnStmt *)StatementHandle,
+    sRet = ulsdPrepare(&sFnContext,
+                       sStmt,
                        (acp_char_t *)StatementText,
                        (acp_sint32_t)TextLength,
                        NULL);
@@ -2073,28 +2117,33 @@ SQLRETURN  SQL_API SQLExecDirect(SQLHSTMT   StatementHandle,
                                  SQLCHAR   *StatementText,
                                  SQLINTEGER TextLength)
 {
-    SQLRETURN    sRet        = SQL_ERROR;
+    SQLRETURN    sRet     = SQL_SUCCESS;
+    acp_sint32_t sCompare = 1;
     SQLINTEGER   sTextLength = TextLength;
-    ulsdDbc     *sShard;
-    ulnStmt     *sStmt;
-    acp_sint32_t sCompare;
-    acp_uint16_t sCnt;
 
     ULN_TRACE(SQLExecDirect);
 
+#if defined(COMPILE_SHARDLOADERCLI)
+/*internal use for only shardLoader*/
+    SQLRETURN    sLastRet    = SQL_SUCCESS;
+    ulsdDbc     *sShard;
+    ulnStmt     *sStmt;
+    acp_uint16_t i           = 0;
+
+
     if (TextLength == SQL_NTS)
     {
-        sCompare = acpCStrCaseCmp((acp_char_t*)StatementText, "node[data] ", 11);
+        sCompare = acpCStrCaseCmp((acp_char_t*)StatementText, SHARD_LOADER_SQL_PREFIX, SHARD_LOADER_SQL_PREFIX_LEN);
     }
     else
     {
-        if (TextLength > 11)
+        if (TextLength > SHARD_LOADER_SQL_PREFIX_LEN)
         {
-            sCompare = acpCStrCaseCmp((acp_char_t*)StatementText, "node[data] ", 11);
+            sCompare = acpCStrCaseCmp((acp_char_t*)StatementText, SHARD_LOADER_SQL_PREFIX, SHARD_LOADER_SQL_PREFIX_LEN);
 
             if ( sCompare == 0 )
             {
-                sTextLength = TextLength - 11;
+                sTextLength = TextLength - SHARD_LOADER_SQL_PREFIX_LEN;
             }
             else
             {
@@ -2114,30 +2163,49 @@ SQLRETURN  SQL_API SQLExecDirect(SQLHSTMT   StatementHandle,
 
         ulsdGetShardFromDbc(sStmt->mParentDbc, &sShard);
 
-        for ( sCnt = 0; sCnt < sShard->mNodeCount; sCnt++ )
+        for ( i = 0; i < sShard->mNodeCount; i++ )
         {
-            sRet = ulnExecDirect( sStmt->mShardStmtCxt.mShardNodeStmt[sCnt],
-                                  (acp_char_t *)StatementText + 11,
-                                  sTextLength );
-            ACI_TEST(!(SQL_SUCCEEDED(sRet)));
+            sLastRet = ulnExecDirect( sStmt->mShardStmtCxt.mShardNodeStmt[i],
+                                      (acp_char_t *)StatementText + SHARD_LOADER_SQL_PREFIX_LEN,
+                                      sTextLength );
+
+            if ( sLastRet == SQL_SUCCESS )
+            {
+                /* Nothing to do */
+            }
+            else if ( sLastRet == SQL_SUCCESS_WITH_INFO )
+            {
+                sRet = sLastRet;
+            }
+            else
+            {
+                sRet = sLastRet;
+                break;
+            }
         }
     }
-    else
+#endif
+
+    if ( sCompare != 0 )
     {
         sRet = SQLPrepare( StatementHandle,
                            StatementText,
                            sTextLength );
-        ACI_TEST(sRet != SQL_SUCCESS);
-
-        sRet = SQLExecute(StatementHandle);
-        ACI_TEST(!(SQL_SUCCEEDED(sRet)));
+        if ( sRet == SQL_SUCCESS )
+        {
+            sRet = SQLExecute( StatementHandle );
+        }
+        else
+        {
+            sRet = SQL_ERROR;
+        }
+    }
+    else
+    {
+        /* nothing to do */
     }
 
     return sRet;
-
-    ACI_EXCEPTION_END;
-
-    return SQL_ERROR;
 }
 
 // fix BUG-26703 ODBC 유니코드 함수는 유닉스 ODBC에서는 제외
@@ -2204,9 +2272,41 @@ SQLRETURN  SQL_API SQLExecDirectW(SQLHSTMT   StatementHandle,
 
 SQLRETURN  SQL_API SQLExecute(SQLHSTMT StatementHandle)
 {
+    ulnStmt    * sStmt = (ulnStmt *)StatementHandle;
+    ulnDbc     * sDbc  = sStmt->mParentDbc;
+    SQLRETURN    sRet  = SQL_SUCCESS;
+
     ULN_TRACE(SQLExecute);
 
-    return ulsdExecute((ulnStmt *)StatementHandle);
+    /* BUG-46100 Session SMN Update
+     *  SQLExecute(), SQLExecDirect() 사용 시 SMN이 맞지 않으면, Analyze부터 다시 합니다.
+     *    - Analyze 결과에 따라 Meta Node 또는 Data Node에 Prepare를 재수행합니다.
+     */
+    if ( ( sStmt->mShardStmtCxt.mShardMetaNumber < ulnDbcGetShardMetaNumber( sDbc ) ) &&
+         ( ulsdModuleGetPreparedStmt( sStmt ) != NULL ) )
+    {
+        ACE_DASSERT( sStmt->mShardStmtCxt.mOrgPrepareTextBuf != NULL );
+        ACE_DASSERT( sStmt->mShardStmtCxt.mOrgPrepareTextBufLen > 0 );
+
+        sRet = SQLPrepare( StatementHandle,
+                           (SQLCHAR *)sStmt->mShardStmtCxt.mOrgPrepareTextBuf,
+                           (SQLINTEGER)sStmt->mShardStmtCxt.mOrgPrepareTextBufLen );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( SQL_SUCCEEDED( sRet ) )
+    {
+        sRet = ulsdExecute( sStmt );
+    }
+    else
+    {
+        sRet = SQL_ERROR;
+    }
+
+    return sRet;
 }
 
 SQLRETURN  SQL_API SQLNativeSql(SQLHDBC     ConnectionHandle,

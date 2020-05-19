@@ -23,7 +23,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 236
+# Last Number = 238
 
 SECTION = 0
 
@@ -976,7 +976,15 @@ SECTION = 0
 236, idERR_ABORT_Sysfallocate = Unable to invoke the fallocate() function on [<0%s>].
 # *Cause: The system failed to call the fallocate() function.
 # *Action: Set the LOG_CREATE_METHOD property value to 0 and restart the server.
+#
+237, idERR_ABORT_InternalServerErrorWithString = Internal server error ( <0%s> ).
+# *Cause: An unexpected internal server error has occurred.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
 
+
+238, idERR_ABORT_IDU_MEMORY_INVALID_SET_STATUS = An error has been detected in the memory manager. [<0%s>]
+# *Cause: Internal memory manager error.
+# *Action: Set the MEMORY_ALLOCATOR_USE_PRIVATE property to 0 and restart the server. Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
 
 ###############################################################################
 #  Server Internal Message

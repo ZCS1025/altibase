@@ -546,6 +546,8 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
     qmsAnalyticFunc     * sCurAnalFunc;
     qmsAnalyticFunc     * sNewAnalFunc;
     qtcOverColumn       * sOverColumn;
+    qtcOverColumn       * sOverColumn2 = NULL;
+    qtcOverColumn       * sOverColumn3 = NULL;
     qmsAnalyticFunc     * sInnerAnalyticFunc;
     idBool                sIsSame;
     idBool                sFoundSameSortingKey;
@@ -567,6 +569,51 @@ qmgWindowing::classifySortingKeyNAnalFunc( qcStatement     * aStatement,
     sSortingKeyPosition  = 0;
     sSortingKeyPtrArr    = aMyGraph->sortingKeyPtrArr;
     sAnalyticFuncPtrArr  = aMyGraph->analyticFuncListPtrArr;
+
+    /* BUG-46264 window sort의 order by 에서 같은 컬럼이 나올경우 중복 제거 */
+    for ( sCurAnalFunc = aMyGraph->analyticFuncList;
+          sCurAnalFunc != NULL;
+          sCurAnalFunc = sCurAnalFunc->next )
+    {
+        for ( sOverColumn = sCurAnalFunc->analyticFuncNode->overClause->orderByColumn;
+              sOverColumn != NULL;
+              sOverColumn = sOverColumn->next )
+        {
+            sIsSame = ID_FALSE;
+
+            for ( sOverColumn2 = sCurAnalFunc->analyticFuncNode->overClause->orderByColumn;
+                  sOverColumn2 != NULL;
+                  sOverColumn2 = sOverColumn2->next )
+            {
+                if ( sOverColumn == sOverColumn2 )
+                {
+                    break;
+                }
+                else
+                {
+                    if ( ( sOverColumn->node->node.table == sOverColumn2->node->node.table ) &&
+                         ( sOverColumn->node->node.column == sOverColumn2->node->node.column ) )
+                    {
+                        sIsSame = ID_TRUE;
+                        break;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+            }
+
+            if ( sIsSame == ID_TRUE )
+            {
+                sOverColumn3->next = sOverColumn->next;
+            }
+            else
+            {
+                sOverColumn3 = sOverColumn;
+            }
+        }
+    }
 
     sCurAnalFunc = aMyGraph->analyticFuncList;
     while ( sCurAnalFunc != NULL )
@@ -1870,7 +1917,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
         //----------------------------------
 
         sStartKey = 0;
-        
+
         if ( (aFlag & QMG_PRESERVED_ORDER_MASK)
              == QMG_PRESERVED_ORDER_DEFINED_FIXED )
         {
@@ -1891,7 +1938,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
             {
                 // Nothing to do.
             }
-            
+
             for ( j = i + 1; j < sEndKey; j++ )
             {
                 if ( aSortingKeyPtrArr[j] == NULL )
@@ -1942,11 +1989,11 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
             {
                 sStartKey = 0;
             }
-        
+
             sEndKey = sSortingKeyCount - 1;
 
             i = sSortingKeyCount - 1;
-            
+
             for ( j = sStartKey; j < sEndKey; j++ )
             {
                 if ( aSortingKeyPtrArr[j] == NULL )
@@ -1984,20 +2031,20 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
         {
             // Nothing to do.
         }
-        
+
         //----------------------------------
         // 제거한 sort key 정리
         //----------------------------------
 
         sStartKey = 0;
         sEndKey = sSortingKeyCount;
-        
+
         for ( i = sStartKey; i < sEndKey; i++ )
         {
             if ( aSortingKeyPtrArr[i] == NULL )
             {
                 sIsFound = ID_FALSE;
-                
+
                 for ( j = i + 1; j < sEndKey; j++ )
                 {
                     if ( aSortingKeyPtrArr[j] != NULL )
@@ -2011,7 +2058,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
                 {
                     aSortingKeyPtrArr[i] = aSortingKeyPtrArr[j];
                     aSortingKeyPtrArr[j] = NULL;
-                    
+
                     aAnalyticFuncListPtrArr[i] = aAnalyticFuncListPtrArr[j];
                     aAnalyticFuncListPtrArr[j] = NULL;
                 }
@@ -2027,7 +2074,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
         }
 
         sSortingKeyCount = 0;
-        
+
         for ( i = sStartKey; i < sEndKey; i++ )
         {
             if ( aSortingKeyPtrArr[i] != NULL )
@@ -2039,7 +2086,7 @@ qmgWindowing::compactSortingKeyArr( UInt                 aFlag,
                 break;
             }
         }
-        
+
         *aSortingKeyCount = sSortingKeyCount;
     }
     else

@@ -25,16 +25,12 @@ public class FloatColumn extends CommonNumericColumn
     FloatColumn()
     {
         super();
+        addMappedJdbcTypeSet(AltibaseTypes.FLOAT);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.FLOAT;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.FLOAT };
     }
 
     public String getDBColumnTypeName()

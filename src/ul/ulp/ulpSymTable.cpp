@@ -362,6 +362,9 @@ void ulpSymTable::ulpPrintSymT( SInt aScopeD )
                         case H_BINARY  :
                             idlOS::strcpy(sTmpStr, "binary");
                             break;
+                        case H_BINARY2  :  /* BUG-46418 */
+                            idlOS::strcpy(sTmpStr, "binary2");
+                            break;
                         case H_BIT     :
                             idlOS::strcpy(sTmpStr, "bit");
                             break;

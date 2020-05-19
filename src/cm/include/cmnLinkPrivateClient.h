@@ -74,6 +74,22 @@ acp_uint32_t cmnLinkPeerSizeSSL();
 
 #endif
 
+/* PROJ-2681 */
+typedef struct cmnLinkDescIB
+{
+    acp_sint32_t            mSock;
+    acp_sock_addr_storage_t mAddr;
+    acp_sock_len_t          mAddrLen;      /* getnameinfo needs this */
+    acp_bool_t              mBlockingMode;
+    acp_uint32_t            mLatency;      /* for RDMA_LATENCY rsocket option */
+    acp_uint32_t            mConChkSpin;   /* for RDMA_CONCHKSPIN rsocket option */
+} cmnLinkDescIB;
+
+ACI_RC       cmnLinkListenMapIB(cmnLink *aLink);
+acp_uint32_t cmnLinkListenSizeIB(void);
+
+ACI_RC       cmnLinkPeerMapIB(cmnLink *aLink);
+acp_uint32_t cmnLinkPeerSizeIB(void);
 
 #if !defined(CM_DISABLE_IPC) && !defined(CM_DISABLE_IPCDA)
 

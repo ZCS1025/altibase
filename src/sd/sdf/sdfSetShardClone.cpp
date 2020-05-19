@@ -72,6 +72,7 @@ static const mtcExecute sdfExecute = {
     mtf::calculateNA,
     sdfCalculate_SetShardClone,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -154,7 +155,7 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
     mtdCharType             * sTableName;
     SChar                     sTableNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
     mtdCharType             * sNodeName;
-    SChar                     sNodeNameStr[QC_MAX_NAME_LEN + 1];
+    SChar                     sNodeNameStr[SDI_NODE_NAME_MAX_SIZE + 1];
     UInt                      sRowCnt = 0;
     smiStatement            * sOldStmt;
     smiStatement              sSmiStmt;
@@ -162,6 +163,12 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
     SInt                      sState = 0;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    // BUG-46366
+    IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
+                    ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DML ) == QCI_STMT_MASK_DML ) ||
+                    ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DCL ) == QCI_STMT_MASK_DCL ),
+                    ERR_INSIDE_QUERY );
 
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
@@ -212,7 +219,7 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
         // shard group name
         sNodeName = (mtdCharType*)aStack[3].value;
 
-        IDE_TEST_RAISE( sNodeName->length > QC_MAX_NAME_LEN,
+        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
@@ -263,6 +270,10 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INSIDE_QUERY )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
+    }
     IDE_EXCEPTION( ERR_SHARD_USER_NAME_TOO_LONG );
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_SHARD_USER_NAME_TOO_LONG ) );
@@ -294,7 +305,7 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
         case 2:
             if ( sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) != IDE_SUCCESS )
             {
-                IDE_ERRLOG(IDE_QP_1);
+                IDE_ERRLOG(IDE_SD_1);
             }
             else
             {

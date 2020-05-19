@@ -27,7 +27,37 @@
 
 SQLRETURN ulsdCloseCursor(ulnStmt      *aStmt)
 {
-    return ulsdModuleCloseCursor(aStmt);
+    SQLRETURN      sNodeResult = SQL_ERROR;
+    ulnFnContext   sFnContext;
+    ulnFnContext   sFnContextSMNUpdate;
+
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_CLOSECURSOR, aStmt, ULN_OBJ_TYPE_STMT );
+
+    sNodeResult = ulsdModuleCloseCursor( aStmt );
+
+    /* BUG-46100 Session SMN Update */
+    if ( ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_ON ) &&
+         ( ulsdIsTimeToUpdateShardMetaNumber( aStmt->mParentDbc ) == ACP_TRUE ) )
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContextSMNUpdate, ULN_FID_CLOSECURSOR, aStmt, ULN_OBJ_TYPE_STMT );
+
+        ACI_TEST( ulsdUpdateShardMetaNumber( aStmt->mParentDbc, & sFnContextSMNUpdate ) != SQL_SUCCESS );
+
+        if ( sNodeResult != SQL_SUCCESS )
+        {
+            ulnError( & sFnContext, ulERR_ABORT_SHARD_META_CHANGED );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sNodeResult;
+
+    ACI_EXCEPTION_END;
+
+    return SQL_ERROR;
 }
 
 /*

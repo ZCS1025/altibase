@@ -32,6 +32,7 @@
 #include <qmgShardDML.h>
 #include <qmo.h>
 #include <qmoOneNonPlan.h>
+#include <qcg.h>
 
 IDE_RC
 qmgShardInsert::init( qcStatement      * aStatement,
@@ -138,6 +139,13 @@ qmgShardInsert::init( qcStatement      * aStatement,
         sInsertTableRef->position.size -
         sMyGraph->insertPos.offset;
 
+    /* BUG-45865 */
+    if ( sInsertTableRef->position.stmtText[sInsertTableRef->position.offset +
+                                            sInsertTableRef->position.size] == '\"' )
+    {
+        sMyGraph->insertPos.size += 1;
+    }
+
     // out 설정
     *aGraph = (qmgGraph *)sMyGraph;
 
@@ -164,11 +172,12 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     qmgShardINST    * sMyGraph;
     qcmTableInfo    * sTableInfo;
-    sdiObjectInfo   * sShardObjInfo;
+    sdiObjectInfo   * sShardObjInfo = NULL;
     sdiAnalyzeInfo  * sAnalyzeInfo;
     UInt              sParamCount = 1;
     UInt              sLen;
     UInt              i;
+    ULong             sSessionSMN = ID_LONG(0);
 
     IDU_FIT_POINT_FATAL( "qmgShardInsert::optimize::__FT__" );
 
@@ -185,7 +194,16 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     sMyGraph = (qmgShardINST*) aGraph;
     sTableInfo = sMyGraph->tableRef->tableInfo;
-    sShardObjInfo = sMyGraph->tableRef->mShardObjInfo;
+
+    /* PROJ-2701 Sharding online data rebuild */
+    sSessionSMN = QCG_GET_SESSION_SHARD_META_NUMBER( aStatement );
+
+    sdi::getShardObjInfoForSMN( sSessionSMN,
+                                sMyGraph->tableRef->mShardObjInfo,
+                                &sShardObjInfo );
+
+    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NO_SHARD_OBJECT );
+
     sAnalyzeInfo = &(sMyGraph->shardAnalysis);
 
     //---------------------------------------------------
@@ -283,6 +301,12 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
                                   "qmgShardInsert::optimize",
                                   "query buffer overflow" ) );
+    }
+    IDE_EXCEPTION( ERR_NO_SHARD_OBJECT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardInsert::optimize",
+                                  "no shard object information" ) );
     }
     IDE_EXCEPTION_END;
 

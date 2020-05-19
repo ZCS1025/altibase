@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduLatch.h 71683 2015-07-09 02:55:50Z djin $
+ * $Id: iduLatch.h 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_IDU_LATCH_H_
@@ -35,6 +35,7 @@ public:
     IDE_RC lockRead     (idvSQL* aStatSQL, void* aWeArgs );
     IDE_RC lockWrite    (idvSQL* aStatSQL, void* aWeArgs );
     IDE_RC unlock       (void);
+    IDE_RC unlockWriteAll    (void);
 
     inline IDE_RC unlock(UInt,void*) {return unlock();}
 
@@ -63,6 +64,7 @@ public:
 
     inline const iduLatchObj* getLatchCore(void) {return mLatch;}
 
+    static void unlockWriteAllMyThread();
 private:
     iduLatchObj*        mLatch;
 
@@ -99,6 +101,10 @@ inline IDE_RC iduLatch::lockWrite(idvSQL* aStatSQL, void* aWeArgs )
 inline IDE_RC iduLatch::unlock(void)
 {
     return mLatch->unlock();
+}
+inline IDE_RC iduLatch::unlockWriteAll(void)
+{
+    return mLatch->unlockWriteAll();
 }
 
 // WARNING : Only for Debug or Verify

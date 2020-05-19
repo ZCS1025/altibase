@@ -75,7 +75,6 @@ MMM_SRCS = $(MM_DIR)/mmm/mmm.cpp                       \
            $(MM_DIR)/mmm/mmmActInitDK.cpp              \
            $(MM_DIR)/mmm/mmmActInitAudit.cpp           \
            $(MM_DIR)/mmm/mmmActInitJobManager.cpp      \
-           $(MM_DIR)/mmm/mmmActInitIPCDAProcMonitor.cpp\
            $(MM_DIR)/mmm/mmmActInitSnapshotExport.cpp  \
            $(MM_DIR)/mmm/mmmActInitRBHash.cpp		   \
            $(MM_DIR)/mmm/mmmActLoadMsb.cpp             \
@@ -104,7 +103,10 @@ MMM_SRCS = $(MM_DIR)/mmm/mmm.cpp                       \
            $(MM_DIR)/mmm/mmmActThread.cpp              \
            $(MM_DIR)/mmm/mmmActTimer.cpp               \
            $(MM_DIR)/mmm/mmmActVersionInfo.cpp         \
-           $(MM_DIR)/mmm/mmmActWaitAdmin.cpp
+           $(MM_DIR)/mmm/mmmActWaitAdmin.cpp           \
+           $(MM_DIR)/mmm/mmmActInitSD.cpp    	       \
+           $(MM_DIR)/mmm/mmmActShutdownSD.cpp
+
 
 MMQ_SRCS = $(MM_DIR)/mmq/mmqManager.cpp                \
            $(MM_DIR)/mmq/mmqQueueInfo.cpp
@@ -130,7 +132,6 @@ MMT_SRCS = $(MM_DIR)/mmt/mmtAdminManager.cpp           \
            $(MM_DIR)/mmt/mmtInternalSql.cpp            \
            $(MM_DIR)/mmt/mmtLoadBalancer.cpp           \
            $(MM_DIR)/mmt/mmtAuditManager.cpp           \
-           $(MM_DIR)/mmt/mmtIPCDAProcMonitor.cpp       \
            $(MM_DIR)/mmt/mmtJobManager.cpp			   \
            $(MM_DIR)/mmt/mmtSnapshotExportManager.cpp
 

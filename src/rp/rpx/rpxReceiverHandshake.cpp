@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverHandshake.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxReceiverHandshake.cpp 85321 2019-04-25 04:58:40Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -34,6 +34,7 @@
 #define REPLICATION_MINOR_VERSION_HDB_V6       (1)
 
 IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
+                                   idBool             *aExitFlag,
                                    rpRecvStartStatus  *aStatus,
                                    rpdVersion         *aVersion )
 {
@@ -41,6 +42,7 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
     SChar          sBuffer[RP_ACK_MSG_LEN];
 
     IDE_TEST_RAISE( rpnComm::recvVersion( aProtocolContext,
+                                          aExitFlag,
                                           aVersion,
                                           RPU_REPLICATION_CONNECT_RECEIVE_TIMEOUT )
                     != IDE_SUCCESS, ERR_READ );
@@ -65,10 +67,12 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
 
     idlOS::memset(sBuffer, 0, RP_ACK_MSG_LEN);
     IDE_TEST_RAISE( rpnComm::sendHandshakeAck( aProtocolContext,
+                                               aExitFlag,
                                                RP_MSG_OK,
                                                RP_FAILBACK_NONE,
                                                SM_SN_NULL,
-                                               sBuffer )
+                                               sBuffer,
+                                               RPU_REPLICATION_CONNECT_RECEIVE_TIMEOUT )
                     != IDE_SUCCESS, ERR_WRITE);
 
     *aStatus = RP_START_RECV_OK;
@@ -130,10 +134,12 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
                          sInformation );
 
         (void)rpnComm::sendHandshakeAck( aProtocolContext,
+                                         aExitFlag,
                                          RP_MSG_PROTOCOL_DIFF,
                                          RP_FAILBACK_NONE,
                                          SM_SN_NULL,
-                                         sBuffer );
+                                         sBuffer,
+                                         RPU_REPLICATION_CONNECT_RECEIVE_TIMEOUT );
 
         *aStatus = RP_START_RECV_INVALID_VERSION;
         IDE_SET( ideSetErrorCode( rpERR_IGNORE_RP_PROTOCOL_DIFF ) );
@@ -152,17 +158,23 @@ IDE_RC rpxReceiver::handshakeWithoutReconnect()
     rpRecvStartStatus sStatus;
     rpdMeta           sMeta;
     rpdVersion        sVersion = { 0 };
+    idBool            sDummyFlag;
 
     sMeta.initialize();
 
     IDE_TEST_RAISE( checkProtocol( mProtocolContext, 
+                                   &mExitFlag,
                                    &sStatus,
                                    &sVersion ) 
                     != IDE_SUCCESS, ERR_NETWORK );
 
-    IDE_TEST_RAISE( sMeta.recvMeta( mProtocolContext, sVersion ) 
+    IDE_TEST_RAISE( sMeta.recvMeta( mProtocolContext,
+                                    &mExitFlag,
+                                    sVersion,
+                                    RPU_REPLICATION_RECEIVE_TIMEOUT,
+                                    &sDummyFlag )
                     != IDE_SUCCESS, ERR_NETWORK );
-
+    
     IDE_TEST( processMetaAndSendHandshakeAck( &sMeta ) != IDE_SUCCESS );
 
     sMeta.finalize();

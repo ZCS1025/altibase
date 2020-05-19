@@ -222,6 +222,16 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardEndPendingTxResult),
                             ulsdCallbackShardEndPendingTxResult) != ACI_SUCCESS);
 
+    /* BUG-46785 Shard statement partial rollback */
+    ACI_TEST( cmiSetCallback( CMI_PROTOCOL( DB, SetSavepointResult ),
+                              ulnCallbackSetSavepointResult ) != ACI_SUCCESS );
+
+    ACI_TEST( cmiSetCallback( CMI_PROTOCOL( DB, RollbackToSavepointResult ),
+                              ulnCallbackRollbackToSavepointResult ) != ACI_SUCCESS );
+
+    ACI_TEST( cmiSetCallback( CMI_PROTOCOL( DB, ShardStmtPartialRollbackResult ),
+                              ulsdnStmtShardStmtPartialRollbackResult ) != ACI_SUCCESS );
+
     return ACI_SUCCESS;
 
     ACI_EXCEPTION_END;

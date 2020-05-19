@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddTableSpace.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddTableSpace.cpp 84383 2018-11-20 04:18:42Z emlee $
  *
  * Description :
  *
@@ -351,8 +351,7 @@ IDE_RC sddTableSpace::createDataFiles(
                                                               &sCreateLSN )
                           != IDE_SUCCESS );
 
-                sFileNode->mState = SMI_FILE_CREATING |
-                    SMI_FILE_ONLINE;
+                sFileNode->mState = SMI_FILE_CREATING | SMI_FILE_ONLINE;
 
                 // !!CHECK RECOVERY POINT
 
@@ -1853,15 +1852,13 @@ IDE_RC sddTableSpace::doActOnlineBackup( idvSQL*             aStatistics,
     sSpaceNode     = (sddTableSpaceNode*)aSpaceNode;
     sActBackupArgs = (sctActBackupArgs*)aActionArg;
 
-    if ( (sctTableSpaceMgr::isDiskTableSpace( sSpaceNode->mHeader.mID )
-          == ID_TRUE) &&
-         (sctTableSpaceMgr::isTempTableSpace( sSpaceNode->mHeader.mID )
-          != ID_TRUE) )
+    if ( (sctTableSpaceMgr::isDiskTableSpace( sSpaceNode->mHeader.mID ) == ID_TRUE) &&
+         (sctTableSpaceMgr::isTempTableSpace( sSpaceNode->mHeader.mID ) != ID_TRUE) )
     {
     recheck_status:
 
         // 생성중이거나 삭제중이면 해당 연산이 완료하기까지 대기한다.
-        if( SMI_TBS_IS_BACKUP(sSpaceNode->mHeader.mState) )
+        if ( SMI_TBS_IS_BACKUP(sSpaceNode->mHeader.mState) )
         {
             // BUGBUG - BACKUP 수행중에 테이블스페이스 관련 생성/삭제
             // 연산이 수행되면 BACKUP 버전이 유효하지 않게 된다.
@@ -1881,15 +1878,15 @@ IDE_RC sddTableSpace::doActOnlineBackup( idvSQL*             aStatistics,
             // ONLINE 또는 DROPPED, DISCARDED 상태인 테이블스페이스
         }
 
-        if ( ((sSpaceNode->mHeader.mState & SMI_TBS_DROPPED)  != SMI_TBS_DROPPED) &&
-            ((sSpaceNode->mHeader.mState & SMI_TBS_DISCARDED) != SMI_TBS_DISCARDED) )
+        if ( ( (sSpaceNode->mHeader.mState & SMI_TBS_DROPPED)   != SMI_TBS_DROPPED ) &&
+             ( (sSpaceNode->mHeader.mState & SMI_TBS_DISCARDED) != SMI_TBS_DISCARDED ) )
         {
             IDE_DASSERT( SMI_TBS_IS_ONLINE(sSpaceNode->mHeader.mState) );
 
             sLockedMgr = ID_FALSE;
             IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-            if( sActBackupArgs->mIsIncrementalBackup == ID_TRUE )
+            if ( sActBackupArgs->mIsIncrementalBackup == ID_TRUE )
             {
                 IDE_TEST( smLayerCallback::incrementalBackupDiskTBS(
                                             aStatistics,
@@ -1962,8 +1959,7 @@ IDE_RC sddTableSpace::doActSyncTBSInNormal( idvSQL            * aStatistics,
 
     while( 1 )
     {
-        if( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
-             != ID_TRUE)
+        if( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) != ID_TRUE )
         {
             // Disk Table이 아닌경우 무시한다.
             break;

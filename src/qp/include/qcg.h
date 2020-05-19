@@ -95,11 +95,29 @@
 #define QCG_GET_SESSION_SHARD_PIN( _QcStmt_ ) \
     qcg::getSessionShardPIN( _QcStmt_ )
 
+#define QCG_GET_SESSION_SHARD_META_NUMBER( _QcStmt_ ) \
+    qcg::getSessionShardMetaNumber( _QcStmt_ )
+
+// PROJ-2701 Sharding online data rebuild
+#define QCG_GET_SESSION_IS_SHARD_DATA_SESSION( _QcStmt_ ) \
+    qcg::getSessionIsShardDataSession( _QcStmt_ )
+
 #define QCG_GET_SESSION_SHARD_NODE_NAME( _QcStmt_ ) \
     qcg::getSessionShardNodeName( _QcStmt_ )
 
+/* BUG-45899 */
+#define QCG_GET_SESSION_TRCLOG_DETAIL_SHARD( _QcStmt_ ) \
+    qcg::getSessionTrclogDetailShard( _QcStmt_ )
+
 #define QCG_GET_SESSION_EXPLAIN_PLAN( _QcStmt_ ) \
-    qcg::getSessionGetExplainPlan( _QcStmt_ )
+    qcg::getSessionExplainPlan( _QcStmt_ )
+
+#define QCG_GET_SESSION_DBLINK_GTX_LEVEL( _QcStmt_ ) \
+    qcg::getSessionDBLinkGTXLevel( _QcStmt_ )
+
+/* PROJ-2677 DDL synchronization */
+#define QCG_GET_SESSION_REPLICATION_DDL_SYNC( _QcStmt_ ) \
+    qcg::getReplicationDDLSync( _QcStmt_ )
 
 // PROJ-1579 NCHAR
 #define QCG_GET_SESSION_NCHAR_LITERAL_REPLACE( _QcStmt_ ) \
@@ -174,6 +192,9 @@
 /* PROJ-2441 flashback */
 #define QCG_GET_SESSION_RECYCLEBIN_ENABLE( _QcStmt_ ) \
     qcg::getSessionRecyclebinEnable( _QcStmt_ )
+
+#define QCG_GET_SESSION_PRINT_OUT_ENABLE( _QcStmt_ ) \
+    qcg::getSessionPrintOutEnable( _QcStmt_ )
 
 /* BUG-42853 LOCK TABLE에 UNTIL NEXT DDL 기능 추가 */
 #define QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( _QcStmt_ )                                   \
@@ -253,6 +274,14 @@
 /* BUG-42639 Monitoring query */
 #define QCG_GET_SESSION_OPTIMIZER_PERFORMANCE_VIEW( _QcStmt_ ) \
     qcg::getSessionOptimizerPerformanceView( _QcStmt_ )
+
+/* PROJ-2632 */
+#define QCG_GET_SERIAL_EXECUTE_MODE( _QcStmt_ ) \
+    qcg::getSerialExecuteMode( _QcStmt_ )
+
+#define QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( _QcStmt_ ) \
+    qcg::getSessionTrclogDetailInformation( _QcStmt_ )
+
 
 /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
 #define QCG_MEMPOOL_ELEMENT_CNT 16
@@ -359,6 +388,8 @@ public:
     // Validation 이후의 작업 처리
     static IDE_RC fixAfterValidation( qcStatement * aStatement );
 
+    static IDE_RC fixAfterValidationAB( qcStatement * aQcStmt );
+
     // Optimization 이후의 작업 처리
     static IDE_RC fixAfterOptimization( qcStatement * aStatement );
 
@@ -430,8 +461,18 @@ public:
     static UInt getSessionID( qcStatement * aStatement );
     static SChar* getSessionLoginIP( qcStatement * aStatemet );
     static ULong getSessionShardPIN( qcStatement  * aStatement );
+    static ULong getSessionShardMetaNumber( qcStatement * aStatement );
+    static idBool getSessionIsShardDataSession( qcStatement * aStatement );
     static SChar* getSessionShardNodeName( qcStatement * aStatement );
-    static UChar  getSessionGetExplainPlan( qcStatement * aStatement );
+
+    /* BUG-45899 */
+    static UInt getSessionTrclogDetailShard( qcStatement * aStatement );
+
+    static UChar  getSessionExplainPlan( qcStatement * aStatement );
+    static UInt   getSessionDBLinkGTXLevel( qcStatement * aStatement );
+
+    /* PROJ-2677 DDL synchronization */
+    static UInt   getReplicationDDLSync( qcStatement * aStatement);
 
     // BUG-23780 TEMP_TBS_MEMORY 힌트 적용여부를 property로 제공
     static UInt getSessionOptimizerDefaultTempTbsType( qcStatement * aStatement );
@@ -465,6 +506,8 @@ public:
     /* PROJ-2441 flashback */
     static UInt   getSessionRecyclebinEnable( qcStatement * aStatement );
 
+    static UInt   getSessionPrintOutEnable( qcStatement * aStatement );
+    
     // BUG-41398 use old sort
     static UInt   getSessionUseOldSort( qcStatement * aStatement );
 
@@ -502,12 +545,10 @@ public:
     // BUG-17224
     static idBool isInitializedMetaCaches();
 
-    // PROJ-2638
-    static idBool isShardCoordinator( qcStatement * aStatement );
-
-    // PROJ-2660
-    static UInt getShardLinkerChangeNumber( qcStatement * aStatement );
-
+    /* PROJ-2632 */
+    static UInt getSerialExecuteMode( qcStatement * aStatement );
+    static UInt getSessionTrclogDetailInformation( qcStatement * aStatement );
+   
     //-------------------------------------------------
     // 질의 수행 완료 후의 처리
     //-------------------------------------------------
@@ -556,6 +597,12 @@ public:
     // Query Processor 내부적으로 사용하기 위한 함수
     //-------------------------------------------------
 
+    /* PROJ-2677 DDL syncrhonization */
+    static IDE_RC  runDDLforDDLSync( idvSQL       * aStatistics,
+                                     smiStatement * aSmiStmt,
+                                     UInt           aUserID,
+                                     SChar        * aSqlStr );
+
     // DDL 수행 시에 Meta에 대해 발생하는 DML의 처리
     static IDE_RC runDMLforDDL(smiStatement * aSmiStmt,
                                SChar        * aSqlStr,
@@ -564,6 +611,11 @@ public:
     static IDE_RC runDMLforInternal( smiStatement  * aSmiStmt,
                                      SChar         * aSqlStr,
                                      vSLong        * aRowCnt );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    static IDE_RC runSQLforShardMeta( smiStatement * aSmiStmt,
+                                      SChar        * aSqlStr,
+                                      vSLong       * aRowCnt );
 
     /* PROJ-2207 Password policy support */
     static IDE_RC runSelectOneRowforDDL(smiStatement * aSmiStmt,

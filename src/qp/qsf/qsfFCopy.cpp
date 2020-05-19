@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfFCopy.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsfFCopy.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     PROJ-1371 PSM File Handling
@@ -78,6 +78,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_FCopy,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

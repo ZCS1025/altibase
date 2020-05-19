@@ -117,6 +117,13 @@ public:
         UInt          aTableID,
         UInt        * aPartitionCount );
 
+    //get the partition count from smiStatement(BUG-46120)
+    //currently, this function is only used in rp.
+    static IDE_RC getPartitionCount4SmiStmt(
+        smiStatement * aSmiStmt,
+        UInt           aTableID,
+        UInt         * aPartitionCount );
+
     static IDE_RC checkIndexPartitionByUser(
         qcStatement    *aStatement,
         qcNamePosition  aUserName,

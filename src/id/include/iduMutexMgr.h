@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutexMgr.h 81183 2017-09-25 08:31:43Z yoonhee.kim $
+ * $Id: iduMutexMgr.h 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 #ifndef _O_IDU_MUTEX_MGR_H_
 #define _O_IDU_MUTEX_MGR_H_ 1
@@ -87,6 +87,8 @@ public:
                    return mMutexOpArrayClient[aKind];
                }
            }
+
+    static void unlockAllMyThread();
 };
 
 #endif	// _O_MUTEX_MGR_H_

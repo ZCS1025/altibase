@@ -22,7 +22,7 @@
 #include <smmManager.h>
 #include <svmManager.h>
 
-
+#if 0 //not used
 #define SGM_GET_NEXT_SCN_AND_TID( aSpaceID, aHeaderNext, aTID,                \
                                   aNextSCN, aNextTID,    aTmpSlotHeader ) {   \
     if( sctTableSpaceMgr::isMemTableSpace(aSpaceID) == ID_TRUE )              \
@@ -38,6 +38,7 @@
                                   aNextSCN, aNextTID,    aTmpSlotHeader );    \
     }                                                                         \
 }
+#endif
 
 class sgmManager
 {

@@ -16,6 +16,7 @@
 
 #include <ulpLibStmtCur.h>
 #include <ulpLibError.h>
+#include <ulpLibInterCoreFuncB.h>
 
 ulpLibStmtNode* ulpLibStNewNode(ulpSqlstmt* aSqlstmt, acp_char_t *aStmtName )
 {
@@ -58,6 +59,10 @@ ulpLibStmtNode* ulpLibStNewNode(ulpSqlstmt* aSqlstmt, acp_char_t *aStmtName )
 
     sStmtNode->mStmtState = S_INITIAL;
     sStmtNode->mCurState  = C_INITIAL;
+
+    /* BUG-45779 */
+    sStmtNode->mUlpPSMArrInfo.mIsPSMArray = ACP_FALSE;
+    acpListInit( &(sStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList) );
 
     return sStmtNode;
 
@@ -332,6 +337,9 @@ void ulpLibStDelAllStmtCur( ulpLibStmtHASHTAB *aStmtTab,
             {
                 if ( sStmtNode->mStmtName[0] == '\0' )
                 {
+                    /* BUG-45779 */
+                    (void)ulpPSMArrayMetaFree(&sStmtNode->mUlpPSMArrInfo);
+
                     /* BUG-30789: Memory usage per prepared statement is too BIG. (>300k) */
                     acpMemFree( sStmtNode->mQueryStr );
                     acpMemFree( sStmtNode->mInHostVarPtr );
@@ -365,6 +373,9 @@ void ulpLibStDelAllStmtCur( ulpLibStmtHASHTAB *aStmtTab,
             sStmtNode = aStmtTab->mTable[ i ].mList;
             while ( sStmtNode != NULL )
             {
+                /* BUG-45779 */
+                (void)ulpPSMArrayMetaFree(&sStmtNode->mUlpPSMArrInfo);
+
                 /* BUG-30789: Memory usage per prepared statement is too BIG. (>300k) */
                 acpMemFree( sStmtNode->mQueryStr );
                 acpMemFree( sStmtNode->mInHostVarPtr );
@@ -649,12 +660,17 @@ ACI_RC ulpLibStDeleteCur( ulpLibStmtHASHTAB *aCurHashT, acp_char_t *aCurName )
         {
             sStmtNodeP->mNextCur = sStmtNode->mNextCur;
         }
+
+        /* BUG-45779 */
+        (void)ulpPSMArrayMetaFree(&sStmtNode->mUlpPSMArrInfo);
+
         /* BUG-30789: Memory usage per prepared statement is too BIG. (>300k) */
         acpMemFree( sStmtNode->mQueryStr );
         acpMemFree( sStmtNode->mInHostVarPtr );
         acpMemFree( sStmtNode->mOutHostVarPtr );
         acpMemFree( sStmtNode->mExtraHostVarPtr );
         acpMemFree( sStmtNode );
+
     }
     else
     {   /* unlink */
@@ -950,6 +966,10 @@ void ulpLibStDelAllUnnamedStmt( ulpLibStmtLIST *aStmtList )
     while( sStmtNode != NULL )
     {
         sStmtNodeN = sStmtNode->mNextStmt;
+
+        /* BUG-45779 */
+        (void)ulpPSMArrayMetaFree(&sStmtNode->mUlpPSMArrInfo);
+
         /* BUG-30789: Memory usage per prepared statement is too BIG. (>300k) */
         acpMemFree( sStmtNode->mQueryStr );
         acpMemFree( sStmtNode->mInHostVarPtr );

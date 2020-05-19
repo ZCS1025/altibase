@@ -25,5 +25,5 @@ public abstract class CmResult
         return mError;
     }
     
-    abstract byte getResultOp();
+    protected abstract byte getResultOp();
 }

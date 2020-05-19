@@ -109,6 +109,7 @@ public class AltibaseCallableStatement extends AltibasePreparedStatement impleme
         return getArray(getColumnIndex(aParamName));
     }
 
+    @SuppressWarnings("deprecation")
     public BigDecimal getBigDecimal(int aIndex, int aScale) throws SQLException
     {
         BigDecimal sResult = getBigDecimal(aIndex);

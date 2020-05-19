@@ -685,7 +685,7 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
     smpPageListEntry* sFixed;
     vULong            sSize;
 #ifdef DEBUG
-    smTID             sTrans;
+    smTID             sTransID;
 #endif
     idBool            sLocked = ID_FALSE;
     SChar*            sRowPtr;
@@ -696,6 +696,9 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
     smpSlotHeader*    sRow;
     scGRID            sRowGRID;
     idBool            sResult;
+    smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
     sFixed                     = (smpPageListEntry*)&(aIterator->table->mFixed.mVRDB);
     aIterator->curRecPtr       = NULL;
@@ -707,7 +710,7 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
     aIterator->highest         = ID_TRUE;
     sSize                      = sFixed->mSlotSize;
 #ifdef DEBUG
-    sTrans                     = aIterator->tid;
+    sTransID                   = aIterator->tid;
 #endif
     if ( aIterator->mProperties->mParallelReadProperties.mThreadCnt == 1 )
     {
@@ -732,7 +735,7 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -761,12 +764,17 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
              sRowPtr   += sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(++sHighFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -796,6 +804,17 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)
@@ -848,7 +867,7 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
     smpPageListEntry* sFixed;
     vULong            sSize;
 #ifdef DEBUG
-    smTID             sTrans;
+    smTID             sTransID;
 #endif
     idBool            sLocked = ID_FALSE;
     SChar*            sRowPtr;
@@ -858,6 +877,9 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
     smpSlotHeader*    sRow;
     scGRID            sRowGRID;
     idBool            sResult;
+    smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
     sFixed                     = (smpPageListEntry*)&(aIterator->table->mFixed.mVRDB);
     aIterator->curRecPtr       = NULL;
@@ -870,7 +892,7 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
     aIterator->highest         = ID_TRUE;
     sSize                      = sFixed->mSlotSize;
 #ifdef DEBUG
-    sTrans                     = aIterator->tid;
+    sTransID                   = aIterator->tid;
 #endif
     IDE_TEST( svnnMovePrev( aIterator ) != IDE_SUCCESS );
 
@@ -886,7 +908,7 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -913,12 +935,17 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
              sRowPtr   -= sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(--sLowFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -947,6 +974,17 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)
@@ -1981,8 +2019,11 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
     scGRID            sRowGRID;
     idBool            sResult;
 #ifdef DEBUG
-    smTID             sTrans = aIterator->tid;
+    smTID             sTransID = aIterator->tid;
 #endif
+    smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
     restart:
 
@@ -2037,7 +2078,7 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -2064,12 +2105,17 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
              sRowPtr   += sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(++sHighFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -2098,6 +2144,17 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)
@@ -2162,8 +2219,11 @@ static IDE_RC svnnFetchPrev( svnnIterator* aIterator,
     scGRID            sRowGRID;
     idBool            sResult;
 #ifdef DEBUG
-    smTID             sTrans = aIterator->tid;
+    smTID             sTransID = aIterator->tid;
 #endif
+    smxTrans*         sTrans = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
 restart:
 
@@ -2212,7 +2272,7 @@ restart:
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -2239,12 +2299,17 @@ restart:
              sRowPtr  -= sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(--sLowFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -2273,6 +2338,17 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)
@@ -2338,8 +2414,11 @@ static IDE_RC svnnFetchNextU( svnnIterator* aIterator,
     scGRID            sRowGRID;
     idBool            sResult;
 #ifdef DEBUG
-    smTID             sTrans = aIterator->tid;
+    smTID             sTransID = aIterator->tid;
 #endif
+    smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
 restart:
 
@@ -2391,7 +2470,7 @@ restart:
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -2418,12 +2497,17 @@ restart:
              sRowPtr   += sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(++sHighFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -2452,6 +2536,17 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)
@@ -2518,8 +2613,11 @@ static IDE_RC svnnFetchPrevU( svnnIterator* aIterator,
     scGRID            sRowGRID;
     idBool            sResult;
 #ifdef DEBUG
-    smTID             sTrans = aIterator->tid;
+    smTID             sTransID = aIterator->tid;
 #endif
+    smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
 restart:
 
@@ -2572,7 +2670,7 @@ restart:
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -2598,12 +2696,17 @@ restart:
              sRowPtr  -= sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(--sLowFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -2632,6 +2735,17 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, &sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)
@@ -2697,8 +2811,11 @@ static IDE_RC svnnFetchNextR( svnnIterator* aIterator)
     scGRID            sRowGRID;
     idBool            sResult;
 #ifdef DEBUG
-    smTID             sTrans = aIterator->tid;
+    smTID             sTransID = aIterator->tid;
 #endif
+    smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
+    idBool            sCanReusableRollback = ID_TRUE;
+    idBool            sReusableCheckAgain  = ID_FALSE;
 
     sFixed = (smpPageListEntry*)&(aIterator->table->mFixed.mVRDB);
     sSize  = sFixed->mSlotSize;
@@ -2742,7 +2859,7 @@ restart:
             {
                 ideLog::log(IDE_SM_0,
                             SM_TRC_MINDEX_INDEX_INFO,
-                            sTrans,
+                            sTransID,
                             __FILE__,
                             __LINE__,
                             aIterator->page,
@@ -2769,13 +2886,18 @@ restart:
              sRowPtr   += sSize )
         {
             sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
                 == ID_TRUE )
             {
                 *(++sHighFence) = sRowPtr;
                 aIterator->mScanBackPID = aIterator->page;
                 // BUG-30538 ScanBackModifySeq 를 잘못 기록하고 있습니다.
                 aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+                if( sCanReusableRollback == ID_FALSE ) 
+                {
+                    sReusableCheckAgain = ID_TRUE;
+                }
             }
         }
 
@@ -2804,6 +2926,17 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
+                /* SCN 조건을 통과한 slot중 하나라도 cursor reusable 체크가 필요할 경우
+                 * filter 조건을 통과한 slot을 대상으로 다시 확인해야 한다. */
+                if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
+                {
+                    if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
+                        == ID_FALSE )
+                    {
+                        sTrans->mIsReusableRollback = ID_FALSE;  
+                    }
+                }
+
                 if(aIterator->mProperties->mFirstReadRecordPos == 0)
                 {
                     if(aIterator->mProperties->mReadRecordCount != 1)

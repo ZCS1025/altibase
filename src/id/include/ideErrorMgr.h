@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: ideErrorMgr.h 81730 2017-11-24 02:21:51Z reznoa $
+ * $Id: ideErrorMgr.h 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 /***********************************************************************
@@ -69,6 +69,7 @@
 #define E_MODULE_MM      0x40000000
 #define E_MODULE_RP      0x60000000
 #define E_MODULE_CM      0x70000000
+#define E_MODULE_SD      0xE0000000
 
 // PROJ-1335 user-defined error
 #define E_MODULE_USER    0xF0000000   // user-defined error
@@ -153,8 +154,9 @@ typedef struct ideArgInfo
 // NOTICE!!
 // Becuase stored procedure stored error message to a varchar variable,
 // MAX_ERROR_MSGLEN should not be larger than varchar size (4096)
-#define MAX_ERROR_MSG_LEN    2048
-#define MAX_FORMAT_ITEM_LEN   128
+#define MAX_ERROR_MSG_LEN       ( 2048 )
+#define MAX_LAST_ERROR_MSG_LEN  ( MAX_ERROR_MSG_LEN + 256 )
+#define MAX_FORMAT_ITEM_LEN     ( 128 )
 
 /*
  * Project 2514
@@ -164,7 +166,7 @@ struct ideErrorMgrStack
 {
     UInt   LastError;
     SInt   LastSystemErrno;
-    SChar  LastErrorMsg[MAX_ERROR_MSG_LEN+256];
+    SChar  LastErrorMsg[MAX_LAST_ERROR_MSG_LEN];
     SChar  LastErrorFile[MAX_ERROR_FILE_LEN];
     UInt   LastErrorLine;
     idBool HasErrorPosition; // BUG-38883
@@ -255,12 +257,16 @@ SChar *ideGetErrorFile();
 SInt   ideGetSystemErrno();
 SInt   ideFindErrorCode(UInt ErrorCode);
 SInt   ideFindErrorAction(UInt ErrorAction);
+IDE_RC ideFindErrorAction( UInt aErrorCode, UInt Action );
 
 SInt   ideIsAbort();
 SInt   ideIsFatal();
 SInt   ideIsIgnore();
 SInt   ideIsRetry();
 SInt   ideIsRebuild();
+
+IDE_RC ideIsRetry( UInt aErrorCode );
+IDE_RC ideIsRebuild( UInt aErrorCode );
 
 // 에러 코드 설정
 ideErrorMgr* ideSetErrorCode(UInt ErrorCode, ...);
@@ -423,14 +429,14 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
         ideErrorMgr *sErrorMgr = ideGetErrorMgr();                      \
         IDE_FT_TRACE_MACRO(sErrorMgr->mFaultMgr.mCallStackNext,         \
                            "IDE_FT_ROOT_BEGIN()");                      \
-        ideClearFTCallStack();                                          \
+        ideClearFTCallStack(1);                                         \
     } while (0)
 
 #else /* DEBUG */
 
 #define IDE_FT_ROOT_BEGIN()                                             \
     do {                                                                \
-        ideClearFTCallStack();                                          \
+        ideClearFTCallStack(1);                                          \
     } while (0)
 
 #endif /* DEBUG */
@@ -447,16 +453,30 @@ UInt   ideGetErrorArgCount(UInt ErrorCode);
         ideErrorMgr *sErrorMgr = ideGetErrorMgr();                      \
         IDE_FT_TRACE_MACRO(sErrorMgr->mFaultMgr.mCallStackNext,         \
                            "IDE_FT_ROOT_END()");                        \
-        IDE_DASSERT(sErrorMgr->mFaultMgr.mCallStackNext == 0);          \
-        IDE_DASSERT(sErrorMgr->mFaultMgr.mIsExceptionDisable == ID_FALSE); \
-        IDE_DASSERT(sErrorMgr->mFaultMgr.mIsTransientDisable == ID_FALSE); \
-        IDE_DASSERT(sErrorMgr->mFaultMgr.mDisabledEntryFuncName == NULL); \
-        IDE_DASSERT(sErrorMgr->mFaultMgr.mDisabledCallCount == 0);      \
-    } while (0)
+        if (( sErrorMgr->mFaultMgr.mRootBeginDepth == 0 )   ||          \
+            ( sErrorMgr->mFaultMgr.mRootBeginDepth == 1 ))              \
+        {                                                               \
+            IDE_DASSERT(sErrorMgr->mFaultMgr.mCallStackNext == 0);      \
+            IDE_DASSERT(sErrorMgr->mFaultMgr.mIsExceptionDisable == ID_FALSE); \
+            IDE_DASSERT(sErrorMgr->mFaultMgr.mIsTransientDisable == ID_FALSE); \
+            IDE_DASSERT(sErrorMgr->mFaultMgr.mDisabledEntryFuncName == NULL); \
+            IDE_DASSERT(sErrorMgr->mFaultMgr.mDisabledCallCount == 0);  \
+            sErrorMgr->mFaultMgr.mRootBeginDepth = 0;                   \
+        }                                                               \
+        else                                                            \
+        {                                                               \
+            sErrorMgr->mFaultMgr.mRootBeginDepth--;                     \
+            IDE_DASSERT(sErrorMgr->mFaultMgr.mRootBeginDepth >= 0);     \
+        }                                                               \
+    } while (0)                                                         \
 
 #else /* DEBUG */
 
-#define IDE_FT_ROOT_END() do { } while (0)
+#define IDE_FT_ROOT_END()                               \
+    do {                                                \
+        ideErrorMgr *sErrorMgr = ideGetErrorMgr();      \
+        sErrorMgr->mFaultMgr.mRootBeginDepth--;         \
+    } while (0)
 
 #endif /* DEBUG */
 

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsvProcType.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvProcType.cpp 83113 2018-05-29 02:04:30Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -1718,6 +1718,42 @@ IDE_RC qsvProcType::searchPkgLocalTypes( qcStatement     * aStatement,
         // Nothing to do.
     }
     
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// BUG-46032
+IDE_RC qsvProcType::makeArrayTypeColumnByModule( iduVarMemList   * aMemory,
+                                                 qtcModule       * aRowModule,
+                                                 qsTypes        ** aType )
+{
+    qsTypes * sType = NULL;
+
+    IDE_TEST( STRUCT_ALLOC( aMemory, qsTypes, &sType )
+              != IDE_SUCCESS);
+
+    sType->common.itemType = QS_TYPE;
+    sType->common.table    = ID_USHORT_MAX;
+    sType->common.column   = ID_USHORT_MAX;
+    sType->common.objectID = QS_EMPTY_OID;
+    sType->common.next     = NULL;
+    SET_EMPTY_POSITION( sType->common.name );
+
+    sType->columns      = aRowModule->typeInfo->columns;
+    sType->fields       = NULL;
+    sType->columnCount  = 2;
+    sType->variableType = QS_ASSOCIATIVE_ARRAY_TYPE;
+    sType->typeSize     = 0;
+    sType->flag         = 0;
+    sType->tableInfo    = NULL;
+    sType->typeModule   = aRowModule;
+    sType->name[0]      = '\0';
+
+    *aType = sType;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: qtc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qtc.h 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     QP layer와 MT layer의 중간에 위치하는 layer로
@@ -846,6 +846,10 @@ public:
     static void checkLobAndEncryptColumn( mtcTemplate * aTemplate,
                                           mtcNode     * aNode );
 
+    // BUG-45745
+    static idBool isSameType( mtcColumn * aColumn1,
+                              mtcColumn * aColumn2 );
+    
     /*************************************************************
      * Optimization 단계에서의 처리
      *************************************************************/
@@ -1075,6 +1079,78 @@ public:
 
     static IDE_RC changeKeepNode( qcStatement  * aStatement,
                                   qtcNode     ** aNode );
+
+    /* PROJ-2632 */
+    static IDE_RC estimateSerializeFilter( qcStatement          * aStatement,
+                                           mtcNode              * aNode,
+                                           UInt                 * aCount );
+
+    static IDE_RC allocateSerializeFilter( qcStatement          * aStatement,
+                                           UInt                   aCount,
+                                           mtxSerialFilterInfo ** aInfo );
+
+    static IDE_RC recursiveSerializeFilter( qcStatement          * aStatement,
+                                            mtcNode              * aNode,
+                                            mtxSerialFilterInfo  * aFense,
+                                            mtxSerialFilterInfo ** aInfo );
+
+    static IDE_RC recursiveConversionSerializeFilter( qcStatement          * aStatement,
+                                                      mtcNode              * aNode,
+                                                      mtxSerialFilterInfo  * aFense,
+                                                      mtxSerialFilterInfo ** aInfo );
+
+    static IDE_RC checkSerializeFilterType( qcTemplate           * aTemplate,
+                                            mtcNode              * aNode,
+                                            mtcNode             ** aArgument,
+                                            mtxSerialExecuteFunc * aExecute,
+                                            UChar                * aEntryType );
+
+    static IDE_RC checkNodeModuleForNormal( qcTemplate           * aTemplate,
+                                            mtcNode              * aNode,
+                                            mtcNode             ** aArgument,
+                                            mtxSerialExecuteFunc * aExecute,
+                                            UChar                * aEntryType );
+
+    static IDE_RC checkNodeModuleForEtc( qcTemplate           * aTemplate,
+                                         mtcNode              * aNode,
+                                         mtcNode             ** aArgument,
+                                         mtxSerialExecuteFunc * aExecute,
+                                         UChar                * aEntryType );
+
+    static IDE_RC checkConversionSerializeFilterType( qcTemplate           * aTemplate,
+                                                      mtcNode              * aNode,
+                                                      mtcNode              * aArgument,
+                                                      mtxSerialExecuteFunc * aExecute,
+                                                      UChar                * aEntryType );
+
+    static IDE_RC adjustSerializeFilter( UChar                  aType,
+                                         mtxSerialFilterInfo  * aPrev,
+                                         mtxSerialFilterInfo ** aInfo );
+
+    static IDE_RC setConversionSerializeFilter( UChar                  aType,
+                                                mtcNode              * aNode,
+                                                mtxSerialExecuteFunc   aExecute,
+                                                mtxSerialFilterInfo  * aFense,
+                                                mtxSerialFilterInfo ** aInfo );
+
+    static IDE_RC setParentSerializeFilter( UChar                  aType,
+                                            UChar                  aCount,
+                                            mtcNode              * aNode,
+                                            mtxSerialExecuteFunc   aExecute,
+                                            mtxSerialFilterInfo  * aLeft,
+                                            mtxSerialFilterInfo  * aRight,
+                                            mtxSerialFilterInfo  * aFense,
+                                            mtxSerialFilterInfo ** aInfo );
+
+    static IDE_RC setSerializeFilter( UChar                  aType,
+                                      UChar                  aCount,
+                                      mtcNode              * aNode,
+                                      mtxSerialExecuteFunc   aExecute,
+                                      mtxSerialFilterInfo  * aLeft,
+                                      mtxSerialFilterInfo  * aRight,
+                                      mtxSerialFilterInfo  * aFense,
+                                      mtxSerialFilterInfo ** aInfo );
+    
 };
 
 class qtcNodeI

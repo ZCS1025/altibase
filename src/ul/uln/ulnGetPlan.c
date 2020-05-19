@@ -27,7 +27,7 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     ulnDbc                  *sDbc;
     acp_uint8_t             *sPlan;
     acp_uint8_t             *sRow = NULL;
-    acp_uint32_t             sRowSize;
+    acp_uint32_t             sRowSize= 0;    /* BUG-46360 */
 
     acp_uint32_t             sStatementID;
     acp_uint32_t             sLen;
@@ -36,6 +36,9 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     ACP_UNUSED(aServiceSession);
 
     ULN_FNCONTEXT_GET_DBC(sFnContext, sDbc);
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     CMI_RD4(aPtContext, &sStatementID);
     CMI_RD4(aPtContext, &sLen);
@@ -88,6 +91,11 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
     {
         ulnError(sFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "CallbackPlanGetResult");
@@ -135,7 +143,8 @@ SQLRETURN ulnGetPlan(ulnStmt *aStmt, acp_char_t **aPlan)
 
     ULN_FNCONTEXT_GET_DBC(&sFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /* PROJ-1381, BUG-32902 Explain Plan OFF 일 때는 에러를 내는게 낫다.
      * Prepare가 되지 않았을 때도 굳이 서버에 갔다 올 필요 없다. */
@@ -194,6 +203,11 @@ SQLRETURN ulnGetPlan(ulnStmt *aStmt, acp_char_t **aPlan)
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(FuncSeqError);
     {
         ulnError(&sFnContext, ulERR_ABORT_FUNCTION_SEQUENCE_ERR);

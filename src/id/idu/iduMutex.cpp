@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutex.cpp 67807 2014-12-04 01:57:13Z djin $
+ * $Id: iduMutex.cpp 84269 2018-10-26 07:50:54Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -137,7 +137,12 @@ IDE_RC iduMutex::destroy()
 #define IDE_FN "SInt iduMutex::destroy()"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    IDE_TEST(iduMutexMgr::free(mEntry) != IDE_SUCCESS);
+    IDE_DASSERT(mEntry != NULL);
+    
+    if ( mEntry != NULL )
+    {
+        IDE_TEST(iduMutexMgr::free(mEntry) != IDE_SUCCESS);
+    }
 
     return IDE_SUCCESS;
 

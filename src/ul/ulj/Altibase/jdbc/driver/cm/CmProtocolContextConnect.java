@@ -30,16 +30,23 @@ import Altibase.jdbc.driver.util.AltibaseProperties;
 
 public class CmProtocolContextConnect extends CmProtocolContext
 {
-    private CmHandshakeResult mHandshakeResult;
-    private ArrayList mPropKeyList = new ArrayList();
-    private ArrayList mPropValueList = new ArrayList();
+    private CmHandshakeResult      mHandshakeResult;
+    private CmShardHandshakeResult mShardhandshakeResult;
+    private ArrayList              mPropKeyList   = new ArrayList();
+    private ArrayList              mPropValueList = new ArrayList();
 
     public CmProtocolContextConnect(CmChannel aChannel)
     {
         super(aChannel);
         mHandshakeResult = null;
+        mShardhandshakeResult = null;
     }
-    
+
+    public CmProtocolContextConnect()
+    {
+        // PROJ-2690 CmProtocolContextShardConnnect에서 상속하기 때문에 default 생성자 추가
+    }
+
     public CmHandshakeResult getHandshakeResult()
     {
         if (mHandshakeResult == null)
@@ -48,7 +55,16 @@ public class CmProtocolContextConnect extends CmProtocolContext
         }
         return mHandshakeResult;
     }
- 
+
+    public CmShardHandshakeResult getShardHandshakeResult()
+    {
+        if (mShardhandshakeResult == null)
+        {
+            mShardhandshakeResult = new CmShardHandshakeResult();
+        }
+        return mShardhandshakeResult;
+    }
+
     public CmConnectExResult getConnectExResult()
     {
         return (CmConnectExResult)getCmResult(CmConnectExResult.MY_OP);

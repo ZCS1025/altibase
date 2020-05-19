@@ -25,13 +25,115 @@
 #include <mtcc.h>
 
 #include <ulsd.h>
+#include <ulsdFailover.h>
+#include <ulsdCommunication.h>
 #include <ulsdnExecute.h>
+
+static acp_bool_t ulsdNeedShardStmtPartialRollback( acp_uint32_t aStmtKind )
+{
+    acp_bool_t  sNeedShardStmtPartialRollback = ACP_FALSE;
+
+    if ( ( aStmtKind == ULN_STMT_INSERT ) ||
+         ( aStmtKind == ULN_STMT_UPDATE ) ||
+         ( aStmtKind == ULN_STMT_DELETE ) ||
+         ( aStmtKind == ULN_STMT_SELECT_FOR_UPDATE ) )
+    {
+        sNeedShardStmtPartialRollback = ACP_TRUE;
+    }
+    else
+    {
+        sNeedShardStmtPartialRollback = ACP_FALSE;
+    }
+
+    return sNeedShardStmtPartialRollback;
+}
+
+static acp_rc_t ulsdShardStmtPartialRollback( ulnFnContext      * aFnContext,
+                                              ulsdDbc           * aShard,
+                                              ulsdFuncCallback  * aCallback )
+{
+    ulsdFuncCallback * sCallback = aCallback;
+    acp_rc_t           sRet = ACI_SUCCESS;
+
+    while ( sCallback != NULL )
+    {
+        switch( sCallback->mRet )
+        {
+            case SQL_SUCCESS:
+            case SQL_SUCCESS_WITH_INFO:
+            case SQL_NO_DATA:
+                if ( ulsdnStmtShardStmtPartialRollback( sCallback->mStmt->mParentDbc ) != SQL_SUCCESS )
+                {
+                    ulsdNativeErrorToUlnError( aFnContext,
+                                               SQL_HANDLE_DBC,
+                                               (ulnObject*)sCallback->mStmt->mParentDbc,
+                                               aShard->mNodeInfo[sCallback->mIndex],
+                                               (acp_char_t *)"ShardStmtPartialRollback" );
+
+                    sRet = ACI_FAILURE;
+                }
+                break;
+
+            default:
+                break;
+        }
+        
+        sCallback = sCallback->mNext;
+    }
+
+    return sRet;
+}
+
+static void ulsdProcessExecuteError( ulnFnContext       * aFnContext,
+                                     ulnStmt            * aStmt,
+                                     ulsdFuncCallback   * aCallback )
+{
+    
+    ulsdNodeReport      sReport;
+    ulsdDbc           * sShard = NULL;
+
+    if ( ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF ) &&
+         ( ulsdNeedShardStmtPartialRollback( ulnStmtGetStatementType( aStmt ) ) == ACP_TRUE ) )
+    {
+        ulsdGetShardFromDbc( aStmt->mParentDbc, &sShard );
+
+        if ( ulsdShardStmtPartialRollback( aFnContext,
+                                           sShard,
+                                           aCallback ) 
+             != ACI_SUCCESS )
+        {
+            if ( ulsdIsFailoverExecute( aFnContext ) == ACP_TRUE )
+            {
+                /* do nothing */
+            }
+            else
+            {
+                sReport.mType = ULSD_REPORT_TYPE_TRANSACTION_BROKEN;
+
+                if ( ulsdShardNodeReport( aFnContext, &sReport ) != ACI_SUCCESS )
+                {
+                    if ( ulsdIsFailoverExecute( aFnContext ) == ACP_TRUE )
+                    {
+                        /* do nothing */
+                    }
+                    else
+                    {
+                        ulnError( aFnContext,
+                                  ulERR_ABORT_SHARD_INTERNAL_ERROR,
+                                  "ShardNodeReport(Transaction Broken) fails" );
+                    }
+                }
+            }
+        }
+    }
+}
 
 SQLRETURN ulsdFetch(ulnStmt *aStmt)
 {
     /* PROJ-2598 altibase sharding */
     SQLRETURN     sNodeResult = SQL_ERROR;
     ulnFnContext  sFnContext;
+    ulnFnContext  sFnContextSMNUpdate;
 
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_FETCH, aStmt, ULN_OBJ_TYPE_STMT);
 
@@ -39,6 +141,28 @@ SQLRETURN ulsdFetch(ulnStmt *aStmt)
     ACI_TEST(ulnClearDiagnosticInfoFromObject((ulnObject*)aStmt) != ACI_SUCCESS);
 
     sNodeResult = ulsdModuleFetch(&sFnContext, aStmt);
+
+    /* BUG-46100 Session SMN Update */
+    if ( ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_ON ) &&
+         ( ulsdIsTimeToUpdateShardMetaNumber( aStmt->mParentDbc ) == ACP_TRUE ) )
+    {
+        if ( sNodeResult != SQL_SUCCESS )
+        {
+            /* ulsdModuleFetch is fail or no data. */
+            ULN_INIT_FUNCTION_CONTEXT( sFnContextSMNUpdate, ULN_FID_FETCH, aStmt, ULN_OBJ_TYPE_STMT );
+
+            ACI_TEST( ulsdUpdateShardMetaNumber( aStmt->mParentDbc, & sFnContextSMNUpdate ) != SQL_SUCCESS );
+
+            if ( sNodeResult != SQL_NO_DATA )
+            {
+                ulnError( & sFnContext, ulERR_ABORT_SHARD_META_CHANGED );
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return sNodeResult;
 
@@ -127,20 +251,11 @@ SQLRETURN ulsdFetchNodes(ulnFnContext *aFnContext,
     }
     ACI_EXCEPTION(LABEL_NODE_FETCH_FAIL)
     {
-        if ( ulsdNodeFailRetryAvailable( SQL_HANDLE_STMT,
-                                         (ulnObject *)sNodeStmt ) == ACP_TRUE )
-        {
-            ulnError(aFnContext,
-                     ulERR_ABORT_SHARD_NODE_FAIL_RETRY_AVAILABLE);
-        }
-        else
-        {
-            ulsdNativeErrorToUlnError(aFnContext,
-                                      SQL_HANDLE_STMT,
-                                      (ulnObject *)sNodeStmt,
-                                      sShard->mNodeInfo[sNodeDbcIndex],
-                                      (acp_char_t *)"Fetch");
-        }
+        ulsdNativeErrorToUlnError(aFnContext,
+                                  SQL_HANDLE_STMT,
+                                  (ulnObject *)sNodeStmt,
+                                  sShard->mNodeInfo[sNodeDbcIndex],
+                                  (acp_char_t *)"Fetch");
     }
     ACI_EXCEPTION_END;
 
@@ -152,6 +267,7 @@ SQLRETURN ulsdExecute(ulnStmt *aStmt)
     /* PROJ-2598 altibase sharding */
     SQLRETURN     sNodeResult;
     ulnFnContext  sFnContext;
+    ulnFnContext  sFnContextSMNUpdate;
 
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_EXECUTE, aStmt, ULN_OBJ_TYPE_STMT);
 
@@ -159,6 +275,24 @@ SQLRETURN ulsdExecute(ulnStmt *aStmt)
     ACI_TEST(ulnClearDiagnosticInfoFromObject((ulnObject*)aStmt) != ACI_SUCCESS);
 
     sNodeResult = ulsdModuleExecute(&sFnContext, aStmt);
+
+    /* BUG-46100 Session SMN Update */
+    if ( ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_ON ) &&
+         ( ulsdIsTimeToUpdateShardMetaNumber( aStmt->mParentDbc ) == ACP_TRUE ) )
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContextSMNUpdate, ULN_FID_EXECUTE, aStmt, ULN_OBJ_TYPE_STMT );
+
+        ACI_TEST( ulsdUpdateShardMetaNumber( aStmt->mParentDbc, & sFnContextSMNUpdate ) != SQL_SUCCESS );
+
+        if ( sNodeResult != SQL_SUCCESS )
+        {
+            ulnError( & sFnContext, ulERR_ABORT_SHARD_META_CHANGED );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return sNodeResult;
 
@@ -170,16 +304,20 @@ SQLRETURN ulsdExecute(ulnStmt *aStmt)
 SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
                            ulnStmt      *aStmt)
 {
-    SQLRETURN          sNodeResult = SQL_ERROR;
+    SQLRETURN          sNodeResult    = SQL_ERROR;
     SQLRETURN          sSuccessResult = SQL_SUCCESS;
-    SQLRETURN          sErrorResult = SQL_ERROR;
+    SQLRETURN          sErrorResult   = SQL_ERROR;
+    acp_bool_t         sSuccess       = ACP_TRUE;
     ulsdDbc           *sShard;
     ulnStmt           *sNodeStmt;
     acp_uint16_t       sNodeDbcIndex;
     ulsdFuncCallback  *sCallback = NULL;
-    acp_bool_t         sError = ACP_FALSE;
+    ulnResult         *sResult   = NULL;
     acp_uint16_t       sNoDataCount = 0;
     acp_uint16_t       i;
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    aStmt->mShardStmtCxt.mRowCount = 0;
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
@@ -188,10 +326,10 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         sNodeDbcIndex = aStmt->mShardStmtCxt.mNodeDbcIndexArr[i];
         sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[sNodeDbcIndex];
 
-        ACI_TEST( ulsdExecuteAddCallback( sNodeDbcIndex,
-                                          sNodeStmt,
-                                          &sCallback )
-                  != SQL_SUCCESS );
+        sErrorResult = ulsdExecuteAddCallback( sNodeDbcIndex,
+                                               sNodeStmt,
+                                               &sCallback );
+        ACI_TEST( sErrorResult != SQL_SUCCESS );
     }
 
     /* node execute 병렬수행 */
@@ -212,7 +350,9 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
 
         if ( sNodeResult == SQL_SUCCESS )
         {
-            /* Nothing to do */
+            /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+            sResult = ulnStmtGetCurrentResult( sNodeStmt );
+            aStmt->mShardStmtCxt.mRowCount += ulnResultGetAffectedRowCount( sResult );
         }
         else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
         {
@@ -224,6 +364,10 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
                                       (acp_char_t *)"Execute");
 
             sSuccessResult = sNodeResult;
+
+            /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+            sResult = ulnStmtGetCurrentResult( sNodeStmt );
+            aStmt->mShardStmtCxt.mRowCount += ulnResultGetAffectedRowCount( sResult );
         }
         else if ( sNodeResult == SQL_NO_DATA )
         {
@@ -232,7 +376,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         else
         {
             /* BUGBUG 여러개의 데이터 노드에 대해서 retry가 가능한가? */
-            if ( ulsdNodeFailRetryAvailable( SQL_HANDLE_STMT,
+            if ( ulsdNodeFailConnectionLost( SQL_HANDLE_STMT,
                                              (ulnObject *)sNodeStmt ) == ACP_TRUE )
             {
                 if ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
@@ -243,20 +387,16 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
                 {
                     /* Do Nothing */
                 }
-                ulnError(aFnContext, ulERR_ABORT_SHARD_NODE_FAIL_RETRY_AVAILABLE);
-            }
-            else
-            {
-                ulsdNativeErrorToUlnError(aFnContext,
-                                          SQL_HANDLE_STMT,
-                                          (ulnObject *)sNodeStmt,
-                                          sShard->mNodeInfo[sNodeDbcIndex],
-                                          (acp_char_t *)"Execute");
             }
 
-            sShard->mNodeInfo[sNodeDbcIndex]->mClosedOnExecute = ACP_TRUE;
+            ulsdNativeErrorToUlnError(aFnContext,
+                                      SQL_HANDLE_STMT,
+                                      (ulnObject *)sNodeStmt,
+                                      sShard->mNodeInfo[sNodeDbcIndex],
+                                      (acp_char_t *)"Execute");
+
             sErrorResult = sNodeResult;
-            sError = ACP_TRUE;
+            sSuccess = ACP_FALSE;
         }
     }
 
@@ -267,7 +407,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
     }
     else
     {
-        ACI_TEST( sError == ACP_TRUE );
+        ACI_TEST_RAISE( sSuccess == ACP_FALSE, ERR_EXECUTE_FAIL );
     }
 
     /* execute가 성공하고, select인 경우 fetch할 준비가 됨 */
@@ -277,6 +417,10 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
 
     return sSuccessResult;
 
+    ACI_EXCEPTION( ERR_EXECUTE_FAIL )
+    {
+        ulsdProcessExecuteError( aFnContext, aStmt, sCallback );
+    }
     ACI_EXCEPTION_END;
 
     ulsdRemoveCallback( sCallback );
@@ -308,77 +452,27 @@ SQLRETURN ulsdRowCountNodes(ulnFnContext *aFnContext,
                             ulnStmt      *aStmt,
                             ulvSLen      *aRowCount)
 {
-    SQLRETURN          sNodeResult = SQL_ERROR;
-    SQLRETURN          sSuccessResult = SQL_SUCCESS;
-    SQLRETURN          sErrorResult = SQL_ERROR;
-    ulsdDbc           *sShard;
-    ulnStmt           *sNodeStmt;
-    acp_uint16_t       sNodeDbcIndex;
-    ulvSLen            sTotalRowCount = 0;
-    ulvSLen            sRowCount      = 0;
-    acp_uint16_t       i;
+    ACI_TEST_RAISE( aRowCount == NULL, LABEL_INVALID_NULL );
 
-    ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    *aRowCount = (ulvSLen)aStmt->mShardStmtCxt.mRowCount;
 
-    for ( i = 0; i < aStmt->mShardStmtCxt.mNodeDbcIndexCount; i++ )
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_INVALID_NULL )
     {
-        sNodeDbcIndex = aStmt->mShardStmtCxt.mNodeDbcIndexArr[i];
-        sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[sNodeDbcIndex];
-
-        sNodeResult = ulnRowCount(sNodeStmt, &sRowCount);
-
-        SHARD_LOG("(Row Count) NodeId=%d, Server=%s:%d, StmtID=%d\n",
-                  sShard->mNodeInfo[sNodeDbcIndex]->mNodeId,
-                  sShard->mNodeInfo[sNodeDbcIndex]->mServerIP,
-                  sShard->mNodeInfo[sNodeDbcIndex]->mPortNo,
-                  sNodeStmt->mStatementID);
-
-        if ( sNodeResult == SQL_SUCCESS )
-        {
-            /* Nothing to do */
-        }
-        else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
-        {
-            /* info의 전달 */
-            ulsdNativeErrorToUlnError(aFnContext,
-                                      SQL_HANDLE_STMT,
-                                      (ulnObject *)sNodeStmt,
-                                      sShard->mNodeInfo[sNodeDbcIndex],
-                                      (acp_char_t *)"RowCount");
-
-            sSuccessResult = sNodeResult;
-        }
-        else
-        {
-            sErrorResult = sNodeResult;
-
-            ACI_RAISE(LABEL_NODE_ROWCOUNT_FAIL);
-        }
-
-        sTotalRowCount += sRowCount;
-    }
-
-    *aRowCount = sTotalRowCount;
-
-    return sSuccessResult;
-
-    ACI_EXCEPTION(LABEL_NODE_ROWCOUNT_FAIL)
-    {
-        ulsdNativeErrorToUlnError(aFnContext,
-                                  SQL_HANDLE_STMT,
-                                  (ulnObject *)sNodeStmt,
-                                  sShard->mNodeInfo[sNodeDbcIndex],
-                                  (acp_char_t *)"RowCount");
+        ulnError( aFnContext, ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
     }
     ACI_EXCEPTION_END;
 
-    return sErrorResult;
+    return ULN_FNCONTEXT_GET_RC( aFnContext );
 }
 
 SQLRETURN ulsdMoreResults(ulnStmt *aStmt)
 {
     SQLRETURN      sNodeResult = SQL_ERROR;
     ulnFnContext   sFnContext;
+    ulnFnContext   sFnContextSMNUpdate;
 
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_MORERESULTS, aStmt, ULN_OBJ_TYPE_STMT);
 
@@ -386,6 +480,28 @@ SQLRETURN ulsdMoreResults(ulnStmt *aStmt)
     ACI_TEST(ulnClearDiagnosticInfoFromObject((ulnObject*)aStmt) != ACI_SUCCESS);
 
     sNodeResult = ulsdModuleMoreResults(&sFnContext, aStmt);
+
+    /* BUG-46100 Session SMN Update */
+    if ( ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_ON ) &&
+         ( ulsdIsTimeToUpdateShardMetaNumber( aStmt->mParentDbc ) == ACP_TRUE ) )
+    {
+        if ( sNodeResult != SQL_SUCCESS )
+        {
+            /* ulsdModuleMoreResults is fail or no data. */
+            ULN_INIT_FUNCTION_CONTEXT( sFnContextSMNUpdate, ULN_FID_MORERESULTS, aStmt, ULN_OBJ_TYPE_STMT );
+
+            ACI_TEST( ulsdUpdateShardMetaNumber( aStmt->mParentDbc, & sFnContextSMNUpdate ) != SQL_SUCCESS );
+
+            if ( sNodeResult != SQL_NO_DATA )
+            {
+                ulnError( & sFnContext, ulERR_ABORT_SHARD_META_CHANGED );
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return sNodeResult;
 
@@ -460,4 +576,32 @@ SQLRETURN ulsdMoreResultsNodes(ulnFnContext *aFnContext,
     ACI_EXCEPTION_END;
 
     return sErrorResult;
+}
+
+acp_bool_t ulsdStmtHasNoDataOnNodes( ulnStmt * aMetaStmt )
+{
+    ulnStmt      * sNodeStmt     = NULL;
+    acp_uint16_t   sNodeDbcIndex = 0;
+    acp_uint16_t   i             = 0;
+
+    for ( i = 0; i < aMetaStmt->mShardStmtCxt.mNodeDbcIndexCount; i++ )
+    {
+        sNodeDbcIndex = aMetaStmt->mShardStmtCxt.mNodeDbcIndexArr[i];
+        sNodeStmt = aMetaStmt->mShardStmtCxt.mShardNodeStmt[sNodeDbcIndex];
+
+        if ( ulnStmtIsPrepared( sNodeStmt ) == ACP_TRUE )
+        {
+            ACI_TEST( ulnCursorHasNoData( ulnStmtGetCursor( sNodeStmt ) ) == ACP_FALSE );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return ACP_TRUE;
+
+    ACI_EXCEPTION_END;
+
+    return ACP_FALSE;
 }

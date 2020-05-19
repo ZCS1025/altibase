@@ -352,6 +352,18 @@ sample/CHECKSERVER
 [*][*][S/C][*][*][0755][DIR] # directory creation
 !
 !
+sample/SHARD
+!
+
+[*][*][S/C][*][*][0755][DIR] # directory creation
+!
+!
+sample/SHARD/Fail-Over
+!
+
+[*][*][S/C][*][*][0755][DIR] # directory creation
+!
+!
 thirdparty
 !
 
@@ -579,6 +591,13 @@ altibase_home/bin
 printkey
 bin
 printkey
+
+#0755 ./altibase_home/bin/awrite                    ./bin/awrite
+[*][*][S][*][*][0755][EXE]
+altibase_home/bin
+awrite
+bin
+awrite
 
 #0644 ./altibase_home/conf/dblink.conf.sample        ./conf/dblink.conf.sample
 [*][*][S][*][*][0644][*]
@@ -2568,6 +2587,20 @@ psm2.sc
 sample/APRE
 psm2.sc   
 
+#0644 ../ut/sample/APRE/psm3.sc                          ../sample/APRE/psm2.sc
+[*][*][*][*][*][0644][*]
+ut/sample/APRE
+psm3.sc
+sample/APRE
+psm3.sc
+
+#0644 ../ut/sample/APRE/psm4.sc                          ../sample/APRE/psm2.sc
+[*][*][*][*][*][0644][*]
+ut/sample/APRE
+psm4.sc
+sample/APRE
+psm4.sc
+
 #0644 ../ut/sample/APRE/runtime_error_check.sc           ../sample/APRE/runtime_error_check.sc
 [*][*][*][*][*][0644][*]
 ut/sample/APRE
@@ -3484,6 +3517,20 @@ Makefile
 sample/ILOADERAPI
 Makefile
 
+#0644 ../ut/sample/SHARD/Fail-Over/Makefile                  ../sample/SHARD/Fail-Over/Makefile
+[*][*][*][*][*][0644][*]
+ut/sample/SHARD/Fail-Over
+Makefile
+sample/SHARD/Fail-Over
+Makefile
+
+#0644 ../ut/sample/SHARD/Fail-Over/failoversample.cpp        ../sample/SHARD/Fail-Over/failoversample.cpp
+[*][*][*][*][*][0644][*]
+ut/sample/SHARD/Fail-Over
+failoversample.cpp
+sample/SHARD/Fail-Over
+failoversample.cpp
+
 ################################################################################################
 #
 #  GLOBAL KITs (only server package)
@@ -3901,6 +3948,34 @@ utl_copyswap.plb
 packages
 utl_copyswap.plb
 
+#0644 ./altibase_home/packages/utl_shard_online_rebuild.sql      ./altibase_home/packages/utl_shard_online_rebuild.sql
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+utl_shard_online_rebuild.sql
+packages
+utl_shard_online_rebuild.sql
+
+#0644 ./altibase_home/packages/utl_shard_online_rebuild.plb      ./altibase_home/packages/utl_shard_online_rebuild.plb
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+utl_shard_online_rebuild.plb
+packages
+utl_shard_online_rebuild.plb
+
+#0644 ./altibase_home/packages/dbms_standard.sql      ./altibase_home/packages/dbms_standard.sql
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_standard.sql
+packages
+dbms_standard.sql
+
+#0644 ./altibase_home/packages/dbms_standard.plb      ./altibase_home/packages/dbms_standard.plb
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_standard.plb
+packages
+dbms_standard.plb
+
 #################################################################################################
 ##
 ## packages
@@ -3921,3 +3996,16 @@ dbms_shard.plb
 packages
 dbms_shard.plb
 
+#0644 ./altibase_home/packages/dbms_sql_plan_cache.sql ./altibase_home/packages/dbms_sql_plan_cache.sql
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_sql_plan_cache.sql
+packages
+dbms_sql_plan_cache.sql
+
+#0644 ./altibase_home/packages/dbms_sql_plan_cache.plb ./altibase_home/packages/dbms_sql_plan_cache.plb
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_sql_plan_cache.plb
+packages
+dbms_sql_plan_cache.plb

@@ -105,6 +105,12 @@ ACI_RC ulnSFID_77(ulnFnContext *aFnContext)
             case SQL_ATTR_QUERY_TIMEOUT:
             case SQL_ATTR_TXN_ISOLATION:
             case SQL_ATTR_PACKET_SIZE:
+
+            case ALTIBASE_ALTERNATE_SERVERS:
+            case ALTIBASE_LOAD_BALANCE:
+            case ALTIBASE_CONNECTION_RETRY_COUNT:
+            case ALTIBASE_CONNECTION_RETRY_DELAY:
+            case ALTIBASE_SESSION_FAILOVER:
                 break;
 
             default:
@@ -198,6 +204,9 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
         //PROJ-1645 UL Failover.
         case ALTIBASE_ALTERNATE_SERVERS:
             (void)getString( ulnDbcGetAlternateServer(sDbc), aValPtr, aValLen, aIndPtr);
+            break;
+        case ALTIBASE_LOAD_BALANCE:
+            *(acp_uint32_t*)aValPtr = (acp_uint32_t)ulnDbcGetLoadBalance(sDbc);
             break;
         case ALTIBASE_CONNECTION_RETRY_COUNT:
             *(acp_uint32_t*)aValPtr = ulnDbcGetConnectionRetryCount(sDbc);
@@ -485,6 +494,15 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
         /* BUG-45286 */
         case ALTIBASE_PDO_DEFER_PROTOCOLS:
             *(acp_uint32_t*)aValPtr = sDbc->mAttrPDODeferProtocols;
+            break;
+
+        /* PROJ-2681 */
+        case ALTIBASE_IB_LATENCY:
+            *(acp_sint32_t*)aValPtr = ulnDbcGetIBLatency(sDbc);
+            break;
+
+        case ALTIBASE_IB_CONCHKSPIN:
+            *(acp_sint32_t*)aValPtr = ulnDbcGetIBConChkSpin(sDbc);
             break;
 
         default:

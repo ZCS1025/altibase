@@ -24,6 +24,7 @@
 #include <mmdDef.h>
 
 class mmdXid;
+struct mmcTransObj;
 
 class mmdXidManager
 {
@@ -39,9 +40,9 @@ public:
     static IDE_RC initialize();
     static IDE_RC finalize();
     /* BUG-18981 */
-    static IDE_RC alloc(mmdXid   **aXid,
-                        ID_XID    *aUserXid,
-                        smiTrans  *aTrans);
+    static IDE_RC alloc(mmdXid      **aXid,
+                        ID_XID       *aUserXid,
+                        mmcTransObj  *aTrans);
     //fix BUG-21794
     static IDE_RC alloc(mmdIdXidNode **aXidNode, ID_XID *aXid);
     

@@ -27,16 +27,66 @@
 #include <rpcHBT.h>
 #include <rpnComm.h>
 
+static void compactCIDAndColumnValueArray( UInt     * aCIDs,
+                                           smiValue * aBCols,
+                                           smiValue * aACols,
+                                           UInt       aDataCount,
+                                           UInt       aColumnCount )
+{
+    UInt        i = 0;
+    UInt        sNextColumnIndex = 0;
+
+    i = 0;
+    while ( ( i < aColumnCount ) && ( sNextColumnIndex < aDataCount ) )
+    {
+        if ( aCIDs[i] != RP_INVALID_COLUMN_ID )
+        {
+            if ( i == sNextColumnIndex )
+            {
+                /* do nothing */
+            }
+            else
+            {
+                aCIDs[sNextColumnIndex] = aCIDs[i];
+                aCIDs[i] =RP_INVALID_COLUMN_ID;
+
+                aBCols[sNextColumnIndex].length = aBCols[i].length;
+                aBCols[sNextColumnIndex].value = aBCols[i].value;
+                aBCols[i].length = 0;
+                aBCols[i].value = NULL;
+
+                aACols[sNextColumnIndex].length = aACols[i].length;
+                aACols[sNextColumnIndex].value = aACols[i].value;
+                aACols[i].length = 0;
+                aACols[i].value = NULL;
+            }
+
+            sNextColumnIndex++;
+        }
+        else
+        {
+            /* do nothing */
+        }
+
+        i++;
+    }
+}
+
+
 IDE_RC rpnComm::sendVersionA7( void               * aHBTResource,
                                cmiProtocolContext * aProtocolContext,
-                               rpdVersion         * aReplVersion )
+                               idBool             * aExitFlag,
+                               rpdVersion         * aReplVersion,
+                               UInt                 aTimeoutSec )
 {
     UChar sOpCode;
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 8, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Version Set and Send */
@@ -46,8 +96,10 @@ IDE_RC rpnComm::sendVersionA7( void               * aHBTResource,
 
     IDU_FIT_POINT( "rpnComm::sendVersion::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
-                           aProtocolContext, 
-                           ID_TRUE ) 
+                           aProtocolContext,
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -58,6 +110,7 @@ IDE_RC rpnComm::sendVersionA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvVersionA7( cmiProtocolContext * aProtocolContext,
+                               idBool             * /* aExitFlag */,
                                rpdVersion         * aReplVersion )
 {
     UChar sOpCode;
@@ -84,7 +137,9 @@ IDE_RC rpnComm::recvVersionA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaDictTableCountA7( void               * aHBTResource,
                                           cmiProtocolContext * aProtocolContext,
-                                          SInt               * aDictTableCount )
+                                          idBool             * aExitFlag,
+                                          SInt               * aDictTableCount,
+                                          UInt                 aTimeoutSec )
 {
     UChar sOpCode;
 
@@ -95,8 +150,10 @@ IDE_RC rpnComm::sendMetaDictTableCountA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( NULL, /* aHBTResource */
                              aProtocolContext,
+                             aExitFlag,
                              1 + 4,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Information Set */
@@ -107,7 +164,9 @@ IDE_RC rpnComm::sendMetaDictTableCountA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaDictTableCount::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -117,14 +176,89 @@ IDE_RC rpnComm::sendMetaDictTableCountA7( void               * aHBTResource,
     return IDE_FAILURE;
 }
 
+IDE_RC rpnComm::sendMetaPartitionCountA7( void               * aHBTResource,
+                                          cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt               * aCount,
+                                          UInt                 aTimeoutSec )
+{
+    UChar sOpCode;
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+    
+    /* Validate Parameters */
+    IDE_DASSERT( aCount != NULL );
+
+    IDE_TEST( checkAndFlush( NULL, /* aHBTResource */
+                             aProtocolContext,
+                             aExitFlag,
+                             1 + 4,
+                             ID_TRUE,
+                             aTimeoutSec )
+              != IDE_SUCCESS );
+
+    /* Replication Information Set */
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, MetaPartitionCount );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, (UInt *)aCount );
+
+    IDE_TEST( sendCmBlock( aHBTResource,
+                           aProtocolContext, 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvMetaPartitionCountA7( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt               * aCount,
+                                          ULong                aTimeoutSec )
+{
+    UChar   sOpCode;
+
+    IDE_TEST( readCmBlock( aProtocolContext, 
+                           aExitFlag,
+                           NULL /* TimeoutFlag */, 
+                           aTimeoutSec )
+              != IDE_SUCCESS );
+
+    /* Check Operation Type */
+    CMI_RD1( aProtocolContext, sOpCode );
+
+    //CMP_OP_RP_MetaPartitionCount
+    IDE_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, MetaPartitionCount ),
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext, (UInt*)aCount );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE,
+                                  sOpCode ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;    
+}
 IDE_RC rpnComm::recvMetaDictTableCountA7( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
                                           SInt               * aDictTableCount,
                                           ULong                aTimeoutSec )
 {
     UChar   sOpCode;
 
     IDE_TEST( readCmBlock( aProtocolContext, 
-                           NULL /* ExitFlag */, 
+                           aExitFlag,
                            NULL /* TimeoutFlag */, 
                            aTimeoutSec )
               != IDE_SUCCESS );
@@ -153,7 +287,9 @@ IDE_RC rpnComm::recvMetaDictTableCountA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplA7( void               * aHBTResource,
                                 cmiProtocolContext * aProtocolContext,
-                                rpdReplications    * aRepl )
+                                idBool             * aExitFlag,
+                                rpdReplications    * aRepl,
+                                UInt                 aTimeoutSec )
 {
     UInt sRepNameLen;
     UInt sOSInfoLen;
@@ -180,9 +316,11 @@ IDE_RC rpnComm::sendMetaReplA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 96 + sRepNameLen + sOSInfoLen  + sCharSetLen +
                              sNationalCharSetLen + sServerIDLen + sRemoteFaultDetectTimeLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Information Set */
@@ -222,7 +360,9 @@ IDE_RC rpnComm::sendMetaReplA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaRepl::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -233,6 +373,7 @@ IDE_RC rpnComm::sendMetaReplA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvMetaReplA7( cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
                                 rpdReplications    * aRepl,
                                 ULong                aTimeoutSec )
 {
@@ -244,10 +385,20 @@ IDE_RC rpnComm::recvMetaReplA7( cmiProtocolContext * aProtocolContext,
     UInt sServerIDLen;
     UInt sRemoteFaultDetectTimeLen;
 
-    ULong sDeprecated = -1;
+    ULong sDeprecated = 0;
 
-    IDE_TEST( readCmBlock( aProtocolContext, NULL /* ExitFlag */, NULL /* TimeoutFlag */, aTimeoutSec )
-              != IDE_SUCCESS );
+    if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
+    {
+        IDE_TEST( readCmBlock( aProtocolContext, 
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aTimeoutSec )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* nothing to do */
+    }
 
     /* Check Operation Type */
     CMI_RD1( aProtocolContext, sOpCode );
@@ -308,7 +459,9 @@ IDE_RC rpnComm::recvMetaReplA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplTblA7( void               * aHBTResource,
                                    cmiProtocolContext * aProtocolContext,
-                                   rpdMetaItem        * aItem )
+                                   idBool             * aExitFlag,
+                                   rpdMetaItem        * aItem,
+                                   UInt                 aTimeoutSec )
 {
     UInt sRepNameLen;
     UInt sLocalUserNameLen;
@@ -338,10 +491,12 @@ IDE_RC rpnComm::sendMetaReplTblA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 80 + sRepNameLen + sLocalUserNameLen + sLocalTableNameLen +
                              sLocalPartNameLen + sRemoteUserNameLen + sRemoteTableNameLen +
                              sRemotePartNameLen + sPartCondMinValuesLen + sPartCondMaxValuesLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Item Information Set */
@@ -381,7 +536,9 @@ IDE_RC rpnComm::sendMetaReplTblA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaReplTbl::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext,
-                           ID_TRUE )
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -392,6 +549,7 @@ IDE_RC rpnComm::sendMetaReplTblA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvMetaReplTblA7( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    rpdMetaItem        * aItem,
                                    ULong                aTimeoutSec )
 {
@@ -406,7 +564,10 @@ IDE_RC rpnComm::recvMetaReplTblA7( cmiProtocolContext * aProtocolContext,
     UInt sPartCondMinValuesLen;
     UInt sPartCondMaxValuesLen;
 
-    IDE_TEST( readCmBlock( aProtocolContext, NULL /* ExitFlag */, NULL /* TimeoutFlag */, aTimeoutSec )
+    IDE_TEST( readCmBlock( aProtocolContext, 
+                           aExitFlag,
+                           NULL /* TimeoutFlag */, 
+                           aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Check Operation Type */
@@ -471,7 +632,9 @@ IDE_RC rpnComm::recvMetaReplTblA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplColA7( void               * aHBTResource,
                                    cmiProtocolContext * aProtocolContext,
-                                   rpdColumn          * aColumn )
+                                   idBool             * aExitFlag,
+                                   rpdColumn          * aColumn,
+                                   UInt                 aTimeoutSec )
 {
     UInt sColumnNameLen;
     UInt sPolicyNameLen;
@@ -503,9 +666,11 @@ IDE_RC rpnComm::sendMetaReplColA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 68 + sColumnNameLen + sPolicyNameLen + sPolicyCodeLen +
                              sECCPolicyNameLen + sECCPolicyCodeLen + sDefaultExprLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Item Information Set */
@@ -547,7 +712,9 @@ IDE_RC rpnComm::sendMetaReplColA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaReplCol::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -558,6 +725,7 @@ IDE_RC rpnComm::sendMetaReplColA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvMetaReplColA7( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    rpdColumn          * aColumn,
                                    ULong                aTimeoutSec )
 {
@@ -569,7 +737,10 @@ IDE_RC rpnComm::recvMetaReplColA7( cmiProtocolContext * aProtocolContext,
     UInt sECCPolicyCodeLen;
     UInt sDefaultExprLen = 0;
 
-    IDE_TEST( readCmBlock( aProtocolContext, NULL /* ExitFlag */, NULL /* TimeoutFlag */, aTimeoutSec )
+    IDE_TEST( readCmBlock( aProtocolContext, 
+                           aExitFlag,
+                           NULL /* TimeoutFlag */, 
+                           aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Check Operation Type */
@@ -650,7 +821,9 @@ IDE_RC rpnComm::recvMetaReplColA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplIdxA7( void               * aHBTResource,
                                    cmiProtocolContext * aProtocolContext,
-                                   qcmIndex           * aIndex )
+                                   idBool             * aExitFlag,
+                                   qcmIndex           * aIndex,
+                                   UInt                 aTimeoutSec )
 {
     UInt sNameLen;
     UInt sTempValue;
@@ -665,8 +838,10 @@ IDE_RC rpnComm::sendMetaReplIdxA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 24 + sNameLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Item Index Information Set */
@@ -687,7 +862,9 @@ IDE_RC rpnComm::sendMetaReplIdxA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaReplIdx::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -698,6 +875,7 @@ IDE_RC rpnComm::sendMetaReplIdxA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvMetaReplIdxA7( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    qcmIndex           * aIndex,
                                    ULong                aTimeoutSec )
 {
@@ -707,7 +885,7 @@ IDE_RC rpnComm::recvMetaReplIdxA7( cmiProtocolContext * aProtocolContext,
     UInt  sIsRange;
 
     IDE_TEST( readCmBlock( aProtocolContext,
-                           NULL /* ExitFlag */,
+                           aExitFlag,
                            NULL /* TimeoutFlag */,
                            aTimeoutSec )
               != IDE_SUCCESS );
@@ -745,8 +923,10 @@ IDE_RC rpnComm::recvMetaReplIdxA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplIdxColA7( void                * aHBTResource,
                                       cmiProtocolContext  * aProtocolContext,
+                                      idBool              * aExitFlag,
                                       UInt                  aColumnID,
-                                      UInt                  aKeyColumnFlag )
+                                      UInt                  aKeyColumnFlag,
+                                      UInt                  aTimeoutSec )
 {
     UChar sOpCode;
 
@@ -754,8 +934,10 @@ IDE_RC rpnComm::sendMetaReplIdxColA7( void                * aHBTResource,
     
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 8, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Item Index Column Description Set */
@@ -767,7 +949,9 @@ IDE_RC rpnComm::sendMetaReplIdxColA7( void                * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaReplIdxCol::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -778,13 +962,17 @@ IDE_RC rpnComm::sendMetaReplIdxColA7( void                * aHBTResource,
 }
 
 IDE_RC rpnComm::recvMetaReplIdxColA7( cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
                                       UInt               * aColumnID,
                                       UInt               * aKeyColumnFlag,
                                       ULong                aTimeoutSec )
 {
     UChar sOpCode;
 
-    IDE_TEST( readCmBlock( aProtocolContext, NULL /* ExitFlag */, NULL /* TimeoutFlag */, aTimeoutSec )
+    IDE_TEST( readCmBlock( aProtocolContext,
+                           aExitFlag,
+                           NULL /* TimeoutFlag */, 
+                           aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Check Operation Type */
@@ -812,7 +1000,9 @@ IDE_RC rpnComm::recvMetaReplIdxColA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendMetaReplCheckA7( void                 * aHBTResource,
                                      cmiProtocolContext   * aProtocolContext,
-                                     qcmCheck             * aCheck ) 
+                                     idBool               * aExitFlag,
+                                     qcmCheck             * aCheck,
+                                     UInt                   aTimeoutSec ) 
 {
     UInt    sCheckConditionLength = 0;
     UInt    sColumnCount = 0;
@@ -829,9 +1019,11 @@ IDE_RC rpnComm::sendMetaReplCheckA7( void                 * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 16 + sCheckNameLength + 
                              sColumnCount * 4 + sCheckConditionLength,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Item Check Information Set */
@@ -855,7 +1047,9 @@ IDE_RC rpnComm::sendMetaReplCheckA7( void                 * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendMetaReplCheck::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -866,6 +1060,7 @@ IDE_RC rpnComm::sendMetaReplCheckA7( void                 * aHBTResource,
 }
 
 IDE_RC rpnComm::recvMetaReplCheckA7( cmiProtocolContext   * aProtocolContext,
+                                     idBool               * aExitFlag,
                                      qcmCheck             * aCheck,
                                      const ULong            aTimeoutSec )
 {
@@ -875,7 +1070,7 @@ IDE_RC rpnComm::recvMetaReplCheckA7( cmiProtocolContext   * aProtocolContext,
     UInt        sColumnIndex = 0;
 
     IDE_TEST( readCmBlock( aProtocolContext, 
-                           NULL /* ExitFlag */, 
+                           aExitFlag,
                            NULL /* TimeoutFlag */, 
                            aTimeoutSec )
               != IDE_SUCCESS );
@@ -936,10 +1131,12 @@ IDE_RC rpnComm::recvMetaReplCheckA7( cmiProtocolContext   * aProtocolContext,
 }
 
 IDE_RC rpnComm::sendHandshakeAckA7( cmiProtocolContext  * aProtocolContext,
+                                    idBool              * aExitFlag,
                                     UInt                  aResult,
                                     SInt                  aFailbackStatus,
                                     ULong                 aXSN,
-                                    SChar               * aMsg )
+                                    SChar               * aMsg,
+                                    UInt                  aTimeoutSec )
 {
     UInt sMsgLen = 0;
     UChar sOpCode = 0;
@@ -957,8 +1154,10 @@ IDE_RC rpnComm::sendHandshakeAckA7( cmiProtocolContext  * aProtocolContext,
 
     IDE_TEST( checkAndFlush( NULL,  /* aHBTResource */
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 12 + sMsgLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication Item Information Set */
@@ -981,7 +1180,9 @@ IDE_RC rpnComm::sendHandshakeAckA7( cmiProtocolContext  * aProtocolContext,
     IDU_FIT_POINT( "rpnComm::sendHandshakeAckA7::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( NULL, /* aHBTResource */
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1062,31 +1263,41 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
     {
         case CMI_PROTOCOL_OPERATION( RP, TrBegin ):
         {
-            IDE_TEST( recvTrBeginA7( aProtocolContext, aXLog )
+            IDE_TEST( recvTrBeginA7( aProtocolContext, 
+                                     aExitFlag, 
+                                     aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, TrCommit ):
         {
-            IDE_TEST( recvTrCommitA7( aProtocolContext, aXLog )
+            IDE_TEST( recvTrCommitA7( aProtocolContext, 
+                                      aExitFlag, 
+                                      aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, TrAbort ):
         {
-            IDE_TEST( recvTrAbortA7( aProtocolContext, aXLog )
+            IDE_TEST( recvTrAbortA7( aProtocolContext,
+                                     aExitFlag,
+                                     aXLog )
                      != IDE_SUCCESS);
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, SPSet ):
         {
-            IDE_TEST( recvSPSetA7( aProtocolContext, aXLog )
+            IDE_TEST( recvSPSetA7( aProtocolContext, 
+                                   aExitFlag,
+                                   aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, SPAbort ):
         {
-            IDE_TEST( recvSPAbortA7( aProtocolContext, aXLog )
+            IDE_TEST( recvSPAbortA7( aProtocolContext, 
+                                     aExitFlag,
+                                     aXLog )
                       != IDE_SUCCESS );
             break;
         }
@@ -1125,19 +1336,25 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, Stop ):
         {
-            IDE_TEST( recvStopA7( aProtocolContext, aXLog )
+            IDE_TEST( recvStopA7( aProtocolContext, 
+                                  aExitFlag,
+                                  aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, KeepAlive ):
         {
-            IDE_TEST( recvKeepAliveA7( aProtocolContext, aXLog )
+            IDE_TEST( recvKeepAliveA7( aProtocolContext, 
+                                       aExitFlag,
+                                       aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, Flush ):
         {
-            IDE_TEST( recvFlushA7( aProtocolContext, aXLog )
+            IDE_TEST( recvFlushA7( aProtocolContext,
+                                   aExitFlag,
+                                   aXLog )
                       != IDE_SUCCESS );
             break;
         }
@@ -1154,13 +1371,17 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, LobCursorClose ):
         {
-            IDE_TEST( recvLobCursorCloseA7( aProtocolContext, aXLog )
+            IDE_TEST( recvLobCursorCloseA7( aProtocolContext, 
+                                            aExitFlag,
+                                            aXLog )
                       != IDE_SUCCESS);
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, LobPrepare4Write ):
         {
-            IDE_TEST( recvLobPrepare4WriteA7( aProtocolContext, aXLog )
+            IDE_TEST( recvLobPrepare4WriteA7( aProtocolContext, 
+                                              aExitFlag,
+                                              aXLog )
                       != IDE_SUCCESS );
             break;
         }
@@ -1176,7 +1397,9 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, LobFinish2Write ):
         {
-            IDE_TEST( recvLobFinish2WriteA7( aProtocolContext, aXLog )
+            IDE_TEST( recvLobFinish2WriteA7( aProtocolContext, 
+                                             aExitFlag,
+                                             aXLog )
                       != IDE_SUCCESS );
             break;
         }
@@ -1193,13 +1416,17 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, Handshake ): // BUG-23195
         {
-            IDE_TEST( recvHandshakeA7( aProtocolContext, aXLog )
+            IDE_TEST( recvHandshakeA7( aProtocolContext, 
+                                       aExitFlag,
+                                       aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION( RP, SyncPKBegin ):
         {
-            IDE_TEST( recvSyncPKBeginA7( aProtocolContext, aXLog )
+            IDE_TEST( recvSyncPKBeginA7( aProtocolContext,
+                                         aExitFlag,
+                                         aXLog )
                       != IDE_SUCCESS );
             break;
         }
@@ -1214,13 +1441,17 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, SyncPKEnd ):
         {
-            IDE_TEST( recvSyncPKEndA7( aProtocolContext, aXLog )
+            IDE_TEST( recvSyncPKEndA7( aProtocolContext,
+                                       aExitFlag,
+                                       aXLog )
                       != IDE_SUCCESS );
             break;
         }
         case CMI_PROTOCOL_OPERATION(RP, FailbackEnd):
         {
-            IDE_TEST( recvFailbackEndA7( aProtocolContext, aXLog )
+            IDE_TEST( recvFailbackEndA7( aProtocolContext,
+                                         aExitFlag,
+                                         aXLog )
                      != IDE_SUCCESS);
             break;
         }
@@ -1246,7 +1477,17 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
         }
         case CMI_PROTOCOL_OPERATION( RP, AckOnDML ):
         {
-            IDE_TEST( recvAckOnDML( aProtocolContext, aXLog )
+            IDE_TEST( recvAckOnDML( aProtocolContext,
+                                    aExitFlag,
+                                    aXLog )
+                      != IDE_SUCCESS );
+            break;
+        }
+        case CMI_PROTOCOL_OPERATION( RP, DDLReplicateHandshake ):
+        {
+            IDE_TEST( recvDDLASyncStartA7( aProtocolContext,
+                                           aExitFlag,
+                                           aXLog )
                       != IDE_SUCCESS );
             break;
         }
@@ -1270,9 +1511,11 @@ IDE_RC rpnComm::recvXLogA7( iduMemAllocator    * aAllocator,
 
 IDE_RC rpnComm::sendTrBeginA7( void                * aHBTResource,
                                cmiProtocolContext  * aProtocolContext,
+                               idBool              * aExitFlag,
                                smTID                 aTID,
                                smSN                  aSN,
-                               smSN                  aSyncSN )
+                               smSN                  aSyncSN,
+                               UInt                  aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -1283,8 +1526,10 @@ IDE_RC rpnComm::sendTrBeginA7( void                * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 24,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1303,6 +1548,7 @@ IDE_RC rpnComm::sendTrBeginA7( void                * aHBTResource,
 }
 
 IDE_RC rpnComm::recvTrBeginA7( cmiProtocolContext  * aProtocolContext,
+                               idBool              * /* aExitFlag */,
                                rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -1317,10 +1563,12 @@ IDE_RC rpnComm::recvTrBeginA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendTrCommitA7( void               * aHBTResource,
                                 cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
                                 smTID                aTID,
                                 smSN                 aSN,
                                 smSN                 aSyncSN,
-                                idBool               aForceFlush )
+                                idBool               aForceFlush,
+                                UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -1331,8 +1579,10 @@ IDE_RC rpnComm::sendTrCommitA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 24, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1348,7 +1598,9 @@ IDE_RC rpnComm::sendTrCommitA7( void               * aHBTResource,
         IDU_FIT_POINT( "rpnComm::sendTrCommit::cmiSend::ERR_SEND" );
         IDE_TEST( sendCmBlock( aHBTResource,
                                aProtocolContext, 
-                               ID_TRUE ) 
+                               aExitFlag,
+                               ID_TRUE,
+                               aTimeoutSec ) 
                   != IDE_SUCCESS );
     }
 
@@ -1360,6 +1612,7 @@ IDE_RC rpnComm::sendTrCommitA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvTrCommitA7( cmiProtocolContext  * aProtocolContext,
+                                idBool              * /*aExitFlag*/,
                                 rpdXLog             * aXLog )
 
 {
@@ -1376,9 +1629,11 @@ IDE_RC rpnComm::recvTrCommitA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendTrAbortA7( void               * aHBTResource,
                                cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
                                smTID                aTID,
                                smSN                 aSN,
-                               smSN                 aSyncSN )
+                               smSN                 aSyncSN,
+                               UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -1389,8 +1644,10 @@ IDE_RC rpnComm::sendTrAbortA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 24,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1409,6 +1666,7 @@ IDE_RC rpnComm::sendTrAbortA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvTrAbortA7( cmiProtocolContext  * aProtocolContext,
+                               idBool              * /* aExitFlag */,
                                rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -1424,11 +1682,13 @@ IDE_RC rpnComm::recvTrAbortA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendSPSetA7( void               * aHBTResource,
                              cmiProtocolContext * aProtocolContext,
+                             idBool             * aExitFlag,
                              smTID                aTID,
                              smSN                 aSN,
                              smSN                 aSyncSN,
                              UInt                 aSPNameLen,
-                             SChar              * aSPName )
+                             SChar              * aSPName,
+                             UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -1443,9 +1703,11 @@ IDE_RC rpnComm::sendSPSetA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 28 + 
                              aSPNameLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1466,6 +1728,7 @@ IDE_RC rpnComm::sendSPSetA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvSPSetA7( cmiProtocolContext  * aProtocolContext,
+                             idBool              * /*aExitFlag*/,
                              rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -1502,11 +1765,13 @@ IDE_RC rpnComm::recvSPSetA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendSPAbortA7( void               * aHBTResource,
                                cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
                                smTID                aTID,
                                smSN                 aSN,
                                smSN                 aSyncSN,
                                UInt                 aSPNameLen,
-                               SChar              * aSPName )
+                               SChar              * aSPName,
+                               UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -1521,9 +1786,11 @@ IDE_RC rpnComm::sendSPAbortA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 28 + 
                              aSPNameLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1544,6 +1811,7 @@ IDE_RC rpnComm::sendSPAbortA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvSPAbortA7( cmiProtocolContext  * aProtocolContext,
+                               idBool              * /*aExitFlag*/,
                                rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -1580,6 +1848,7 @@ IDE_RC rpnComm::recvSPAbortA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendInsertA7( void               * aHBTResource,
                               cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
                               smTID                aTID,
                               smSN                 aSN,
                               smSN                 aSyncSN,
@@ -1587,7 +1856,8 @@ IDE_RC rpnComm::sendInsertA7( void               * aHBTResource,
                               ULong                aTableOID,
                               UInt                 aColCnt,
                               smiValue           * aACols,
-                              rpValueLen         * aALen )
+                              rpValueLen         * aALen,
+                              UInt                 aTimeoutSec )
 {
     UInt i;
     UInt sType;
@@ -1604,8 +1874,10 @@ IDE_RC rpnComm::sendInsertA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 40, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1625,8 +1897,10 @@ IDE_RC rpnComm::sendInsertA7( void               * aHBTResource,
     {
         IDE_TEST( sendValueForA7( aHBTResource,
                                   aProtocolContext,
+                                  aExitFlag,
                                   &aACols[i],
-                                  aALen[i])
+                                  aALen[i],
+                                  aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -1788,6 +2062,7 @@ IDE_RC rpnComm::recvInsertA7( iduMemAllocator    * aAllocator,
 
 IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
                               cmiProtocolContext *aProtocolContext,
+                              idBool          * aExitFlag,
                               smTID             aTID,
                               smSN              aSN,
                               smSN              aSyncSN,
@@ -1803,7 +2078,8 @@ IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
                               smiValue        * aACols,
                               rpValueLen      * aPKLen,
                               rpValueLen      * aALen,
-                              rpValueLen      * aBMtdValueLen )
+                              rpValueLen      * aBMtdValueLen,
+                              UInt              aTimeoutSec )
 {
     UInt i;
     smiChainedValue * sChainedValue = NULL;
@@ -1825,8 +2101,10 @@ IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 44, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -1847,8 +2125,10 @@ IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
     {
         IDE_TEST( sendPKValueForA7( aHBTResource,
                                     aProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -1857,7 +2137,9 @@ IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
     {
         IDE_TEST( sendCIDForA7( aHBTResource,
                                 aProtocolContext,
-                                aCIDs[i] )
+                                aExitFlag,
+                                aCIDs[i],
+                                aTimeoutSec )
                   != IDE_SUCCESS );
 
         // PROJ-1705
@@ -1869,8 +2151,10 @@ IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
         {
             IDE_TEST( sendValueForA7( aHBTResource,
                                       aProtocolContext,
+                                      aExitFlag,
                                       &aBCols[aCIDs[i]],
-                                      aBMtdValueLen[aCIDs[i]] )
+                                      aBMtdValueLen[aCIDs[i]],
+                                      aTimeoutSec )
                       != IDE_SUCCESS );
         }
         // 디스크 테이블에 발생한 update의 분석 결과는 BChainedCols에 들어있다.
@@ -1878,16 +2162,20 @@ IDE_RC rpnComm::sendUpdateA7( void            * aHBTResource,
         {
             IDE_TEST( sendChainedValueForA7( aHBTResource,
                                              aProtocolContext,
+                                             aExitFlag,
                                              sChainedValue,
                                              aBMtdValueLen[aCIDs[i]],
-                                             aBChainedColsTotalLen[aCIDs[i]] )
+                                             aBChainedColsTotalLen[aCIDs[i]],
+                                             aTimeoutSec )
                       != IDE_SUCCESS );
         }
 
         IDE_TEST( sendValueForA7( aHBTResource,
                                   aProtocolContext,
+                                  aExitFlag,
                                   &aACols[aCIDs[i]],
-                                  aALen[aCIDs[i]] )
+                                  aALen[aCIDs[i]],
+                                  aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -1906,9 +2194,13 @@ IDE_RC rpnComm::recvUpdateA7( iduMemAllocator    * aAllocator,
                               ULong                aTimeOutSec )
 {
     UInt i;
+    UInt sRecvIndex = 0;
+    UInt sCID = 0;
     rpdMetaItem *sItem = NULL;
     UInt * sType = (UInt*)&(aXLog->mType);
     smiValue     sDummy;
+    idBool       sNeedCompact = ID_FALSE;
+    UInt         sColumnCount = 0;
 
     IDE_ASSERT( aMeta != NULL );
 
@@ -1923,21 +2215,51 @@ IDE_RC rpnComm::recvUpdateA7( iduMemAllocator    * aAllocator,
     CMI_RD4( aProtocolContext, &(aXLog->mPKColCnt) );
     CMI_RD4( aProtocolContext, &(aXLog->mColCnt) );
 
+    (void)aMeta->searchRemoteTable(&sItem, aXLog->mTableOID);
+    
+    IDU_FIT_POINT_RAISE( "rpnComm::recvUpdateA7::Erratic::rpERR_ABORT_RECEIVER_NOT_FOUND_TABLE",
+                         ERR_NOT_FOUND_TABLE );
+    IDE_TEST_RAISE(sItem == NULL, ERR_NOT_FOUND_TABLE);
+
+    sNeedCompact = sItem->needCompact();
+    if ( sNeedCompact == ID_TRUE )
+    {
+        sColumnCount = sItem->mColCount;
+    }
+    else
+    {
+        sColumnCount = aXLog->mColCnt;
+    }
+
     IDE_TEST_RAISE( aXLog->mMemory.alloc( aXLog->mPKColCnt * ID_SIZEOF( smiValue ),
                                           (void **)&( aXLog->mPKCols ) )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC );
 
-    IDE_TEST_RAISE( aXLog->mMemory.alloc( aXLog->mColCnt * ID_SIZEOF( UInt ),
+    IDE_TEST_RAISE( aXLog->mMemory.alloc( sColumnCount * ID_SIZEOF( UInt ),
                                           (void **)&( aXLog->mCIDs ) )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC );
 
-    IDE_TEST_RAISE( aXLog->mMemory.alloc( aXLog->mColCnt * ID_SIZEOF( smiValue),
+    IDE_TEST_RAISE( aXLog->mMemory.alloc( sColumnCount * ID_SIZEOF( smiValue),
                                           (void **)&( aXLog->mBCols ) )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC );
 
-    IDE_TEST_RAISE( aXLog->mMemory.alloc( aXLog->mColCnt * ID_SIZEOF( smiValue ),
+    IDE_TEST_RAISE( aXLog->mMemory.alloc( sColumnCount * ID_SIZEOF( smiValue ),
                                           (void **)&( aXLog->mACols ) )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC );
+
+    if ( sNeedCompact == ID_TRUE )
+    {
+        //for ( i = 0; i < sColumnCount; i++ )
+        //{
+        //    aXLog->mCIDs[i] = RP_INVALID_COLUMN_ID;
+        //}
+        IDE_DASSERT( RP_INVALID_COLUMN_ID == 0xFFFFFFFF );
+        idlOS::memset( aXLog->mCIDs, 0xFF, sColumnCount * ID_SIZEOF(UInt) );
+    }
+    else
+    {
+        /* do nothing */
+    }
 
     /* Recv PK Value repeatedly */
     for ( i = 0; i < aXLog->mPKColCnt; i ++ )
@@ -1958,37 +2280,42 @@ IDE_RC rpnComm::recvUpdateA7( iduMemAllocator    * aAllocator,
      *
      * Column : mColCnt, mCIDs[], mBCols[], mACols[]
      */
-    (void)aMeta->searchRemoteTable(&sItem, aXLog->mTableOID);
-    
-    IDU_FIT_POINT_RAISE( "rpnComm::recvUpdateA7::Erratic::rpERR_ABORT_RECEIVER_NOT_FOUND_TABLE",
-                         ERR_NOT_FOUND_TABLE );
-    IDE_TEST_RAISE(sItem == NULL, ERR_NOT_FOUND_TABLE);
 
     /* Recv Update Value repeatedly */
     for(i = 0; i < aXLog->mColCnt; i++)
     {
         IDE_TEST( recvCIDA7( aExitFlag,
                              aProtocolContext,
-                             &aXLog->mCIDs[i],
+                             &sCID,
                              aTimeOutSec )
                   != IDE_SUCCESS );
 
-        aXLog->mCIDs[i] = sItem->mMapColID[aXLog->mCIDs[i]];
+        sRecvIndex = sItem->mMapColID[sCID];
 
-        if( aXLog->mCIDs[i] != RP_INVALID_COLUMN_ID )
+        if( sRecvIndex != RP_INVALID_COLUMN_ID )
         {
+            if ( sNeedCompact == ID_FALSE )
+            {
+                aXLog->mCIDs[i] = sRecvIndex;
+                sRecvIndex = i;
+            }
+            else
+            {
+                aXLog->mCIDs[sRecvIndex] = sRecvIndex;
+            }
+
             IDE_TEST(recvValueA7(aAllocator,
                                  aExitFlag,
                                  aProtocolContext,
                                  &aXLog->mMemory,
-                                 &aXLog->mBCols[i],
+                                 &aXLog->mBCols[sRecvIndex],
                                  aTimeOutSec)
                      != IDE_SUCCESS);
             IDE_TEST(recvValueA7(aAllocator,
                                  aExitFlag,
                                  aProtocolContext,
                                  &aXLog->mMemory,
-                                 &aXLog->mACols[i],
+                                 &aXLog->mACols[sRecvIndex],
                                  aTimeOutSec)
                      != IDE_SUCCESS);
         }
@@ -2023,6 +2350,19 @@ IDE_RC rpnComm::recvUpdateA7( iduMemAllocator    * aAllocator,
         }
     }
 
+    if ( sNeedCompact == ID_TRUE )
+    {
+        compactCIDAndColumnValueArray( aXLog->mCIDs,
+                                       aXLog->mBCols,
+                                       aXLog->mACols,
+                                       aXLog->mColCnt,
+                                       sColumnCount );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_NOT_FOUND_TABLE);
@@ -2045,6 +2385,7 @@ IDE_RC rpnComm::recvUpdateA7( iduMemAllocator    * aAllocator,
 
 IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
                               cmiProtocolContext *aProtocolContext,
+                              idBool            * aExitFlag,
                               smTID               aTID,
                               smSN                aSN,
                               smSN                aSyncSN,
@@ -2058,7 +2399,8 @@ IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
                               smiValue          * aBCols,
                               smiChainedValue   * aBChainedCols, // PROJ-1705
                               rpValueLen        * aBMtdValueLen,
-                              UInt              * aBChainedColsTotalLen )
+                              UInt              * aBChainedColsTotalLen,
+                              UInt                aTimeoutSec )
 {
     UInt i;
     UInt sType;
@@ -2075,8 +2417,10 @@ IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 44, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -2097,8 +2441,10 @@ IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
     {
         IDE_TEST( sendPKValueForA7( aHBTResource,
                                     aProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -2107,7 +2453,9 @@ IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
     {
         IDE_TEST( sendCIDForA7( aHBTResource,
                                 aProtocolContext,
-                                aCIDs[i] )
+                                aExitFlag,
+                                aCIDs[i],
+                                aTimeoutSec )
                   != IDE_SUCCESS );
 
         /*
@@ -2119,8 +2467,10 @@ IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
         {
             IDE_TEST( sendValueForA7( aHBTResource,
                                       aProtocolContext,
+                                      aExitFlag,
                                       &aBCols[aCIDs[i]],
-                                      aBMtdValueLen[aCIDs[i]])
+                                      aBMtdValueLen[aCIDs[i]],
+                                      aTimeoutSec )
                       != IDE_SUCCESS );
         }
         // 디스크 테이블에 발생한 update의 분석 결과는 BChainedCols에 들어있다.
@@ -2128,9 +2478,11 @@ IDE_RC rpnComm::sendDeleteA7( void               *aHBTResource,
         {
             IDE_TEST( sendChainedValueForA7( aHBTResource,
                                              aProtocolContext,
+                                             aExitFlag,
                                              &aBChainedCols[aCIDs[i]],
                                              aBMtdValueLen[aCIDs[i]],
-                                             aBChainedColsTotalLen[aCIDs[i]] )
+                                             aBChainedColsTotalLen[aCIDs[i]],
+                                             aTimeoutSec )
                      != IDE_SUCCESS );
         }
     }
@@ -2278,7 +2630,9 @@ IDE_RC rpnComm::recvDeleteA7( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendCIDForA7( void               * aHBTResource,
                               cmiProtocolContext * aProtocolContext,
-                              UInt                 aCID )
+                              idBool             * aExitFlag,
+                              UInt                 aCID,
+                              UInt                 aTimeoutSec )
 {
     UChar sOpCode;
 
@@ -2289,8 +2643,10 @@ IDE_RC rpnComm::sendCIDForA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 4, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -2339,15 +2695,19 @@ IDE_RC rpnComm::recvCIDA7( idBool              * aExitFlag,
 }
 
 IDE_RC rpnComm::sendTxAckA7( cmiProtocolContext * aProtocolContext,
+                             idBool             * aExitFlag,
                              smTID                aTID,
-                             smSN                 aSN )
+                             smSN                 aSN,
+                             UInt                 aTimeoutSec )
 {
     UChar sOpCode;
 
     IDE_TEST( checkAndFlush( NULL,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 12, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -2401,8 +2761,10 @@ IDE_RC rpnComm::recvTxAckForA7( idBool             * aExitFlag,
 
 IDE_RC rpnComm::sendValueForA7( void               * aHBTResource,
                                 cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
                                 smiValue           * aValue,
-                                rpValueLen           aValueLen )
+                                rpValueLen           aValueLen,
+                                UInt                 aTimeoutSec )
 {
     UChar sOneByteLenValue;
     UInt sRemainSpaceInCmBlock;
@@ -2421,8 +2783,10 @@ IDE_RC rpnComm::sendValueForA7( void               * aHBTResource,
      */
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 4 + 2,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -2472,7 +2836,9 @@ IDE_RC rpnComm::sendValueForA7( void               * aHBTResource,
             IDU_FIT_POINT( "rpnComm::sendValue::cmiSend::ERR_SEND" );
             IDE_TEST( sendCmBlock( aHBTResource,
                                    aProtocolContext,
-                                   ID_FALSE )
+                                   aExitFlag,
+                                   ID_FALSE,
+                                   aTimeoutSec )
                       != IDE_SUCCESS );
             sRemainSpaceInCmBlock = CMI_REMAIN_SPACE_IN_WRITE_BLOCK( aProtocolContext );
         }
@@ -2505,8 +2871,10 @@ IDE_RC rpnComm::sendValueForA7( void               * aHBTResource,
 
 IDE_RC rpnComm::sendPKValueForA7( void               * aHBTResource,
                                   cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
                                   smiValue           * aValue,
-                                  rpValueLen           aPKLen )
+                                  rpValueLen           aPKLen,
+                                  UInt                 aTimeoutSec )
 {
     UChar sOneByteLenValue;
     UInt sRemainSpaceInCmBlock;
@@ -2534,8 +2902,10 @@ IDE_RC rpnComm::sendPKValueForA7( void               * aHBTResource,
      */
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 4 + 2,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -2583,7 +2953,9 @@ IDE_RC rpnComm::sendPKValueForA7( void               * aHBTResource,
             IDU_FIT_POINT( "rpnComm::sendPKValue::cmiSend::ERR_SEND" );
             IDE_TEST( sendCmBlock( aHBTResource,
                                    aProtocolContext,
-                                   ID_FALSE )
+                                   aExitFlag,
+                                   ID_FALSE,
+                                   aTimeoutSec )
                       != IDE_SUCCESS );
             sRemainSpaceInCmBlock = CMI_REMAIN_SPACE_IN_WRITE_BLOCK( aProtocolContext );
         }
@@ -2615,9 +2987,11 @@ IDE_RC rpnComm::sendPKValueForA7( void               * aHBTResource,
 
 IDE_RC rpnComm::sendChainedValueForA7( void               * aHBTResource,
                                        cmiProtocolContext * aProtocolContext,
+                                       idBool             * aExitFlag,
                                        smiChainedValue    * aChainedValue,
                                        rpValueLen           aBMtdValueLen,
-                                       UInt                 aChainedValueLen )
+                                       UInt                 aChainedValueLen,
+                                       UInt                 aTimeoutSec )
 {
     smiChainedValue * sChainedValue = NULL;
     UChar sOneByteLenValue;
@@ -2639,8 +3013,10 @@ IDE_RC rpnComm::sendChainedValueForA7( void               * aHBTResource,
      */
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
+                             aExitFlag,
                              1 + 4 + 2,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
     /* Replication XLog Header Set */
     sOpCode = CMI_PROTOCOL_OPERATION( RP, Value );
@@ -2693,7 +3069,9 @@ IDE_RC rpnComm::sendChainedValueForA7( void               * aHBTResource,
             IDU_FIT_POINT( "rpnComm::sendChainedValue::cmiSend::ERR_SEND" );
             IDE_TEST( sendCmBlock( aHBTResource,
                                    aProtocolContext,
-                                   ID_FALSE )
+                                   aExitFlag,
+                                   ID_FALSE,
+                                   aTimeoutSec )
                       != IDE_SUCCESS );
             sRemainSpaceInCmBlock = CMI_REMAIN_SPACE_IN_WRITE_BLOCK( aProtocolContext );
         }
@@ -2854,10 +3232,12 @@ IDE_RC rpnComm::recvValueA7( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendStopA7( void               * aHBTResource,
                             cmiProtocolContext * aProtocolContext,
+                            idBool             * aExitFlag,
                             smTID                aTID,
                             smSN                 aSN,
                             smSN                 aSyncSN,
-                            smSN                 aRestartSN )
+                            smSN                 aRestartSN,
+                            UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -2866,8 +3246,10 @@ IDE_RC rpnComm::sendStopA7( void               * aHBTResource,
     
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 32, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     sType = RP_X_REPL_STOP;
@@ -2884,7 +3266,9 @@ IDE_RC rpnComm::sendStopA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendStop::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2895,6 +3279,7 @@ IDE_RC rpnComm::sendStopA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvStopA7( cmiProtocolContext  * aProtocolContext,
+                            idBool              * /*aExitFlag*/,
                             rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -2911,10 +3296,12 @@ IDE_RC rpnComm::recvStopA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendKeepAliveA7( void               * aHBTResource,
                                  cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
                                  smTID                aTID,
                                  smSN                 aSN,
                                  smSN                 aSyncSN,
-                                 smSN                 aRestartSN )
+                                 smSN                 aRestartSN,
+                                 UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -2925,8 +3312,10 @@ IDE_RC rpnComm::sendKeepAliveA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 32, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -2941,7 +3330,9 @@ IDE_RC rpnComm::sendKeepAliveA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendKeepAlive::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2952,6 +3343,7 @@ IDE_RC rpnComm::sendKeepAliveA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvKeepAliveA7( cmiProtocolContext  * aProtocolContext,
+                                 idBool              * /* aExitFlag */,
                                  rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -2968,10 +3360,12 @@ IDE_RC rpnComm::recvKeepAliveA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendFlushA7( void               * /*aHBTResource*/,
                              cmiProtocolContext * aProtocolContext,
+                             idBool             * /*aExitFlag*/,
                              smTID                aTID,
                              smSN                 aSN,
                              smSN                 aSyncSN,
-                             UInt                 aFlushOption)
+                             UInt                 aFlushOption,
+                             UInt                 /*aTimeoutSec*/ )
 {
     UInt sType;
     UChar sOpCode;
@@ -2997,6 +3391,7 @@ IDE_RC rpnComm::sendFlushA7( void               * /*aHBTResource*/,
 }
 
 IDE_RC rpnComm::recvFlushA7( cmiProtocolContext  * aProtocolContext,
+                             idBool              * /* aExitFlag */,
                              rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3013,51 +3408,61 @@ IDE_RC rpnComm::recvFlushA7( cmiProtocolContext  * aProtocolContext,
 }
 
 IDE_RC rpnComm::sendAckA7( cmiProtocolContext * aProtocolContext,
-                           rpXLogAck            aAck )
+                           idBool             * aExitFlag,
+                           rpXLogAck          * aAck,
+                           UInt                 aTimeoutSec )
 {
     UInt i = 0;
     UChar sOpCode;
 
     IDE_TEST( checkAndFlush( NULL,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 52, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
     sOpCode = CMI_PROTOCOL_OPERATION( RP, Ack );
     CMI_WR1( aProtocolContext, sOpCode );
-    CMI_WR4( aProtocolContext, &(aAck.mAckType) );
-    CMI_WR4( aProtocolContext, &(aAck.mAbortTxCount) );
-    CMI_WR4( aProtocolContext, &(aAck.mClearTxCount) );
-    CMI_WR8( aProtocolContext, &(aAck.mRestartSN) );
-    CMI_WR8( aProtocolContext, &(aAck.mLastCommitSN) );
-    CMI_WR8( aProtocolContext, &(aAck.mLastArrivedSN) );
-    CMI_WR8( aProtocolContext, &(aAck.mLastProcessedSN) );
-    CMI_WR8( aProtocolContext, &(aAck.mFlushSN) );
+    CMI_WR4( aProtocolContext, &(aAck->mAckType) );
+    CMI_WR4( aProtocolContext, &(aAck->mAbortTxCount) );
+    CMI_WR4( aProtocolContext, &(aAck->mClearTxCount) );
+    CMI_WR8( aProtocolContext, &(aAck->mRestartSN) );
+    CMI_WR8( aProtocolContext, &(aAck->mLastCommitSN) );
+    CMI_WR8( aProtocolContext, &(aAck->mLastArrivedSN) );
+    CMI_WR8( aProtocolContext, &(aAck->mLastProcessedSN) );
+    CMI_WR8( aProtocolContext, &(aAck->mFlushSN) );
 
     IDU_FIT_POINT( "1.TASK-2004@rpnComm::sendAckA7" );
 
-    for(i = 0; i < aAck.mAbortTxCount; i ++)
+    for(i = 0; i < aAck->mAbortTxCount; i ++)
     {
         IDE_TEST( sendTxAckA7( aProtocolContext,
-                               aAck.mAbortTxList[i].mTID,
-                               aAck.mAbortTxList[i].mSN )
+                               aExitFlag,
+                               aAck->mAbortTxList[i].mTID,
+                               aAck->mAbortTxList[i].mSN,
+                               aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
-    for(i = 0; i < aAck.mClearTxCount; i ++)
+    for(i = 0; i < aAck->mClearTxCount; i ++)
     {
         IDE_TEST( sendTxAckA7( aProtocolContext,
-                               aAck.mClearTxList[i].mTID,
-                               aAck.mClearTxList[i].mSN )
+                               aExitFlag,
+                               aAck->mClearTxList[i].mTID,
+                               aAck->mClearTxList[i].mSN,
+                               aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
     IDU_FIT_POINT( "rpnComm::sendAckA7::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( NULL,    /* aHBTResource */
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3159,6 +3564,7 @@ IDE_RC rpnComm::recvAckA7( iduMemAllocator    * /*aAllocator*/,
 
 IDE_RC rpnComm::sendLobCursorOpenA7( void               * aHBTResource,
                                      cmiProtocolContext * aProtocolContext,
+                                     idBool             * aExitFlag,
                                      smTID                aTID,
                                      smSN                 aSN,
                                      smSN                 aSyncSN,
@@ -3167,7 +3573,8 @@ IDE_RC rpnComm::sendLobCursorOpenA7( void               * aHBTResource,
                                      UInt                 aLobColumnID,
                                      UInt                 aPKColCnt,
                                      smiValue           * aPKCols,
-                                     rpValueLen         * aPKLen )
+                                     rpValueLen         * aPKLen,
+                                     UInt                 aTimeoutSec )
 {
     UInt i;
     UInt sType;
@@ -3184,8 +3591,10 @@ IDE_RC rpnComm::sendLobCursorOpenA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 48, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3206,8 +3615,10 @@ IDE_RC rpnComm::sendLobCursorOpenA7( void               * aHBTResource,
     {
         IDE_TEST( sendPKValueForA7( aHBTResource,
                                     aProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                   != IDE_SUCCESS );
     }
 
@@ -3295,10 +3706,12 @@ IDE_RC rpnComm::recvLobCursorOpenA7( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendLobCursorCloseA7( void                * aHBTResource,
                                       cmiProtocolContext  * aProtocolContext,
+                                      idBool              * aExitFlag,
                                       smTID                 aTID,
                                       smSN                  aSN,
                                       smSN                  aSyncSN,
-                                      ULong                 aLobLocator )
+                                      ULong                 aLobLocator,
+                                      UInt                  aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3309,8 +3722,10 @@ IDE_RC rpnComm::sendLobCursorCloseA7( void                * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 32, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3331,6 +3746,7 @@ IDE_RC rpnComm::sendLobCursorCloseA7( void                * aHBTResource,
 }
 
 IDE_RC rpnComm::recvLobCursorCloseA7( cmiProtocolContext  * aProtocolContext,
+                                      idBool              * /* aExitFlag */,
                                       rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3348,13 +3764,15 @@ IDE_RC rpnComm::recvLobCursorCloseA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendLobPrepare4WriteA7( void               * aHBTResource,
                                         cmiProtocolContext * aProtocolContext,
+                                        idBool             * aExitFlag,
                                         smTID                aTID,
                                         smSN                 aSN,
                                         smSN                 aSyncSN,
                                         ULong                aLobLocator,
                                         UInt                 aLobOffset,
                                         UInt                 aLobOldSize,
-                                        UInt                 aLobNewSize )
+                                        UInt                 aLobNewSize,
+                                        UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3365,8 +3783,10 @@ IDE_RC rpnComm::sendLobPrepare4WriteA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 44, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3390,6 +3810,7 @@ IDE_RC rpnComm::sendLobPrepare4WriteA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvLobPrepare4WriteA7( cmiProtocolContext  * aProtocolContext,
+                                        idBool              * /*aExitFlag*/,
                                         rpdXLog             * aXLog )
 {
     UInt   * sType   = (UInt*)&(aXLog->mType);
@@ -3411,11 +3832,13 @@ IDE_RC rpnComm::recvLobPrepare4WriteA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendLobTrimA7( void               * aHBTResource,
                                cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
                                smTID                aTID,
                                smSN                 aSN,
                                smSN                 aSyncSN,
                                ULong                aLobLocator,
-                               UInt                 aLobOffset )
+                               UInt                 aLobOffset,
+                               UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3426,8 +3849,10 @@ IDE_RC rpnComm::sendLobTrimA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 36, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3450,13 +3875,15 @@ IDE_RC rpnComm::sendLobTrimA7( void               * aHBTResource,
 
 IDE_RC rpnComm::sendLobPartialWriteA7( void               * aHBTResource,
                                        cmiProtocolContext * aProtocolContext,
+                                       idBool             * aExitFlag,
                                        smTID                aTID,
                                        smSN                 aSN,
                                        smSN                 aSyncSN,
                                        ULong                aLobLocator,
                                        UInt                 aLobOffset,
                                        UInt                 aLobPieceLen,
-                                       SChar              * aLobPiece )
+                                       SChar              * aLobPiece,
+                                       UInt                 aTimeoutSec )
 {
     UInt  sType;
     UChar sOpCode;
@@ -3472,8 +3899,10 @@ IDE_RC rpnComm::sendLobPartialWriteA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              RP_BLOB_VALUSE_HEADER_SIZE_FOR_CM + aLobPieceLen,
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3496,7 +3925,9 @@ IDE_RC rpnComm::sendLobPartialWriteA7( void               * aHBTResource,
         {
             IDE_TEST( sendCmBlock( aHBTResource,
                                    aProtocolContext,
-                                   ID_FALSE )
+                                   aExitFlag,
+                                   ID_FALSE,
+                                   aTimeoutSec )
                       != IDE_SUCCESS );
         }
         else
@@ -3609,10 +4040,12 @@ IDE_RC rpnComm::recvLobPartialWriteA7( iduMemAllocator     * aAllocator,
 
 IDE_RC rpnComm::sendLobFinish2WriteA7( void               * aHBTResource,
                                        cmiProtocolContext * aProtocolContext,
+                                       idBool             * aExitFlag,
                                        smTID                aTID,
                                        smSN                 aSN,
                                        smSN                 aSyncSN,
-                                       ULong                aLobLocator )
+                                       ULong                aLobLocator,
+                                       UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3623,8 +4056,10 @@ IDE_RC rpnComm::sendLobFinish2WriteA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 32, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3645,6 +4080,7 @@ IDE_RC rpnComm::sendLobFinish2WriteA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvLobFinish2WriteA7( cmiProtocolContext  * aProtocolContext,
+                                       idBool              * /* aExitFlag */,
                                        rpdXLog             * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3662,9 +4098,11 @@ IDE_RC rpnComm::recvLobFinish2WriteA7( cmiProtocolContext  * aProtocolContext,
 
 IDE_RC rpnComm::sendHandshakeA7( void               * aHBTResource,
                                  cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
                                  smTID                aTID,
                                  smSN                 aSN,
-                                 smSN                 aSyncSN )
+                                 smSN                 aSyncSN,
+                                 UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3675,8 +4113,10 @@ IDE_RC rpnComm::sendHandshakeA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 24, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3690,7 +4130,9 @@ IDE_RC rpnComm::sendHandshakeA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendHandshake::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3701,6 +4143,7 @@ IDE_RC rpnComm::sendHandshakeA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvHandshakeA7( cmiProtocolContext * aProtocolContext,
+                                 idBool             * /*aExitFlag*/,
                                  rpdXLog            * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3716,9 +4159,11 @@ IDE_RC rpnComm::recvHandshakeA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendSyncPKBeginA7( void               * aHBTResource,
                                    cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    smTID                aTID,
                                    smSN                 aSN,
-                                   smSN                 aSyncSN )
+                                   smSN                 aSyncSN,
+                                   UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3729,8 +4174,10 @@ IDE_RC rpnComm::sendSyncPKBeginA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 24, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3744,7 +4191,9 @@ IDE_RC rpnComm::sendSyncPKBeginA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendSyncPKBegin::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3755,6 +4204,7 @@ IDE_RC rpnComm::sendSyncPKBeginA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvSyncPKBeginA7( cmiProtocolContext * aProtocolContext,
+                                   idBool             * /* aExitFlag */,
                                    rpdXLog            * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3770,13 +4220,15 @@ IDE_RC rpnComm::recvSyncPKBeginA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendSyncPKA7( void               * aHBTResource,
                               cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
                               smTID                aTID,
                               smSN                 aSN,
                               smSN                 aSyncSN,
                               ULong                aTableOID,
                               UInt                 aPKColCnt,
                               smiValue           * aPKCols,
-                              rpValueLen         * aPKLen )
+                              rpValueLen         * aPKLen,
+                              UInt                 aTimeoutSec )
 {
     UInt i;
     UInt sType;
@@ -3792,8 +4244,10 @@ IDE_RC rpnComm::sendSyncPKA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 36, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3812,8 +4266,10 @@ IDE_RC rpnComm::sendSyncPKA7( void               * aHBTResource,
     {
         IDE_TEST( sendPKValueForA7( aHBTResource,
                                     aProtocolContext,
+                                    aExitFlag,
                                     &aPKCols[i],
-                                    aPKLen[i] )
+                                    aPKLen[i],
+                                    aTimeoutSec )
                  != IDE_SUCCESS);
     }
 
@@ -3879,9 +4335,11 @@ IDE_RC rpnComm::recvSyncPKA7( idBool             * aExitFlag,
 
 IDE_RC rpnComm::sendSyncPKEndA7( void               * aHBTResource,
                                  cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
                                  smTID                aTID,
                                  smSN                 aSN,
-                                 smSN                 aSyncSN )
+                                 smSN                 aSyncSN,
+                                 UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3892,8 +4350,10 @@ IDE_RC rpnComm::sendSyncPKEndA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 24, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3907,7 +4367,9 @@ IDE_RC rpnComm::sendSyncPKEndA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendSyncPKEnd::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3918,6 +4380,7 @@ IDE_RC rpnComm::sendSyncPKEndA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvSyncPKEndA7( cmiProtocolContext * aProtocolContext,
+                                 idBool             * /* aExitFlag */,
                                  rpdXLog            * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3933,9 +4396,11 @@ IDE_RC rpnComm::recvSyncPKEndA7( cmiProtocolContext * aProtocolContext,
 
 IDE_RC rpnComm::sendFailbackEndA7( void               * aHBTResource,
                                    cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
                                    smTID                aTID,
                                    smSN                 aSN,
-                                   smSN                 aSyncSN )
+                                   smSN                 aSyncSN,
+                                   UInt                 aTimeoutSec )
 {
     UInt sType;
     UChar sOpCode;
@@ -3946,8 +4411,10 @@ IDE_RC rpnComm::sendFailbackEndA7( void               * aHBTResource,
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext, 
+                             aExitFlag,
                              1 + 24, 
-                             ID_TRUE )
+                             ID_TRUE,
+                             aTimeoutSec )
               != IDE_SUCCESS );
 
     /* Replication XLog Header Set */
@@ -3961,7 +4428,9 @@ IDE_RC rpnComm::sendFailbackEndA7( void               * aHBTResource,
     IDU_FIT_POINT( "rpnComm::sendFailbackEnd::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
-                           ID_TRUE ) 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3972,6 +4441,7 @@ IDE_RC rpnComm::sendFailbackEndA7( void               * aHBTResource,
 }
 
 IDE_RC rpnComm::recvFailbackEndA7( cmiProtocolContext * aProtocolContext,
+                                   idBool             * /*aExitFlag*/,
                                    rpdXLog            * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3986,6 +4456,7 @@ IDE_RC rpnComm::recvFailbackEndA7( cmiProtocolContext * aProtocolContext,
 }
 
 IDE_RC rpnComm::recvAckOnDML( cmiProtocolContext * aProtocolContext,
+                              idBool             * /* aExitFlag */,
                               rpdXLog            * aXLog )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
@@ -3994,4 +4465,704 @@ IDE_RC rpnComm::recvAckOnDML( cmiProtocolContext * aProtocolContext,
     CMI_RD4( aProtocolContext, sType );
 
     return IDE_SUCCESS;
+}
+
+IDE_RC rpnComm::recvOperationInfoA7( cmiProtocolContext * aProtocolContext,
+                                     idBool             * aExitFlag,
+                                     UChar              * aOpCode,
+                                     ULong                aTimeoutSec )
+{
+    UChar sOpCode;
+
+    IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aTimeoutSec )
+              != IDE_SUCCESS );
+
+    /* Check Operation Type */
+    CMI_PEEK1( aProtocolContext, sOpCode );
+
+    *aOpCode = sOpCode;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendDDLASyncStartA7( void               * aHBTResource,
+                                     cmiProtocolContext * aProtocolContext,
+                                     idBool             * aExitFlag,
+                                     UInt                 aType,
+                                     ULong                aSendTimeout )
+{
+    UChar sOpCode;
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    IDE_TEST( checkAndFlush( aHBTResource,
+                             aProtocolContext,
+                             aExitFlag,
+                             1 + 
+                             4,
+                             ID_TRUE,
+                             aSendTimeout )
+              != IDE_SUCCESS );
+
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, DDLReplicateHandshake );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &aType );
+
+    IDE_TEST( sendCmBlock( aHBTResource,
+                           aProtocolContext,
+                           aExitFlag,
+                           ID_TRUE,
+                           aSendTimeout )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvDDLASyncStartA7( cmiProtocolContext * aProtocolContext,
+                                     idBool             * /*aExitFlag*/,
+                                     rpdXLog            * aXLog )
+
+{
+    UInt * sType = (UInt*)&(aXLog->mType);
+
+    /* Get Argument XLog Hdr */
+    CMI_RD4( aProtocolContext, sType );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC rpnComm::sendDDLASyncStartAckA7( cmiProtocolContext * aProtocolContext,
+                                        idBool             * aExitFlag,
+                                        UInt                 aType,
+                                        ULong                aSendTimeout )
+{
+    UChar sOpCode;
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    IDE_TEST( checkAndFlush( NULL,
+                             aProtocolContext,
+                             aExitFlag,
+                             1 +
+                             4,
+                             ID_TRUE,
+                             aSendTimeout )
+              != IDE_SUCCESS );
+
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, DDLReplicateAck );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &aType );
+
+    IDE_TEST( sendCmBlock( NULL,
+                           aProtocolContext,
+                           aExitFlag,
+                           ID_TRUE,
+                           aSendTimeout )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvDDLASyncStartAckA7( cmiProtocolContext * aProtocolContext,
+                                        idBool             * aExitFlag,
+                                        UInt               * aType,
+                                        ULong                aRecvTimeout )
+{
+    UChar sOpCode;
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
+    {
+        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+                  != IDE_SUCCESS );
+    }
+
+    CMI_RD1( aProtocolContext, sOpCode );     
+    IDE_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, DDLReplicateAck ), 
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext, aType );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE,
+                                  sOpCode ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendDDLASyncExecuteA7( void               * aHBTResource,
+                                       cmiProtocolContext * aProtocolContext,
+                                       idBool             * aExitFlag,
+                                       UInt                 aType,
+                                       SChar              * aUserName,
+                                       UInt                 aDDLEnableLevel,
+                                       UInt                 aTargetCount,
+                                       SChar              * aTargetTableName,
+                                       SChar              * aTargetPartNames,
+                                       smSN                 aDDLCommitSN,
+                                       rpdVersion         * aReplVersion,
+                                       SChar              * aDDLStmt,
+                                       ULong                aSendTimeout )
+
+
+{
+    UChar sOpCode;
+    UInt  i;
+    UInt  sOffset      = 0;
+    UInt  sDDLStmtLen  = 0;
+    UInt  sUserNameLen = 0;
+    UInt  sTargetTableNameLen   = 0;
+    UInt  sTargetPartNameLen    = 0;
+    UInt  sTargetPartNameLenSum = 0;
+    SChar * sTargetPartName     = NULL;
+
+    sDDLStmtLen  = idlOS::strlen( aDDLStmt );
+    sUserNameLen = idlOS::strlen( aUserName );
+    sTargetTableNameLen = idlOS::strlen( aTargetTableName );
+
+    for ( i = 0; i < aTargetCount; i++ )
+    {
+        sTargetPartName = aTargetPartNames + sOffset;
+        sTargetPartNameLenSum += idlOS::strlen( sTargetPartName );
+
+        sOffset += QC_MAX_OBJECT_NAME_LEN + 1;
+    }
+    sOffset = 0; 
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    IDE_TEST( checkAndFlush( aHBTResource,
+                             aProtocolContext,
+                             aExitFlag,
+                             1 + 
+                             4 +
+                             4 + sUserNameLen +
+                             4 +
+                             4 + 4 + sTargetTableNameLen + 4 * aTargetCount + sTargetPartNameLenSum +
+                             8 +
+                             8, 
+                             ID_TRUE,
+                             aSendTimeout )
+              != IDE_SUCCESS );
+
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, DDLReplicateExecute  );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &aType );
+
+    CMI_WR4( aProtocolContext, &sUserNameLen );
+    CMI_WCP( aProtocolContext, (UChar *)aUserName, sUserNameLen );
+
+    CMI_WR4( aProtocolContext, &aDDLEnableLevel );
+
+    CMI_WR4( aProtocolContext, &aTargetCount );
+
+    CMI_WR4( aProtocolContext, &sTargetTableNameLen );        
+    IDE_DASSERT( sTargetTableNameLen > 0 );
+    CMI_WCP( aProtocolContext, (UChar *)aTargetTableName, sTargetTableNameLen );
+
+    for ( i = 0; i < aTargetCount; i++ )
+    {
+        sTargetPartName = aTargetPartNames + sOffset;
+
+        sTargetPartNameLen = idlOS::strlen( sTargetPartName );
+
+        CMI_WR4( aProtocolContext, &( sTargetPartNameLen ) );
+        if ( sTargetPartNameLen > 0 )
+        {
+            CMI_WCP( aProtocolContext, (UChar *)sTargetPartName, sTargetPartNameLen );
+
+            sOffset += QC_MAX_OBJECT_NAME_LEN + 1;
+        }
+        else
+        {
+            /* Only Non Partitioned Table Here */
+            IDE_DASSERT( aTargetCount == 1 );
+        }
+    }
+
+    CMI_WR8( aProtocolContext, &aDDLCommitSN );
+
+    CMI_WR8( aProtocolContext, &(aReplVersion->mVersion) );
+
+    IDE_TEST( sendQueryString( aHBTResource,
+                               aProtocolContext,
+                               aExitFlag,
+                               aType,
+                               sDDLStmtLen,
+                               aDDLStmt,
+                               aSendTimeout )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvDDLASyncExecuteA7( cmiProtocolContext  * aProtocolContext,
+                                       idBool              * aExitFlag,
+                                       UInt                * aType,
+                                       SChar               * aUserName,
+                                       UInt                * aDDLEnableLevel,
+                                       UInt                * aTargetCount,
+                                       SChar               * aTargetTableName,
+                                       SChar              ** aTargetPartNames,
+                                       smSN                * aDDLCommitSN,
+                                       rpdVersion          * aReplVersion,
+                                       SChar              ** aDDLStmt,
+                                       ULong                 aRecvTimeout )
+{
+    UChar sOpCode;
+    UInt  i;    
+    UInt  sOffset        = 0;
+    UInt  sUserNameLen   = 0;
+    UInt  sTargetPartNameLen = 0;
+    UInt  sTargetTableNameLen = 0;
+    SChar * sTargetPartName   = NULL;
+    SChar * sTargetPartNames  = NULL;
+   
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
+    {
+        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+                  != IDE_SUCCESS );
+    }
+
+    /* Check Operation Type */
+    CMI_RD1( aProtocolContext, sOpCode );
+    IDE_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, DDLReplicateExecute ),
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext, aType );
+
+    CMI_RD4( aProtocolContext, &( sUserNameLen ) );
+    IDE_DASSERT( sUserNameLen > 0 );
+
+    CMI_RCP( aProtocolContext, (UChar *)aUserName, sUserNameLen );
+    aUserName[sUserNameLen] = '\0';
+
+    CMI_RD4( aProtocolContext, aDDLEnableLevel );
+
+    CMI_RD4( aProtocolContext, aTargetCount );
+   
+    CMI_RD4( aProtocolContext, &sTargetTableNameLen );        
+    IDE_DASSERT( sTargetTableNameLen > 0 );
+
+    CMI_RCP( aProtocolContext, (UChar *)( aTargetTableName ), sTargetTableNameLen );
+    aTargetTableName[sTargetTableNameLen] = '\0';
+
+    IDE_TEST( iduMemMgr::malloc( IDU_MEM_RP_RPN,
+                                 *aTargetCount * 
+                                 ( ID_SIZEOF(SChar) * ( QC_MAX_OBJECT_NAME_LEN + 1 ) ),
+                                 (void**)&( sTargetPartNames ),
+                                 IDU_MEM_IMMEDIATE )
+              != IDE_SUCCESS );
+
+    for ( i = 0; i < *aTargetCount; i++ )
+    {
+        sTargetPartName = sTargetPartNames + sOffset;
+
+        CMI_RD4( aProtocolContext, &sTargetPartNameLen );
+        if ( sTargetPartNameLen > 0 )
+        {
+            IDU_FIT_POINT_RAISE( "rpnComm::recvDDLASyncExecuteA7::ERR_TOO_LONG_PART_NAME", ERR_TOO_LONG_PART_NAME );
+            IDE_TEST_RAISE( sTargetPartNameLen > QC_MAX_OBJECT_NAME_LEN , ERR_TOO_LONG_PART_NAME );
+
+            CMI_RCP( aProtocolContext, (UChar *)sTargetPartName, sTargetPartNameLen );
+
+            sOffset += QC_MAX_OBJECT_NAME_LEN + 1;
+        }
+        else
+        {
+            /* Only Non Partitioned Table Here */
+            IDE_DASSERT( *aTargetCount == 1 );
+        }
+            
+        sTargetPartName[sTargetPartNameLen] = '\0';
+    }
+
+    CMI_RD8( aProtocolContext, aDDLCommitSN );
+
+    CMI_RD8( aProtocolContext, &( aReplVersion->mVersion ) );
+
+    IDE_TEST( recvQueryString( aProtocolContext,
+                               aExitFlag,
+                               aType,
+                               aDDLStmt,
+                               aRecvTimeout )
+              != IDE_SUCCESS );
+
+    *aTargetPartNames = sTargetPartNames;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_TOO_LONG_PART_NAME );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, "Too long received target name" ) );
+    }
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE,
+                                  sOpCode ) );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sTargetPartNames != NULL )
+    {
+        (void)iduMemMgr::free( sTargetPartNames );
+        sTargetPartNames = NULL;
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendDDLASyncExecuteAckA7( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt                 aType,
+                                          UInt                 aIsSuccess,
+                                          UInt                 aErrCode,
+                                          SChar              * aErrMsg,
+                                          ULong                aSendTimeout )
+{
+    UChar sOpCode;
+    UInt  sErrMsgLen  = 0;
+    UInt  sSendMsgLen = 0;
+
+    if ( aErrMsg != NULL )
+    {
+        sErrMsgLen = idlOS::strlen( aErrMsg );
+    }
+    else
+    {
+        sErrMsgLen = 0;
+    }
+
+    if ( sErrMsgLen > RP_MAX_MSG_LEN )
+    {
+        sSendMsgLen = RP_MAX_MSG_LEN;
+    }
+    else
+    {
+        sSendMsgLen = sErrMsgLen;
+    }
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    IDE_TEST( checkAndFlush( NULL,
+                             aProtocolContext,
+                             aExitFlag,
+                             1 + 
+                             4 +
+                             4 +
+                             4 +
+                             4 + sSendMsgLen, 
+                             ID_TRUE,
+                             aSendTimeout )
+              != IDE_SUCCESS );
+
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, DDLReplicateAck );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &aType );
+
+    CMI_WR4( aProtocolContext, &aIsSuccess );
+
+    CMI_WR4( aProtocolContext, &aErrCode );
+
+    CMI_WR4( aProtocolContext, &sSendMsgLen );
+    if ( sSendMsgLen > 0 )
+    {
+        CMI_WCP( aProtocolContext, (UChar *)aErrMsg, sSendMsgLen );
+    }
+
+    IDE_TEST( sendCmBlock( NULL,
+                           aProtocolContext,
+                           aExitFlag,
+                           ID_TRUE,
+                           aSendTimeout )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvDDLASyncExecuteAckA7( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt               * aType,
+                                          UInt               * aIsSuccess,
+                                          UInt               * aErrCode,
+                                          SChar              * aErrMsg,
+                                          ULong                aRecvTimeout )
+{
+    UChar sOpCode;
+    UInt  sErrMsgLen     = 0;
+    UInt  sErrMsgRecvLen = 0;
+
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+
+    if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
+    {
+        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+                  != IDE_SUCCESS );
+    }
+
+    CMI_RD1( aProtocolContext, sOpCode );
+    IDE_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, DDLReplicateAck ), 
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext,aType );
+
+    CMI_RD4( aProtocolContext, aIsSuccess );
+
+    CMI_RD4( aProtocolContext,(UInt*)aErrCode );
+
+    CMI_RD4( aProtocolContext, &sErrMsgRecvLen );
+    if ( sErrMsgRecvLen > 0 )
+    {
+        if ( sErrMsgRecvLen > RP_MAX_MSG_LEN )
+        {
+            sErrMsgLen = RP_MAX_MSG_LEN;
+        }
+        else
+        {
+            sErrMsgLen = sErrMsgRecvLen;
+        }
+
+        CMI_RCP( aProtocolContext, (UChar *)aErrMsg, sErrMsgLen );
+        aErrMsg[sErrMsgLen] = '\0';
+
+        if ( sErrMsgRecvLen > sErrMsgLen )
+        {
+            /* 나머지는 Skip */
+            CMI_SKIP_READ_BLOCK( aProtocolContext, sErrMsgRecvLen - sErrMsgLen );
+        }
+    }
+    else
+    {
+        aErrMsg[0] = '\0';
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE,
+                                  sOpCode ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendQueryString(  void               * aHBTResource,
+                                  cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
+                                  UInt                 aType,
+                                  UInt                 aSqlLen,
+                                  SChar              * aSql,
+                                  ULong                aTimeout )
+{
+    UChar sOpCode;
+
+    IDE_TEST( checkAndFlush( aHBTResource,
+                             aProtocolContext,
+                             aExitFlag,
+                             1 + 
+                             4 +
+                             4 + aSqlLen,
+                             ID_TRUE,
+                             aTimeout )
+              != IDE_SUCCESS );
+
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, DDLReplicateQueryStatement );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &aType );
+
+    CMI_WR4( aProtocolContext, &aSqlLen );
+    if ( aSqlLen > 0 )
+    {
+        CMI_WCP( aProtocolContext, (UChar *)aSql, aSqlLen );
+    }
+
+    IDE_TEST( sendCmBlock( aHBTResource,
+                           aProtocolContext,
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeout )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvQueryString( cmiProtocolContext  * aProtocolContext,
+                                 idBool              * aExitFlag,
+                                 UInt                * aType,
+                                 SChar              ** aSql,
+                                 ULong                 aRecvTimeout )
+{
+    UChar   sOpCode;
+    UInt    sSqlLen  = 0;
+    SChar * sSql     = NULL;
+
+    if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
+    {
+        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+                  != IDE_SUCCESS );
+    }
+
+    CMI_RD1( aProtocolContext, sOpCode );
+    IDE_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, DDLReplicateQueryStatement ),
+                    ERR_CHECK_OPERATION_TYPE );
+    
+    CMI_RD4( aProtocolContext, aType );
+
+    CMI_RD4( aProtocolContext, &sSqlLen );
+    if ( sSqlLen > 0 )
+    {
+        IDE_TEST( iduMemMgr::malloc( IDU_MEM_RP_RPN,
+                                     sSqlLen + 1,
+                                     (void**)&( sSql ),
+                                     IDU_MEM_IMMEDIATE )
+                  != IDE_SUCCESS );
+
+        CMI_RCP( aProtocolContext, (UChar *)sSql, sSqlLen );
+        sSql[sSqlLen] = '\0';
+    }
+
+    *aSql = sSql;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE, sOpCode ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    if ( sSql != NULL )
+    {
+        (void)iduMemMgr::free( sSql );
+        sSql = NULL;
+    }
+
+    return IDE_FAILURE;
+}
+
+
+
+IDE_RC rpnComm::sendMetaInitFlagA7( void               * aHBTResource,
+                                    cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitFlag,
+                                    idBool               aMetaInitFlag,
+                                    UInt                 aTimeoutSec )
+{
+    UChar sOpCode;
+    UInt  sMetaInitFlag = 0;
+    
+    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
+    
+    IDE_TEST( checkAndFlush( NULL, /* aHBTResource */
+                             aProtocolContext,
+                             aExitFlag,
+                             1 + 4,
+                             ID_TRUE,
+                             aTimeoutSec )
+              != IDE_SUCCESS );
+
+    /* Replication Information Set */
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, MetaInitialize );
+    CMI_WR1( aProtocolContext, sOpCode );
+    
+    if ( aMetaInitFlag == ID_TRUE )
+    {
+        sMetaInitFlag = 1;
+    }
+    else
+    {
+        sMetaInitFlag = 0;
+    }
+    CMI_WR4( aProtocolContext, &sMetaInitFlag );
+    
+    IDE_TEST( sendCmBlock( aHBTResource,
+                           aProtocolContext, 
+                           aExitFlag,
+                           ID_TRUE,
+                           aTimeoutSec ) 
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvMetaInitFlagA7( cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitFlag,
+                                    idBool             * aMetaInitFlag,
+                                    ULong                aTimeoutSec )
+{
+    UChar   sOpCode;
+    UInt    sMetaInitFlag = 0;
+
+    IDE_TEST( readCmBlock( aProtocolContext, 
+                           aExitFlag,
+                           NULL /* TimeoutFlag */, 
+                           aTimeoutSec )
+              != IDE_SUCCESS );
+
+    /* Check Operation Type */
+    CMI_RD1( aProtocolContext, sOpCode );
+    IDE_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, MetaInitialize ), 
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext, &sMetaInitFlag );
+
+    if ( sMetaInitFlag == 1 )
+    {
+        *aMetaInitFlag = ID_TRUE;
+    }
+    else
+    {
+        *aMetaInitFlag = ID_FALSE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_WRONG_OPERATION_TYPE,
+                                  sOpCode ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;    
 }

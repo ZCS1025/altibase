@@ -36,8 +36,8 @@ static mmmPhaseAction *gServiceActions[] =
     &gMmmActInitREPL,
     &gMmmActInitAudit,    /* PROJ-2223 Altibase Auditing */
     &gMmmActInitJobManager, /* PROJ-1438 Job Scheduler */
-    &gMmmActInitIPCDAProcMonitor,
     &gMmmActInitSnapshotExport, /* PROJ-2626 Snapshot Export */
+    &gMmmActInitSD,
     &gMmmActEndService,
     NULL /* should exist!! */
 };

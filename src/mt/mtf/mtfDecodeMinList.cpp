@@ -92,6 +92,7 @@ static const mtcExecute mtfDecodeMinListExecute = {
     mtfDecodeMinListFinalize,
     mtfDecodeMinListCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

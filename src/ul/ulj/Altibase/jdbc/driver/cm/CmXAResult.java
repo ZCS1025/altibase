@@ -49,7 +49,7 @@ public class CmXAResult extends CmResult
         }
     }
 
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

@@ -101,7 +101,7 @@ EOF
     ERROR_MESSAGE=`grep "^\[ERR-" $REPLICATION_TABLE_FILE.ERR`
     if [ -z "$ERROR_MESSAGE" ]
     then
-        sed -e "s/ *$//g" -e "/^$/d" -e "/row[s]* selected/d" -e "1,3 d" $REPLICATION_TABLE_FILE.TMP > $REPLICATION_TABLE_FILE
+        sed -e "s/ *$//g" -e "/^$/d" -e "/row[s]* selected/d" -e "/SPOOL OFF/d" -e "1,3 d" $REPLICATION_TABLE_FILE.TMP > $REPLICATION_TABLE_FILE
 
         RESULT_ROWS=`cat $REPLICATION_TABLE_FILE`
         if [ -z "$RESULT_ROWS" ]
@@ -159,7 +159,7 @@ EOF
     ERROR_MESSAGE=`grep "^\[ERR-" $ALTIBASE_PRIMARY_KEY_FILE.ERR`
     if [ -z "$ERROR_MESSAGE" ]
     then
-        sed -e "s/ *$//g" -e "/^$/d" -e "/row[s]* selected/d" -e "1,19 d" $ALTIBASE_PRIMARY_KEY_FILE.TMP > $ALTIBASE_PRIMARY_KEY_FILE
+        sed -e "s/ *$//g" -e "/^$/d" -e "/row[s]* selected/d" -e "/SPOOL OFF/d" -e "1,19 d" $ALTIBASE_PRIMARY_KEY_FILE.TMP > $ALTIBASE_PRIMARY_KEY_FILE
 
         RESULT_ROWS=`cat $ALTIBASE_PRIMARY_KEY_FILE`
         if [ -z "$RESULT_ROWS" ]
@@ -217,7 +217,7 @@ EOF
     ERROR_MESSAGE=`grep "^\[ERR-" $OTHER_ALTIBASE_PRIMARY_KEY_FILE.ERR` 
     if [ -z "$ERROR_MESSAGE" ]
     then
-        sed -e "s/ *$//g" -e "/^$/d" -e "/row[s]* selected/d" -e "1,19 d" $OTHER_ALTIBASE_PRIMARY_KEY_FILE.TMP > $OTHER_ALTIBASE_PRIMARY_KEY_FILE
+        sed -e "s/ *$//g" -e "/^$/d" -e "/row[s]* selected/d" -e "/SPOOL OFF/d" -e "1,19 d" $OTHER_ALTIBASE_PRIMARY_KEY_FILE.TMP > $OTHER_ALTIBASE_PRIMARY_KEY_FILE
 
         RESULT_ROWS=`cat $OTHER_ALTIBASE_PRIMARY_KEY_FILE`
         if [ -z "$RESULT_ROWS" ]

@@ -42,6 +42,14 @@ typedef enum RP_REPLICATIED_TRNAS_GROUP_OP
     RP_REPLICATIED_TRNAS_GROUP_KEEP
 } RP_REPLICATIED_TRNAS_GROUP_OP;
 
+typedef enum rpdTableMetaType
+{
+    RP_META_NONE_ITEM = 0,
+    RP_META_INSERT_ITEM,
+    RP_META_DELETE_ITEM,
+    RP_META_UPDATE_ITEM
+} rpdTableMetaType; 
+
 class rpxReplicator
 {
 
@@ -142,6 +150,14 @@ private:
                               smSN  aDDLBeginSN,
                               smSN  aDDLCommitSN );
 
+    IDE_RC buildNewMeta( smiStatement     * aRootStmt );
+
+    IDE_RC updateOldMeta( smiStatement     * aRootStmt,
+                          smSN               aDDLCommitSN,
+                          smOID              aOldTableOID,
+                          smOID              aNewTableOID,
+                          rpdItemMetaEntry * aItemMetaEntry );
+
     IDE_RC checkUsefulBySenderTypeNStatus( smiLogRec             * aLog,
                                            idBool                * aIsOk,
                                            RP_ACTION_ON_ADD_XLOG   aAction,
@@ -156,6 +172,28 @@ private:
 
     IDE_RC insertDictionaryValue( smiLogRec  * aLog );
     idBool isReplPropagableLog( smiLogRec * aLog );
+
+    IDE_RC updateMeta( smiStatement     * aSmiStmt,
+                       rpdItemMetaEntry * aItemMetaEntry,
+                       smOID              aOldTableOID,
+                       smOID              aNewTableOID,
+                       smSN               aDDLCommitSN );
+    
+    IDE_RC insertNewTableInfo( smiStatement     * aSmiStmt,
+                               rpdItemMetaEntry * aItemMetaEntry, 
+                               smSN               aDDLCommitSN );
+    IDE_RC deleteOldTableInfo( smiStatement * aSmiStmt, smOID aOldTableOID );
+    IDE_RC updateOldTableInfo( smiStatement     * aSmiStmt,
+                               rpdItemMetaEntry * aItemMetaEntry,
+                               smOID              aOldTableOID,
+                               smOID              aNewTableOID,
+                               smSN               aDDLCommitSN );
+
+    rpdTableMetaType getTableMetaType( smOID aOldTableOID, smOID aNewTableOID );
+
+    idBool isSkipLog( smiLogRec * aLog );
+
+    idBool isNewPartition( smOID aOldTableOID );
 
 public:
     rpxReplicator( void );
@@ -225,6 +263,15 @@ public:
     IDE_RC convertAfterColDisk( rpdMetaItem    *aMetaItem,
                                 rpdLogAnalyzer *aLogAnlz );
 
+    IDE_RC getDDLInfoFromDDLStmtLog( smTID   aTID,
+                                     SInt    aMaxDDLStmtLen,
+                                     SChar * aUserName,
+                                     SChar * aDDLStmt );
+
+    IDE_RC getTargetNamesFromItemMetaEntry( smTID    aTID,
+                                            UInt   * aTargetCount,
+                                            SChar  * aTargetTableName,
+                                            SChar ** aTargetPartNames );
     /*
      *  PROJ 19669 GAPLESS
      */

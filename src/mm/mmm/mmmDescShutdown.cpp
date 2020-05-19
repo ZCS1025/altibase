@@ -37,6 +37,7 @@ static mmmPhaseAction *gShutdownActions[] =
     &gMmmActShutdownSM,
     &gMmmActShutdownMT,
     &gMmmActShutdownCM,
+    &gMmmActShutdownSD,
 
 //     &gMmmActShutdownGPKI,
     &gMmmActShutdownTimer,

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoOneMtrPlan.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoOneMtrPlan.h 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     Plan Generator
@@ -137,6 +137,14 @@
                               QMO_DEPENDENCY_STEP2_SETNODE_FALSE            |   \
                               QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_TRUE     |   \
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
+
+/* PROJ-2509 CNBY JOIN 노드의 dependency flag */
+#define QMO_CNBY_DEPENDENCY_FOR_JOIN ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE | \
+                                       QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE | \
+                                       QMO_DEPENDENCY_STEP2_DEP_WITH_PREDICATE | \
+                                       QMO_DEPENDENCY_STEP2_SETNODE_FALSE | \
+                                       QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_FALSE | \
+                                       QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
 /* PROJ-1353 ROLLUP dependency flag */
 #define QMO_ROLL_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
@@ -483,6 +491,23 @@ public:
                                qmnPlan        * aChildPlan,
                                qmnPlan        * aPlan );
 
+    /* PROJ-2509 Hierarchy Query Join*/
+    static IDE_RC initCNBYForJoin( qcStatement    * aStatement,
+                                   qmsQuerySet    * aQuerySet,
+                                   qmoLeafInfo    * aLeafInfo,
+                                   qmsSortColumns * aSiblings,
+                                   qmnPlan        * aParent,
+                                   qmnPlan       ** aPlan );
+
+    /* PROJ-2509 Hierarchy Query Join*/
+    static IDE_RC makeCNBYForJoin( qcStatement    * aStatement,
+                                   qmsQuerySet    * aQuerySet,
+                                   qmsSortColumns * aSiblings,
+                                   qmoLeafInfo    * aStartWith,
+                                   qmoLeafInfo    * aConnectBy,
+                                   qmnPlan        * aChildPlan,
+                                   qmnPlan        * aPlan );
+
     /* Proj-1715 Hierarchy 쿼리에서 사용되는 Materialize 노드 */
     static IDE_RC    initCMTR( qcStatement  * aStatement,
                                qmsQuerySet  * aQuerySet,
@@ -680,6 +705,18 @@ private:
                                     UInt           aFlag,
                                     UInt           aAppendOption,
                                     qmcAttrDesc ** aResultDesc );
+
+    /* PROJ-2509 Connect By Predicate 처리 */
+    static IDE_RC processConnectByPredicateForJoin( qcStatement    * aStatement,
+                                                    qmsQuerySet    * aQuerySet,
+                                                    qmncCNBY       * aCNBY,
+                                                    qmoLeafInfo    * aConnectBy );
+
+    static void changeNodeForCNBYJoin( qtcNode * aNode,
+                                       UShort    aSrcTable,
+                                       UShort    aSrcColumn,
+                                       UShort    aDstTable,
+                                       UShort    aDstColumn );
 };
 
 #endif /* _O_QMO_ONE_CHILD_MATER_H_ */

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoMultiNonPlan.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmoMultiNonPlan.cpp 84968 2019-03-06 05:01:56Z donovan.seo $
  *
  * Description :
  *     Plan Generator
@@ -43,6 +43,15 @@
 #include <qcg.h>
 #include <qcgPlan.h>
 #include <qmoPartition.h>
+#include <qmv.h>
+
+extern mtfModule mtfEqual;
+extern mtfModule mtfLessThan;
+extern mtfModule mtfLessEqual;
+extern mtfModule mtfGreaterThan;
+extern mtfModule mtfGreaterEqual;
+extern mtfModule mtfOr;
+extern mtfModule mtfAnd;
 
 IDE_RC
 qmoMultiNonPlan::initMultiBUNI( qcStatement  * aStatement ,
@@ -412,7 +421,8 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //PROJ-2249 partition reference sort
-    if ( ( aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) &&
+    if ( ( ( aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+           ( aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) ) &&
          ( aPCRDInfo->selectedPartitionCount > 0 ) )
     {
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmnRangeSortedChildren )
@@ -432,9 +442,19 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
 
         if ( aPCRDInfo->selectedPartitionCount > 1 )
         {
-            IDE_TEST( qmoPartition::sortPartitionRef( sRangeSortedChildrenArray,
-                                                      aPCRDInfo->selectedPartitionCount )
-                      != IDE_SUCCESS);
+            if ( aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+            {
+                IDE_TEST( qmoPartition::sortPartitionRef( sRangeSortedChildrenArray,
+                                                          aPCRDInfo->selectedPartitionCount )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                /* BUG-46065 support range using hash */
+                IDE_TEST( qmoPartition::sortRangeHashPartitionRef( sRangeSortedChildrenArray,
+                                                                   aPCRDInfo->selectedPartitionCount )
+                          != IDE_SUCCESS);
+            }
         }
         else
         {
@@ -889,6 +909,10 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
                                      &(aQuerySet->depInfo) )
               != IDE_SUCCESS );
 
+    IDE_TEST( checkSimplePCRD( aStatement,
+                               sPCRD )
+              != IDE_SUCCESS );
+
     /*
      * PROJ-1071 Parallel Query
      * parallel degree
@@ -1059,9 +1083,13 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
     sMRGE->selectTargetStatement = aMRGEInfo->selectTargetStatement;
 
     sMRGE->updateStatement = aMRGEInfo->updateStatement;
+    sMRGE->deleteStatement = aMRGEInfo->deleteStatement;    
     sMRGE->insertStatement = aMRGEInfo->insertStatement;
     sMRGE->insertNoRowsStatement = aMRGEInfo->insertNoRowsStatement;
 
+    // insert where clause
+    sMRGE->whereForInsert = aMRGEInfo->whereForInsert;
+    
     // reset plan index
     sMRGE->resetPlanFlagStartIndex = aMRGEInfo->resetPlanFlagStartIndex;
     sMRGE->resetPlanFlagEndIndex   = aMRGEInfo->resetPlanFlagEndIndex;
@@ -1406,8 +1434,8 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     }
 
     //PROJ-2249 partition reference sort
-    if ( (aFrom->tableRef->tableInfo->partitionMethod ==
-          QCM_PARTITION_METHOD_RANGE) &&
+    if ( ( (aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE) ||
+           (aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH) ) &&
          (aPCRDInfo->selectedPartitionCount > 0) )
     {
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmnRangeSortedChildren ) *
@@ -1426,9 +1454,19 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
 
         if ( aPCRDInfo->selectedPartitionCount > 1 )
         {
-            IDE_TEST( qmoPartition::sortPartitionRef( sRangeSortedChildrenArray,
-                                                      aPCRDInfo->selectedPartitionCount )
-                      != IDE_SUCCESS);
+            if ( aFrom->tableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+            {
+                IDE_TEST( qmoPartition::sortPartitionRef( sRangeSortedChildrenArray,
+                                                          aPCRDInfo->selectedPartitionCount )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                /* BUG-46065 support range using hash */
+                IDE_TEST( qmoPartition::sortRangeHashPartitionRef( sRangeSortedChildrenArray,
+                                                                   aPCRDInfo->selectedPartitionCount )
+                          != IDE_SUCCESS);
+            }
         }
         else
         {
@@ -1945,3 +1983,343 @@ IDE_RC qmoMultiNonPlan::processPredicate( qcStatement   * aStatement,
 
     return IDE_FAILURE;
 }
+
+IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
+                                         qmncPCRD    * aPCRD )
+{
+    qmncPCRD      * sPCRD     = aPCRD;
+    idBool          sIsSimple = ID_FALSE;
+    qtcNode       * sORNode;
+    qtcNode       * sCompareNode;
+    qtcNode       * sColumnNode;
+    qtcNode       * sValueNode;
+    qmnValueInfo  * sValueInfo = NULL;
+    UInt            sCompareOpCount = 0;
+    mtcColumn     * sColumn;
+    mtcColumn     * sConstColumn;
+    mtcColumn     * sValueColumn;
+
+    QMN_INIT_VALUE_INFO( &(sPCRD->mSimpleValues) );
+
+    if ( ( sPCRD->fixKeyFilter != NULL ) ||
+         ( sPCRD->varKeyFilter != NULL ) ||
+         ( sPCRD->constantFilter != NULL ) ||
+         ( sPCRD->filter != NULL ) ||
+         ( sPCRD->subqueryFilter != NULL ) ||
+         ( sPCRD->nnfFilter != NULL ) )
+    {
+        sIsSimple = ID_FALSE;
+        IDE_CONT( NORMAL_EXIT );
+    }
+    else
+    {
+        // full scan/index full scan인 경우
+        if ( ( sPCRD->fixKeyRange == NULL ) &&
+             ( sPCRD->varKeyRange == NULL ) )
+        {
+            // 레코드가 많은 경우 simple로 처리하지 않는다.
+            // (일단은 1024000개 까지만)
+            if ( sPCRD->tableRef->statInfo->totalRecordCnt 
+                 <= ( QMO_STAT_TABLE_RECORD_COUNT * 100 ) )
+            {
+                sIsSimple = ID_TRUE;
+            }
+            else
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+        }
+        else
+        {
+            sIsSimple = ID_TRUE;
+        }
+    }
+
+    if ( sPCRD->tableRef->partitionSummary != NULL )
+    {
+        if ( sPCRD->tableRef->partitionSummary->diskPartitionCount > 0 )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sPCRD->partitionFilter != NULL )
+    {
+        sORNode = sPCRD->partitionFilter;
+
+        if ( ( sORNode->node.module != &mtfOr ) ||
+             ( sORNode->node.arguments->module != &mtfAnd ) ||
+             ( sORNode->node.arguments->next != NULL ) )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        sIsSimple = ID_TRUE; 
+        sCompareNode = (qtcNode *)(sORNode->node.arguments->arguments);
+
+        if ( sCompareNode->node.next != NULL )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+        sValueInfo = &sPCRD->mSimpleValues;
+
+        if ( sCompareNode->node.module == &mtfEqual )
+        {
+            sValueInfo->op = QMN_VALUE_OP_EQUAL;
+        }
+        else
+        {
+            // <, <=, >, >=인 경우
+            if ( sCompareNode->node.module == &mtfLessThan )
+            {
+                if ( sCompareNode->indexArgument == 0 )
+                {
+                    // set type
+                    sValueInfo->op = QMN_VALUE_OP_LT;
+                }
+                else
+                {
+                    sValueInfo->op = QMN_VALUE_OP_GT;
+                }
+            }
+            else if ( sCompareNode->node.module == &mtfLessEqual )
+            {
+                if ( sCompareNode->indexArgument == 0 )
+                {
+                    // set type
+                    sValueInfo->op = QMN_VALUE_OP_LE;
+                }
+                else
+                {
+                    sValueInfo->op = QMN_VALUE_OP_GE;
+                }
+            }
+            else if ( sCompareNode->node.module == &mtfGreaterThan )
+            {
+                if ( sCompareNode->indexArgument == 0 )
+                {
+                    // set type
+                    sValueInfo->op = QMN_VALUE_OP_GT;
+                }
+                else
+                {
+                    sValueInfo->op = QMN_VALUE_OP_LT;
+                }
+            }
+            else if ( sCompareNode->node.module == &mtfGreaterEqual )
+            {
+                if ( sCompareNode->indexArgument == 0 )
+                {
+                    // set type
+                    sValueInfo->op = QMN_VALUE_OP_GE;
+                }
+                else
+                {
+                    sValueInfo->op = QMN_VALUE_OP_LE;
+                }
+            }
+            else
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+
+            sCompareOpCount++;
+        }
+
+        if ( sCompareNode->indexArgument == 0 )
+        {
+            sColumnNode = (qtcNode*)(sCompareNode->node.arguments);
+            sValueNode  = (qtcNode*)(sCompareNode->node.arguments->next);
+        }
+        else
+        {
+            sColumnNode = (qtcNode*)(sCompareNode->node.arguments->next);
+            sValueNode  = (qtcNode*)(sCompareNode->node.arguments);
+        }
+
+        // 순수컬럼과 값이어야 한다.
+        if ( QTC_IS_COLUMN( aStatement, sColumnNode ) == ID_TRUE )
+        {
+            // Nothing to do.
+        }
+        else
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+
+        sColumn = QTC_STMT_COLUMN( aStatement, sColumnNode );
+
+        // 정수형과 문자형만 가능하다.
+        if ( ( sColumn->module->id == MTD_SMALLINT_ID ) ||
+             ( sColumn->module->id == MTD_BIGINT_ID ) ||
+             ( sColumn->module->id == MTD_INTEGER_ID ) ||
+             ( sColumn->module->id == MTD_CHAR_ID ) ||
+             ( sColumn->module->id == MTD_VARCHAR_ID ) ||
+             ( sColumn->module->id == MTD_NUMERIC_ID ) ||
+             ( sColumn->module->id == MTD_FLOAT_ID ) )
+        {
+            // Nothing to do.
+        }
+        else
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+
+        sValueInfo->column = *sColumn;
+
+        // 컬럼, 상수나 호스트변수만 가능하다.
+        if ( QTC_IS_COLUMN( aStatement, sValueNode ) == ID_TRUE )
+        {
+            // 컬럼인 경우 column node와 value node에 conversion이
+            // 없어야 한다.
+            if ( ( sColumnNode->node.conversion != NULL ) ||
+                 ( sValueNode->node.conversion != NULL ) )
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            sValueColumn = QTC_STMT_COLUMN( aStatement, sValueNode );
+
+            // 동일 타입이어야 한다.
+            if ( sColumn->module->id == sValueColumn->module->id )
+            {
+                sValueInfo->type = QMN_VALUE_TYPE_COLUMN;
+
+                sValueInfo->value.columnVal.table  = sValueNode->node.table;
+                sValueInfo->value.columnVal.column = *sValueColumn;
+            }
+            else
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( qtc::isConstValue( QC_SHARED_TMPLATE(aStatement),
+                                sValueNode )
+             == ID_TRUE )
+        {
+            // 상수인 경우 column node에 conversion이 없어야 한다.
+            if ( sColumnNode->node.conversion != NULL )
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            sConstColumn = QTC_STMT_COLUMN( aStatement, sValueNode );
+
+            // 상수는 동일 타입이어야 한다.
+            if ( ( sColumn->module->id == sConstColumn->module->id ) ||
+                 ( ( sColumn->module->id == MTD_NUMERIC_ID ) &&
+                   ( sConstColumn->module->id == MTD_FLOAT_ID ) ) ||
+                 ( ( sColumn->module->id == MTD_FLOAT_ID ) &&
+                   ( sConstColumn->module->id == MTD_NUMERIC_ID ) ) )
+            {
+                sValueInfo->type = QMN_VALUE_TYPE_CONST_VALUE;
+                sValueInfo->value.constVal =
+                    QTC_STMT_FIXEDDATA(aStatement, sValueNode);
+            }
+            else
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        // post process를 수행했으므로 host const warpper가 달릴 수 있다.
+        if ( sValueNode->node.module == &qtc::hostConstantWrapperModule )
+        {
+            sValueNode = (qtcNode*) sValueNode->node.arguments;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( qtc::isHostVariable( QC_SHARED_TMPLATE(aStatement),
+                                  sValueNode )
+             == ID_TRUE )
+        {
+            // 호스트 변수인 경우 column node와 value node의
+            // conversion node는 동일 타입으로만 bind한다면
+            // 무시할 수 있다.
+            sValueInfo->type = QMN_VALUE_TYPE_HOST_VALUE;
+            sValueInfo->value.id = sValueNode->node.column;
+
+            // param 등록
+            IDE_TEST( qmv::describeParamInfo( aStatement,
+                                              sColumn,
+                                              sValueNode )
+                      != IDE_SUCCESS );
+
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // 여기까지 왔다면 simple이 아니다.
+        sIsSimple = ID_FALSE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    sPCRD->mIsSimple = sIsSimple;
+    sPCRD->mSimpleCompareOpCount = sCompareOpCount;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

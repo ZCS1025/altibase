@@ -95,6 +95,13 @@ static cmnLinkAllocInfo gCmnLinkAllocInfo[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] 
         { cmnLinkPeerClientMapIPCDA,  cmnLinkPeerClientSizeIPCDA },
 #endif
     },
+
+    /* PROJ-2681 */
+    {
+        { cmnLinkListenMapIB, cmnLinkListenSizeIB },
+        { cmnLinkPeerMapIB,   cmnLinkPeerSizeIB   },
+        { cmnLinkPeerMapIB,   cmnLinkPeerSizeIB   },
+    },
 };
 
 static UInt gCmnLinkFeature[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] =
@@ -126,6 +133,12 @@ static UInt gCmnLinkFeature[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] =
 
     /* PROJ-2474 SSL/TLS */
     { 0, CMN_LINK_FEATURE_SYSDBA, 0 },
+
+    /* IPCDA */
+    { 0, 0, 0 },
+
+    /* IB, PROJ-2681 */
+    { 0, CMN_LINK_FEATURE_SYSDBA, 0 },
 };
 
 
@@ -152,6 +165,8 @@ idBool cmnLinkIsSupportedImpl(cmnLinkImpl aImpl)
 #if !defined(CM_DISABLE_IPCDA)
         case CMN_LINK_IMPL_IPCDA:
 #endif
+        /* PROJ-2681 */
+        case CMN_LINK_IMPL_IB:
             sIsSupported = ID_TRUE;
             break;
 

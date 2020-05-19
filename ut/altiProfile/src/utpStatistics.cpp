@@ -691,9 +691,11 @@ IDE_RC utpStatistics::sortAndWriteHash(utpHashmap *aHashmap)
         {
             idlOS::fprintf(mTextFp, "[TOTAL] ");
         }
+        /* BUG-46048 Codesonar warning */
         idlOS::fprintf(mTextFp, FMT_SUMMARY_INFO,
             sTotValue.mTotalCnt,
-            sTotValue.mTotalTime / 1000000. / sTotValue.mTotalCnt,
+            (sTotValue.mTotalCnt == 0)?
+                0 : sTotValue.mTotalTime / 1000000. / sTotValue.mTotalCnt,
             sTotValue.mTotalTime / 1000000.);
     }
 

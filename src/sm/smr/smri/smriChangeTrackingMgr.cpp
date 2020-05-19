@@ -836,10 +836,8 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
     }
     else 
     {
-        if( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) 
-            == ID_TRUE ) &&
-            ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID )
-            != ID_TRUE ) )
+        if( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE ) &&
+            ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) != ID_TRUE ) )
         {
             sDiskSpaceNode = (sddTableSpaceNode *)aSpaceNode;
             

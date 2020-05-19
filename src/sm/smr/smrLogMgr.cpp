@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $$Id: smrLogMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $$Id: smrLogMgr.cpp 82855 2018-04-19 05:53:31Z emlee $
  *
  * 로그관리자 구현파일입니다.
  *
@@ -663,7 +663,7 @@ IDE_RC smrLogMgr::writeDiskLogRec( idvSQL           * aStatistics,
         {
             smrLogHeadI::setFlag( &sDiskLog.mHead, sLogTypeFlag );
 
-            /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+            /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
              * Partial Rollback을 지원해야 합니다. */
             if ( smLayerCallback::checkAndSetImplSVPStmtDepth4Repl( aTrans )
                  == ID_FALSE )

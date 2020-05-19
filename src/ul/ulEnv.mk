@@ -8,7 +8,7 @@ ACS_DIR          = $(UL_DIR)/acs # TASK-1963 AST
 
 ULSD_DIR         = ulsd
 
-INCLUDES += $(ALTICORE_INCLUDES) $(foreach i,$(SM_DIR)/include $(MT_DIR)/include $(ID_DIR)/include $(CM_DIR)/include $(UL_DIR)/include,$(IDROPT)$(i))
+INCLUDES += $(ALTICORE_INCLUDES) $(foreach i,$(SM_DIR)/include $(MT_DIR)/include $(ID_DIR)/include $(CM_DIR)/include $(SD_DIR)/include $(UL_DIR)/include,$(IDROPT)$(i))
 
 INCLUDES += $(IDROPT)$(UL_DIR)/include/unix-odbc
 

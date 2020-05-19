@@ -1,13 +1,16 @@
 #
-# $Id: rp_objs.mk 80691 2017-08-03 02:24:19Z returns $
+# $Id: rp_objs.mk 84983 2019-03-08 11:08:24Z yoonhee.kim $
 #
 
 
 RPC_SRCS = $(RP_DIR)/rpc/rpcExecute.cpp \
            $(RP_DIR)/rpc/rpcManager.cpp \
-           $(RP_DIR)/rpc/rpcManagerMisc.cpp \
-           $(RP_DIR)/rpc/rpcHBT.cpp \
-           $(RP_DIR)/rpc/rpcValidate.cpp
+		   $(RP_DIR)/rpc/rpcManagerMisc.cpp \
+		   $(RP_DIR)/rpc/rpcHBT.cpp \
+		   $(RP_DIR)/rpc/rpcDDLSyncManager.cpp \
+		   $(RP_DIR)/rpc/rpcDDLASyncManager.cpp \
+		   $(RP_DIR)/rpc/rpcResourceManager.cpp \
+		   $(RP_DIR)/rpc/rpcValidate.cpp
 
 RPD_SRCS = $(RP_DIR)/rpd/rpdLogAnalyzer.cpp \
            $(RP_DIR)/rpd/rpdMeta.cpp \
@@ -29,24 +32,25 @@ RPS_SRCS = $(RP_DIR)/rps/rpsSmExecutor.cpp		\
 		   $(RP_DIR)/rps/rpsSQLExecutor.cpp
 
 RPX_SRCS = $(RP_DIR)/rpx/rpxReceiver.cpp \
-           $(RP_DIR)/rpx/rpxReceiverApplier.cpp \
-           $(RP_DIR)/rpx/rpxReceiverError.cpp \
-           $(RP_DIR)/rpx/rpxReceiverApply.cpp \
-           $(RP_DIR)/rpx/rpxReceiverHandshake.cpp \
-           $(RP_DIR)/rpx/rpxReceiverMisc.cpp \
-           $(RP_DIR)/rpx/rpxSender.cpp \
-           $(RP_DIR)/rpx/rpxSenderApply.cpp \
-           $(RP_DIR)/rpx/rpxSenderSync.cpp \
-           $(RP_DIR)/rpx/rpxSenderXLog.cpp \
-           $(RP_DIR)/rpx/rpxSenderXLSN.cpp \
-           $(RP_DIR)/rpx/rpxSenderHandshake.cpp \
-           $(RP_DIR)/rpx/rpxSenderMisc.cpp \
-           $(RP_DIR)/rpx/rpxSenderSyncParallel.cpp \
-           $(RP_DIR)/rpx/rpxPJMgr.cpp \
-           $(RP_DIR)/rpx/rpxPJChild.cpp \
-           $(RP_DIR)/rpx/rpxReplicator.cpp \
-           $(RP_DIR)/rpx/rpxSync.cpp \
-           $(RP_DIR)/rpx/rpxAheadAnalyzer.cpp 
+		   $(RP_DIR)/rpx/rpxReceiverApplier.cpp \
+		   $(RP_DIR)/rpx/rpxReceiverError.cpp \
+		   $(RP_DIR)/rpx/rpxReceiverApply.cpp \
+		   $(RP_DIR)/rpx/rpxReceiverHandshake.cpp \
+		   $(RP_DIR)/rpx/rpxReceiverMisc.cpp \
+		   $(RP_DIR)/rpx/rpxSender.cpp \
+		   $(RP_DIR)/rpx/rpxSenderApply.cpp \
+		   $(RP_DIR)/rpx/rpxSenderSync.cpp \
+		   $(RP_DIR)/rpx/rpxSenderXLog.cpp \
+		   $(RP_DIR)/rpx/rpxSenderXLSN.cpp \
+		   $(RP_DIR)/rpx/rpxSenderHandshake.cpp \
+		   $(RP_DIR)/rpx/rpxSenderMisc.cpp \
+		   $(RP_DIR)/rpx/rpxSenderSyncParallel.cpp \
+		   $(RP_DIR)/rpx/rpxDDLExecutor.cpp \
+		   $(RP_DIR)/rpx/rpxPJMgr.cpp \
+		   $(RP_DIR)/rpx/rpxPJChild.cpp \
+		   $(RP_DIR)/rpx/rpxReplicator.cpp \
+		   $(RP_DIR)/rpx/rpxSync.cpp \
+		   $(RP_DIR)/rpx/rpxAheadAnalyzer.cpp 
 
 RPI_SRCS = $(RP_DIR)/rpi/rpi.cpp
 

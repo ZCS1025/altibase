@@ -51,6 +51,7 @@ qciExecuteReplicationCallback rpcExecute::mCallback =
     rpcExecute::executeAlterSetGapless,
     rpcExecute::executeAlterSetParallel,
     rpcExecute::executeAlterSetGrouping,
+    rpcExecute::executeAlterSetDDLReplicate,
     rpcExecute::executeAlterSplitPartition,
     rpcExecute::executeAlterMergePartition,
     rpcExecute::executeAlterDropPartition,
@@ -455,15 +456,17 @@ IDE_RC rpcExecute::executeSync(void * aQcStatement)
     return IDE_FAILURE;
 }
 
-IDE_RC rpcExecute::executeStop( smiStatement * aSmiStmt,
-                                SChar        * aReplName,
-                                idvSQL       * aStatistics )
+IDE_RC rpcExecute::executeStop( void         * aQcStatement,
+                                SChar        * aReplName )                               
 {
+    qriParseTree * sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
+
     //BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지 않아야 합니다.
     // mStatistics 통계 정보를 전달 합니다.
-    IDE_TEST( rpi::stopSenderThread( aSmiStmt,
+    IDE_TEST( rpi::stopSenderThread( QCI_SMI_STMT( aQcStatement ),
                                      aReplName,
-                                     aStatistics )
+                                     QCI_STATISTIC( aQcStatement ),
+                                     sParseTree->isImmediateStop )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -546,6 +549,11 @@ IDE_RC rpcExecute::executeAlterSetParallel( void * aQcStatement )
 IDE_RC rpcExecute::executeAlterSetGrouping( void * aQcStatement )
 {
     return rpi::alterReplicationSetGrouping( aQcStatement );
+}
+
+IDE_RC rpcExecute::executeAlterSetDDLReplicate( void * aQcStatement )
+{
+    return rpi::alterReplicationSetDDLReplicate( aQcStatement );
 }
 
 IDE_RC rpcExecute::executeAlterSplitPartition( void         * aQcStatement,

@@ -50,7 +50,7 @@ public class CancelTest extends AltibaseTestCase
         sStmt.close();
     }
 
-    public void testCancelSLockWait() throws SQLException, InterruptedException
+    public void _NOTYET_testCancelSLockWait() throws SQLException, InterruptedException
     {
         testCancelLockWait("LOCK TABLE t1 IN SHARE MODE", "INSERT INTO t1 VALUES (10)");
     }

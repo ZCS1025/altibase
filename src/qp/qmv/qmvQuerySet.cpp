@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmvQuerySet.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmvQuerySet.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -396,29 +396,6 @@ IDE_RC qmvQuerySet::validate(
                 /* Nothing to do */
             }
 
-            // PROJ-2646 shard analyzer enhancement
-            // left와 right target이 모두 shard key column일 때 SET operator의 target 도 shard key column으로 표시한다.
-            if ( ( ( sLeftTarget->targetColumn->lflag & QTC_NODE_SHARD_KEY_MASK )
-                   == QTC_NODE_SHARD_KEY_TRUE ) &&
-                 ( ( sRightTarget->targetColumn->lflag & QTC_NODE_SHARD_KEY_MASK )
-                   == QTC_NODE_SHARD_KEY_TRUE ) )
-            {
-                sCurrTarget->targetColumn->lflag &= ~QTC_NODE_SHARD_KEY_MASK;
-                sCurrTarget->targetColumn->lflag |= QTC_NODE_SHARD_KEY_TRUE;
-            }
-            else if ( ( ( sLeftTarget->targetColumn->lflag & QTC_NODE_SUB_SHARD_KEY_MASK )
-                        == QTC_NODE_SUB_SHARD_KEY_TRUE ) &&
-                      ( ( sRightTarget->targetColumn->lflag & QTC_NODE_SUB_SHARD_KEY_MASK )
-                        == QTC_NODE_SUB_SHARD_KEY_TRUE ) )
-            {
-                sCurrTarget->targetColumn->lflag &= ~QTC_NODE_SUB_SHARD_KEY_MASK;
-                sCurrTarget->targetColumn->lflag |= QTC_NODE_SUB_SHARD_KEY_TRUE;
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
-
             if (aQuerySet->target == NULL)
             {
                 aQuerySet->target = sCurrTarget;
@@ -756,7 +733,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
     if ( aSFWGH->hierarchy != NULL )
     {
         sFrom = aSFWGH->from;
-        if ( sFrom->joinType == QMS_NO_JOIN  )
+        if ( ( sFrom->joinType == QMS_NO_JOIN  ) &&
+             ( sFrom->next == NULL ) )
         {
             if ( sFrom->tableRef->view == NULL )
             {
@@ -882,7 +860,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
             // PROJ-1718 Semi/anti join과 관련된 dependency 초기화
             qtc::dependencyClear( & sFrom->semiAntiJoinDepInfo );
 
-            IDE_TEST( qmsPreservedTable::addTable( aSFWGH,
+            IDE_TEST( qmsPreservedTable::addTable( aStatement,
+                                                   aSFWGH,
                                                    sFrom->tableRef )
                       != IDE_SUCCESS );
 
@@ -2760,7 +2739,6 @@ IDE_RC qmvQuerySet::validateHierarchy(
     qcuSqlSourceInfo        sqlInfo;
     qtcNode               * sNode[2];
     qcNamePosition          sPosition;
-    qmsFrom               * sFrom;
     qtcNode               * sStart;
     qtcNode               * sConnect;
 
@@ -2774,7 +2752,6 @@ IDE_RC qmvQuerySet::validateHierarchy(
     IDE_FT_ASSERT( aSFWGH->from != NULL );
     IDE_FT_ASSERT( aSFWGH->hierarchy != NULL );
 
-    sFrom     = aSFWGH->from;
     sStart    = aSFWGH->hierarchy->startWith;
     sConnect  = aSFWGH->hierarchy->connectBy;
     
@@ -2786,32 +2763,6 @@ IDE_RC qmvQuerySet::validateHierarchy(
     IDE_TEST_RAISE( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                     == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT,
                     ERR_OPERATION_NOT_ALLOWED_RECURSIVE_VIEW );
-    
-    // check JOIN
-    if ( sFrom->next != NULL || sFrom->left != NULL )
-    {
-        sqlInfo.setSourceInfo( aStatement,
-                               & sConnect->position );
-        IDE_RAISE( ERR_HIERARCHICAL_WITH_JOIN );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    // PROJ-1502 PARTITIONED DISK TABLE
-    // partitioned table은 hierarchy query를 지원하지 않는다.
-    if( sFrom->tableRef->tableInfo->tablePartitionType !=
-        QCM_NONE_PARTITIONED_TABLE )
-    {
-        sqlInfo.setSourceInfo( aStatement,
-                               & sFrom->tableRef->tableName );
-        IDE_RAISE( ERR_NOT_SUPPORTED );
-    }
-    else
-    {
-        // Nothing to do.
-    }
 
     // validation start with clause
     if (sStart != NULL)
@@ -2994,22 +2945,6 @@ IDE_RC qmvQuerySet::validateHierarchy(
         (void)sqlInfo.init(aStatement->qmeMem);
         IDE_SET(
             ideSetErrorCode(qpERR_ABORT_QMV_NOT_PREDICATE,
-                            sqlInfo.getErrMessage() ));
-        (void)sqlInfo.fini();
-    }
-    IDE_EXCEPTION( ERR_HIERARCHICAL_WITH_JOIN );
-    {
-        (void)sqlInfo.init(aStatement->qmeMem);
-        IDE_SET(
-            ideSetErrorCode(qpERR_ABORT_QMV_HIERARCHICAL_WITH_JOIN,
-                            sqlInfo.getErrMessage() ));
-        (void)sqlInfo.fini();
-    }
-    IDE_EXCEPTION( ERR_NOT_SUPPORTED );
-    {
-        (void)sqlInfo.init(aStatement->qmeMem);
-        IDE_SET(
-            ideSetErrorCode(qpERR_ABORT_QSX_NOT_SUPPORTED_SQLTEXT,
                             sqlInfo.getErrMessage() ));
         (void)sqlInfo.fini();
     }
@@ -4420,29 +4355,6 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
             sCurrTarget->flag |= QMS_TARGET_IS_UPDATABLE_FALSE;
         }
 
-        // PROJ-2646 shard analyzer enhancement
-        if ( sTableRef->mShardObjInfo != NULL )
-        {
-            if ( sTableRef->mShardObjInfo->mKeyFlags[sColumn] == 1 )
-            {
-                sCurrTarget->targetColumn->lflag &= ~QTC_NODE_SHARD_KEY_MASK;
-                sCurrTarget->targetColumn->lflag |= QTC_NODE_SHARD_KEY_TRUE;
-            }
-            else if ( sTableRef->mShardObjInfo->mKeyFlags[sColumn] == 2 )
-            {
-                sCurrTarget->targetColumn->lflag &= ~QTC_NODE_SUB_SHARD_KEY_MASK;
-                sCurrTarget->targetColumn->lflag |= QTC_NODE_SUB_SHARD_KEY_TRUE;
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
-        }
-        else
-        {
-            /* Nothing to do. */
-        }
-
         // link
         if (sPrevTarget == NULL)
         {
@@ -4769,7 +4681,9 @@ IDE_RC qmvQuerySet::validateRemoteTable( qcStatement * aStatement,
               != IDE_SUCCESS );
     IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                           aTableRef->tableHandle,
-                                          aTableRef->tableSCN )
+                                          aTableRef->tableSCN,
+                                          aTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                                          aTableRef->tableInfo->name )        /* BUG-45893 */
               != IDE_SUCCESS );
 
     IDE_TEST( qtc::nextTable( &(aTableRef->table ),
@@ -4961,7 +4875,8 @@ IDE_RC qmvQuerySet::validateTable(
         aTableRef->tableOID    = aTableRef->tableInfo->tableOID;
 
         // PROJ-2646 shard analyzer enhancement
-        if ( qcg::isShardCoordinator( aStatement ) == ID_TRUE )
+        if ( ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) ||
+             ( sdi::isRebuildCoordinator( aStatement ) == ID_TRUE ) )
         {
             IDE_TEST( sdi::getTableInfo( aStatement,
                                          aTableRef->tableInfo,
@@ -4977,7 +4892,9 @@ IDE_RC qmvQuerySet::validateTable(
         IDE_TEST( qcgPlan::registerPlanTable(
                       aStatement,
                       aTableRef->tableHandle,
-                      aTableRef->tableSCN )
+                      aTableRef->tableSCN,
+                      aTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                      aTableRef->tableInfo->name )        /* BUG-45893 */
                   != IDE_SUCCESS );
 
         // environment의 기록
@@ -5083,14 +5000,24 @@ IDE_RC qmvQuerySet::validateTable(
              ( aStatement->spvEnv->createPkg == NULL ) &&
              ( aStatement->spvEnv->createProc == NULL ) &&
              ( aTableRef->mShardObjInfo != NULL ) &&
-             ( qcg::isShardCoordinator( aStatement ) == ID_TRUE ) )
+             ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) )
         {
-            // shard transform 에러를 출력한다.
-            IDE_TEST( qmvShardTransform::raiseInvalidShardQuery( aStatement ) != IDE_SUCCESS );
+            // BUG-46498
+            if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_RECOMPILE_VIEW_MASK )
+                  == QC_TMP_RECOMPILE_VIEW_FALSE )
+            {
+                // shard transform 에러를 출력한다.
+                IDE_TEST( qmvShardTransform::raiseInvalidShardQuery( aStatement ) != IDE_SUCCESS );
 
-            sqlInfo.setSourceInfo( aStatement,
-                                   &(aTableRef->tableName) );
-            IDE_RAISE( ERR_EXIST_SHARD_TABLE_OUTSIDE_SHARD_VIEW );
+                sqlInfo.setSourceInfo( aStatement,
+                                       &(aTableRef->tableName) );
+                IDE_RAISE( ERR_EXIST_SHARD_TABLE_OUTSIDE_SHARD_VIEW );
+            }
+            else
+            {
+                // recompile view 구문은 새로 생성하였으므로 QC_STMT_SHARD_NONE 초기값이다.
+                IDE_DASSERT( aStatement->myPlan->parseTree->stmtShard == QC_STMT_SHARD_NONE )
+            }
         }
         else
         {
@@ -5250,17 +5177,17 @@ IDE_RC qmvQuerySet::validateView(
 {
     qmsParseTree      * sParseTree;
     qmsQuerySet       * sQuerySet;
-    UInt                sSessionUserID;   // for fixing BUG-6096
+    volatile UInt       sSessionUserID;   // for fixing BUG-6096
     qcuSqlSourceInfo    sqlInfo;
     idBool              sExist = ID_FALSE;
     idBool              sIsFixedTable = ID_FALSE;
-    idBool              sIndirectRef  = ID_FALSE;
+    volatile idBool     sIndirectRef; /* BUG-45994 - 컴파일러 최적화 회피 */
     idBool              sIsShardView  = ID_FALSE;
     void              * sTableHandle  = NULL;
     qmsQuerySet       * sLateralViewQuerySet = NULL;
     qcmColumn         * sColumnAlias = NULL;
     qcmSynonymInfo      sSynonymInfo;
-    idBool              sCalledByPSMFlag;
+    volatile idBool     sCalledByPSMFlag;
     UInt                sTableType;
     UInt                i;
     UInt                sDepTupleID;
@@ -5274,15 +5201,19 @@ IDE_RC qmvQuerySet::validateView(
     sSynonymInfo.isSynonymName = ID_FALSE;
 
     sCalledByPSMFlag = aTableRef->view->calledByPSMFlag;
+    sIndirectRef     = ID_FALSE; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     // To Fix PR-1176
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
 
-    IDU_FIT_POINT_FATAL( "qmvQuerySet::validateView::__FT__::STAGE1" );
-
     // A parse tree of real view is set in parser.
     IDE_TEST_RAISE(aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE,
                    ERR_DEQUEUE_ON_TABLE);
+    
+    /* BUG-46124 */
+    IDE_TEST( qmsPreservedTable::checkAndSetPreservedInfo( aSFWGH,
+                                                           aTableRef )
+              != IDE_SUCCESS );
 
     // get aTableRef->tableInfo for CREATED VIEW
     // PROJ-2083 DUAL Table
@@ -5375,7 +5306,9 @@ IDE_RC qmvQuerySet::validateView(
             // environment의 기록
             IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                                   aTableRef->tableHandle,
-                                                  aTableRef->tableSCN )
+                                                  aTableRef->tableSCN,
+                                                  aTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                                                  aTableRef->tableInfo->name )        /* BUG-45893 */
                       != IDE_SUCCESS );
                 
             // environment의 기록
@@ -5437,7 +5370,10 @@ IDE_RC qmvQuerySet::validateView(
             // PROJ-1436
             // environment의 기록시 간접 참조 객체에 대한 user나
             // privilege의 기록을 중지한다.
-            qcgPlan::startIndirectRefFlag( aStatement, &sIndirectRef );
+            qcgPlan::startIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
+
+            /* BUG-45994 */
+            IDU_FIT_POINT_FATAL( "qmvQuerySet::validateView::__FT__::STAGE1" );
 
             // PROJ-2646 shard analyzer
             // shard view의 하위 statement에서는 shard table이 올 수 있다.
@@ -5452,7 +5388,7 @@ IDE_RC qmvQuerySet::validateView(
 
             qmv::enableShardTransformInShardView( aStatement, sIsShardView );
 
-            qcgPlan::endIndirectRefFlag( aStatement, &sIndirectRef );
+            qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 
             if( aStatement->spvEnv->createPkg != NULL )
             {
@@ -5498,7 +5434,10 @@ IDE_RC qmvQuerySet::validateView(
             // PROJ-1436
             // environment의 기록시 간접 참조 객체에 대한 user나
             // privilege의 기록을 중지한다.
-            qcgPlan::startIndirectRefFlag( aStatement, &sIndirectRef );
+            qcgPlan::startIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
+
+            /* BUG-45994 */
+            IDU_FIT_POINT_FATAL( "qmvQuerySet::validateView::__FT__::STAGE1" );
 
             // PROJ-2646 shard analyzer
             // shard view의 하위 statement에서는 shard table이 올 수 있다.
@@ -5531,7 +5470,7 @@ IDE_RC qmvQuerySet::validateView(
 
             qmv::enableShardTransformInShardView( aStatement, sIsShardView );
 
-            qcgPlan::endIndirectRefFlag( aStatement, &sIndirectRef );
+            qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
         }
         else
         {
@@ -5544,13 +5483,6 @@ IDE_RC qmvQuerySet::validateView(
         // Inline View가 아니므로 Lateral Flag를 초기화한다.
         aTableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
         aTableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_FALSE;
-
-        // PROJ-2646 shard analyzer enhancement
-        IDE_TEST( sdi::getViewInfo(
-                      aStatement,
-                      ((qmsParseTree*)aTableRef->view->myPlan->parseTree)->querySet,
-                      &(aTableRef->mShardObjInfo) )
-                  != IDE_SUCCESS );
     }
     else
     {
@@ -5830,13 +5762,6 @@ IDE_RC qmvQuerySet::validateView(
                      QS_EMPTY_OID)
                  != IDE_SUCCESS);
 
-        // PROJ-2646 shard analyzer enhancement
-        IDE_TEST( sdi::getViewInfo(
-                      aStatement,
-                      ((qmsParseTree*)aTableRef->view->myPlan->parseTree)->querySet,
-                      &(aTableRef->mShardObjInfo) )
-                  != IDE_SUCCESS );
-
         // BUG-37136
         aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULL이다
         aTableRef->tableType   = aTableRef->tableInfo->tableType;
@@ -5918,7 +5843,7 @@ IDE_RC qmvQuerySet::validateView(
     // 원래의 User ID로 복원해 주어야 한다.
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
-    qcgPlan::endIndirectRefFlag( aStatement, &sIndirectRef );
+    qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 
     aTableRef->view->calledByPSMFlag = sCalledByPSMFlag;
 
@@ -5954,13 +5879,6 @@ IDE_RC qmvQuerySet::validateInlineView( qcStatement * aStatement,
                  &aTableRef->tableInfo,
                  QS_EMPTY_OID)
              != IDE_SUCCESS);
-
-    // PROJ-2646 shard analyzer enhancement
-    IDE_TEST( sdi::getViewInfo(
-                  aStatement,
-                  ((qmsParseTree*)aTableRef->view->myPlan->parseTree)->querySet,
-                  &(aTableRef->mShardObjInfo) )
-              != IDE_SUCCESS );
 
     // BUG-38264
     aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;
@@ -6694,10 +6612,11 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
         // PROJ-1718 Semi/anti join과 관련된 dependency 초기화
         qtc::dependencyClear( & aFrom->semiAntiJoinDepInfo );
 
-        IDE_TEST( qmsPreservedTable::addTable( aSFWGH,
+        IDE_TEST( qmsPreservedTable::addTable( aStatement,
+                                               aSFWGH,
                                                aFrom->tableRef )
                   != IDE_SUCCESS );
-
+            
         /* PROJ-2462 Result Cache */
         if ( aQuerySet != NULL )
         {
@@ -7554,7 +7473,9 @@ IDE_RC qmvQuerySet::getTargetCountFromTableRef(
                 IDE_TEST( qcgPlan::registerPlanTable(
                               aStatement,
                               sTableHandle,
-                              aTableRef->tableSCN )
+                              aTableRef->tableSCN,
+                              aTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                              aTableRef->tableInfo->name )        /* BUG-45893 */
                           != IDE_SUCCESS );
                 
                 // environment의 기록
@@ -8618,11 +8539,11 @@ IDE_RC qmvQuerySet::addCastOper( qcStatement  * aStatement,
                                                    & sNewNode,
                                                    ID_FALSE )
                       != IDE_SUCCESS );
-        
+
             if ( sNewNode != NULL )
             {
                 sCurrTarget->targetColumn = sNewNode;
-            
+
                 if ( sPrevNode != NULL )
                 {
                     sPrevNode->node.next = (mtcNode*)sNewNode;
@@ -8636,7 +8557,7 @@ IDE_RC qmvQuerySet::addCastOper( qcStatement  * aStatement,
             {
                 // Nothing to do.
             }
-        
+
             sPrevNode = sCurrTarget->targetColumn;
         }
     }
@@ -8644,7 +8565,7 @@ IDE_RC qmvQuerySet::addCastOper( qcStatement  * aStatement,
     {
         // Nothing to do.
     }
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

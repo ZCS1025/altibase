@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpcManagerMisc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpcManagerMisc.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -41,7 +41,7 @@ void rpcMakeUniqueDBString(SChar *aUnique)
 {
     SChar          sHostID[IDU_SYSTEM_INFO_LENGTH + 1];
     PDL_Time_Value sTime;
-    UInt           sRandomValue;
+    UInt           sPort;
 
     // Host ID
     idlOS::memset(sHostID, 0x00, IDU_SYSTEM_INFO_LENGTH + 1);
@@ -50,9 +50,7 @@ void rpcMakeUniqueDBString(SChar *aUnique)
     // Time
     sTime = idlOS::gettimeofday();
 
-    // Random Number
-    idlOS::srand(idlOS::time());
-    sRandomValue = (UInt)idlOS::rand();
+    sPort = (UInt)RPU_REPLICATION_PORT_NO;
 
     idlOS::snprintf(aUnique, IDU_SYSTEM_INFO_LENGTH + 1,
                     "%s"
@@ -62,7 +60,7 @@ void rpcMakeUniqueDBString(SChar *aUnique)
                     sHostID,
                     (UInt)sTime.sec(),
                     (UInt)sTime.usec(),
-                    sRandomValue);
+                    sPort);
 }
 
 /**********************************************************************

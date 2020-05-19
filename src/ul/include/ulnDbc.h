@@ -33,7 +33,8 @@ typedef enum ulnConnType
     ULN_CONNTYPE_UNIX       = 2,
     ULN_CONNTYPE_IPC        = 3,
     ULN_CONNTYPE_SSL        = 6,  
-    ULN_CONNTYPE_IPCDA      = 7
+    ULN_CONNTYPE_IPCDA      = 7,
+    ULN_CONNTYPE_IB         = 8    /* PROJ-2681 */
 } ulnConnType;
 
 // bug-19279 remote sysdba enable
@@ -211,10 +212,13 @@ struct ulnDbc
 
     /* PROJ-1645 UL Failover */
     acp_char_t                 *mAlternateServers;          /* ALTIBASE_ALTERNATE_SERVERS */
+    acp_bool_t                  mLoadBalance;               /* ALTIBASE_LOAD_BALANCE */
     acp_uint32_t                mConnectionRetryCnt;        /* ALTIBASE_CONNECTION_RETRY_COUNT */
     acp_uint32_t                mConnectionRetryDelay;      /* ALTIBASE_CONNECTION_RETRY_DELAY */
     acp_bool_t                  mSessionFailover;           /* ALTIBASE_SESSION_FAILOVER */
-    acp_list_t                  mFailoverServerList;
+    ulnFailoverServerInfo     **mFailoverServers;
+    acp_uint32_t                mFailoverServersCnt;
+    acp_uint32_t                mFailoverServersMax;
     ulnFailoverServerInfo      *mCurrentServer;
     SQLFailOverCallbackContext *mFailoverCallbackContext;
     ulnFailoverCallbackState    mFailoverCallbackState;
@@ -267,6 +271,10 @@ struct ulnDbc
 
     acp_uint32_t                mAttrPDODeferProtocols;  /* BUG-45286 For PDO Driver */
 
+    /* PROJ-2681 */
+    acp_sint32_t                mAttrIBLatency;
+    acp_sint32_t                mAttrIBConChkSpin;
+
     ulsdDbcContext              mShardDbcCxt;
     ulsdModule                 *mShardModule;       /* Shard Module */
 };
@@ -296,6 +304,9 @@ ACI_RC ulnDbcAttrMem(acp_char_t **aAttr, acp_sint32_t aLen);
 
 ACI_RC      ulnDbcSetConnType(ulnDbc *aDbc, ulnConnType aConnType);
 ulnConnType ulnDbcGetConnType(ulnDbc *aDbc);
+
+ACI_RC      ulnDbcSetShardConnType(ulnDbc *aDbc, ulnConnType aConnType);
+ulnConnType ulnDbcGetShardConnType(ulnDbc *aDbc);
 
 ACP_INLINE ACI_RC ulnDbcSetDsnString(ulnDbc *aDbc, acp_char_t *aDsn, acp_sint32_t aDsnLen)
 {
@@ -701,6 +712,16 @@ ACP_INLINE acp_char_t* ulnDbcGetAlternateServer(ulnDbc *aDbc)
     return aDbc->mAlternateServers;
 }
 
+ACP_INLINE void ulnDbcSetLoadBalance(ulnDbc *aDbc, acp_bool_t aLoadBalance)
+{
+    aDbc->mLoadBalance = aLoadBalance;
+}
+
+ACP_INLINE acp_bool_t ulnDbcGetLoadBalance(ulnDbc *aDbc)
+{
+    return aDbc->mLoadBalance;
+}
+
 ACP_INLINE acp_uint32_t ulnDbcGetConnectionRetryCount(ulnDbc *aDbc)
 {
     return aDbc->mConnectionRetryCnt;
@@ -729,11 +750,6 @@ ACP_INLINE acp_bool_t ulnDbcGetSessionFailover(ulnDbc *aDbc)
 ACP_INLINE void ulnDbcSetSessionFailover(ulnDbc *aDbc, acp_bool_t  aSessionFailover)
 {
     aDbc->mSessionFailover = aSessionFailover;
-}
-
-ACP_INLINE acp_list_t* ulnDbcGetFailoverServerList(ulnDbc *aDbc)
-{
-    return &(aDbc->mFailoverServerList);
 }
 
 ACP_INLINE ulnFailoverServerInfo* ulnDbcGetCurrentServer(ulnDbc *aDbc)
@@ -798,6 +814,77 @@ ACP_INLINE void ulnDbcSetShardPin( ulnDbc *aDbc, acp_uint64_t aShardPin )
 ACP_INLINE acp_uint64_t ulnDbcGetShardPin( ulnDbc *aDbc )
 {
     return aDbc->mShardDbcCxt.mShardPin;
+}
+
+/* BUG-46090 Meta Node SMN 전파 */
+ACP_INLINE void ulnDbcSetShardMetaNumber( ulnDbc * aDbc, acp_uint64_t aShardMetaNumber )
+{
+    aDbc->mShardDbcCxt.mShardMetaNumber = aShardMetaNumber;
+}
+
+/* BUG-46090 Meta Node SMN 전파 */
+ACP_INLINE acp_uint64_t ulnDbcGetShardMetaNumber( ulnDbc *aDbc )
+{
+    return aDbc->mShardDbcCxt.mShardMetaNumber;
+}
+
+/* BUG-45967 Data Node의 Shard Session 정리 */
+ACP_INLINE void ulnDbcSetSMNOfDataNode( ulnDbc * aDbc, acp_uint64_t aSMNOfDataNode )
+{
+    if ( aDbc->mShardDbcCxt.mSMNOfDataNode < aSMNOfDataNode )
+    {
+        aDbc->mShardDbcCxt.mSMNOfDataNode = aSMNOfDataNode;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+
+/* BUG-45967 Data Node의 Shard Session 정리 */
+ACP_INLINE acp_uint64_t ulnDbcGetSMNOfDataNode( ulnDbc *aDbc )
+{
+    return aDbc->mShardDbcCxt.mSMNOfDataNode;
+}
+
+/* BUG-46100 Session SMN Update */
+ACP_INLINE void ulnDbcSetNeedToDisconnect( ulnDbc * aDbc, acp_bool_t aNeedToDisconnect )
+{
+    if ( aNeedToDisconnect == ACP_TRUE )
+    {
+        aDbc->mShardDbcCxt.mNeedToDisconnect = ACP_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+
+/* BUG-46100 Session SMN Update */
+ACP_INLINE acp_bool_t ulnDbcGetNeedToDisconnect( ulnDbc * aDbc )
+{
+    return aDbc->mShardDbcCxt.mNeedToDisconnect;
+}
+
+/* PROJ-2681 */
+ACP_INLINE acp_sint32_t ulnDbcGetIBLatency(ulnDbc *aDbc)
+{
+    return aDbc->mAttrIBLatency;
+}
+
+ACP_INLINE void ulnDbcSetIBLatency(ulnDbc *aDbc, acp_sint32_t aIBLatency)
+{
+    aDbc->mAttrIBLatency = aIBLatency;
+}
+
+ACP_INLINE acp_sint32_t ulnDbcGetIBConChkSpin(ulnDbc *aDbc)
+{
+    return aDbc->mAttrIBConChkSpin;
+}
+
+ACP_INLINE void ulnDbcSetIBConChkSpin(ulnDbc *aDbc, acp_sint32_t aIBConChkSpin)
+{
+    aDbc->mAttrIBConChkSpin = aIBConChkSpin;
 }
 
 #endif /* _ULN_DBC_H_ */

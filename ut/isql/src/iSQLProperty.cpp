@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProperty.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLProperty.cpp 84322 2018-11-12 02:04:29Z bethy $
  **********************************************************************/
 
 #include <iSQL.h>
@@ -59,7 +59,7 @@ iSQLProperty::iSQLProperty()
     m_LobOffset            = 0;
     m_LobSize              = 80;
     m_NumWidth             = 11;       // BUG-39213 Need to support SET NUMWIDTH in isql
-    mEcho                  = ID_FALSE;
+    mEcho                  = ID_TRUE;  /* BUG-45722 */
     mFullName              = ID_FALSE;
     m_Define               = ID_FALSE;
     m_Verify               = ID_TRUE; /* BUG-43599 */
@@ -78,6 +78,9 @@ iSQLProperty::iSQLProperty()
     idlOS::memset(mCaseSensitivePasswd, 0x00, ID_SIZEOF(mCaseSensitivePasswd));
     idlOS::memset(m_Editor, 0x00, ID_SIZEOF(m_Editor));
     idlOS::memset(mConnTypeStr,  0x00, ID_SIZEOF(mConnTypeStr));
+#ifdef USE_READLINE
+    idlOS::memset(mHistFile, 0x00, ID_SIZEOF(mHistFile)); /* BUG-45145 */
+#endif
 
     /*BUG-41163 SET SQLP[ROMPT] */
     mSqlPrompt[0] = '\0';
@@ -143,7 +146,39 @@ iSQLProperty::SetEnv()
     {
         idlOS::strcpy(mConnTypeStr, "TCP");
     }
+
+#ifdef USE_READLINE
+    /*
+     * BUG-45145 Need to enhance history
+     * ISQL_HIST_FILE, default : not used
+     */
+    if (idlOS::getenv(ENV_ISQL_HIST_FILE))
+    {
+        idlOS::strcpy(mHistFile, idlOS::getenv(ENV_ISQL_HIST_FILE));
+    }
+    else
+    {
+        /* BUG-46552 Do not use /dev/null */
+        idlOS::strcpy(mHistFile, "");
+    }
+#endif
 }
+
+#ifdef USE_READLINE
+/* BUG-46552 Do not use /dev/null */
+/* BUG-45145 Need to enhance history */
+SChar * iSQLProperty::GetHistFile()
+{
+    if (idlOS::strlen(mHistFile) == 0)
+    {
+        return NULL;
+    }
+    else
+    {
+        return mHistFile;
+    }
+}
+#endif
 
 /* ============================================
  * Set ColSize
@@ -261,6 +296,7 @@ iSQLProperty::SetTerm( SChar * a_CommandStr,
     gSpool->PrintCommand();
 
     m_Term = a_IsTerm;
+    mEcho = m_Term; /* BUG-45722 term 설정시 echo 도 자동으로 변경 */
 }
 
 /* ============================================
@@ -419,6 +455,9 @@ void iSQLProperty::AdjustConnTypeStr(idBool aIsSysDBA, SChar* aServerName)
         case ISQL_CONNTYPE_SSL:
             idlOS::strcpy(mConnTypeStr, "SSL");
             break;
+        case ISQL_CONNTYPE_IB: /* PROJ-2681 */
+            idlOS::strcpy(mConnTypeStr, "IB");
+            break;
     }
 }
 
@@ -455,6 +494,10 @@ SInt iSQLProperty::GetConnType(idBool aIsSysDBA, SChar* aServerName)
         else if (idlOS::strcasecmp(mConnTypeStr, "SSL") == 0)
         {
             sConnType = ISQL_CONNTYPE_SSL;
+        }
+        else if (idlOS::strcasecmp(mConnTypeStr, "IB") == 0) /* PROJ-2681 */
+        {
+            sConnType = ISQL_CONNTYPE_IB;
         }
         else
         {
@@ -507,6 +550,10 @@ SInt iSQLProperty::GetConnType(idBool aIsSysDBA, SChar* aServerName)
             if (idlOS::strcasecmp(mConnTypeStr, "SSL") == 0)
             {
                 sConnType = ISQL_CONNTYPE_SSL;
+            }
+            else if (idlOS::strcasecmp(mConnTypeStr, "IB") == 0) /* PROJ-2681 */
+            {
+                sConnType = ISQL_CONNTYPE_IB;
             }
             else
             {

@@ -27,19 +27,21 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 abstract class AbstractColumn implements Column
 {
     // JDBC 스펙에서 정한 null value
     // 이 값은 알티베이스에서 저장할 때 사용하는 null value가 아니다.
     // mt type에서 정한 null value는 각 타입별 class에 정의되어 있다.
-    private static final boolean BOOLEAN_NULL_VALUE = false;
-    private static final byte    BYTE_NULL_VALUE    = 0;
-    private static final short   SHORT_NULL_VALUE   = 0;
-    private static final int     INT_NULL_VALUE     = 0;
-    private static final long    LONG_NULL_VALUE    = 0;
-    private static final float   FLOAT_NULL_VALUE   = 0;
-    private static final double  DOUBLE_NULL_VALUE  = 0;
+    private static final boolean BOOLEAN_NULL_VALUE             = false;
+    private static final byte    BYTE_NULL_VALUE                = 0;
+    private static final short   SHORT_NULL_VALUE               = 0;
+    private static final int     INT_NULL_VALUE                 = 0;
+    private static final long    LONG_NULL_VALUE                = 0;
+    private static final float   FLOAT_NULL_VALUE               = 0;
+    private static final double  DOUBLE_NULL_VALUE              = 0;
 
     protected boolean            mIsNull            = false;
     private ColumnInfo           mColumnInfo;
@@ -56,6 +58,19 @@ abstract class AbstractColumn implements Column
     protected abstract boolean isNullValueSet();
 
     protected abstract void loadFromSub(DynamicArray aArray);
+
+    // BUG-46480 JdbcType 정보를 저장하기 위한 LinkedHashSet 객체 생성
+    protected Set<Integer> mMappedJdbcTypeSet = new LinkedHashSet<Integer>();
+
+    protected void addMappedJdbcTypeSet(int aType)
+    {
+        mMappedJdbcTypeSet.add(aType);
+    }
+
+    public Set<Integer> getMappedJDBCTypes()
+    {
+        return mMappedJdbcTypeSet;
+    }
 
     protected abstract void readFromSub(CmChannel aChannel) throws SQLException;
 
@@ -231,14 +246,8 @@ abstract class AbstractColumn implements Column
 
     public boolean isMappedJDBCType(int aSqlType)
     {
-        for (int sMappedType : getMappedJDBCTypes())
-        {
-            if (sMappedType == aSqlType)
-            {
-                return true;
-            }
-        }
-        return false;
+        // BUG-46480 성능을 위해 HashSet.contains를 사용한다.
+        return mMappedJdbcTypeSet.contains(aSqlType);
     }
 
     public void readParamsFrom(CmChannel aChannel) throws SQLException

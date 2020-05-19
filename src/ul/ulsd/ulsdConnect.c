@@ -20,66 +20,12 @@
  **********************************************************************/
 
 #include <uln.h>
+#include <ulnConfigFile.h>
 #include <ulnPrivate.h>
 #include <mtcc.h>
 
 #include <ulsd.h>
 
-/* PROJ-2660 */
-
-#define MAX_LAN_NUM    32
-#define LOCAL_IP       16777343
-
-static acp_thr_mutex_t    gUlnShardPinMutex = ACP_THR_MUTEX_INITIALIZER;
-static acp_uint16_t       gUlnShardTime = 0;
-static acp_uint32_t       gUlnShardPID  = 0;
-static acp_uint32_t       gUlnShardIP   = 0;
-
-acp_uint64_t ulsdMakeShardPin(void)
-{
-    acp_uint64_t    sShardPin  = 0;
-
-    acp_rc_t        sRC        = ACP_RC_SUCCESS;
-    acp_uint32_t    sCount     = 0;
-    acp_ip_addr_t   sIPs[MAX_LAN_NUM];
-    struct in_addr *sIP;
-
-    ACE_ASSERT(acpThrMutexLock(&gUlnShardPinMutex) == ACP_RC_SUCCESS);
-
-    if (gUlnShardTime == 0)
-    {
-        gUlnShardTime = (acp_uint16_t)acpTimeNow();
-        gUlnShardPID  = (acp_uint32_t)acpProcGetSelfID();
-        gUlnShardPID &= 0x0000FFFF;
-        gUlnShardPID  = ( gUlnShardPID << 16 );
-
-        sRC = acpSysGetIPAddress(NULL, 0, &sCount);
-        if ( ACP_RC_IS_SUCCESS( sRC ) && ( sCount >= 1 ) )
-        {
-            (void)acpSysGetIPAddress( &sIPs[0], sCount, &sCount );
-            sIP = (struct in_addr *)&sIPs[0].mAddr;
-
-            gUlnShardIP = (acp_uint32_t)(sIP->s_addr);
-        }
-        else
-        {
-            gUlnShardIP = (acp_uint32_t)LOCAL_IP;
-        }
-    }
-    else
-    {
-        gUlnShardTime++;
-    }
-
-    sShardPin  = gUlnShardIP;
-    sShardPin  = ( sShardPin << 32 );
-    sShardPin |= gUlnShardPID;
-    sShardPin |= gUlnShardTime;
-
-    (void)acpThrMutexUnlock(&gUlnShardPinMutex);
-
-    return sShardPin;
-}
 
 ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
                                         cmiProtocol        *aProtocol,
@@ -87,10 +33,11 @@ ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
                                         void               *aUserContext)
 {
     ulnFnContext           *sFnContext      = (ulnFnContext *)aUserContext;
-    ulsdDbc                *sShard;
+    ulnDbc                 *sDbc            = NULL;
+    ulsdDbc                *sShard          = NULL;
+    acp_uint64_t            sShardMetaNumber = 0;
     acp_uint16_t            sNodeCount = 0;
     acp_uint16_t            i;
-    acp_uint32_t            sTempLen;
     acp_uint8_t             sLen;
 
     acp_uint32_t            sNodeId;
@@ -110,8 +57,12 @@ ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
 
     CMI_RD1(aProtocolContext, sIsTestEnable);
 
-    ACI_TEST_RAISE(ulsdGetShardFromFnContext(sFnContext, &sShard) != ACI_SUCCESS,
-                   LABEL_INVALID_SHARD_OBJECT);
+    sDbc = ulnFnContextGetDbc( sFnContext );
+
+    ACI_TEST_RAISE( sDbc == NULL, LABEL_INVALID_SHARD_OBJECT );
+    ACI_TEST_RAISE( sDbc->mParentEnv->mShardModule == &gShardModuleNODE, LABEL_INVALID_SHARD_OBJECT );
+
+    ulsdGetShardFromDbc(sDbc, &sShard);
 
     ACI_TEST_RAISE(sIsTestEnable > 1, LABEL_INVALID_TEST_MARK);
 
@@ -126,35 +77,49 @@ ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
 
     CMI_RD2(aProtocolContext, &sNodeCount);
 
-    ACI_TEST_RAISE(sNodeCount == 0, LABEL_NODE_EMPTY);
-    ACI_TEST_RAISE(sNodeCount != sShard->mNodeCount, LABEL_NODE_COUNT_NOT_MATCH);
-    
-    sShard->mNodeCount = sNodeCount;
+    ACI_TEST_RAISE(sNodeCount != sShard->mNodeCount, LABEL_NODE_COUNT_MISMATCH);
 
-    for ( i = 0; i < sNodeCount; i++ )
+    if ( sNodeCount > 0 )
     {
-        acpMemSet(sServerIP, 0, ACI_SIZEOF(sServerIP));
-        acpMemSet(sAlternateServerIP, 0, ACI_SIZEOF(sAlternateServerIP));
+        for ( i = 0; i < sNodeCount; i++ )
+        {
+            acpMemSet(sServerIP, 0, ACI_SIZEOF(sServerIP));
+            acpMemSet(sAlternateServerIP, 0, ACI_SIZEOF(sAlternateServerIP));
 
-        CMI_RD4(aProtocolContext, &sNodeId);
-        CMI_RD1(aProtocolContext, sLen);
-        CMI_RCP(aProtocolContext, sNodeName, sLen);
-        CMI_RCP(aProtocolContext, sServerIP, ULSD_MAX_SERVER_IP_LEN);
-        CMI_RD2(aProtocolContext, &sPortNo);
-        CMI_RCP(aProtocolContext, sAlternateServerIP, ULSD_MAX_SERVER_IP_LEN);
-        CMI_RD2(aProtocolContext, &sAlternatePortNo);
+            CMI_RD4(aProtocolContext, &sNodeId);
+            CMI_RD1(aProtocolContext, sLen);
+            CMI_RCP(aProtocolContext, sNodeName, sLen);
+            CMI_RCP(aProtocolContext, sServerIP, ULSD_MAX_SERVER_IP_LEN);
+            CMI_RD2(aProtocolContext, &sPortNo);
+            CMI_RCP(aProtocolContext, sAlternateServerIP, ULSD_MAX_SERVER_IP_LEN);
+            CMI_RD2(aProtocolContext, &sAlternatePortNo);
 
-        sNodeName[sLen] = '\0';
+            sNodeName[sLen] = '\0';
 
-        ACI_TEST(ulsdUpdateNodeInfo(&(sShard->mNodeInfo[i]),
-                                    sNodeId,
-                                    sNodeName,
-                                    sServerIP,
-                                    sPortNo,
-                                    sAlternateServerIP,
-                                    sAlternatePortNo)
-                 != ACI_SUCCESS);
+            ACI_TEST_RAISE( sShard->mNodeInfo[i]->mNodeId != sNodeId, LABEL_NODE_ID_MISMATCH );
+
+            ulsdSetNodeInfo( sShard->mNodeInfo[i],
+                             sNodeId,
+                             sNodeName,
+                             sServerIP,
+                             sPortNo,
+                             sAlternateServerIP,
+                             sAlternatePortNo );
+        }
     }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    CMI_RD8( aProtocolContext, &sShardMetaNumber );
+    ulnDbcSetShardMetaNumber( sDbc, sShardMetaNumber );
+
+    ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
+                   "%-18s| ShardMetaNumber received from meta: [%"ACI_UINT64_FMT"]",
+                   "ulsdCallbackUpdateNodeListResult", sShardMetaNumber );
+
+    ACI_TEST_RAISE(sNodeCount == 0, LABEL_NO_SHARD_NODE);
 
     return ACI_SUCCESS;
 
@@ -162,34 +127,35 @@ ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
     {
         ulnError(sFnContext,
                  ulERR_ABORT_SHARD_ERROR,
-                 "GetNodeList",
+                 "UpdateNodeList",
                  "Invalid test mark.");
     }
-    ACI_EXCEPTION(LABEL_NODE_EMPTY)
+    ACI_EXCEPTION(LABEL_NO_SHARD_NODE)
     {
         ulnError(sFnContext,
                  ulERR_ABORT_SHARD_ERROR,
-                 "GetNodeList",
+                 "UpdateNodeList",
                  "No shard node.");
     }
-    ACI_EXCEPTION(LABEL_NODE_COUNT_NOT_MATCH)
+    ACI_EXCEPTION( LABEL_NODE_COUNT_MISMATCH )
     {
-        sTempLen = (4 + ULSD_MAX_SERVER_IP_LEN + 2) * sNodeCount;
-        CMI_SKIP_READ_BLOCK(aProtocolContext, sTempLen);
-
         ulnError(sFnContext,
                  ulERR_ABORT_SHARD_ERROR,
-                 "GetNodeList",
+                 "UpdateNodeList",
                  "Shard node count was changed.");
+    }
+    ACI_EXCEPTION( LABEL_NODE_ID_MISMATCH )
+    {
+        ulnError( sFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "UpdateNodeList",
+                  "Shard nodes were changed." );
     }
     ACI_EXCEPTION(LABEL_INVALID_SHARD_OBJECT)
     {
-        sTempLen = (4 + ULSD_MAX_SERVER_IP_LEN + 2) * sNodeCount;
-        CMI_SKIP_READ_BLOCK(aProtocolContext, sTempLen);
-
         ulnError(sFnContext,
                  ulERR_ABORT_SHARD_ERROR,
-                 "GetNodeList",
+                 "UpdateNodeList",
                  "Shard object is invalid.");
     }
     ACI_EXCEPTION_END;
@@ -204,12 +170,13 @@ ACI_RC ulsdCallbackGetNodeListResult(cmiProtocolContext *aProtocolContext,
                                      void               *aServiceSession,
                                      void               *aUserContext)
 {
-    ulnFnContext *sFnContext      = (ulnFnContext *)aUserContext;
-    ulnDbc       *sDbc            = sFnContext->mHandle.mDbc;
-    ulsdDbc      *sShard          = sDbc->mShardDbcCxt.mShardDbc;
-    acp_uint16_t  sNodeCount = 0;
-    acp_uint8_t   sLen;
-    acp_uint16_t  i;
+    ulnFnContext  * sFnContext       = (ulnFnContext *)aUserContext;
+    ulsdNodeInfo ** sNodeInfo        = NULL;
+    acp_uint64_t    sShardPin        = ULSD_SHARD_PIN_INVALID;
+    acp_uint64_t    sShardMetaNumber = 0;
+    acp_uint16_t    sNodeCount       = 0;
+    acp_uint8_t     sLen             = 0;
+    acp_uint16_t    i                = 0;
 
     acp_uint32_t  sNodeId;
     acp_char_t    sNodeName[ULSD_MAX_NODE_NAME_LEN+1];
@@ -230,51 +197,78 @@ ACI_RC ulsdCallbackGetNodeListResult(cmiProtocolContext *aProtocolContext,
     
     ACI_TEST_RAISE(sIsTestEnable > 1, LABEL_INVALID_TEST_MARK);
 
-    if ( sIsTestEnable == 0 )
+    CMI_RD2(aProtocolContext, &sNodeCount);
+
+    if ( sNodeCount > 0 )
     {
-        sShard->mIsTestEnable = ACP_FALSE;
+        ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( acpMemCalloc( (void **)&sNodeInfo,
+                                                          sNodeCount,
+                                                          ACI_SIZEOF(ulsdNodeInfo *) ) ),
+                        LABEL_NOT_ENOUGH_MEMORY );
+
+        for ( i = 0; i < sNodeCount; i++ )
+        {
+            acpMemSet(sServerIP, 0, ACI_SIZEOF(sServerIP));
+            acpMemSet(sAlternateServerIP, 0, ACI_SIZEOF(sAlternateServerIP));
+
+            CMI_RD4(aProtocolContext, &sNodeId);
+            CMI_RD1(aProtocolContext, sLen);
+            CMI_RCP(aProtocolContext, sNodeName, sLen);
+            CMI_RCP(aProtocolContext, sServerIP, ULSD_MAX_SERVER_IP_LEN);
+            CMI_RD2(aProtocolContext, &sPortNo);
+            CMI_RCP(aProtocolContext, sAlternateServerIP, ULSD_MAX_SERVER_IP_LEN);
+            CMI_RD2(aProtocolContext, &sAlternatePortNo);
+
+            sNodeName[sLen] = '\0';
+
+            ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( acpMemAlloc( (void **)&(sNodeInfo[i]),
+                                                             ACI_SIZEOF(ulsdNodeInfo) ) ),
+                            LABEL_NOT_ENOUGH_MEMORY );
+
+            ulsdSetNodeInfo( sNodeInfo[i],
+                             sNodeId,
+                             sNodeName,
+                             sServerIP,
+                             sPortNo,
+                             sAlternateServerIP,
+                             sAlternatePortNo );
+
+            /* run-time info */
+            sNodeInfo[i]->mNodeDbc = SQL_NULL_HANDLE;
+            sNodeInfo[i]->mTouched = ACP_FALSE;
+        }
     }
     else
     {
-        sShard->mIsTestEnable = ACP_TRUE;
+        /* Nothing to do */
     }
-    
-    CMI_RD2(aProtocolContext, &sNodeCount);
+
+    CMI_RD8( aProtocolContext, &sShardPin );
+
+    ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
+                   "%-18s| ShardPin received from meta: ["ULSD_SHARD_PIN_FORMAT_STR"]",
+                   "ulsdCallbackGetNodeListResult", ULSD_SHARD_PIN_FORMAT_ARG( sShardPin ) );
+
+    CMI_RD8( aProtocolContext, &sShardMetaNumber );
+
+    ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
+                   "%-18s| ShardMetaNumber received from meta: [%"ACI_UINT64_FMT"]",
+                   "ulsdCallbackGetNodeListResult", sShardMetaNumber );
+
+    /* 모든 데이터를 수신한 후에 반영 여부를 결정한다. */
 
     ACI_TEST_RAISE(sNodeCount == 0, LABEL_NO_SHARD_NODE);
-    sShard->mNodeCount = sNodeCount;
 
-    ACI_TEST(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&(sShard->mNodeInfo),
-                                            ACI_SIZEOF(ulsdNodeInfo *) * sNodeCount)));
-
-    for ( i = 0; i < sNodeCount; i++ )
-    {
-        acpMemSet(sServerIP, 0, ACI_SIZEOF(sServerIP));
-        acpMemSet(sAlternateServerIP, 0, ACI_SIZEOF(sAlternateServerIP));
-
-        CMI_RD4(aProtocolContext, &sNodeId);
-        CMI_RD1(aProtocolContext, sLen);
-        CMI_RCP(aProtocolContext, sNodeName, sLen);
-        CMI_RCP(aProtocolContext, sServerIP, ULSD_MAX_SERVER_IP_LEN);
-        CMI_RD2(aProtocolContext, &sPortNo);
-        CMI_RCP(aProtocolContext, sAlternateServerIP, ULSD_MAX_SERVER_IP_LEN);
-        CMI_RD2(aProtocolContext, &sAlternatePortNo);
-
-        sNodeName[sLen] = '\0';
-
-        ACI_TEST(ulsdCreateNodeInfo(&(sShard->mNodeInfo[i]),
-                                    sNodeId,
-                                    sNodeName,
-                                    sServerIP,
-                                    sPortNo,
-                                    sAlternateServerIP,
-                                    sAlternatePortNo)
-                 != ACI_SUCCESS);
-    }
+    ACI_TEST( ulsdApplyNodesInfo( sFnContext,
+                                  sNodeInfo,
+                                  sNodeCount,
+                                  sShardPin,
+                                  sShardMetaNumber,
+                                  sIsTestEnable )
+              != ACI_SUCCESS );
 
     return ACI_SUCCESS;
 
-    
     ACI_EXCEPTION(LABEL_INVALID_TEST_MARK)
     {
         ulnError(sFnContext,
@@ -289,7 +283,35 @@ ACI_RC ulsdCallbackGetNodeListResult(cmiProtocolContext *aProtocolContext,
                  "GetNodeList",
                  "No shard node.");
     }
+    ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
+    {
+        ulnError( sFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "GetNodeList",
+                  "Memory allocation error." );
+    }
     ACI_EXCEPTION_END;
+
+    if ( sNodeInfo != NULL )
+    {
+        for ( i = 0; i < sNodeCount; i++ )
+        {
+            if ( sNodeInfo[i] != NULL )
+            {
+                acpMemFree( (void *)sNodeInfo[i] );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
+        acpMemFree( (void *)sNodeInfo );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     /* CM 콜백 함수는 communication error가 아닌 한 ACI_SUCCESS를 반환해야 한다.
      * 콜백 에러는 function context에 설정된 값으로 판단한다. */
@@ -299,6 +321,7 @@ ACI_RC ulsdCallbackGetNodeListResult(cmiProtocolContext *aProtocolContext,
 ACI_RC ulsdUpdateNodeList(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 {
     ulnDbc             *sDbc;
+    cmiProtocolContext *sCtx = &aPtContext->mCmiPtContext;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
@@ -306,9 +329,20 @@ ACI_RC ulsdUpdateNodeList(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 
     ACI_TEST(ulnFlushProtocol(aFnContext, aPtContext) != ACI_SUCCESS);
 
-    ACI_TEST(ulnReadProtocol(aFnContext,
-                             aPtContext,
-                             sDbc->mConnTimeoutValue) != ACI_SUCCESS);
+    if ( cmiGetLinkImpl( sCtx ) == CMI_LINK_IMPL_IPCDA )
+    {
+        ACI_TEST( ulnReadProtocolIPCDA( aFnContext,
+                                        aPtContext,
+                                        sDbc->mConnTimeoutValue )
+                  != ACI_SUCCESS );
+    }
+    else
+    {
+        ACI_TEST( ulnReadProtocol( aFnContext,
+                                   aPtContext,
+                                   sDbc->mConnTimeoutValue )
+                  != ACI_SUCCESS );
+    }
 
     return ACI_SUCCESS;
 
@@ -321,6 +355,8 @@ ACI_RC ulsdGetNodeList(ulnDbc *aDbc,
                        ulnFnContext *aFnContext,
                        ulnPtContext *aPtContext)
 {
+    cmiProtocolContext *sCtx = &aPtContext->mCmiPtContext;
+
     /*
      * Shard Node List Request 전송
      */
@@ -328,9 +364,19 @@ ACI_RC ulsdGetNodeList(ulnDbc *aDbc,
 
     ACI_TEST(ulnFlushProtocol(aFnContext, aPtContext) != ACI_SUCCESS);
 
-    ACI_TEST(ulnReadProtocol(aFnContext,
-                             aPtContext,
-                             aDbc->mConnTimeoutValue) != ACI_SUCCESS);
+    if ( cmiGetLinkImpl( sCtx ) == CMI_LINK_IMPL_IPCDA )
+    {
+        ACI_TEST( ulnReadProtocolIPCDA( aFnContext,
+                                        aPtContext,
+                                        aDbc->mConnTimeoutValue )
+                  != ACI_SUCCESS );
+    }
+    else
+    {
+        ACI_TEST( ulnReadProtocol( aFnContext,
+                                   aPtContext,
+                                   aDbc->mConnTimeoutValue ) != ACI_SUCCESS );
+    }
 
     return ACI_SUCCESS;
 
@@ -344,14 +390,27 @@ SQLRETURN ulsdNodeDriverConnect(ulnDbc       *aMetaDbc,
                                 acp_char_t   *aConnString,
                                 acp_sint16_t  aConnStringLength)
 {
-    ACI_TEST(ulsdGetNodeList(aMetaDbc, aFnContext, &(aMetaDbc->mPtContext)) != ACI_SUCCESS);
+    ACI_TEST( ulsdGetNodeList( aMetaDbc,
+                               aFnContext,
+                               &(aMetaDbc->mPtContext ) )
+            != ACI_SUCCESS );
 
-    return ulsdDriverConnectToNode(aMetaDbc,
-                                   aFnContext,
-                                   aConnString,
-                                   aConnStringLength);
+    /* Server에서 Error Protocol로 응답하는 경우에도 ACI_SUCCESS를 반환합니다. */
+    ACI_TEST( ULN_FNCONTEXT_GET_RC( aFnContext ) != SQL_SUCCESS );
+
+    ACI_TEST( ulsdDriverConnectToNode( aMetaDbc,
+                                       aFnContext,
+                                       aConnString,
+                                       aConnStringLength )
+            != SQL_SUCCESS );
+
+    return SQL_SUCCESS;
 
     ACI_EXCEPTION_END;
+
+    /* To make Success ulnExit()
+     * and Disconnect Meta node connection by ulnDisconnect() */
+    ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS_WITH_INFO );
 
     return SQL_ERROR;
 }
@@ -363,10 +422,8 @@ SQLRETURN ulsdDriverConnectToNode(ulnDbc       *aMetaDbc,
 {
     ulsdDbc            *sShard;
     ulsdNodeInfo      **sShardNodeInfo;
-    acp_char_t          sNodeConnString[ULSD_MAX_CONN_STR_LEN + 1];
     acp_char_t          sNodeBaseConnString[ULSD_MAX_CONN_STR_LEN + 1] = {0,};
-    acp_char_t          sErrorMessage[ULSD_MAX_ERROR_MESSAGE_LEN];
-    acp_char_t          sOrigianlErrorMessage[ULSD_MAX_ERROR_MESSAGE_LEN];
+    acp_sint16_t        sNodeBaseConnStringLength = 0;
     acp_uint16_t        i;
 
     sShard = aMetaDbc->mShardDbcCxt.mShardDbc;
@@ -379,85 +436,128 @@ SQLRETURN ulsdDriverConnectToNode(ulnDbc       *aMetaDbc,
     ACI_TEST(ulsdMakeNodeBaseConnStr(aFnContext,
                                      aConnString,
                                      aConnStringLength,
-                                     aMetaDbc->mShardDbcCxt.mShardDbc->mIsTestEnable,
+                                     sShard->mIsTestEnable,
                                      sNodeBaseConnString) != ACI_SUCCESS);
     SHARD_LOG("(Driver Connect) NodeBaseConnString=\"%s\"\n", sNodeBaseConnString);
 
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    sNodeBaseConnStringLength = acpCStrLen( sNodeBaseConnString, ULSD_MAX_CONN_STR_LEN );
+
+    ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( acpMemAlloc( (void **) & aMetaDbc->mShardDbcCxt.mNodeBaseConnString,
+                                                     sNodeBaseConnStringLength + 1 ) ),
+                    LABEL_NOT_ENOUGH_MEMORY );
+
+    acpMemCpy( (void *)aMetaDbc->mShardDbcCxt.mNodeBaseConnString,
+               (const void *) sNodeBaseConnString,
+               sNodeBaseConnStringLength + 1 );
+
     for ( i = 0; i < sShard->mNodeCount; i++ )
     {
-        ACI_TEST(ulsdMakeNodeConnString(aFnContext,
-                                        sShardNodeInfo[i],
-                                        aMetaDbc->mShardDbcCxt.mShardDbc->mIsTestEnable,
-                                        sNodeBaseConnString,
-                                        sNodeConnString)
-                 != SQL_SUCCESS);
-
         ACI_TEST(ulsdAllocHandleNodeDbc(aFnContext,
                                         aMetaDbc->mParentEnv,
                                         &(sShardNodeInfo[i]->mNodeDbc))
                  != SQL_SUCCESS);
 
         ulsdInitalizeNodeDbc(sShardNodeInfo[i]->mNodeDbc, aMetaDbc);
+    }
 
-        if ( aMetaDbc->mShardDbcCxt.mShardPin > 0 )
-        {
-            ulnDbcSetShardPin(sShardNodeInfo[i]->mNodeDbc,
-                              aMetaDbc->mShardDbcCxt.mShardPin );
-        }
-        else
-        {
-            /* Do Nothing. */
-        }
-
-        ACI_TEST_RAISE(ulnDriverConnect(sShardNodeInfo[i]->mNodeDbc,
-                                        sNodeConnString,
-                                        SQL_NTS,
-                                        NULL,
-                                        0,
-                                        NULL) != ACI_SUCCESS,
-                       LABEL_NODE_CONNECTION_FAIL);
-
-        SHARD_LOG("(Driver Connect) NodeIndex[%d], NodeId=%d, Server=%s:%d\n",
-                  i,
-                  sShardNodeInfo[i]->mNodeId,
-                  sShardNodeInfo[i]->mServerIP,
-                  sShardNodeInfo[i]->mPortNo);
+    for ( i = 0; i < sShard->mNodeCount; i++ )
+    {
+        ACI_TEST( ulsdDriverConnectToNodeInternal( aMetaDbc,
+                                                   aFnContext,
+                                                   sShardNodeInfo[i],
+                                                   sShard->mIsTestEnable )
+                  != SQL_SUCCESS );
     }
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_NODE_CONNECTION_FAIL)
+    ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
     {
-        if ( ulnGetDiagRec(SQL_HANDLE_DBC,
-                           (ulnObject *)sShardNodeInfo[i]->mNodeDbc,
-                           1,
-                           NULL,
-                           NULL,
-                           sOrigianlErrorMessage, 
-                           ULSD_MAX_ERROR_MESSAGE_LEN,
-                           NULL,
-                           ACP_FALSE ) != SQL_NO_DATA )
-        {
-            ulsdMakeErrorMessage(sErrorMessage,
-                                 ULSD_MAX_ERROR_MESSAGE_LEN,
-                                 sOrigianlErrorMessage,
-                                 sShardNodeInfo[i]);
-
-            ulnError(aFnContext,
-                     ulERR_ABORT_SHARD_CLI_ERROR,
-                     "SQLDriverConnect",
-                     sErrorMessage);
-
-            ULN_FNCONTEXT_SET_RC(aFnContext, SQL_SUCCESS_WITH_INFO);
-        }
-        else
-        {
-            /* Do Nothing */
-        }
+        ulnError( aFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "Driver Connect To Node",
+                  "Memory allocation error." );
     }
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
+}
+
+SQLRETURN ulsdDriverConnectToNodeInternal( ulnDbc       * aMetaDbc,
+                                           ulnFnContext * aFnContext,
+                                           ulsdNodeInfo * aNodeInfo,
+                                           acp_bool_t     aIsTestEnable )
+{
+    acp_char_t      sNodeConnString[ULSD_MAX_CONN_STR_LEN + 1]        = { 0, };
+    acp_char_t    * sDsn = ulnDbcGetDsnString( aMetaDbc );
+    SQLRETURN       sRc  = SQL_ERROR;
+
+    ACI_TEST_RAISE( ulsdMakeNodeConnString( aFnContext,
+                                            aNodeInfo,
+                                            aIsTestEnable,
+                                            aMetaDbc->mShardDbcCxt.mNodeBaseConnString,
+                                            sNodeConnString )
+                    != ACI_SUCCESS, LABEL_NODE_MAKE_CONN_STRING_FAIL );
+
+    if ( sDsn != NULL )
+    {
+        ulnDbcSetDsnString( aNodeInfo->mNodeDbc,
+                            sDsn,
+                            acpCStrLen( sDsn, ACP_SINT32_MAX ) );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    aNodeInfo->mNodeDbc->mShardDbcCxt.mNodeInfo = aNodeInfo;
+
+    ulnDbcSetShardPin( aNodeInfo->mNodeDbc,
+                       aMetaDbc->mShardDbcCxt.mShardPin );
+
+    ulnDbcSetShardMetaNumber( aNodeInfo->mNodeDbc,
+                              aMetaDbc->mShardDbcCxt.mShardMetaNumber );
+
+    /* BUG-45707 */
+    ulsdDbcSetShardCli( aNodeInfo->mNodeDbc, ULSD_SHARD_CLIENT_TRUE );
+
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    aNodeInfo->mNodeDbc->mShardDbcCxt.mSMNOfDataNode = 0;
+
+    /* BUG-46100 Session SMN Update */
+    aNodeInfo->mNodeDbc->mShardDbcCxt.mNeedToDisconnect = ACP_FALSE;
+
+    sRc = ulnDriverConnect( aNodeInfo->mNodeDbc,
+                            sNodeConnString,
+                            SQL_NTS,
+                            NULL,
+                            0,
+                            NULL );
+    ACI_TEST_RAISE( sRc != SQL_SUCCESS, LABEL_NODE_CONNECTION_FAIL );
+
+    SHARD_LOG( "(Driver Connect) NodeId=%d, Server=%s:%d\n",
+               aNodeInfo->mNodeId,
+               aNodeInfo->mServerIP,
+               aNodeInfo->mPortNo );
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_NODE_MAKE_CONN_STRING_FAIL )
+    {
+        sRc = ULN_FNCONTEXT_GET_RC( aFnContext );
+    }
+    ACI_EXCEPTION( LABEL_NODE_CONNECTION_FAIL )
+    {
+        ulsdNativeErrorToUlnError(aFnContext,
+                                  SQL_HANDLE_DBC,
+                                  (ulnObject *)aNodeInfo->mNodeDbc,
+                                  aNodeInfo,
+                                  (acp_char_t *)"SQLDriverConnect");
+    }
+    ACI_EXCEPTION_END;
+
+    return sRc;
 }
 
 ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
@@ -466,6 +566,19 @@ ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
                               acp_char_t          *aNodeBaseConnString,
                               acp_char_t          *aOutString)
 {
+    ulnDbc      *sMetaDbc       = NULL;
+    ulnConnType  sShardConnType = ULN_CONNTYPE_INVALID;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sMetaDbc );
+    ACI_TEST_RAISE( sMetaDbc == NULL, LABEL_MEM_MAN_ERR );
+
+    sShardConnType = ulnDbcGetShardConnType( sMetaDbc );
+
+    if ( sShardConnType == ULN_CONNTYPE_INVALID )
+    {
+        sShardConnType = ulnDbcGetConnType( sMetaDbc );
+    }
+
     if ( ( aNodeInfo->mAlternateServerIP[0] == '\0' ) ||
          ( aNodeInfo->mAlternatePortNo == 0 ) )
     {
@@ -473,7 +586,8 @@ ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
         {
             ACI_TEST_RAISE(acpSnprintf(aOutString,
                                        ULSD_MAX_CONN_STR_LEN + 1,
-                                       "SERVER=%s;PORT_NO=%d;SHARD_NODE_NAME=%s;%s",
+                                       "CONNTYPE=%d;SERVER=%s;PORT_NO=%d;SHARD_NODE_NAME=%s;%s",
+                                       sShardConnType,
                                        aNodeInfo->mServerIP,
                                        aNodeInfo->mPortNo,
                                        aNodeInfo->mNodeName,
@@ -484,7 +598,8 @@ ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
         {
             ACI_TEST_RAISE(acpSnprintf(aOutString,
                                        ULSD_MAX_CONN_STR_LEN + 1,
-                                       "SERVER=%s;PORT_NO=%d;UID=%s;PWD=%s;SHARD_NODE_NAME=%s;%s",
+                                       "CONNTYPE=%d;SERVER=%s;PORT_NO=%d;UID=%s;PWD=%s;SHARD_NODE_NAME=%s;%s",
+                                       sShardConnType,
                                        aNodeInfo->mServerIP,
                                        aNodeInfo->mPortNo,
                                        aNodeInfo->mNodeName, // UID
@@ -500,7 +615,8 @@ ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
         {
             ACI_TEST_RAISE(acpSnprintf(aOutString,
                                        ULSD_MAX_CONN_STR_LEN + 1,
-                                       "SERVER=%s;PORT_NO=%d;SHARD_NODE_NAME=%s;AlternateServers=(%s:%d);%s",
+                                       "CONNTYPE=%d;SERVER=%s;PORT_NO=%d;SHARD_NODE_NAME=%s;AlternateServers=(%s:%d);%s",
+                                       sShardConnType,
                                        aNodeInfo->mServerIP,
                                        aNodeInfo->mPortNo,
                                        aNodeInfo->mNodeName,
@@ -513,8 +629,9 @@ ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
         {
             ACI_TEST_RAISE(acpSnprintf(aOutString,
                                        ULSD_MAX_CONN_STR_LEN + 1,
-                                       "SERVER=%s;PORT_NO=%d;UID=%s;PWD=%s;"
+                                       "CONNTYPE=%d;SERVER=%s;PORT_NO=%d;UID=%s;PWD=%s;"
                                        "SHARD_NODE_NAME=%s;AlternateServers=(%s:%d);%s",
+                                       sShardConnType,
                                        aNodeInfo->mServerIP,
                                        aNodeInfo->mPortNo,
                                        aNodeInfo->mNodeName, // UID
@@ -531,6 +648,12 @@ ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
 
     return ACI_SUCCESS;
 
+    ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
+    {
+        ulnError( aFnContext,
+                  ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
+                  "ulsdMakeNodeConnString : object type is neither DBC nor STMT." );
+    }
     ACI_EXCEPTION(LABEL_CONN_STR_BUFFER_OVERFLOW)
     {
         ulnError(aFnContext,
@@ -573,6 +696,10 @@ void ulsdInitalizeNodeDbc(ulnDbc      *aNodeDbc,
                           ulnDbc      *aMetaDbc)
 {
     aNodeDbc->mParentEnv = aMetaDbc->mParentEnv;
+
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    aNodeDbc->mShardDbcCxt.mParentDbc = aMetaDbc;
+
     ulsdSetDbcShardModule(aNodeDbc, &gShardModuleNODE);
 }
 
@@ -611,11 +738,19 @@ SQLRETURN ulsdDriverConnect(ulnDbc       *aDbc,
     SQLRETURN      sRet = SQL_ERROR;
     ulnFnContext   sFnContext;
     acp_char_t     sBackupErrorMessage[ULSD_MAX_ERROR_MESSAGE_LEN];
-    acp_uint64_t   sShardPin;
 
-    sShardPin = ulsdMakeShardPin();
+    /* BUG-45707 */
+    ulsdDbcSetShardCli( aDbc, ULSD_SHARD_CLIENT_TRUE );
 
-    ulnDbcSetShardPin( aDbc, sShardPin );
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    aDbc->mShardDbcCxt.mSMNOfDataNode = 0;
+
+    /* BUG-46100 Session SMN Update */
+    aDbc->mShardDbcCxt.mNeedToDisconnect = ACP_FALSE;
+
+    /* BUG-46100 Session SMN Update */
+    ulnDbcSetShardMetaNumber( aDbc, 0 );
+
     sRet = ulnDriverConnect(aDbc,
                             aConnString,
                             aConnStringLength,
@@ -668,4 +803,156 @@ SQLRETURN ulsdDriverConnect(ulnDbc       *aDbc,
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
+}
+
+acp_bool_t ulsdHasNoData( ulnDbc * aMetaDbc )
+{
+    acp_list_node_t * sIterator = NULL;
+    ulnStmt         * sStmt     = NULL;
+
+    ACP_LIST_ITERATE( & aMetaDbc->mStmtList, sIterator )
+    {
+        sStmt = (ulnStmt *)sIterator;
+
+        if ( ulnStmtIsPrepared( sStmt ) == ACP_TRUE )
+        {
+            ACI_TEST( ulsdModuleHasNoData( sStmt ) == ACP_FALSE );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return ACP_TRUE;
+
+    ACI_EXCEPTION_END;
+
+    return ACP_FALSE;
+}
+
+acp_bool_t ulsdIsTimeToUpdateShardMetaNumber( ulnDbc * aMetaDbc )
+{
+    acp_uint64_t   sSMN           = ulnDbcGetShardMetaNumber( aMetaDbc );
+    acp_uint64_t   sSMNOfDataNode = ulnDbcGetSMNOfDataNode( aMetaDbc );
+    acp_bool_t     sResult        = ACP_FALSE;
+
+    if ( ( sSMN != 0 ) &&
+         ( sSMN < sSMNOfDataNode ) &&
+         ( ulnDbcGetNeedToDisconnect( aMetaDbc ) == ACP_FALSE ) &&
+         ( ulsdHasNoData( aMetaDbc ) == ACP_TRUE ) )
+    {
+        sResult = ACP_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sResult;
+}
+
+SQLRETURN ulsdUpdateShardMetaNumber( ulnDbc       * aMetaDbc,
+                                     ulnFnContext * aFnContext )
+{
+    ulsdDbc      * sShard       = aMetaDbc->mShardDbcCxt.mShardDbc;
+    acp_uint64_t   sOldShardPin = ulnDbcGetShardPin( aMetaDbc );
+    acp_uint64_t   sOldSMN      = ulnDbcGetShardMetaNumber( aMetaDbc );
+    acp_uint64_t   sNewSMN      = 0;
+    acp_uint16_t   i            = 0;
+
+    ACI_TEST_RAISE( aMetaDbc->mIsConnected == ACP_FALSE, LABEL_ABORT_NO_CONNECTION );
+
+    /* User Connection의 SMN을 갱신합니다.
+     *  - Get Node List를 사용하여 Node List와 Meta Node SMN을 얻습니다.
+     */
+    ACI_TEST( ulsdGetNodeList( aMetaDbc,
+                               aFnContext,
+                               & aMetaDbc->mPtContext )
+              != ACI_SUCCESS );
+
+    /* Server에서 Error Protocol로 응답하는 경우에도 ACI_SUCCESS를 반환합니다. */
+    ACI_TEST( ULN_FNCONTEXT_GET_RC( aFnContext ) != SQL_SUCCESS );
+
+    /* ShardPin은 불변입니다. */
+    ACI_TEST_RAISE( sOldShardPin != ulnDbcGetShardPin( aMetaDbc ), LABEL_SHARD_PIN_CHANGED );
+
+    /* Shard Library Connection의 SMN을 갱신합니다. */
+    sNewSMN = ulnDbcGetShardMetaNumber( aMetaDbc );
+    if ( sOldSMN < sNewSMN )
+    {
+        for ( i = 0; i < sShard->mNodeCount; i++ )
+        {
+            ACI_TEST_RAISE( ulsdSetConnectAttrNode( sShard->mNodeInfo[i]->mNodeDbc,
+                                                    ULN_PROPERTY_SHARD_META_NUMBER,
+                                                    (void *)sNewSMN )
+                            != SQL_SUCCESS, LABEL_NODE_SETCONNECTATTR_FAIL );
+
+            ulnDbcSetShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
+                                      sNewSMN );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_ABORT_NO_CONNECTION )
+    {
+        ulnError( aFnContext, ulERR_ABORT_NO_CONNECTION, "" );
+    }
+    ACI_EXCEPTION( LABEL_SHARD_PIN_CHANGED )
+    {
+        ulnError( aFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "UpdateShardMetaNumber",
+                  "Shard pin was changed." );
+    }
+    ACI_EXCEPTION( LABEL_NODE_SETCONNECTATTR_FAIL )
+    {
+        ulsdNativeErrorToUlnError( aFnContext,
+                                   SQL_HANDLE_DBC,
+                                   (ulnObject *)sShard->mNodeInfo[i]->mNodeDbc,
+                                   sShard->mNodeInfo[i],
+                                   "UpdateShardMetaNumber" );
+    }
+    ACI_EXCEPTION_END;
+
+    return SQL_ERROR;
+}
+
+SQLRETURN ulsdSetConnectAttrNode( ulnDbc        * aDbc,
+                                  ulnPropertyId   aCmPropertyID,
+                                  void          * aValuePtr )
+{
+    ULN_FLAG( sNeedExit );
+    ulnFnContext sFnContext;
+
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_SETCONNECTATTR, aDbc, ULN_OBJ_TYPE_DBC );
+
+    ACI_TEST( ulnEnter( & sFnContext, (void *) & aCmPropertyID ) != ACI_SUCCESS );
+
+    ULN_FLAG_UP( sNeedExit );
+
+    ACI_TEST( ulnSendConnectAttr( & sFnContext,
+                                  aCmPropertyID,
+                                  aValuePtr )
+              != ACI_SUCCESS );
+
+    ULN_FLAG_DOWN( sNeedExit );
+
+    ACI_TEST( ulnExit( & sFnContext ) != ACI_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC( & sFnContext );
+
+    ACI_EXCEPTION_END;
+
+    ULN_IS_FLAG_UP( sNeedExit )
+    {
+        (void)ulnExit( & sFnContext );
+    }
+
+    return ULN_FNCONTEXT_GET_RC( & sFnContext );
 }

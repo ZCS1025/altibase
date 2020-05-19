@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderSync.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSenderSync.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -407,7 +407,7 @@ IDE_RC rpxSender::sendRebuildIndicesRemoteSyncTables()
         sPDL_Time_Value.initialize( 1, 0 );
         idlOS::sleep( sPDL_Time_Value );
     }
-    IDE_TEST( ( mExitFlag == ID_TRUE ) || ( mNetworkError == ID_TRUE ) );
+    IDE_TEST( ( mExitFlag == ID_TRUE ) || ( mRetryError == ID_TRUE ) );
 
     return IDE_SUCCESS;
 

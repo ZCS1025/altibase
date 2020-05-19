@@ -163,7 +163,7 @@ SQLRETURN execute_clob_insert(SQLHDBC dbc, int src_file_id, const char *src_file
         goto EXIT_STMT;
     }
 
-    rc = SQLBindParameter(stmt, 2, SQL_PARAM_INPUT,
+    rc = SQLBindParameter(stmt, 1, SQL_PARAM_INPUT,
                           SQL_C_LONG, SQL_INTEGER,
                           0, 0,
                           &file_id, 0, NULL);
@@ -174,7 +174,7 @@ SQLRETURN execute_clob_insert(SQLHDBC dbc, int src_file_id, const char *src_file
     }
 
     /* binds a buffer to a parameter marker in an SQL statement */
-    rc = SQLBindFileToParam(stmt, 1, SQL_CLOB, filename, &filename_len, &file_option, sizeof(filename), &ind);
+    rc = SQLBindFileToParam(stmt, 2, SQL_CLOB, filename, &filename_len, &file_option, sizeof(filename), &ind);
     if (!SQL_SUCCEEDED(rc))
     {
         PRINT_DIAGNOSTIC(SQL_HANDLE_STMT, stmt, "SQLBindFileToParam");

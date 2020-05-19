@@ -57,7 +57,7 @@ public class TimeoutTest extends AltibaseTestCase
         }
     }
 
-    public void testResponseTimeout() throws SQLException, InterruptedException
+    public void _NOTYET_testResponseTimeout() throws SQLException, InterruptedException
     {
         testTimeout("response_timeout", null, ErrorDef.RESPONSE_TIMEOUT, true, true);
         testTimeout("response_timeout", null, ErrorDef.RESPONSE_TIMEOUT, true, false);

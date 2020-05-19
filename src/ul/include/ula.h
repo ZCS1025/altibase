@@ -44,7 +44,7 @@ typedef struct ulaValue                // smiValue
 
 #define REPLICATION_MAJOR_VERSION   (7)
 #define REPLICATION_MINOR_VERSION   (4)
-#define REPLICATION_FIX_VERSION     (1)
+#define REPLICATION_FIX_VERSION     (3)
 
 #define ULA_NAME_LEN                (40 + 1)
 #define ULA_LOG_FILENAME_LEN        (1024)

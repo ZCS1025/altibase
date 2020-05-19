@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmg.cpp 82214 2018-02-07 23:35:41Z donovan.seo $
+ * $Id: qmg.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
  *
  * Description :
  *     모든 Graph에서 공통적으로 사용하는 기능
@@ -48,6 +48,7 @@
 #include <qmoViewMerging.h>
 #include <qcgPlan.h>
 #include <qmvQTC.h>
+#include <qmv.h>
 
 extern mtfModule mtfDecrypt;
 extern mtdModule mtdClob;
@@ -6287,6 +6288,17 @@ qmg::initLeftSORT4Join( qcStatement  * aStatement,
             break;
         case QMO_JOIN_LEFT_NODE_STORE:
         case QMO_JOIN_LEFT_NODE_SORTING:
+            if ( ( ( aGraph->myQuerySet->SFWGH->flag & QMV_SFWGH_JOIN_MASK )
+                   == QMV_SFWGH_JOIN_RIGHT_OUTER ) ||
+                 ( ( aGraph->myQuerySet->SFWGH->flag & QMV_SFWGH_JOIN_MASK )
+                   == QMV_SFWGH_JOIN_FULL_OUTER ) )
+            {
+                qmc::disableSealTrueFlag( aParent->resultDesc );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
             IDE_TEST( qmoOneMtrPlan::initSORT(
                           aStatement,
                           aGraph->myQuerySet,
@@ -6461,6 +6473,7 @@ qmg::initRightSORT4Join( qcStatement  * aStatement,
                 break;
             case QMO_JOIN_RIGHT_NODE_STORE:
             case QMO_JOIN_RIGHT_NODE_SORTING:
+                qmc::disableSealTrueFlag( aParent->resultDesc );
                 IDE_TEST( qmoOneMtrPlan::initSORT(
                               aStatement,
                               aGraph->myQuerySet,

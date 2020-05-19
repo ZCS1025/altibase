@@ -86,11 +86,12 @@ ACI_RC cmpModuleInitializeStatic()
     }
 #endif
 
+    /* BUG-46400 mCallbackFunction은 A7용이므로 mOpMax를 사용해야 한다. */
     for (i = CMP_MODULE_BASE + 1; i < CMP_MODULE_MAX; i++)
     {
         sModule = gCmpModuleClient[i];
 
-        for (j = 0; j < sModule->mOpMaxA5; j++)
+        for (j = 0; j < sModule->mOpMax; j++)
         {
             sModule->mCallbackFunction[j] = cmpCallbackNULL;
         }

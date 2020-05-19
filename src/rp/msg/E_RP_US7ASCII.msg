@@ -21,7 +21,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 384
+# Last Number = 401
 
 
 SECTION = 6
@@ -2286,6 +2286,103 @@ SECTION = 6
 # *Action: 
 #   - Identify the cause and take appropriate action.
 
+385, rpERR_ABORT_RP_ALREADY_DDL_SYNC = Can not perform a DDL synchronization because it is currently in progress (Replication name : <0%s>).
+# *Cause:
+#   - Can not perform a DDL synchronization because it is currently in progress. 
+# *Action:
+#   - Retry after finishing the DDL synchronization.
+
+386, rpERR_ABORT_RP_DDL_SYNC_NOT_SUPPORT_EAGER = Can not execute a DDL synchronization on a table using eager mode replication. 
+# *Cause:
+#   - Can not execute a DDL synchronization for a table using eager mode replication.
+# *Action:
+#   - Change the replication mode in eager mode replication or remove the table in eager mode replication.
+
+387, rpERR_ABORT_RP_DDL_SYNC_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX = A DDL synchronization is not support on a table with global non-partitioned index.
+# *Cause:
+#   - A DDL synchronization is not support on a table with global non-partitioned index. 
+# *Action:
+#   - Verify that the table with a global non-paritited index.
+
+388, rpERR_ABORT_RP_DDL_SYNC_DISABLE = Can not perform the DDL synchronization when the value of the REPLICATION_DDL_SYNC property is 0.
+# *Cause:
+#   - Can not perform the DDL synchronization when the value of the REPLICATION_DDL_SYNC property is 0.
+# *Action:
+#   - Verify and change the value of the REPLICATION_DDL_SYNC property is 1.
+
+389, rpERR_ABORT_RP_DDL_SYNC_ERROR_AFTER_COMMIT_MSG = A DDL synchronization is failed after sending commit message. The table schema of the remote server may have been inconsistent.
+# *Cause:
+#   - A DDL synchronization is failed after sending commit message.
+# *Action:
+#   - Verify that the replication actually commits 
+
+390, rpERR_ABORT_RP_DDL_SYNC_RECEIVE_ERROR = A DDL synchronization receives the error message from the remote server (<0%s>).
+# *Cause:
+#   - Receive the error message from the remote server.
+# *Action:
+#   - Perform a DDL synchronization after troubleshooting the remote server.
+
+391, rpERR_ABORT_RP_SENDER_NOT_RUNNING = The sender of replication <0%s> is not running.
+# *Cause:
+#   - The sender of replication is not running. 
+# *Action:
+#   - Restart replication or wait for the replication sender to run.
+
+392, rpERR_ABORT_RP_DDL_SYNC_SQL_LENGTH_ERROR = The length of the SQL query exceeds the maximum limit (<0%u>).
+# *Cause:
+#   - The length of the SQL query exceeds the maximum limit. 
+# *Action:
+#   - Refer to the Replication Manaual for the maximum possible length allowed for the DDL synchronization query.
+
+393,rpERR_ABORT_PARENT_AND_CHILD_CONNECT_DIFFERENT = Failed to connected by the parallel senders. The parallel senders get different IP address from DNS server.
+# *Cause: 
+#   - The parallel senders must be connected by the same IP.
+# *Action: 
+#   - Verify the DNS server or restart the replication sender. (When you restart the replication, the parallel senders have been connected by the same IP.)
+
+394,rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_IB = InfiniBand(IB) can not be used with 'FOR ANALYSIS' syntax. 
+# *Cause:
+#   - InfiniBand(IB) can not be used with 'FOR ANALYSIS' syntax. 
+# *Action:
+#   - Check the role of the replication. Do not use the InfiniBand(IB).
+
+396,rpERR_ABORT_RP_DDL_SYNC_WITH_PROPAGATION = The propagation option(FOR PROPAGABLE LOGGING/ FOR PROPAGATION) does not support DDL synchronization.
+# *Cause:
+#   - The propagation option(FOR PROPAGABLE LOGGING/ FOR PROPAGATION) does not support DDL synchronization.
+# *Action:
+#   - Remove the propagation option.
+
+397,rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR = The HeartBeat thread(HBT) detects peer server or network error.
+# *Cause:
+#   - 1. Peer server is not running.
+#   - 2. Network is not working.
+# *Action:
+#   - 1. Confirm peer server is running.
+#   - 2. Ensure that network is working normally.
+
+398,rpERR_ABORT_SEND_TIMEOUT_EXCEED = Timeout exceed while the replication Sender and Receiver were communicating. 
+# *Cause : 
+#   - A timeout occurred while the replication Sender and Receiver were communicating.
+# *Action : 
+#   - Set a larger value for the REPLICATION_SENDER_SEND_TIMEOUT property. 
+#   - Check the peer server or network connection.
+
+399,rpERR_ABORT_FAULT_TOLERATED = Failed to work because an internal exception occurred from an OS.[Contact Altibase's Support Center]
+# *Cause: An internal exception occurred from an OS.
+# *Action: Check the error number from the trace log for more detailed information. And contact Altibase's Support Center (http://support.altibase.com).
+
+400,rpERR_ABORT_PARTITION_COUNT_MISMATCH = The partition count of the replicated table does not match [<0%s>(<1%d>):<2%s>(<3%d>)].
+# *Cause:
+#   - Replicated table partition count mismatch.
+# *Action:
+#   - Check the partition count of the replicated table.
+
+401,rpERR_ABORT_SYNC_FAILED_BY_BULK_INSERT = Replication synchronization failed by replication bulk insert.
+# *Cause: 
+#   - Bulk insert error has been occurred while executing the received record.
+# *Action: 
+#   - Check the altibase_rp.log file.
+
 INTERNAL_TRACE_MESSAGE_BEGIN
 
 RP_TRC_SAMPLE = "\n signed int = <%d>\n unsigned int = <%u>\n"
@@ -2322,7 +2419,7 @@ RP_TRC_HBT_ERR_SOCKET_SHUTDOWN        = "[HBT] shutdown error.";
 RP_TRC_HBT_ERR_UNREG_SOCKET_CLOSE     = "[HBT] closesocket() error in unregistHost(). But, proceed...";
 RP_TRC_HBT_ERR_READY_SOCKET_CLOSE     = "[HBT] closesocket() error in readyDetection(). But, proceed...";
 RP_TRC_HBT_ERR_PRECD_SOCKET_CLOSE     = "[HBT] closesocket() error in proceedDetection(). But, proceed...";
-RP_TRC_HBT_ERR_PRECD_GET_SOCKOPT      = "[HBT] getsockopt() error in proceedDetection()";
+RP_TRC_HBT_ERR_PRECD_GET_SOCKOPT      = "[HBT] getsockopt() get error number <%u>";
 RP_TRC_HBT_ERR_PRECD_SELECT           = "[HBT] select() error in proceedDetection()";
 RP_TRC_HBT_NTC_REMAINED_HOST          = "[HBT] Host threads still remain. But, proceed...";
 RP_TRC_HBT_NTC_DETECT_FAULT_PRECD     = "[HBT] == Network Fault Detection Proceeding ==";
@@ -2331,11 +2428,14 @@ RP_TRC_HBT_ERR_PRECD_INTERNAL_CONNECT = "[HBT] Found an error code in kernel usi
 #RP_TRC_HBT_NTC_HOST_STATUS           = "[HBT] Host status info.\n"
 #                                       "      [<%s>:<%u>] Ref=<%u> Mode=<%u> Handle=<%u> WaterMark=<%u> mFault=<%s>";
 RP_TRC_HBT_NTC_HOST_STATUS            = "[HBT] Host status info.\n"
-                                        "      [<%s>:<%u>] Ref=<%u> Mode=<%u> mFault=<%s>";
+                                        "      [<%s>:<%u>] Ref=<%u> Mode=<%u> Last Error=<%u> mFault=<%s>";
 RP_TRC_HBT_NTC_CONNECTED              = "[HBT] Peer Server Connection Succeeds.\n"
                                         "      [<%s>:<%u>] Ref=<%u> Mode=<%u>";
 RP_TRC_HBT_ERR_FAULT_DETECTED         = "[HBT] Peer Server Connection Fails.\n"
-                                        "      [<%s>:<%u>] Ref=<%u> Mode=<%u>";
+                                        "      [<%s>:<%u>] Ref=<%u> Mode=<%u> Fail Count=<%u>";
+RP_TRC_HBT_ERR_SOCKET_OPEN_FAIL       = "[HBT] Socket Open Fail. This time is skipped(Not Fault)\n"
+                                        "      [<%s>:<%u>] Ref=<%u> Mode=<%u> Fail Count=<%u>";
+
 
 
 ## rpxPJChild
@@ -2373,6 +2473,7 @@ RP_TRC_S_NTC_FAILBACK_MASTER_BEGIN  = "[Sender] Replication <%s> Failback Master
 RP_TRC_S_NTC_FAILBACK_SLAVE_BEGIN   = "[Sender] Replication <%s> Failback Slave Begin... at [<%ld>]";
 RP_TRC_S_NTC_FAILBACK_SUCCEED       = "[Sender] Replication <%s> Failback Succeeded... at [<%ld>]";
 RP_TRC_S_NTC_FAILBACK_FAIL          = "[Sender] Replication <%s> Failback Failed... at [<%ld>]";
+RP_TRC_S_GET_IP_BY_HOSTNAME         = "[Sender] Get ip address(<%s>) from hostname(<%s>)";
 
 ## rpxSenderApply
 RP_TRC_SA_UPDATE_XSN_TRANS_INIT     = "[SenderApply] Trans init() error in updateXSN()";
@@ -2420,6 +2521,9 @@ RP_TRC_R_RECO_RECEIVER_START       = "[Recovery Receiver] Replication <%s> Start
 RP_TRC_R_ERR_EAGER_ABNORMAL_STOP   = "[Receiver] Eager Replication <%s> Abnormally Stopped ...";
 RP_TRC_R_STOP_MSG_ARRIVED          = "[Receiver] Replication Stop Message is arrived";
 RP_TRC_R_NORMAL_STOP               = "[Receiver] Normal Stop";
+RP_TRC_R_LAST_RECEIVED_SN          = "[Receiver] RepName:<%s> is received at [Last Received SN:<%lu>]";
+RP_TRC_R_LAST_PROCESSED_SN         = "[Receiver] RepName:<%s> is processed at [Last Processed SN:<%lu>]";
+RP_TRC_R_PEER_IP_PORT_NAME         = "[Receiver] Peer IP : <%s>. Peer Port : <%d>. RepName : <%s> ";
 
 ## rpxReceiverApply
 RP_TRC_RA_ERR_META           = "[ReceiverApply] <%s>.<%s> does not exist.";
@@ -2479,6 +2583,7 @@ RP_TRC_X_APPLIER_IS_STOP = "[ReceiverApplier] [RepName:<%s>, Index:<%d>] is stop
 RP_TRC_X_APPLIER_GOT_FAILURE = "[ReceiverApplier] [RepName:<%s>, Index:<%d>] got failure";
 RP_TRC_X_APPLIER_REMAINED_QUEUE_INFO = "[ReceiverApplier] RepName:<%s> Index:<%d> Remained Queue : <%d>";
 RP_TRC_X_APPLIER_PROCESSED_XLOG_COUNT = "[ReceiverApplier] RepName:<%s> Index:<%d> processed <%d> XLogs";
+RP_TRC_X_APPLIER_LAST_PROCESSED_SN    = "[ReceiverApplier] RepName:<%s> Index:<%d> is processed at [Last Processed SN:<%lu>]";
 
 ## rpdMeta
 RP_TRC_R_CONVERT_APPLY_MODE        = "Table( OID : <%ld>, Name : <%s>.<%s>.<%s> ) in replication( Name : <%s> ) is convert apply mode";

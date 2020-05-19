@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutexMgr.cpp 81261 2017-10-10 10:40:03Z minku.kang $
+ * $Id: iduMutexMgr.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -524,4 +524,31 @@ IDE_RC iduMutexMgr::freeIdles()
     IDE_EXCEPTION_END;
     return IDE_FAILURE;
 
+}
+
+void iduMutexMgr::unlockAllMyThread()
+{
+    iduMutexEntry* sBase;
+    iduMutexEntry* sRoot;
+    idBool         sIsLock = ID_FALSE;
+    ULong          sMyThreadID = idlOS::getThreadID();
+
+    lockInfoHead();
+
+    sRoot = getInfo();
+    IDE_DASSERT(sRoot != NULL);
+
+
+    for( sBase  = sRoot->getNextInfo();
+         sBase != NULL;
+         sBase  = sBase->getNextInfo() )
+    {
+        if ( sMyThreadID == sBase->getOwner() )
+        {
+            sBase->unlock();
+        }
+
+    }
+
+    unlockInfoHead();
 }

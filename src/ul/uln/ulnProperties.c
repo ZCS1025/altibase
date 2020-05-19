@@ -445,7 +445,7 @@ void ulnPropertiesSetIntegerAsEnv(ulnProperties *aProperties,
 
     acpEnvGet(aPropertyName, &sEnvValue);
 
-    if ((sEnvValue != NULL) && (aProperty != NULL))
+    if (sEnvValue != NULL)
     {
         if (sEnvValue[0] != '\0')
         {

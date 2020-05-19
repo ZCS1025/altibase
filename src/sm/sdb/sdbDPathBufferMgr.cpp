@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdbDPathBufferMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdbDPathBufferMgr.cpp 84923 2019-02-25 04:54:35Z djin $
  *
  * Description : DPath Insert를 수행할 때 사용하는 전용 버퍼를 관리한다.
  ******************************************************************************/
@@ -57,7 +57,8 @@ IDE_RC sdbDPathBufferMgr::initializeStatic()
                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                  ID_FALSE,							/* ForcePooling */
                  ID_TRUE,							/* GarbageCollection */
-                 ID_TRUE ) 							/* HwCacheLine */
+                 ID_TRUE, 							/* HwCacheLine */
+                 IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/)
               != IDE_SUCCESS );
     sState = 1;
 
@@ -75,8 +76,9 @@ IDE_RC sdbDPathBufferMgr::initializeStatic()
                  SD_PAGE_SIZE, 	/* AlignByte */
                  ID_FALSE,		/* ForcePooling */
                  ID_TRUE,		/* GarbageCollection */
-                 ID_TRUE )		/* HWCacheLine */
-              != IDE_SUCCESS );
+                 ID_TRUE,       /* HWCacheLine */
+                 IDU_MEMPOOL_TYPE_TIGHT /* mempool type*/) 
+              != IDE_SUCCESS);			
     sState = 2;
 
     IDE_TEST( mFThreadPool.initialize(
@@ -90,8 +92,9 @@ IDE_RC sdbDPathBufferMgr::initializeStatic()
                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                   ID_FALSE,							/* ForcePooling */
                   ID_TRUE,							/* GarbageCollection */
-                  ID_TRUE ) 						/* HWCacheLine */
-              != IDE_SUCCESS );
+                  ID_TRUE,                          /* HWCacheLine */
+                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS );			
     sState = 3;
 
     IDE_TEST( mBuffMtx.initialize( (SChar*)"DIRECT_PATH_BUFFER_POOL_MUTEX",

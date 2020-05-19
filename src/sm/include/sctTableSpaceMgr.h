@@ -113,8 +113,7 @@ public:
     static idBool isSystemMemTableSpace( scSpaceID aSpaceID );
 
     // BUG-23953
-    static inline IDE_RC getTableSpaceType( scSpaceID      aSpaceID,
-                                            UInt         * aType );
+    static inline UInt getTableSpaceType( scSpaceID      aSpaceID );
 
     // TBS의 관리 영역을 반환한다. (Disk, Memory, Volatile)
     static smiTBSLocation getTBSLocation( scSpaceID aSpaceID );
@@ -477,15 +476,26 @@ inline idBool sctTableSpaceMgr::isBackupingTBS( scSpaceID  aSpaceID )
  *              3) 저장되는 위치(MEM, DISK, VOL)
  *                          에 대한 정보를 반환한다.
  **********************************************************************/
-inline IDE_RC sctTableSpaceMgr::getTableSpaceType( scSpaceID   aSpaceID,
-                                                   UInt      * aType )
+inline UInt sctTableSpaceMgr::getTableSpaceType( scSpaceID   aSpaceID )
 {
     sctTableSpaceNode * sSpaceNode      = NULL;
-    UInt                sTablespaceType = 0;
+    UInt                sTablespaceType = SMI_TBS_SYSTEM_NO |
+                                          SMI_TBS_TEMP_NO | 
+                                          SMI_TBS_LOCATION_NONE ;
 
+    IDU_FIT_POINT("BUG-46450@sctTableSpaceMgr::getTableSpaceType::TablespaceType");
+
+    if ( aSpaceID >= mNewTableSpaceID )
+    {
+        return sTablespaceType;
+    }
+    
     sSpaceNode = mSpaceNodeArray[ aSpaceID ];
 
-    IDE_ASSERT( sSpaceNode != NULL );
+    if ( sSpaceNode == NULL )
+    {
+        return sTablespaceType;
+    }
 
     switch ( sSpaceNode->mType )
     {
@@ -544,71 +554,48 @@ inline IDE_RC sctTableSpaceMgr::getTableSpaceType( scSpaceID   aSpaceID,
             break;
 
         default:
-            /* 정의되지 않은 타입은 오류 */
-            return IDE_FAILURE;
+            break;
     }
 
-    *aType = sTablespaceType;
-
-    return IDE_SUCCESS;
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION_END;
+#endif
+    return sTablespaceType;
 }
 
 inline idBool sctTableSpaceMgr::isMemTableSpace( scSpaceID aSpaceID )
 {
-    idBool  sIsMemSpace = ID_FALSE;
-    UInt    sType       = 0;
+    UInt    sType = getTableSpaceType( aSpaceID );
 
-    (void)sctTableSpaceMgr::getTableSpaceType( aSpaceID,
-                                               &sType );
-
-    if ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_MEMORY )
-    {
-        sIsMemSpace = ID_TRUE;
-    }
-    else
-    {
-        sIsMemSpace = ID_FALSE;
-    }
-
-    return sIsMemSpace;
+    return ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_MEMORY ) ? ID_TRUE : ID_FALSE ;
 }
 
 inline idBool sctTableSpaceMgr::isVolatileTableSpace( scSpaceID aSpaceID )
 {
-    UInt    sType   = 0;
+    UInt    sType = getTableSpaceType( aSpaceID );
 
-    (void)sctTableSpaceMgr::getTableSpaceType( aSpaceID,
-                                               &sType );
-
-    if ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_VOLATILE )
-    {
-        return ID_TRUE;
-    }
-    else
-    {
-        return ID_FALSE;
-    }
+    return ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_VOLATILE ) ? ID_TRUE : ID_FALSE ;
 }
 
 inline idBool sctTableSpaceMgr::isDiskTableSpace( scSpaceID aSpaceID )
 {
-    idBool  sIsDiskSpace    = ID_FALSE;
-    UInt    sType           = 0;
+    UInt    sType = getTableSpaceType( aSpaceID );
 
-    (void)sctTableSpaceMgr::getTableSpaceType( aSpaceID,
-                                               &sType );
-
-    if ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_DISK )
-    {
-        sIsDiskSpace = ID_TRUE;
-    }
-    else
-    {
-        sIsDiskSpace = ID_FALSE;
-    }
-
-    return sIsDiskSpace;
+    return ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_DISK ) ? ID_TRUE : ID_FALSE ; 
 }
+
+inline idBool sctTableSpaceMgr::isTempTableSpace( scSpaceID aSpaceID )
+{
+    UInt    sType = getTableSpaceType( aSpaceID );
+
+    return ( (sType & SMI_TBS_TEMP_MASK) == SMI_TBS_TEMP_YES ) ? ID_TRUE : ID_FALSE ;
+}
+
+inline idBool sctTableSpaceMgr::isUndoTableSpace( scSpaceID aSpaceID )
+{
+   return ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO ) ? ID_TRUE : ID_FALSE ;
+}
+
 
 #endif // _O_SCT_TABLE_SPACE_H_
 

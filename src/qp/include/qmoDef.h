@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoDef.h 84150 2018-10-12 08:13:08Z jake.jang $
  *
  * Description :
  *     모든 Optimizer 관련 상수 및 자료 구조를 정의
@@ -80,6 +80,8 @@ struct qmncScanMethod;
 struct qmncSCAN;
 
 #define QMO_SCAN_METHOD_UNSELECTED    ID_UINT_MAX
+#define QMO_RANGE_USING_HASH_MAX_VALUE (1000)
+#define QMO_RANGE_USING_HASH_PRED_MAX  (128)
 
 typedef struct qmoScanDecisionFactor
 {
@@ -110,6 +112,7 @@ typedef enum qmoMergeChildrenIndex
     QMO_MERGE_SELECT_SOURCE_IDX = 0,
     QMO_MERGE_SELECT_TARGET_IDX,
     QMO_MERGE_UPDATE_IDX,
+    QMO_MERGE_DELETE_IDX,    
     QMO_MERGE_INSERT_IDX,
     QMO_MERGE_INSERT_NOROWS_IDX,
     QMO_MERGE_IDX_MAX

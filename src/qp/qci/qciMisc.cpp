@@ -295,19 +295,42 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
                         &sPartCondVal2 );
                     break;
                 }
+            /* BUG-46065 support range using hash */
+            case QCM_PARTITION_METHOD_RANGE_USING_HASH:
+                {
+                    *aResult = qmoPartition::compareRangeUsingHashPartition(
+                        &sPartCondVal1,
+                        &sPartCondVal2 );
+                    break;
+                }
             case QCM_PARTITION_METHOD_LIST:
                 {
                     *aResult = 0;
-                    for( i = 0; i < sPartCondVal2.partCondValCount; i++ )
+                    if ( sPartCondVal1.partCondValCount == sPartCondVal2.partCondValCount )
                     {
-                        if( qmoPartition::compareListPartition(
-                                aTableInfo->partKeyColumns,
-                                &sPartCondVal1,
-                                sPartCondVal2.partCondValues[i] ) == ID_FALSE )
+                        for ( i = 0; i < sPartCondVal2.partCondValCount; i++ )
                         {
-                            *aResult = 1;
-                            break;
+                            if ( qmoPartition::compareListPartition(
+                                    aTableInfo->partKeyColumns,
+                                    &sPartCondVal1,
+                                    sPartCondVal2.partCondValues[i] ) == ID_FALSE )
+                            {
+                                *aResult = 1;
+                                break;
+                            }
+                            else
+                            {
+                                /* do nothing */
+                            }
                         }
+                    }
+                    else if ( sPartCondVal1.partCondValCount > sPartCondVal2.partCondValCount )
+                    {
+                        *aResult = 1;
+                    }
+                    else
+                    {
+                        *aResult = -1;
                     }
                     break;
                 }
@@ -858,21 +881,28 @@ IDE_RC qciMisc::lobGetLength( smLobLocator   aLocator,
     SLong   sLength;
     idBool  sIsNullLob;
 
-    IDE_TEST( smiLob::getLength( aLocator,
-                                 &sLength,
-                                 &sIsNullLob )
-              != IDE_SUCCESS );
-
-    if ( sIsNullLob == ID_TRUE )
+    if ( aLocator != MTD_LOCATOR_NULL )
     {
-        *aLength = 0;
+        IDE_TEST( smiLob::getLength( aLocator,
+                                     &sLength,
+                                     &sIsNullLob )
+                  != IDE_SUCCESS );
+
+        if ( sIsNullLob == ID_TRUE )
+        {
+            *aLength = 0;
+        }
+        else
+        {
+            IDE_TEST_RAISE( (sLength < 0) || (sLength > ID_UINT_MAX),
+                            ERR_LOB_SIZE );
+
+            *aLength = (UInt)sLength;
+        }
     }
     else
     {
-        IDE_TEST_RAISE( (sLength < 0) || (sLength > ID_UINT_MAX),
-                        ERR_LOB_SIZE );
-
-        *aLength = (UInt)sLength;
+        *aLength = 0;
     }
 
     return IDE_SUCCESS;
@@ -1544,6 +1574,15 @@ IDE_RC qciMisc::runDMLforInternal( smiStatement * aSmiStmt,
                                    aRowCnt );
 }
 
+IDE_RC qciMisc::runSQLforShardMeta( smiStatement * aSmiStmt,
+                                    SChar        * aSqlStr,
+                                    vSLong       * aRowCnt )
+{
+    return qcg::runSQLforShardMeta( aSmiStmt,
+                                    aSqlStr,
+                                    aRowCnt );
+}
+
 IDE_RC qciMisc::selectCount( smiStatement        * aSmiStmt,
                              const void          * aTable,
                              vSLong              * aSelectedRowCount,  /* OUT */
@@ -2180,6 +2219,65 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
     return;
 }
 
+/* BUG-45783 */
+void qciMisc::resetInitialJobState( void )
+{
+    smiTrans       sTrans;
+    smiStatement   sSmiStmt;
+    smiStatement * sDummySmiStmt;
+    smSCN          sDummySCN;
+    UInt           sSmiStmtFlag;
+    UInt           sStage = 0;
+
+    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+
+    sStage++; //1
+    IDE_TEST( sTrans.begin( &sDummySmiStmt, NULL )
+              != IDE_SUCCESS );
+
+    sStage++; //2
+    IDE_TEST( sSmiStmt.begin( NULL,
+                              sDummySmiStmt,
+                              sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sStage++; //3
+
+    IDE_TEST( qcmJob::updateInitialJobState( &sSmiStmt )
+              != IDE_SUCCESS );
+
+    sStage--; //2
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+    sStage--; //1
+    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+
+    sStage--; //0
+    IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+
+    return;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sStage )
+    {
+        case 3:
+            ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            ( void )sTrans.commit( &sDummySCN );
+        case 1:
+            ( void )sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    ideLog::log( IDE_QP_0, "[resetInitialJobState : FAILURE] ERR-%05X : %s\n",
+                 E_ERROR_CODE(ideGetErrorCode()),
+                 ideGetErrorMsg(ideGetErrorCode()));
+    return;
+}
+
 idBool qciMisc::isExecuteForNatc( void )
 {
     idBool sIsNatc;
@@ -2287,19 +2385,21 @@ idBool qciMisc::isSimpleQuery( qcStatement * aStatement )
     qmncINST     * sINST;
     qmncUPTE     * sUPTE;
     qmncDETE     * sDETE;
+    qmncPCRD     * sPCRD;
+    qmnChildren  * sChildren;
     idBool         sIsSimple = ID_FALSE;
     SChar          sHostValues[MTC_TUPLE_COLUMN_ID_MAXIMUM] = { 0, };
     UInt           sHostValueCount = 0;
     UInt           sBindParamCount;
     UInt           i;
 
-    IDE_TEST_CONT( checkExecFast( aStatement ) == ID_FALSE,
-                   NORMAL_EXIT );
-    
     sBindParamCount = qcg::getBindCount( aStatement );
-    
+
     sType = aStatement->myPlan->parseTree->stmtKind;
     sPlan = aStatement->myPlan->plan;
+
+    IDE_TEST_CONT( checkExecFast( aStatement, sPlan ) == ID_FALSE,
+                   NORMAL_EXIT );
 
     switch ( sType )
     {
@@ -2308,80 +2408,148 @@ idBool qciMisc::isSimpleQuery( qcStatement * aStatement )
         case QCI_STMT_DEQUEUE:
             sIsSimple = isSimpleSelectQuery( sPlan,
                                              sHostValues,
-                                             & sHostValueCount);
+                                             &sHostValueCount);
             break;
-            
         case QCI_STMT_INSERT:
         case QCI_STMT_ENQUEUE:
             IDE_TEST_CONT( sPlan->type != QMN_INST,
                            NORMAL_EXIT );
-            
+
             sINST = (qmncINST*)sPlan;
-            
+
             IDE_TEST_CONT( sINST->isSimple == ID_FALSE,
                            NORMAL_EXIT );
-            
+
             buildSimpleHostValues( sHostValues,
-                                   & sHostValueCount,
+                                   &sHostValueCount,
                                    sINST->simpleValues,
                                    sINST->simpleValueCount );
-            
+
             sIsSimple = ID_TRUE;
             break;
-           
         case QCI_STMT_UPDATE:
             IDE_TEST_CONT( sPlan->type != QMN_UPTE,
                            NORMAL_EXIT );
-            IDE_TEST_CONT( sPlan->left->type != QMN_SCAN,
-                           NORMAL_EXIT );
-
             sUPTE = (qmncUPTE*)sPlan;
-            sSCAN = (qmncSCAN*)sPlan->left;
-            
-            IDE_TEST_CONT( ( sUPTE->isSimple == ID_FALSE ) ||
-                           ( sSCAN->isSimple == ID_FALSE ),
-                           NORMAL_EXIT );
-            
-            buildSimpleHostValues( sHostValues,
-                                   & sHostValueCount,
-                                   sUPTE->simpleValues,
-                                   sUPTE->updateColumnCount );
-            
-            buildSimpleHostValues( sHostValues,
-                                   & sHostValueCount,
-                                   sSCAN->simpleValues,
-                                   sSCAN->simpleValueCount );
-                    
-            sIsSimple = ID_TRUE;
+
+            IDE_TEST_CONT( sUPTE->isSimple == ID_FALSE, NORMAL_EXIT );
+
+            if ( sPlan->left->type == QMN_SCAN )
+            {
+                sSCAN = (qmncSCAN*)sPlan->left;
+
+                IDE_TEST_CONT( sSCAN->isSimple == ID_FALSE, NORMAL_EXIT );
+
+                buildSimpleHostValues( sHostValues,
+                                       &sHostValueCount,
+                                       sUPTE->simpleValues,
+                                       sUPTE->updateColumnCount );
+
+                buildSimpleHostValues( sHostValues,
+                                       &sHostValueCount,
+                                       sSCAN->simpleValues,
+                                       sSCAN->simpleValueCount );
+
+                sIsSimple = ID_TRUE;
+            }
+            else if ( sPlan->left->type == QMN_PCRD )
+            {
+                sPCRD = (qmncPCRD*)sPlan->left;
+
+                IDE_TEST_CONT( sPCRD->mIsSimple == ID_FALSE, NORMAL_EXIT );
+
+                buildSimpleHostValues( sHostValues,
+                                       &sHostValueCount,
+                                       sUPTE->simpleValues,
+                                       sUPTE->updateColumnCount );
+                for ( sChildren = sPCRD->plan.children;
+                      sChildren != NULL;
+                      sChildren = sChildren->next )
+                {
+                    sSCAN = (qmncSCAN*)sChildren->childPlan;
+
+                    IDE_TEST_CONT( sSCAN->isSimple == ID_FALSE, NORMAL_EXIT );
+
+                }
+
+                if ( sPCRD->plan.children != NULL )
+                {
+                    sSCAN = (qmncSCAN *)sPCRD->plan.children->childPlan;
+                    buildSimpleHostValues( sHostValues,
+                                           &sHostValueCount,
+                                           sSCAN->simpleValues,
+                                           sSCAN->simpleValueCount );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                sIsSimple = ID_TRUE;
+            }
+            else
+            {
+                IDE_CONT( NORMAL_EXIT );
+            }
             break;
-            
         case QCI_STMT_DELETE:
             IDE_TEST_CONT( sPlan->type != QMN_DETE,
                            NORMAL_EXIT );
-            IDE_TEST_CONT(sPlan->left->type != QMN_SCAN,
-                          NORMAL_EXIT );
 
             sDETE = (qmncDETE*)sPlan;
-            sSCAN = (qmncSCAN*)sPlan->left;
-            
-            IDE_TEST_CONT( ( sDETE->isSimple == ID_FALSE ) ||
-                           ( sSCAN->isSimple == ID_FALSE ),
-                           NORMAL_EXIT );
-            
-            buildSimpleHostValues( sHostValues,
-                                   & sHostValueCount,
-                                   sSCAN->simpleValues,
-                                   sSCAN->simpleValueCount );
-            
-            sIsSimple = ID_TRUE;
+
+            IDE_TEST_CONT( sDETE->isSimple == ID_FALSE, NORMAL_EXIT );
+
+            if ( sPlan->left->type == QMN_SCAN )
+            {
+                sSCAN = (qmncSCAN*)sPlan->left;
+
+                IDE_TEST_CONT( sSCAN->isSimple == ID_FALSE, NORMAL_EXIT );
+
+                buildSimpleHostValues( sHostValues,
+                                       &sHostValueCount,
+                                       sSCAN->simpleValues,
+                                       sSCAN->simpleValueCount );
+                sIsSimple = ID_TRUE;
+            }
+            else if ( sPlan->left->type == QMN_PCRD )
+            {
+                sPCRD = (qmncPCRD*)sPlan->left;
+
+                IDE_TEST_CONT( sPCRD->mIsSimple == ID_FALSE, NORMAL_EXIT );
+
+                for ( sChildren = sPCRD->plan.children;
+                      sChildren != NULL;
+                      sChildren = sChildren->next )
+                {
+                    sSCAN = (qmncSCAN*)sChildren->childPlan;
+                    IDE_TEST_CONT( sSCAN->isSimple == ID_FALSE, NORMAL_EXIT );
+                }
+
+                if ( sPCRD->plan.children != NULL )
+                {
+                    sSCAN = (qmncSCAN *)sPCRD->plan.children->childPlan;
+                    buildSimpleHostValues( sHostValues,
+                                           &sHostValueCount,
+                                           sSCAN->simpleValues,
+                                           sSCAN->simpleValueCount );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                sIsSimple = ID_TRUE;
+            }
+            else
+            {
+                IDE_CONT( NORMAL_EXIT );
+            }
             break;
-            
         default:
             break;
     }
-            
+
     IDE_TEST_CONT( sIsSimple == ID_FALSE, NORMAL_EXIT );
-    
+
     // bind param 갯수가 같고 모두 사용해야 한다.
     if ( sBindParamCount == sHostValueCount )
     {
@@ -2402,9 +2570,9 @@ idBool qciMisc::isSimpleQuery( qcStatement * aStatement )
     {
         sIsSimple = ID_FALSE;
     }
-    
+
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
-    
+
     return sIsSimple;
 }
 
@@ -2412,32 +2580,36 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                                      SChar       * aHostValues,
                                      UInt        * aHostValueCount )
 {
-    qmnPlan    * sPlan = aPlan;
-    qmncPROJ   * sPROJ;
-    qmncSCAN   * sSCAN;
-    qmncJOIN   * sJOIN;
+    qmnPlan     * sPlan = aPlan;
+    qmncPROJ    * sPROJ;
+    qmncSCAN    * sSCAN;
+    qmncJOIN    * sJOIN;
+    qmncPCRD    * sPCRD;
+    qmnChildren * sChildren;        // multi children node
+
     idBool       sIsSimple = ID_FALSE;
 
     IDE_TEST_CONT( sPlan->type != QMN_PROJ,
                    NORMAL_EXIT );
     IDE_TEST_CONT( ( sPlan->left->type != QMN_SCAN ) &&
-                   ( sPlan->left->type != QMN_JOIN ),
+                   ( sPlan->left->type != QMN_JOIN ) &&
+                   ( sPlan->left->type != QMN_PCRD ),
                    NORMAL_EXIT );
-            
+
     if ( sPlan->left->type == QMN_SCAN )
     {
         sPROJ = (qmncPROJ*)sPlan;
         sSCAN = (qmncSCAN*)sPlan->left;
-                
+
         IDE_TEST_CONT( ( sPROJ->isSimple == ID_FALSE ) ||
                        ( sSCAN->isSimple == ID_FALSE ),
                        NORMAL_EXIT );
-                
+
         buildSimpleHostValues( aHostValues,
                                aHostValueCount,
                                sSCAN->simpleValues,
                                sSCAN->simpleValueCount );
-                
+
         sIsSimple = ID_TRUE;
     }
     else if ( sPlan->left->type == QMN_JOIN )
@@ -2458,14 +2630,14 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
          *********************************/
 
         sPROJ = (qmncPROJ*)sPlan;
-                
+
         IDE_TEST_CONT( sPROJ->isSimple == ID_FALSE,
                        NORMAL_EXIT );
-                
+
         sIsSimple = ID_TRUE;
-                
+
         sPlan = sPlan->left;
-                
+
         while ( 1 )
         {
             // 오른쪽은 항상 SCAN이어야 한다.
@@ -2481,7 +2653,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
 
             sJOIN = (qmncJOIN*)sPlan;
             sSCAN = (qmncSCAN*)sPlan->right;
-                    
+
             // simple이어야 한다.
             if ( ( sJOIN->isSimple == ID_FALSE ) ||
                  ( sSCAN->isSimple == ID_FALSE ) )
@@ -2493,12 +2665,12 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
             {
                 // Nothing to do.
             }
-                    
+
             buildSimpleHostValues( aHostValues,
                                    aHostValueCount,
                                    sSCAN->simpleValues,
                                    sSCAN->simpleValueCount );
-                    
+
             // 왼쪽은 JOIN이거나 SCAN
             if ( sPlan->left->type == QMN_JOIN )
             {
@@ -2507,7 +2679,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
             else if ( sPlan->left->type == QMN_SCAN )
             {
                 sSCAN = (qmncSCAN*)sPlan->left;
-                        
+
                 if ( sSCAN->isSimple == ID_FALSE )
                 {
                     sIsSimple = ID_FALSE;
@@ -2517,12 +2689,12 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                 {
                     // Nothing to do.
                 }
-                        
+
                 buildSimpleHostValues( aHostValues,
                                        aHostValueCount,
                                        sSCAN->simpleValues,
                                        sSCAN->simpleValueCount );
-                        
+
                 // 마지막 scan
                 break;
             }
@@ -2535,7 +2707,44 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
     }
     else
     {
-        // Nothing to do.
+        sPROJ = (qmncPROJ*)sPlan;
+        sPCRD = (qmncPCRD*)sPlan->left;
+
+        IDE_TEST_CONT( ( sPROJ->isSimple == ID_FALSE ) ||
+                       ( sPCRD->mIsSimple == ID_FALSE ),
+                       NORMAL_EXIT );
+
+        sIsSimple = ID_TRUE;
+        for ( sChildren = sPCRD->plan.children;
+              sChildren != NULL;
+              sChildren = sChildren->next )
+        {
+            sSCAN = (qmncSCAN*)sChildren->childPlan;
+
+            if ( sSCAN->isSimple == ID_FALSE )
+            {
+                sIsSimple = ID_FALSE;
+                break;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        
+        if ( ( sIsSimple == ID_TRUE ) &&
+             ( sPCRD->plan.children != NULL ) )
+        {
+            sSCAN = (qmncSCAN *)sPCRD->plan.children->childPlan;
+            buildSimpleHostValues( aHostValues,
+                                   aHostValueCount,
+                                   sSCAN->simpleValues,
+                                   sSCAN->simpleValueCount );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
@@ -2550,11 +2759,13 @@ idBool qciMisc::isSimpleBind( qcStatement * aStatement )
     qmncSCAN         * sSCAN;
     qmncINST         * sINST;
     qmncUPTE         * sUPTE;
+    qmncPCRD         * sPCRD;
+    qmnChildren      * sChildren;
     idBool             sIsSimple = ID_TRUE;
 
     sType = aStatement->myPlan->parseTree->stmtKind;
     sPlan = aStatement->myPlan->plan;
-    
+
     switch ( sType )
     {
         case QCI_STMT_SELECT:
@@ -2562,11 +2773,11 @@ idBool qciMisc::isSimpleBind( qcStatement * aStatement )
         case QCI_STMT_DEQUEUE:
             sIsSimple = isSimpleSelectBind( aStatement, sPlan );
             break;
-            
+
         case QCI_STMT_INSERT:
         case QCI_STMT_ENQUEUE:
             sINST = (qmncINST*)sPlan;
-            
+
             if ( checkSimpleBind( aStatement->pBindParam,
                                   sINST->simpleValues,
                                   sINST->simpleValueCount ) == ID_FALSE )
@@ -2577,14 +2788,11 @@ idBool qciMisc::isSimpleBind( qcStatement * aStatement )
             {
                 // Nothing to do.
             }
-            
-            break;
-           
-        case QCI_STMT_UPDATE:
-            IDE_DASSERT( sPlan->left->type == QMN_SCAN );
 
+            break;
+
+        case QCI_STMT_UPDATE:
             sUPTE = (qmncUPTE*)sPlan;
-            
             if ( checkSimpleBind( aStatement->pBindParam,
                                   sUPTE->simpleValues,
                                   sUPTE->updateColumnCount ) == ID_FALSE )
@@ -2593,8 +2801,54 @@ idBool qciMisc::isSimpleBind( qcStatement * aStatement )
             }
             else
             {
+                if ( sPlan->left->type == QMN_SCAN )
+                {
+                    sSCAN = (qmncSCAN*)sPlan->left;
+
+                    if ( checkSimpleBind( aStatement->pBindParam,
+                                          sSCAN->simpleValues,
+                                          sSCAN->simpleValueCount ) == ID_FALSE )
+                    {
+                        sIsSimple = ID_FALSE;
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+                else if ( sPlan->left->type == QMN_PCRD )
+                {
+                    sPCRD = (qmncPCRD *)sPlan->left;
+
+                    for ( sChildren = sPCRD->plan.children;
+                          sChildren != NULL;
+                          sChildren = sChildren->next )
+                    {
+                        sSCAN = (qmncSCAN *)sChildren->childPlan;
+                        if ( checkSimpleBind( aStatement->pBindParam,
+                                              sSCAN->simpleValues,
+                                              sSCAN->simpleValueCount ) == ID_FALSE )
+                        {
+                            sIsSimple = ID_FALSE;
+                            break;
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
+                    }
+                }
+                else
+                {
+                    sIsSimple = ID_FALSE;
+                }
+            }
+            break;
+        case QCI_STMT_DELETE:
+            if ( sPlan->left->type == QMN_SCAN )
+            {
                 sSCAN = (qmncSCAN*)sPlan->left;
-            
+
                 if ( checkSimpleBind( aStatement->pBindParam,
                                       sSCAN->simpleValues,
                                       sSCAN->simpleValueCount ) == ID_FALSE )
@@ -2606,41 +2860,50 @@ idBool qciMisc::isSimpleBind( qcStatement * aStatement )
                     // Nothing to do.
                 }
             }
-            
-            break;
-            
-        case QCI_STMT_DELETE:
-            IDE_DASSERT( sPlan->left->type == QMN_SCAN );
-
-            sSCAN = (qmncSCAN*)sPlan->left;
-            
-            if ( checkSimpleBind( aStatement->pBindParam,
-                                  sSCAN->simpleValues,
-                                  sSCAN->simpleValueCount ) == ID_FALSE )
+            else if ( sPlan->left->type == QMN_PCRD )
             {
-                sIsSimple = ID_FALSE;
+                sPCRD = (qmncPCRD *)sPlan->left;
+
+                for ( sChildren = sPCRD->plan.children;
+                      sChildren != NULL;
+                      sChildren = sChildren->next )
+                {
+                    sSCAN = (qmncSCAN *)sChildren->childPlan;
+
+                    if ( checkSimpleBind( aStatement->pBindParam,
+                                          sSCAN->simpleValues,
+                                          sSCAN->simpleValueCount ) == ID_FALSE )
+                    {
+                        sIsSimple = ID_FALSE;
+                        break;
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
             }
             else
             {
-                // Nothing to do.
+                sIsSimple = ID_FALSE;
             }
-            
             break;
-
         default:
             sIsSimple = ID_FALSE;
             break;
     }
-    
+
     return sIsSimple;
 }
 
 idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
                                     qmnPlan     * aPlan )
 {
-    qmnPlan    * sPlan = aPlan;
-    qmncSCAN   * sSCAN;
-    idBool       sIsSimple = ID_TRUE;
+    qmnPlan     * sPlan = aPlan;
+    qmncSCAN    * sSCAN;
+    qmncPCRD    * sPCRD;
+    qmnChildren * sChildren;        // multi children node
+    idBool        sIsSimple = ID_TRUE;
 
     if ( sPlan->left->type == QMN_SCAN )
     {
@@ -2660,14 +2923,14 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
     else if ( sPlan->left->type == QMN_JOIN )
     {
         sPlan = sPlan->left;
-                
+
         while ( 1 )
         {
             // 오른쪽은 항상 SCAN
             IDE_DASSERT( sPlan->right->type == QMN_SCAN );
-                    
+
             sSCAN = (qmncSCAN*)sPlan->right;
-            
+
             if ( checkSimpleBind( aStatement->pBindParam,
                                   sSCAN->simpleValues,
                                   sSCAN->simpleValueCount ) == ID_FALSE )
@@ -2688,7 +2951,7 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
             else if ( sPlan->left->type == QMN_SCAN )
             {
                 sSCAN = (qmncSCAN*)sPlan->left;
-            
+
                 if ( checkSimpleBind( aStatement->pBindParam,
                                       sSCAN->simpleValues,
                                       sSCAN->simpleValueCount ) == ID_FALSE )
@@ -2700,7 +2963,7 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
                 {
                     // Nothing to do.
                 }
-                            
+
                 break;
             }
             else
@@ -2709,11 +2972,34 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
             }
         }
     }
+    else if ( sPlan->left->type == QMN_PCRD )
+    {
+        sPCRD = (qmncPCRD *)sPlan->left;
+
+        for ( sChildren = sPCRD->plan.children;
+              sChildren != NULL;
+              sChildren = sChildren->next )
+        {
+            sSCAN = (qmncSCAN *)sChildren->childPlan;
+
+            if ( checkSimpleBind( aStatement->pBindParam,
+                                  sSCAN->simpleValues,
+                                  sSCAN->simpleValueCount ) == ID_FALSE )
+            {
+                sIsSimple = ID_FALSE;
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+    }
     else
     {
-        // Nothing to do.
+        sIsSimple = ID_FALSE;
     }
-            
+
     return sIsSimple;
 }
 
@@ -2919,9 +3205,10 @@ idBool qciMisc::checkSimpleBind( qciBindParamInfo * aBindParam,
  *     off      on         on
  *     off      off        off
  */
-idBool qciMisc::checkExecFast( qcStatement  * aStatement )
+idBool qciMisc::checkExecFast( qcStatement  * aStatement, qmnPlan * aPlan )
 {
-    idBool   sExecFast;
+    idBool   sExecFast = ID_FALSE;
+    UInt     sLevel = 0;
 
     if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_EXEC_FAST_MASK )
          == QC_TMP_EXEC_FAST_NONE )
@@ -2929,9 +3216,24 @@ idBool qciMisc::checkExecFast( qcStatement  * aStatement )
         qcgPlan::registerPlanProperty( aStatement,
                                        PLAN_PROPERTY_EXECUTOR_FAST_SIMPLE_QUERY );
 
-        if ( QCU_EXECUTOR_FAST_SIMPLE_QUERY > 0 )
+        sLevel = QCU_EXECUTOR_FAST_SIMPLE_QUERY;
+
+        if ( sLevel > 0 )
         {
             sExecFast = ID_TRUE;
+
+            IDE_TEST_CONT( aPlan == NULL, NORMAL_EXIT );
+            IDE_TEST_CONT( aPlan->left == NULL, NORMAL_EXIT );
+
+            if ( ( aPlan->left->type == QMN_PCRD ) &&
+                 ( sLevel < QCI_SIMPLE_LEVEL_PARTITION ) )
+            {
+                sExecFast = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
         }
         else
         {
@@ -2950,6 +3252,8 @@ idBool qciMisc::checkExecFast( qcStatement  * aStatement )
             sExecFast = ID_FALSE;
         }
     }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
     return sExecFast;
 }
@@ -3036,3 +3340,119 @@ IDE_RC qciMisc::getDiskUndoMaxAndUsedSize( ULong * aMaxSize, ULong * aUsedSize )
     return IDE_FAILURE;
 }
 
+idBool qciMisc::existGlobalNonPartitionedIndice( qciTableInfo * aTableInfo )
+{
+    UInt       i       = 0;
+    qcmIndex * sIndex  = NULL;
+    idBool     sExist = ID_FALSE;
+
+    if ( aTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+    {
+        for ( i = 0; i < aTableInfo->indexCount; i++ )
+        {
+            sIndex = &( aTableInfo->indices[i] );
+            if ( sIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
+            {
+                sExist = ID_TRUE;
+                break;
+            }
+            else
+            {
+                // Nothing to do
+            }
+        }
+    }
+    else
+    {
+        sExist = ID_FALSE;
+    }
+
+    return sExist;
+}
+
+void qciMisc::restoreTempInfoForPartition( qciTableInfo * aTableInfo,
+                                           qciTableInfo * aPartInfo )
+{
+    qcmPartition::restoreTempInfoForPartition( aTableInfo,
+                                               aPartInfo );
+}
+
+void qciMisc::restoreTempInfo( qciTableInfo         * aTableInfo,
+                               qciPartitionInfoList * aPartInfoList,
+                               qdIndexTableList     * aIndexTableList )
+{
+    qcmPartition::restoreTempInfo( aTableInfo,
+                                   aPartInfoList,
+                                   aIndexTableList ); 
+}
+
+IDE_RC qciMisc::validateAndLockPartitionInfoList( qciStatement         * aQciStatement,
+                                                  qciPartitionInfoList * aPartInfoList,
+                                                  smiTBSLockValidType    aTBSLvType,
+                                                  smiTableLockMode       aLockMode,
+                                                  ULong                  aLockWaitMicroSec )
+{
+    return qcmPartition::validateAndLockPartitionInfoList( &( aQciStatement->statement ),
+                                                           aPartInfoList,
+                                                           aTBSLvType,
+                                                           aLockMode,
+                                                           aLockWaitMicroSec );
+}
+
+IDE_RC qciMisc::runDDLforDDLSync( idvSQL       * aStatistics,
+                                  smiStatement * aSmiStmt,
+                                  UInt           aUserID,
+                                  SChar        * aSqlStr )
+{
+    return qcg::runDDLforDDLSync( aStatistics,
+                                  aSmiStmt,
+                                  aUserID,
+                                  aSqlStr );
+}
+
+smOID qciMisc::getDDLReplTableOID( qciStatement * aQciStatement )
+{
+    return aQciStatement->statement.mDDLReplInfo.mTableOID;
+}
+
+smOID * qciMisc::getDDLReplPartTableOID( qciStatement * aQciStatement )
+{
+    return aQciStatement->statement.mDDLReplInfo.mPartTableOID;
+}
+
+idBool qciMisc::isReplicableDDL( qciStatement * aQciStatement )
+{
+    idBool sIsReplicableDDL = ID_FALSE;
+    qcStatement * sQcStatement = (qcStatement*)&( aQciStatement->statement );
+
+    if ( sQcStatement->mDDLReplInfo.mTableOID != SM_OID_NULL )
+    {
+        sIsReplicableDDL = ID_TRUE;
+    }
+    else
+    {        
+        sIsReplicableDDL = ID_FALSE;
+    }
+
+    return sIsReplicableDDL;
+}
+
+void qciMisc::setSmiStmt( qciStatement *aQciStatement, smiStatement * aSmiStatement )
+{
+    qcg::setSmiStmt( &( aQciStatement->statement ), aSmiStatement );
+}
+
+void qciMisc::getSmiStmt( qciStatement *aQciStatement, smiStatement ** aSmiStatement )
+{
+    qcg::getSmiStmt( &( aQciStatement->statement ), aSmiStatement );
+}
+
+idBool qciMisc::isDDLSync( qciStatement * aQciStatement )
+{
+    return qrc::isDDLSync( &( aQciStatement->statement ) );
+}
+
+idBool qciMisc::isDDLSync( void * aQcStatement )
+{
+    return qrc::isDDLSync( (qcStatement*)aQcStatement );
+}

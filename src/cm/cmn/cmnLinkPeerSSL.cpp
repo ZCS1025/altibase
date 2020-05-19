@@ -445,9 +445,9 @@ IDE_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
     switch (aKey)
     {
         case CMN_LINK_INFO_ALL:
-        case CMN_LINK_INFO_TCP_REMOTE_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_PORT:
+        case CMN_LINK_INFO_REMOTE_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_IP_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_PORT:
 
             IDE_TEST_RAISE(
                 idlOS::getnameinfo((struct sockaddr *)&sLink->mDesc.mAddr,
@@ -458,9 +458,9 @@ IDE_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
                 GetNameInfoError);
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_ADDRESS:
-        case CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS:
-        case CMN_LINK_INFO_TCP_LOCAL_PORT:
+        case CMN_LINK_INFO_LOCAL_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_IP_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_PORT:
 
             sAddrLen = ID_SIZEOF(sAddr);
             IDE_TEST_RAISE(idlOS::getsockname(sLink->mDesc.mHandle,
@@ -478,7 +478,7 @@ IDE_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
             break;
 
         case CMN_LINK_INFO_IMPL:
-        case CMN_LINK_INFO_TCP_REMOTE_SOCKADDR:
+        case CMN_LINK_INFO_REMOTE_SOCKADDR:
             break;
 
 #if defined(TCP_INFO)
@@ -504,23 +504,23 @@ IDE_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
             sRet = idlOS::snprintf(aBuf, aBufLen, "SSL");
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_ADDRESS:
             sRet = idlOS::snprintf(aBuf, aBufLen, "%s:%s",
                                    sAddrStr, sPortStr);
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_IP_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_IP_ADDRESS:
             sRet = idlOS::snprintf(aBuf, aBufLen, "%s", sAddrStr);
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_PORT:
-        case CMN_LINK_INFO_TCP_REMOTE_PORT:
+        case CMN_LINK_INFO_LOCAL_PORT:
+        case CMN_LINK_INFO_REMOTE_PORT:
             sRet = idlOS::snprintf(aBuf, aBufLen, "%s", sPortStr);
             break;
 
-        case CMN_LINK_INFO_TCP_REMOTE_SOCKADDR:
+        case CMN_LINK_INFO_REMOTE_SOCKADDR:
             IDE_TEST_RAISE(aBufLen < (UInt)(sLink->mDesc.mAddrLen),
                            StringTruncated);
             idlOS::memcpy(aBuf, &sLink->mDesc.mAddr, sLink->mDesc.mAddrLen);

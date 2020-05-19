@@ -35,7 +35,7 @@ ACI_RC ulnCallbackFetchResult(cmiProtocolContext *aProtocolContext,
     ulnStmt       *sStmt      = sFnContext->mHandle.mStmt;
     ulnCache      *sCache     = ulnStmtGetCache(sStmt);
     acp_uint8_t   *sRow;
-    acp_uint32_t   sRowSize;
+    acp_uint32_t   sRowSize = 0;    /* BUG-46360 */
     acp_sint64_t   sPosition;
     acp_sint64_t   sPRowID;
 
@@ -43,6 +43,9 @@ ACI_RC ulnCallbackFetchResult(cmiProtocolContext *aProtocolContext,
     ACP_UNUSED(aServiceSession);
 
     ULN_FNCONTEXT_GET_DBC(sFnContext, sDbc);
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     CMI_RD4(aProtocolContext, &sRowSize);
 
@@ -114,6 +117,11 @@ ACI_RC ulnCallbackFetchResult(cmiProtocolContext *aProtocolContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MEM_MANAGE_ERR)
     {
         ulnError(sFnContext,

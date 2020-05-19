@@ -105,7 +105,9 @@ IDE_RC mmqQueueInfo::timedwaitDequeue(ULong aWaitSec, idBool* aTimeOut)
     *aTimeOut = ID_FALSE;
     if (aWaitSec == 0)
     {
-        // 대기 안함
+        /* BUG-46173 대기 안함
+           DEQUEUE ~ NOWAIT|WAIT 0인 경우에 MMC_TASK_STATE_QUEUEWAIT로 전환되지 않는다.
+           그래서 waitForEnqueueEvent()를 통해 본 함수가 호출되지 않는다. */
     }
     else
     {

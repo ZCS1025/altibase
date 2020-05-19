@@ -1,14 +1,14 @@
 include $(ALTIBASE_HOME)/install/altibase_env.mk
 
-BINS=connect1 connect2 free select insert update delete                  \
-	 cursor1 cursor2 dynamic1 dynamic2 dynamic3 dynamic4 psm1 psm2       \
-	 date varchar binary arrays1 arrays2 argument indicator              \
+BINS=connect1 connect2 free select insert update delete                       \
+	 cursor1 cursor2 dynamic1 dynamic2 dynamic3 dynamic4 psm1 psm2            \
+	 psm3 psm4 date varchar binary arrays1 arrays2 argument indicator         \
 	 runtime_error_check whenever mc1 mc2 mc3 mt1 mt2 pointer declare_stmt     
 BINS2=cparsefull macro
 SRCS=connect1.sc connect2.sc free.sc                                       \
 	 select.sc insert.sc update.sc delete.sc                               \
 	 cursor1.sc cursor2.sc dynamic1.sc dynamic2.sc dynamic3.sc dynamic4.sc \
-	 psm1.sc psm2.sc date.sc varchar.sc binary.sc                          \
+	 psm1.sc psm2.sc psm3.sc psm4.sc date.sc varchar.sc binary.sc          \
 	 arrays1.sc arrays2.sc argument.sc indicator.sc                        \
 	 runtime_error_check.sc whenever1.sc whenever2.sc                      \
 	 mc1.sc mc2.sc mc3.sc mt1.sc mt2.sc pointer.sc declare_stmt.sc         \
@@ -65,6 +65,12 @@ psm1: psm1.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
 
 psm2: psm2.$(OBJEXT)
+	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
+psm3: psm3.$(OBJEXT)
+	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
+psm4: psm4.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
 
 date: date.$(OBJEXT)

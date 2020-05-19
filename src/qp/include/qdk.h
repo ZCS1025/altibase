@@ -49,4 +49,7 @@ IDE_RC qdkAddShardTransaction( idvSQL         * aStatistics,
 
 void   qdkDelShardTransaction( sdiConnectInfo * aDataNode );
 
+IDE_RC qdkSetTransactionBrokenOnGlobalCoordinator( void * aDkiSession,
+                                                   smTID  aTransID );
+
 #endif /* _O_QDK_H_ */

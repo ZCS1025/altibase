@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvPkgStmts.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvPkgStmts.cpp 83637 2018-08-07 05:40:38Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -290,7 +290,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
         aStatement->spvEnv->currDeclItem = sCurrItem;
        
         if( ( sCurrItem->itemType == QS_VARIABLE ) ||
-            ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) ||
+            ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+            ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
             ( sCurrItem->itemType == QS_CURSOR ) ||
             ( sCurrItem->itemType == QS_TYPE ) )
         {
@@ -299,7 +300,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
                  sNextItem = sNextItem->next )
             {
                 if( ( sNextItem->itemType == QS_VARIABLE ) ||
-                    ( sNextItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                    ( sNextItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                    ( sNextItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                     ( sNextItem->itemType == QS_CURSOR ) ||
                     ( sNextItem->itemType == QS_TYPE ) )
                 {
@@ -314,7 +316,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
 
             // validation of variable
             if( ( sCurrItem->itemType == QS_VARIABLE ) ||
-                ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) )
+                ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) )
             {
                 IDE_TEST( qsvProcVar::validateLocalVariable(
                               aStatement,
@@ -409,7 +412,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
                  sCurrItem = sCurrItem->next )
             {
                 if( ( sCurrItem->itemType == QS_VARIABLE ) ||
-                    ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                    ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                    ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                     ( sCurrItem->itemType == QS_CURSOR ) ||
                     ( sCurrItem->itemType == QS_TYPE ) )
                 {
@@ -630,7 +634,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
         aStatement->spvEnv->currDeclItem = sCurrItem;
 
         if( ( sCurrItem->itemType == QS_VARIABLE ) ||
-            ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) ||
+            ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+            ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
             ( sCurrItem->itemType == QS_CURSOR ) ||
             ( sCurrItem->itemType == QS_TYPE ) )
         {
@@ -639,7 +644,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                  sNextItem = sNextItem->next )
             {
                 if( ( sNextItem->itemType == QS_VARIABLE ) ||
-                    ( sNextItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                    ( sNextItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                    ( sNextItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                     ( sNextItem->itemType == QS_CURSOR ) ||
                     ( sNextItem->itemType == QS_TYPE ) )
                 {
@@ -659,7 +665,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                  sSpecItem = sSpecItem->next )
             {
                 if( ( sSpecItem->itemType == QS_VARIABLE ) ||
-                    ( sSpecItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                    ( sSpecItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                    ( sSpecItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                     ( sSpecItem->itemType == QS_CURSOR ) ||
                     ( sSpecItem->itemType == QS_TYPE ) )
                 {
@@ -674,7 +681,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
 
             // validation of variable
             if( ( sCurrItem->itemType == QS_VARIABLE ) ||
-                ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) )
+                ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) )
             {
                 IDE_TEST(qsvProcVar::validateLocalVariable(
                         aStatement,
@@ -776,7 +784,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                  sCurrItem = sCurrItem->next )
             {
                 if( ( sCurrItem->itemType == QS_VARIABLE ) ||
-                    ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                    ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                    ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                     ( sCurrItem->itemType == QS_CURSOR ) ||
                     ( sCurrItem->itemType == QS_TYPE ) )
                 {
@@ -795,7 +804,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                  sSpecItem = sSpecItem->next )
             {
                 if( ( sSpecItem->itemType == QS_VARIABLE ) ||
-                    ( sSpecItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                    ( sSpecItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                    ( sSpecItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                     ( sSpecItem->itemType == QS_CURSOR ) ||
                     ( sSpecItem->itemType == QS_TYPE ) )
                 {

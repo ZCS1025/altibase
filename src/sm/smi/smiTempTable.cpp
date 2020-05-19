@@ -87,8 +87,9 @@ IDE_RC smiTempTable::initializeStatic()
                                 IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                 ID_FALSE,							/* ForcePooling */
                                 ID_TRUE,							/* GarbageCollection */
-                                ID_TRUE ) 							/* HWCacheLine */
-                == IDE_SUCCESS );
+                                ID_TRUE,                            /* HWCacheLine */
+                                IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */) 
+                 == IDE_SUCCESS);			
 
     IDE_ASSERT( mTempCursorPool.initialize( 
                                 IDU_MEM_SM_SMI,
@@ -101,8 +102,9 @@ IDE_RC smiTempTable::initializeStatic()
                                 IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                 ID_FALSE,							/* ForcePooling */
                                 ID_TRUE,							/* GarbageCollection */
-                                ID_TRUE  ) 							/* HWCacheLine */
-                == IDE_SUCCESS );
+                                ID_TRUE,                            /* HWCacheLine */
+                                IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */) 
+                == IDE_SUCCESS);			
 
     IDE_ASSERT( mTempPositionPool.initialize( 
                                 IDU_MEM_SM_SMI,
@@ -115,8 +117,9 @@ IDE_RC smiTempTable::initializeStatic()
                                 IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                 ID_FALSE,							/* ForcePooling */
                                 ID_TRUE,							/* GarbageCollection */
-                                ID_TRUE  ) 							/* HWCacheLine */
-                == IDE_SUCCESS );
+                                ID_TRUE,                            /* HWCacheLine */
+                                IDU_MEMPOOL_TYPE_LEGACY             /* mempool type*/) 
+                == IDE_SUCCESS);			
 
     IDE_TEST( sdtWorkArea::initializeStatic() != IDE_SUCCESS );
 
@@ -233,11 +236,14 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
 
         sColumnCount++;
         sColumns = sColumns->next;
-    }
 
-    /* BUG-40079 */   
-    IDE_TEST_RAISE( sColumnCount > SMI_COLUMN_ID_MAXIMUM, 
-                    maximum_column_count_error );
+        // Key Column List와는 다르게 중복 skip 하지 않으므로,
+        // Column Max Count를 넘지는 않는지 정확하게 확인해야 한다.
+        // List가 잘못되었을 경우에 Hang이 발생하는 것을 막기 위해
+        // BUG-40079에 추가된 검증을 BUG-46265에서 while 안으로 옮긴다.
+        IDE_TEST_RAISE( sColumnCount > SMI_COLUMN_ID_MAXIMUM,
+                        maximum_column_count_error );
+    }
 
     IDU_FIT_POINT( "smiTempTable::create::malloc" );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMI,
@@ -325,34 +331,54 @@ IDE_RC smiTempTable::create( idvSQL              * aStatistics,
         sColumns = sColumns->next;
     }
 
-    /* KeyColumnList를 구성함 */
-    sHeader->mKeyColumnList  = NULL;
-    sPrevKeyColumn           = NULL;
-    sKeyColumns = (smiColumnList*)aKeyColumns;
-    while( sKeyColumns != NULL )
+    sHeader->mColumnCount = sColumnCount;
+
+    if( aKeyColumns != NULL )
     {
-        sColumnIdx = sKeyColumns->column->id & SMI_COLUMN_ID_MASK;
-        IDE_ERROR( sColumnIdx < sColumnCount );
+        /* KeyColumnList를 구성함 */
+        sKeyColumns             = (smiColumnList*)aKeyColumns;
+        sColumnIdx              = sKeyColumns->column->id & SMI_COLUMN_ID_MASK;
+        sPrevKeyColumn          = &sHeader->mColumns[ sColumnIdx ];
+        sHeader->mKeyColumnList = sPrevKeyColumn;
+        sColumnCount            = 0;
 
-        sTempColumn = &sHeader->mColumns[ sColumnIdx ];
-
-        IDE_ERROR( sKeyColumns->column->id == sTempColumn->mColumn.id );
-
-        if( sPrevKeyColumn == NULL )
+        while( sKeyColumns->next != NULL )
         {
-            sHeader->mKeyColumnList = sTempColumn;
-        }
-        else
-        {
-            sPrevKeyColumn->mNextKeyColumn = sTempColumn;
-        }
+            // 중복되어도 skip하면 되므로 정확하게 Column Max Count 이하인지
+            // 확인 할 필요는 없다. Hang이 발생하지 않을 정도로 적당히 확인한다.
+            IDE_ERROR( ++sColumnCount <= ( SMI_COLUMN_ID_MAXIMUM * 2 ) );
 
-        sPrevKeyColumn = sTempColumn;
-        sKeyColumns = sKeyColumns->next;
+            sKeyColumns = sKeyColumns->next;
+            sColumnIdx  = sKeyColumns->column->id & SMI_COLUMN_ID_MASK;
+
+            IDE_ERROR( sColumnIdx <  sHeader->mColumnCount );
+
+            sTempColumn = &sHeader->mColumns[ sColumnIdx ];
+
+            IDE_ERROR( sKeyColumns->column->id == sTempColumn->mColumn.id );
+
+            if( sTempColumn->mNextKeyColumn == NULL )
+            {
+                sPrevKeyColumn->mNextKeyColumn = sTempColumn;
+                sPrevKeyColumn = sTempColumn;
+            }
+            else
+            {
+                // BUG-46265 Create Disk Temp Table 에서 Key column list가
+                // 순환 할 수도 있는지 검증합니다.
+                // NULL이 아닌 경우는 이미 앞서 Key Column list 에 포함 한 것이다.
+                // 이를 skip하지 않으면 hang이나 잘못된 order로 출력되므로 skip한다.
+                // Order by I0, I1, I0 예를 들면 첫번째 I0에서 이미 I0로 정렬 되므로
+                // 두번째 I0는 의미가 없다, skip 해도 된다.
+                // QX에서 중복 제거 하므로 중복해서 내려오는 경우는 없지만,
+                // 만약의 경우를 위해서 검증한다.
+
+                IDE_DASSERT( 0 );
+            }
+        }
     }
 
     sHeader->mRowCount       = 0;
-    sHeader->mColumnCount    = sColumnCount;
     sHeader->mWASegment      = NULL;
     sHeader->mTTState        = SMI_TTSTATE_INIT;
     sHeader->mTTFlag         = aFlag;
@@ -1043,6 +1069,9 @@ IDE_RC smiTempTable::fetchFromGRID(void     * aTable,
                                        SC_MAKE_PID( aGRID ),
                                        (vULong*)&sPtr )
                   != IDE_SUCCESS );
+
+        SC_MAKE_NULL_GRID( sTRPInfo.mTRPHGRID ); // in memory group
+
         IDE_TEST( sdtTempRow::fetch( sWASeg,
                                      sHeader->mFetchGroupID,
                                      sPtr,
@@ -1637,26 +1666,23 @@ void  smiTempTable::registWatchArray( smiTempTableHeader * aHeader )
  ***************************************************************************/
 void smiTempTable::generateStats(smiTempTableHeader * aHeader )
 {
-    smiTempTableStats * sStats = aHeader->mStatsPtr;
-    sdtWASegment      * sWASegment = (sdtWASegment*)aHeader->mWASegment;
+    smiTempTableStats * sStats;
 
-    if( ( smiGetCurrTime() - sStats->mCreateTV >= 
+    if( ( smiGetCurrTime() - aHeader->mStatsPtr->mCreateTV >= 
           smuProperty::getTempStatsWatchTime() ) &&
-        ( sStats == &aHeader->mStatsBuffer ) )
+        ( aHeader->mStatsPtr == &aHeader->mStatsBuffer ) )
     {
         /* 유효시간 이상 동작했으면서, 아직 WatchArray에 등록 안돼어있으면
-         * 등록한다. */
+         * 등록한다. (aHeader->mStatsPtr가 갱신된다.)*/
         registWatchArray( aHeader );
     }
 
-    sStats->mTTState          = aHeader->mTTState;
-    if( sWASegment != NULL )
+    sStats           = aHeader->mStatsPtr;
+    sStats->mTTState = aHeader->mTTState;
+
+    if( aHeader->mWASegment != NULL )
     {
-        sStats->mWorkAreaSize   = 
-            sdtWASegment::getWASegmentPageCount( sWASegment ) * SD_PAGE_SIZE;
-        sStats->mNormalAreaSize = sdtWASegment::getNExtentCount( sWASegment )
-                                  * SDT_WAEXTENT_PAGECOUNT 
-                                  * SD_PAGE_SIZE;
+        sdtWASegment::updateTempStats( aHeader );
     }
     sStats->mRecordLength     = aHeader->mRowSize;
     sStats->mRecordCount      = aHeader->mRowCount;
@@ -1745,6 +1771,7 @@ void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
     }
 
     IDE_EXCEPTION_END;
+
     IDE_POP();
     idlOS::snprintf( sErrorBuffer,
                      256,
@@ -1752,6 +1779,10 @@ void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
                      E_ERROR_CODE( ideGetErrorCode() ),
                      ideGetSystemErrno(),
                      ideGetErrorMsg( ideGetErrorCode() ) );
+
+    ideLog::log( IDE_ERR_0,
+                 "%s\n",
+                 sErrorBuffer );
 
     IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL_ARG, sErrorBuffer) );
 

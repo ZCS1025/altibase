@@ -60,6 +60,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfIsFirstArrayBoundCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

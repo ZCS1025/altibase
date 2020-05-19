@@ -53,6 +53,9 @@ ACI_RC ulnPrepareCore(ulnFnContext *aFnContext,
                       acp_sint32_t  aTextLength,
                       acp_uint8_t   aPrepareMode);
 
+ACI_RC ulnPrepareDeferComplete(ulnFnContext *aFnContext,
+                               acp_bool_t    aFlush);
+
 ACI_RC ulnCallbackPrepareResult(cmiProtocolContext *aProtocolContext,
                                 cmiProtocol        *aProtocol,
                                 void               *aServiceSession,

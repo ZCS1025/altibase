@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdn.cpp 82209 2018-02-07 07:33:37Z returns $
+ * $Id: qdn.cpp 84969 2019-03-06 05:26:17Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -276,6 +276,18 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
     sParseTree->constraints) != IDE_SUCCESS );
     */
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
     
     IDE_EXCEPTION(ERR_NOT_ALTER_META);
@@ -453,6 +465,18 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
         // Nothing to do.
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
     
     IDE_EXCEPTION(ERR_ABORT_REFERENTIAL_CONSTRAINT_EXIST);
@@ -573,6 +597,18 @@ IDE_RC qdn::validateRenameConstr(qcStatement * aStatement)
         {
             // Nothing to do.
         }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
     }
     else
     {
@@ -746,6 +782,18 @@ IDE_RC qdn::validateDropUnique(qcStatement * aStatement)
         // Nothing to do.
     }
 
+    if ( sParseTree->tableInfo->replicationCount > 0 ) 
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
     
     IDE_EXCEPTION(ERR_ABORT_REFERENTIAL_CONSTRAINT_EXIST);
@@ -870,6 +918,18 @@ IDE_RC qdn::validateDropLocalUnique(qcStatement * aStatement)
                             sParseTree->tableInfo->tableID,
                             & (sParseTree->partTable->partInfoList) )
                   != IDE_SUCCESS );
+    }
+
+    if ( sParseTree->tableInfo->replicationCount > 0 )
+    {
+        qrc::setDDLReplInfo( aStatement,
+                             sParseTree->tableInfo->tableOID,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return IDE_SUCCESS;
@@ -1236,7 +1296,7 @@ IDE_RC qdn::validateConstraints(
     qcuSqlSourceInfo      sqlInfo;
     SChar                 sName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     UInt                  i;
-    UInt                  sStage = 0;
+    volatile UInt         sStage;
 
     const void *          sTmpRow;
     const void *          sRow = NULL;
@@ -1262,7 +1322,12 @@ IDE_RC qdn::validateConstraints(
 
     qcmTableInfo       * sDiskInfo = NULL;
 
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdn::validateConstraints::__FT__" );
+
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
+    sStage = 0;
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( aTableInfo != NULL )
@@ -1652,6 +1717,9 @@ IDE_RC qdn::validateConstraints(
                                              & sCursorProperty)
                                          != IDE_SUCCESS);
                                 sStage = 1;
+
+                                IDU_FIT_POINT_FATAL( "qdn::validateConstraints::__FT__::STAGE1Partition" );
+
                                 IDE_TEST(sTmpCursor.beforeFirst() != IDE_SUCCESS);
 
                                 // 원래 sRow로 원복
@@ -1701,6 +1769,9 @@ IDE_RC qdn::validateConstraints(
                                          & sCursorProperty)
                                      != IDE_SUCCESS);
                             sStage = 1;
+
+                            IDU_FIT_POINT_FATAL( "qdn::validateConstraints::__FT__::STAGE1Table" );
+
                             IDE_TEST(sTmpCursor.beforeFirst() != IDE_SUCCESS);
                             IDE_TEST(sTmpCursor.readRow(&sTmpRow,
                                                         &sRid,
@@ -2174,8 +2245,14 @@ IDE_RC qdn::validateConstraints(
         }
     }
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
-   
+
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION(ERR_NOT_SUPPORT_TYPE)
     {
         (void)sqlInfo.init(aStatement->qmeMem);
@@ -2253,11 +2330,15 @@ IDE_RC qdn::validateConstraints(
     }
     IDE_EXCEPTION_END;
 
+    IDE_FT_EXCEPTION_BEGIN();
+
     switch (sStage)
     {
         case 1:
             sTmpCursor.close();
     }
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 
@@ -5738,10 +5819,14 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
     const void     * sRow;
     smiTableCursor   sCursor;
     scGRID           sRid;
-    SInt             sStage =0;
+    volatile SInt    sStage;
 
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdn::existSameConstrName::__FT__" );
     sCursor.initialize();
 
+    sStage =0;
     *aExistSameConstrName = ID_FALSE;
 
     // To fix BUG-13544
@@ -5772,6 +5857,7 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
                           &gMetaDefaultCursorProperty) != IDE_SUCCESS);
 
     sStage = 1;
+    IDU_FIT_POINT_FATAL( "qdn::existSameConstrName::__FT__::STAGE1" );
 
     IDE_TEST(sCursor.beforeFirst() != IDE_SUCCESS);
 
@@ -5814,9 +5900,17 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
 
     IDE_TEST(sCursor.close() != IDE_SUCCESS);
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
 
     switch( sStage )
     {
@@ -5826,6 +5920,8 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
         default :
             IDE_DASSERT( 0 );
     }
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 

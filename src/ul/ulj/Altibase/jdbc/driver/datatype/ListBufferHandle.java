@@ -30,12 +30,28 @@ import Altibase.jdbc.driver.cm.CmBufferWriter;
 
 public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
 {
-    // Buffer 초기  크기    
-    private static final int BUFFER_INIT_SIZE  = 524288;
-    // Buffer 증가량 단위
-    private static final int BUFFER_ALLOC_UNIT = 524288;
-    private List<Column> mColumns;
-    private int mBatchedRowCount;
+    private static final int BUFFER_INIT_SIZE_4_BATCH   = 524288;   // batch처리를 위한 Buffer 초기 크기
+    private static final int BUFFER_ALLOC_UNIT_4_BATCH  = 524288;   // batch처리를 위한 Buffer 증가량 단위
+    public  static final int BUFFER_INIT_SIZE_4_SIMPLE  = 64000;    // 일반 execute를 위한 Buffer 초기 크기
+    public  static final int BUFFER_ALLOC_UNIT_4_SIMPLE = 64000;    // 일반 execute를 위한 Buffer 증가량 단위
+
+    // BUG-46443 buffer 초기사이즈와 증가사이즈를 멤버변수로 선언
+    private int              mBufferInitSize;
+    private int              mBufferAllocUnitSize;
+    private List<Column>     mColumns;
+    private int              mBatchedRowCount;
+
+    public ListBufferHandle()
+    {
+        this.mBufferInitSize = BUFFER_INIT_SIZE_4_BATCH;
+        this.mBufferAllocUnitSize = BUFFER_ALLOC_UNIT_4_BATCH;
+    }
+
+    public ListBufferHandle(int aBufferInitSize, int aBufferAllocUnitSize)
+    {
+        this.mBufferInitSize = aBufferInitSize;
+        this.mBufferAllocUnitSize = aBufferAllocUnitSize;
+    }
 
     public void setColumns(List<Column> aColumns)
     {
@@ -56,7 +72,7 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
     {
         if ((mBuffer == null) || (mBuffer.capacity() < aDataBufferSize))
         {
-            mBuffer = ByteBuffer.allocateDirect(aDataBufferSize);
+            mBuffer = ByteBuffer.allocate(aDataBufferSize);  /* BUG-46550 */
         }
     }
 
@@ -74,9 +90,9 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
     {
         if (mBuffer == null)
         {
-            allocateBuffer(BUFFER_INIT_SIZE);
-        } 
-        else 
+            allocateBuffer(mBufferInitSize);
+        }
+        else
         {
             mBuffer.clear();
         }
@@ -88,7 +104,11 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
     {
         for (Column sColumn : mColumns)
         {
-            sColumn.storeTo(this);
+            // BUG-46443 Column Type이 In 일 경우에만 버퍼에 write한다.
+            if (sColumn.getColumnInfo().hasInType())
+            {
+                sColumn.storeTo(this);
+            }
         }
 
         ++mBatchedRowCount;
@@ -100,7 +120,7 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
         if (mBuffer.remaining() < aNeedToWrite)
         {
             int sPosition = mBuffer.position();
-            ByteBuffer sNewBuf = ByteBuffer.allocateDirect(mBuffer.limit() + BUFFER_ALLOC_UNIT);
+            ByteBuffer sNewBuf = ByteBuffer.allocate(mBuffer.limit() * 2);  /* BUG-46550 */
             // 새로운 Buffer 에 기존 Buffer 내용 삽입
             mBuffer.position(0);
             sNewBuf.put(mBuffer);
@@ -110,7 +130,7 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
         }
     }
 
-    public void writeBytes(ByteBuffer aValue) throws SQLException
+    public void writeBytes(ByteBuffer aValue)
     {
         checkWritable(aValue.remaining());
         mBuffer.put(aValue);

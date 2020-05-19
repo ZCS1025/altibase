@@ -31,7 +31,6 @@ enum ulnStmtKind
     //----------------------------------------------------
 
     ULN_STMT_SCHEMA_DDL = ULN_STMT_MASK_DDL,
-
     ULN_STMT_NON_SCHEMA_DDL,
     ULN_STMT_CRT_SP,
     ULN_STMT_COMMENT,
@@ -52,8 +51,10 @@ enum ulnStmtKind
     ULN_STMT_DEQUEUE,
     // PROJ-1362
     ULN_STMT_SELECT_FOR_UPDATE,
-    // PROJ-1988
+    // PROJ-1988 Implement MERGE statement */
     ULN_STMT_MERGE,
+    // BUG-42397 Ref Cursor Static SQL
+    ULN_STMT_SELECT_FOR_CURSOR,
 
     //----------------------------------------------------
     //  DCL + SESSION + SYSTEM
@@ -72,6 +73,7 @@ enum ulnStmtKind
     ULN_STMT_SET_STACK,
     ULN_STMT_SET,
     ULN_STMT_ALT_SYS_CHKPT,
+    ULN_STMT_ALT_SYS_SHRINK_MEMPOOL,
     ULN_STMT_ALT_SYS_MEMORY_COMPACT,
     ULN_STMT_SET_SYSTEM_PROPERTY,
     ULN_STMT_SET_SESSION_PROPERTY,
@@ -85,8 +87,6 @@ enum ulnStmtKind
     ULN_STMT_ALT_RENAME_DATAFILE,
     ULN_STMT_ALT_TABLESPACE_BACKUP,
     ULN_STMT_ALT_SYS_SWITCH_LOGFILE,
-    ULN_STMT_ALT_CLOSE_LINK,
-    ULN_STMT_ALT_LINKER_PROCESS,
     ULN_STMT_ALT_SYS_FLUSH_BUFFER_POOL,
     ULN_STMT_CONNECT,
     ULN_STMT_DISCONNECT,
@@ -107,6 +107,37 @@ enum ulnStmtKind
     // PROJ-2002 Column Security
     ULN_STMT_ALT_SYS_SECURITY,
 
+    /* PROJ-1832 New database link */
+    ULN_STMT_CONTROL_DATABASE_LINKER,
+    ULN_STMT_CLOSE_DATABASE_LINK,
+
+    ULN_STMT_COMMIT_FORCE_DATABASE_LINK,
+    ULN_STMT_ROLLBACK_FORCE_DATABASE_LINK,
+
+    // PROJ-2223 Audit
+    ULN_STMT_ALT_SYS_AUDIT,
+    ULN_STMT_AUDIT_OPTION,
+    ULN_STMT_NOAUDIT_OPTION,
+    /* BUG-39074 */
+    ULN_STMT_DELAUDIT_OPTION, 
+
+    /* BUG-42852 STOP과 FLUSH를 DCL로 변환합니다. */
+    ULN_STMT_ALT_REPLICATION_STOP,
+    ULN_STMT_ALT_REPLICATION_FLUSH,
+
+    /* BUG-42639 Monitoring query */
+    ULN_STMT_SELECT_FOR_FIXED_TABLE,
+
+    /* PROJ-2624 ACCESS LIST */
+    ULN_STMT_RELOAD_ACCESS_LIST,
+
+    //BUG-45915
+    ULN_STMT_ALT_SYS_DUMP_CALLSTACKS,
+
+    /* PROJ-2701 Sharding online data rebuild */
+    ULN_STMT_RELOAD_SHARD_META_NUMBER,
+    ULN_STMT_RELOAD_SHARD_META_NUMBER_LOCAL,
+
     //----------------------------------------------------
     //  SP
     //----------------------------------------------------
@@ -114,6 +145,7 @@ enum ulnStmtKind
     ULN_STMT_EXEC_FUNC = ULN_STMT_MASK_SP,
     ULN_STMT_EXEC_PROC,
     ULN_STMT_EXEC_TEST_REC,  // PROJ-1552
+    ULN_STMT_EXEC_AB,
 
     //----------------------------------------------------
     //  DB

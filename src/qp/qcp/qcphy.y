@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcphy.y 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcphy.y 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 %pure_parser
@@ -417,6 +417,18 @@ all_hints
             if ( $<hints>$->disableInsTrigger == ID_TRUE )
             {
                 $<hints>$->disableInsTrigger = $<hints>2->disableInsTrigger;
+            }
+
+            // BUG-46137
+            if ( $<hints>$->planCacheKeep == ID_FALSE )
+            {
+                $<hints>$->planCacheKeep = $<hints>2->planCacheKeep;
+            }
+
+            /* PROJ-2632 */
+            if ( $<hints>$->mSerialFilter == QMS_SERIAL_FILTER_NONE )
+            {
+                $<hints>$->mSerialFilter = $<hints>2->mSerialFilter;
             }
         }
     }
@@ -1425,6 +1437,8 @@ hint_no_parameter
       /* HIGH_PERFORMANCE */
       /* DELAY */
       /* NO_DELAY */
+      /* SERIAL_FILTER */
+      /* NO_SERIAL_FILTER */
     {
         if (idlOS::strMatch(
               "COST", 4,
@@ -1857,6 +1871,35 @@ hint_no_parameter
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->disableInsTrigger = ID_TRUE;
+        }
+        // BUG-46137
+        else if ( idlOS::strMatch(
+                      "PLAN_CACHE_KEEP", 15,
+                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        {
+            QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
+            QCP_SET_INIT_HINTS( $<hints>$ );
+
+            $<hints>$->planCacheKeep = ID_TRUE;
+        }
+        /* PROJ-2632 */
+        else if ( idlOS::strMatch(
+                      "SERIAL_FILTER", 13,
+                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        {
+            QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
+            QCP_SET_INIT_HINTS( $<hints>$ );
+
+            $<hints>$->mSerialFilter = QMS_SERIAL_FILTER_TRUE;
+        }
+        else if ( idlOS::strMatch(
+                      "NO_SERIAL_FILTER", 16,
+                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        {
+            QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
+            QCP_SET_INIT_HINTS( $<hints>$ );
+
+            $<hints>$->mSerialFilter = QMS_SERIAL_FILTER_FALSE;
         }
         else
         { // syntax error

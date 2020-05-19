@@ -81,7 +81,7 @@ IDE_RC qmnSDSE::init( qcTemplate * aTemplate,
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
-    sdi::closeDataNode( sClientInfo, sDataPlan->mDataInfo );
+    sdi::setDataNodePrepared( sClientInfo, sDataPlan->mDataInfo );
 
     //-------------------------------
     // doIt함수 결정을 위한 Constant filter 의 judgement
@@ -202,6 +202,10 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
                                 sDataNodeArg.mBindParams )
                   != IDE_SUCCESS );
 
+        sDataNodeArg.mRemoteStmt = NULL;
+
+        sDataNodeArg.mSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
+
         IDE_TEST( sdi::initShardDataInfo( aTemplate,
                                           aCodePlan->mShardAnalysis,
                                           sClientInfo,
@@ -222,18 +226,19 @@ IDE_RC qmnSDSE::firstInit( qcTemplate * aTemplate,
                                     aCodePlan,
                                     sBindParams )
                       != IDE_SUCCESS );
-
-            IDE_TEST( sdi::reuseShardDataInfo( aTemplate,
-                                               sClientInfo,
-                                               aDataPlan->mDataInfo,
-                                               sBindParams,
-                                               aCodePlan->mShardParamCount )
-                      != IDE_SUCCESS );
         }
         else
         {
             // Nothing to do.
         }
+
+        IDE_TEST( sdi::reuseShardDataInfo( aTemplate,
+                                           sClientInfo,
+                                           aDataPlan->mDataInfo,
+                                           sBindParams,
+                                           aCodePlan->mShardParamCount,
+                                           SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT )
+                  != IDE_SUCCESS );
     }
 
     *aDataPlan->flag &= ~QMND_SDSE_INIT_DONE_MASK;
@@ -290,6 +295,9 @@ IDE_RC qmnSDSE::setParamInfo( qcTemplate   * aTemplate,
         aBindParams[i].mDataSize  = sBindParam->dataSize;
         aBindParams[i].mPrecision = sBindParam->precision;
         aBindParams[i].mScale     = sBindParam->scale;
+
+        /* BUG-46623 padding 변수를 0으로 초기화 해야 한다. */
+        aBindParams[i].padding    = 0;
     }
 
     return IDE_SUCCESS;
@@ -714,10 +722,29 @@ IDE_RC qmnSDSE::printPlan( qcTemplate   * aTemplate,
         iduVarStringAppend( aString, "SHARD-COORDINATOR\n" );
     }
 
+    /* BUG-45899 */
+    if ( sdi::isAnalysisInfoPrintable( aTemplate->stmt ) == ID_TRUE )
+    {
+        // non-shard query 에 한해 출력
+        if ( ( sCodePlan->mQueryPos != NULL ) &&
+             ( aTemplate->stmt->mShardPrintInfo.mQueryType == SDI_QUERY_TYPE_NONSHARD ) )
+        {
+            qmn::printSpaceDepth( aString, aDepth );
+            iduVarStringAppend( aString, "[ DISTRIBUTION QUERY ]\n" );
+            qmn::printSpaceDepth( aString, aDepth );
+            iduVarStringAppendFormat( aString,
+                                      "%.*s",
+                                      sCodePlan->mQueryPos->size,
+                                      sCodePlan->mQueryPos->stmtText + sCodePlan->mQueryPos->offset );
+            iduVarStringAppend( aString, "\n" );
+        }
+    }
+
     //----------------------------
     // Predicate 정보의 상세 출력
     //----------------------------
-    if ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE( aTemplate->stmt ) == 1 )
+    if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE( aTemplate->stmt ) == 1 ) ||
+         ( SDU_SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE == 1 ) )
     {
         // Normal Filter 출력
         if ( sCodePlan->filter != NULL )

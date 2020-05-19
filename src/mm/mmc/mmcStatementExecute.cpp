@@ -23,7 +23,7 @@
 #include <mmtAdminManager.h>
 #include <mmuProperty.h>
 #include <mmuOS.h>
-
+#include <rpi.h>
 
 mmcStmtExecFunc mmcStatement::mExecuteFunc[] =
 {
@@ -40,17 +40,20 @@ IDE_RC mmcStatement::executeDDL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
 {
     mmcSession   *sSession   = aStmt->getSession();
     qciStatement *sStatement = aStmt->getQciStmt();
-    smiTrans     *sTrans     = sSession->getTrans(aStmt, ID_TRUE);
+    mmcTransObj  *sTrans     = NULL;
+
+    idBool        sIsStmtBegin    = ID_FALSE;
+    idBool        sIsDDLSyncBegin = ID_FALSE;
 
     ideLog::log(IDE_QP_2, QP_TRC_EXEC_DDL_BEGIN, aStmt->getQueryString());
+    sTrans = sSession->allocTrans(aStmt);
 
     IDE_TEST(aStmt->endSmiStmt(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     /* BUG-45371 */
-    IDU_FIT_POINT_RAISE( "mmcStatement::executeDDL::beginSmiStmt",
-                         BeginError );
-    IDE_TEST_RAISE( aStmt->beginSmiStmt(sTrans, SMI_STATEMENT_NORMAL) != IDE_SUCCESS,
-                    BeginError );
+    IDU_FIT_POINT( "mmcStatement::executeDDL::beginSmiStmt" );
+    IDE_TEST( aStmt->beginSmiStmt( sTrans, SMI_STATEMENT_NORMAL ) != IDE_SUCCESS );
+    sIsStmtBegin = ID_TRUE;
 
     // TASK-2401 Disk/Memory Log분리
     //           LFG=2일때 Trans Commit시 로그 플러쉬 하도록 설정
@@ -62,13 +65,38 @@ IDE_RC mmcStatement::executeDDL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
      */
     IDE_TEST(aStmt->getSmiStmt()->getTrans()->writeDDLLog() != IDE_SUCCESS);
 
+    IDE_TEST( rpi::ddlSyncBegin( sStatement, 
+                                 aStmt->getSmiStmt() )
+              != IDE_SUCCESS );
+    sIsDDLSyncBegin = ID_TRUE;
+
     IDE_TEST(qci::execute(sStatement, aStmt->getSmiStmt()) != IDE_SUCCESS);
+
+    sIsDDLSyncBegin = ID_FALSE;
+    IDE_TEST( rpi::ddlSyncEnd( sStatement, 
+                               aStmt->getSmiStmt() )
+              != IDE_SUCCESS );
 
     ideLog::log(IDE_QP_2, QP_TRC_EXEC_DDL_SUCCESS);
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(BeginError)
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsDDLSyncBegin == ID_TRUE )
+    {
+        sIsDDLSyncBegin = ID_FALSE;
+        rpi::ddlSyncException( sStatement, 
+                               aStmt->getSmiStmt() );
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    if ( sIsStmtBegin != ID_TRUE )
     {
         /* PROJ-1832 New database link */
         IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(sTrans, sSession)
@@ -78,13 +106,17 @@ IDE_RC mmcStatement::executeDDL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
 
         aStmt->setStmtBegin(ID_FALSE);
     }
-    IDE_EXCEPTION_END;
+    else
     {
-        /* bug-37143: unreadalbe error msg of DDL failure */
-        ideLog::log(IDE_QP_2, QP_TRC_EXEC_DDL_FAILURE,
+        /* nothing to do */
+    }
+
+    IDE_POP();
+
+    /* bug-37143: unreadalbe error msg of DDL failure */
+    ideLog::log(IDE_QP_2, QP_TRC_EXEC_DDL_FAILURE,
                 E_ERROR_CODE(ideGetErrorCode()),
                 ideGetErrorMsg(ideGetErrorCode()));
-    }
 
     return IDE_FAILURE;
 }
@@ -132,7 +164,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
     qciStmtType  sStmtType     = aStmt->getStmtType();
     mmmPhase     sStartupPhase = mmm::getCurrentPhase();
     idBool       sIsDDLLogging = ID_FALSE;
-    smiTrans   * sSmiTrans     = NULL;
+    mmcTransObj *sTrans        = NULL;
+    smiTrans    *sSmiTrans     = NULL;
 
     /* BUG-42915 STOP과 FLUSH의 로그를 DDL Logging Level로 기록합니다. */
     if ( ( sStmtType == QCI_STMT_ALT_REPLICATION_STOP ) ||
@@ -167,7 +200,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
         case QCI_STMT_SET_SESSION_PROPERTY:
         case QCI_STMT_SET_SYSTEM_PROPERTY:
             IDE_TEST_RAISE(sStartupPhase < MMM_STARTUP_PROCESS, InvalidServerPhaseError);
-            sSmiTrans = sSession->getTrans(ID_TRUE);
+            sTrans = sSession->allocTrans();
+            sSmiTrans = mmcTrans::getSmiTrans(sTrans);
             break;
 
         case QCI_STMT_ALT_TABLESPACE_DISCARD:
@@ -175,7 +209,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
         case QCI_STMT_ALT_DATAFILE_ONOFF:
         case QCI_STMT_ALT_RENAME_DATAFILE:
             IDE_TEST_RAISE(sStartupPhase != MMM_STARTUP_CONTROL, InvalidServerPhaseError);
-            sSmiTrans = sSession->getTrans(ID_TRUE);
+            sTrans = sSession->allocTrans();
+            sSmiTrans = mmcTrans::getSmiTrans(sTrans);
             break;
 
         /* BUG-21230 */
@@ -185,7 +220,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
             IDE_TEST_RAISE(sStartupPhase < MMM_STARTUP_META, InvalidServerPhaseError);
             IDE_TEST_RAISE(sSession->getXaAssocState() !=
                            MMD_XA_ASSOC_STATE_NOTASSOCIATED, DCLNotAllowedError); 
-            sSmiTrans = sSession->getTrans(ID_TRUE);
+            sTrans = sSession->allocTrans();
+            sSmiTrans = mmcTrans::getSmiTrans(sTrans);
             break;
             
         case QCI_STMT_SAVEPOINT:
@@ -199,7 +235,8 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
         case QCI_STMT_ALT_REPLICATION_STOP :  /* BUG-42852 STOP과 FLUSH를 DCL로 변환합니다. */
         case QCI_STMT_ALT_REPLICATION_FLUSH : /* BUG-42852 STOP과 FLUSH를 DCL로 변환합니다. */
             IDE_TEST_RAISE(sStartupPhase < MMM_STARTUP_META, InvalidServerPhaseError);
-            sSmiTrans = sSession->getTrans(ID_TRUE);
+            sTrans = sSession->allocTrans();
+            sSmiTrans = mmcTrans::getSmiTrans(sTrans);
             break;
 
         case QCI_STMT_ALT_TABLESPACE_BACKUP:
@@ -208,10 +245,12 @@ IDE_RC mmcStatement::executeDCL(mmcStatement *aStmt, SLong * /*aAffectedRowCount
         case QCI_STMT_ALT_SYS_COMPACT_PLAN_CACHE:
         case QCI_STMT_ALT_SYS_RESET_PLAN_CACHE:
         case QCI_STMT_ALT_SYS_SHRINK_MEMPOOL:
+        case QCI_STMT_ALT_SYS_DUMP_CALLSTACKS:
         case QCI_STMT_CONTROL_DATABASE_LINKER:
         case QCI_STMT_CLOSE_DATABASE_LINK:
             IDE_TEST_RAISE(sStartupPhase != MMM_STARTUP_SERVICE, InvalidServerPhaseError);
-            sSmiTrans = sSession->getTrans(ID_TRUE);
+            sTrans = sSession->allocTrans();
+            sSmiTrans = mmcTrans::getSmiTrans(sTrans);
             break;
 
         case QCI_STMT_CONNECT:

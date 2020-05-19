@@ -29,7 +29,7 @@
 extern mtdModule mtdBit;
 
 // To Remove Warning
-const mtdBitType mtdBitNull = { 0, {'\0',} };
+const mtdBitType mtdBitNull = { 0, {'\0',} }; /* PROJ-2632 */
 
 static IDE_RC mtdInitialize( UInt aNo );
 

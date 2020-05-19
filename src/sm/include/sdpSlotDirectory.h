@@ -307,23 +307,24 @@ inline IDE_RC sdpSlotDirectory::getPagePtrFromSlotNum( UChar       *aSlotDirPtr,
                                                        scSlotNum    aSlotNum,
                                                        UChar      **aSlotPtr )
 {
-    sdpSlotDirHdr   *sSlotDirHdr = (sdpSlotDirHdr*)aSlotDirPtr;
-    UChar           *sPageHdrPtr = sdpSlotDirectory::getPageStartPtr( aSlotDirPtr );
-    scOffset         sOffset     =  SC_MAX_OFFSET;
+    sdpSlotDirHdr   * sSlotDirHdr = (sdpSlotDirHdr*)aSlotDirPtr;
+    UChar           * sPageHdrPtr = sdpSlotDirectory::getPageStartPtr( aSlotDirPtr );
+    scOffset          sOffset     =  SC_MAX_OFFSET;
 
     /* BUG-34499 Undo Page 재활용으로 인하여 Undo Page에서
      * 잘못된 Offset으로 읽어오는 문제에 대한 검증코드 */
     if ( aSlotNum >= sSlotDirHdr->mSlotEntryCount )
     {
         ideLog::log( IDE_SERVER_0,
-                     "Slot Num (%"ID_UINT32_FMT") >="
-                     " Entry Count (%"ID_UINT32_FMT")\n",
+                     "[ Invalid slot number ]\n"
+                     "  Slot Num (%"ID_UINT32_FMT") >="
+                     "  Entry Count (%"ID_UINT32_FMT")\n",
                      aSlotNum,
                      sSlotDirHdr->mSlotEntryCount );
 
         sdpSlotDirectory::tracePage( aSlotDirPtr );
 
-        IDE_ASSERT(0);
+        IDE_ERROR( 0 ); 
     }
 
    IDE_TEST( sdpSlotDirectory::getValue(aSlotDirPtr, aSlotNum, &sOffset)
@@ -335,20 +336,22 @@ inline IDE_RC sdpSlotDirectory::getPagePtrFromSlotNum( UChar       *aSlotDirPtr,
        ( sOffset >= SD_PAGE_SIZE ))
     {
         ideLog::log( IDE_SERVER_0,
-                     "Slot Num    : %"ID_UINT32_FMT"\n"
-                     "Entry Count : %"ID_UINT32_FMT"\n"
-                     "Offset      : %"ID_UINT32_FMT"\n",
+                     "[ Invalid slot offset ]\n"
+                     "  Slot Num    : %"ID_UINT32_FMT"\n"
+                     "  Entry Count : %"ID_UINT32_FMT"\n"
+                     "  Offset      : %"ID_UINT32_FMT"\n",
                      aSlotNum,
                      sSlotDirHdr->mSlotEntryCount,
                      sOffset );
 
         sdpSlotDirectory::tracePage( aSlotDirPtr );
 
-        IDE_ASSERT(0);
+        IDE_ERROR( 0 ); 
+
     }
 
-    *aSlotPtr = sdpSlotDirectory::getPagePtrFromOffset(aSlotDirPtr,
-                                                       sOffset );
+    *aSlotPtr = sdpSlotDirectory::getPagePtrFromOffset( aSlotDirPtr,
+                                                        sOffset );
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduLatchTypePosix.cpp 66837 2014-09-24 02:05:41Z returns $
+ * $Id: iduLatchTypePosix.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -188,7 +188,7 @@ IDE_RC iduLatchPosix::lockWrite(void* aStatSQL, void* aWeArgs)
     return IDE_FAILURE;
 }
 
-IDE_RC iduLatchPosix::unlock()
+IDE_RC iduLatchPosix::unlock( idBool *aIsUnlockedAll )
 {
     IDE_TEST_RAISE(mMutex.lock(NULL) != IDE_SUCCESS, mutex_lock_error);
 
@@ -207,6 +207,10 @@ IDE_RC iduLatchPosix::unlock()
 
         if (mMode == 0)
         {
+            if ( aIsUnlockedAll != NULL )
+            {
+                *aIsUnlockedAll = ID_TRUE;
+            }
             mWriteThreadID = 0;
         }
         else
@@ -227,6 +231,23 @@ IDE_RC iduLatchPosix::unlock()
     {
         IDE_SET_AND_DIE(ideSetErrorCode(idERR_FATAL_ThrMutexUnlock));
     }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC iduLatchPosix::unlockWriteAll()
+{
+    idBool sIsUnlockedAll = ID_FALSE;
+
+    do
+    {
+        IDE_TEST( unlock( &sIsUnlockedAll ) != IDE_SUCCESS );
+    }
+    while ( sIsUnlockedAll != ID_TRUE );
+
+    return IDE_SUCCESS;
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

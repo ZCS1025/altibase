@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaRefineDB.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smaRefineDB.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -580,11 +580,11 @@ IDE_RC smaRefineDB::initAllVolatileTables()
     SM_INIT_SCN( &sSCN );
 
     IDE_TEST(smxTransMgr::alloc((smxTrans**)&sTrans) != IDE_SUCCESS);
-    IDE_TEST(sTrans->begin(NULL,
-                           ( SMI_TRANSACTION_REPL_NONE |
-                             SMI_COMMIT_WRITE_NOWAIT ),
-                           SMX_NOT_REPL_TX_ID )
-             != IDE_SUCCESS);
+    IDE_ASSERT( sTrans->begin(NULL,
+                              ( SMI_TRANSACTION_REPL_NONE |
+                                SMI_COMMIT_WRITE_NOWAIT ),
+                              SMX_NOT_REPL_TX_ID )
+             == IDE_SUCCESS);
 
     sCurTablePtr = NULL;
 
@@ -694,11 +694,11 @@ IDE_RC smaRefineDB::compactTables( void )
 
 
     IDE_TEST( smxTransMgr::alloc( (smxTrans**)&sTrans ) != IDE_SUCCESS );
-    IDE_TEST( sTrans->begin( NULL,
-                             ( SMI_TRANSACTION_REPL_NONE |
-                               SMI_COMMIT_WRITE_NOWAIT ),
-                             SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTrans->begin( NULL,
+                               ( SMI_TRANSACTION_REPL_NONE |
+                                 SMI_COMMIT_WRITE_NOWAIT ),
+                               SMX_NOT_REPL_TX_ID )
+              == IDE_SUCCESS );
 
     sCatalogHeader = (smcTableHeader *)smmManager::m_catTableHeader;
 
@@ -772,7 +772,8 @@ IDE_RC smaRefineDB::compactTables( void )
 
     if(sTrans != NULL)
     {
-        sTrans->abort();
+        sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                       NULL      /* aLegacyTrans */ );
         smxTransMgr::freeTrans( sTrans);
     }
 

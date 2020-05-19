@@ -316,7 +316,8 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
         // update child
         //---------------------------------
 
-        if ( sCodePlan->updateStatement != NULL )
+        if ( ( sCodePlan->updateStatement != NULL ) ||
+             ( sCodePlan->deleteStatement != NULL ) )
         {
             for ( i = 0; i < aDepth + 1; i++ )
             {
@@ -345,7 +346,26 @@ qmnMRGE::printPlan( qcTemplate   * aTemplate,
         {
             // Nothing to do.
         }
+
+        //---------------------------------
+        // delete child
+        //---------------------------------
     
+        sPlan = aPlan->children[QMO_MERGE_DELETE_IDX].childPlan;
+        
+        if ( sPlan != NULL )
+        {
+            IDE_TEST( sPlan->printPlan( aTemplate,
+                                        sPlan,
+                                        aDepth + 1,
+                                        aString,
+                                        aMode ) != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
         //---------------------------------
         // insert child
         //---------------------------------
@@ -478,6 +498,19 @@ qmnMRGE::firstInit( qcTemplate * aTemplate,
         // Nothing to do.
     }
 
+    // delete statement를 변경시키므로 복사해서 사용한다.
+    if ( aCodePlan->deleteStatement != NULL )
+    {
+        idlOS::memcpy( (void*) & aDataPlan->deleteStatement,
+                       (void*) aCodePlan->deleteStatement,
+                       ID_SIZEOF(qcStatement) );
+        qmx::setSubStatement( aTemplate->stmt, & aDataPlan->deleteStatement );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     // insert statement를 변경시키므로 복사해서 사용한다.
     if ( aCodePlan->insertStatement != NULL )
     {
@@ -603,7 +636,8 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
 
     iduMemoryStatus   sMemoryStatus;
     UInt              sStatus = 0;
-
+    idBool            sInsertFlag = ID_FALSE;
+    
     // reset merge count
     sDataPlan->mergedCount = 0;
 
@@ -613,8 +647,7 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
 
     IDE_TEST( readSource( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
 
-    IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sMemoryStatus )
-              != IDE_SUCCESS );
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sMemoryStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     sStatus = 1;
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -636,6 +669,16 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
                 IDE_TEST( updateTarget( aTemplate, aPlan, &sNumRows ) != IDE_SUCCESS );
 
                 sDataPlan->mergedCount = sNumRows;
+
+                if ( ( sCodePlan->deleteStatement != NULL ) &&
+                     ( sNumRows > 0 ) )
+                {
+                    IDE_TEST( deleteTarget( aTemplate, aPlan ) != IDE_SUCCESS );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
@@ -649,9 +692,26 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
             //-----------------------------------
             if ( sCodePlan->insertStatement != NULL )
             {
-                IDE_TEST( insertTarget( aTemplate, aPlan ) != IDE_SUCCESS );
+                if ( sCodePlan->whereForInsert != NULL )
+                {
+                    IDE_TEST( checkWhereForInsert( aTemplate, aPlan, &sInsertFlag )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    sInsertFlag = ID_TRUE;
+                }
 
-                sDataPlan->mergedCount = 1;
+                if ( sInsertFlag == ID_TRUE )
+                {
+                    IDE_TEST( insertTarget( aTemplate, aPlan ) != IDE_SUCCESS );
+
+                    sDataPlan->mergedCount = 1;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
@@ -682,8 +742,10 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
     }
 
     sStatus = 0;
-    IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sMemoryStatus )
-              != IDE_SUCCESS );
+    /* BUG-46229 */
+    aTemplate->stmt = & sDataPlan->selectSourceStatement;
+
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sMemoryStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
     //-----------------------------------
     // Restore Original Statement
@@ -693,11 +755,21 @@ qmnMRGE::doItFirst( qcTemplate * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnMRGE::doItFirst"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     switch ( sStatus )
     {
         case 1:
+            /* BUG-46229 */
+            aTemplate->stmt = & sDataPlan->selectSourceStatement;
+
             (void) aTemplate->stmt->qmxMem->setStatus( &sMemoryStatus );
             break;
         default:
@@ -739,7 +811,8 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
 
     iduMemoryStatus   sMemoryStatus;
     UInt              sStatus = 0;
-
+    idBool            sInsertFlag = ID_FALSE;
+    
     // reset merge count
     sDataPlan->mergedCount = 0;
 
@@ -748,9 +821,8 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
     //-----------------------------------
 
     IDE_TEST( readSource( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
-
-    IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sMemoryStatus )
-              != IDE_SUCCESS );
+    
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sMemoryStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     sStatus = 1;
 
     //-----------------------------------
@@ -788,6 +860,16 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
                 IDE_TEST( updateTarget( aTemplate, aPlan, &sNumRows ) != IDE_SUCCESS );
 
                 sDataPlan->mergedCount = sNumRows;
+
+                if ( ( sCodePlan->deleteStatement != NULL ) &&
+                     ( sNumRows > 0 ) )
+                {
+                    IDE_TEST( deleteTarget( aTemplate, aPlan ) != IDE_SUCCESS );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
@@ -801,9 +883,26 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
             //-----------------------------------
             if ( sCodePlan->insertStatement != NULL )
             {
-                IDE_TEST( insertTarget( aTemplate, aPlan ) != IDE_SUCCESS );
+                if ( sCodePlan->whereForInsert != NULL )
+                {
+                    IDE_TEST( checkWhereForInsert( aTemplate, aPlan, &sInsertFlag )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    sInsertFlag = ID_TRUE;
+                }
 
-                sDataPlan->mergedCount = 1;
+                if ( sInsertFlag == ID_TRUE )
+                {
+                    IDE_TEST( insertTarget( aTemplate, aPlan ) != IDE_SUCCESS );
+
+                    sDataPlan->mergedCount = 1;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
@@ -819,8 +918,11 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
     }
 
     sStatus = 0;
-    IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sMemoryStatus )
-              != IDE_SUCCESS );
+
+    /* BUG-46229 */
+    aTemplate->stmt = & sDataPlan->selectSourceStatement;
+
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sMemoryStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
     //-----------------------------------
     // Restore Original Statement
@@ -830,11 +932,21 @@ qmnMRGE::doItNext( qcTemplate * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnMRGE::doItNext"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     switch ( sStatus )
     {
         case 1:
+            /* BUG-46229 */
+            aTemplate->stmt = & sDataPlan->selectSourceStatement;
+
             (void) aTemplate->stmt->qmxMem->setStatus( &sMemoryStatus );
             break;
         default:
@@ -1203,6 +1315,117 @@ qmnMRGE::updateTarget( qcTemplate * aTemplate,
 }
 
 IDE_RC
+qmnMRGE::deleteTarget( qcTemplate * aTemplate,
+                       qmnPlan    * aPlan )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    delete target
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+#define IDE_FN "qmnMRGE::deleteTarget"
+    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
+    
+    //qmncMRGE * sCodePlan = (qmncMRGE*) aPlan;
+    qmndMRGE * sDataPlan =
+        (qmndMRGE*) (aTemplate->tmplate.data + aPlan->offset);
+
+    qmnPlan          * sPlan;
+    qmcRowFlag         sFlag = QMC_ROW_INITIALIZE;
+    vSLong             sNumRows = 0;
+    UInt               sStatus = 0;
+
+    //-----------------------------------
+    // 기본 정보 설정
+    //-----------------------------------
+    
+    // delete plan
+    sPlan = aPlan->children[QMO_MERGE_DELETE_IDX].childPlan;
+
+    aTemplate->stmt = & sDataPlan->deleteStatement;
+
+    //-----------------------------------
+    // DELETE를 위한 plan tree 초기화
+    //-----------------------------------
+
+    IDE_TEST( qmnDETE::init( aTemplate, sPlan ) != IDE_SUCCESS );
+    sStatus = 3;
+
+    //------------------------------------------
+    // DELETE를 수행
+    //------------------------------------------
+
+    do
+    {
+        // 비정상 종료 검사
+        IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
+                  != IDE_SUCCESS );
+    
+        sNumRows++;
+        
+        IDE_TEST( qmnDETE::doIt( aTemplate, sPlan, &sFlag ) != IDE_SUCCESS );
+
+    } while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
+
+    sNumRows--;
+    
+    //-----------------------------------
+    // close cursor
+    //-----------------------------------
+
+    sStatus = 2;
+    IDE_TEST( qmnDETE::closeCursor( aTemplate, sPlan ) != IDE_SUCCESS );
+    
+    sStatus = 1;
+    IDE_TEST( aTemplate->cursorMgr->closeAllCursor()
+              != IDE_SUCCESS );
+    sStatus = 0;
+    IDE_TEST( qmcTempTableMgr::dropAllTempTable( aTemplate->tempTableMgr )
+              != IDE_SUCCESS );
+
+    //------------------------------------------
+    // Foreign Key Reference 검사
+    //------------------------------------------
+
+    // BUG-28049
+    if ( sNumRows > 0 )
+    {
+        // Child Table이 참조하고 있는 지를 검사
+        IDE_TEST( qmnDETE::checkDeleteRef( aTemplate, sPlan )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sStatus )
+    {
+        case 3:
+            (void) qmnDETE::closeCursor( aTemplate, sPlan );
+        case 2:
+            (void) aTemplate->cursorMgr->closeAllCursor();
+        case 1:
+            (void) qmcTempTableMgr::dropAllTempTable( aTemplate->tempTableMgr );
+            break;
+        default:
+            break;
+    }
+
+    return IDE_FAILURE;
+
+#undef IDE_FN
+}
+
+IDE_RC
 qmnMRGE::insertTarget( qcTemplate * aTemplate,
                        qmnPlan    * aPlan )
 {
@@ -1292,6 +1515,50 @@ qmnMRGE::insertTarget( qcTemplate * aTemplate,
         default:
             break;
     }
+
+    return IDE_FAILURE;
+
+#undef IDE_FN
+}
+
+IDE_RC
+qmnMRGE::checkWhereForInsert( qcTemplate * aTemplate,
+                              qmnPlan    * aPlan,
+                              idBool     * aFlag )
+{
+/***********************************************************************
+ *
+ * Description : 
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+#define IDE_FN "qmnMRGE::checkWhereForInsert"
+    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
+
+    qmncMRGE * sCodePlan = (qmncMRGE*) aPlan;
+    qmndMRGE * sDataPlan =
+        (qmndMRGE*) (aTemplate->tmplate.data + aPlan->offset);
+    
+    //-----------------------------------
+    // 기본 정보 설정
+    //-----------------------------------
+    
+    aTemplate->stmt = & sDataPlan->selectSourceStatement;
+
+    //-----------------------------------
+    // judge
+    //-----------------------------------
+    
+    IDE_TEST( qtc::judge( aFlag,
+                          sCodePlan->whereForInsert,
+                          aTemplate )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 
@@ -1493,7 +1760,7 @@ IDE_RC qmnMRGE::setBindParam( qcTemplate * aTemplate,
  * Implementation : LOB Column의 Bind 정보는 Merge Statemant인 aStatement->pBindParam 에 저장된다.
  *                  Merge 구문은 Statemant 를 SELECT, ON, UPDATE, INSERT, INSERT 순으로 변경하는데,
  *                  최상위에 있는 Merge 의 pBindParam 을 전달하지 않는다. 따라서 LOB Bind 정보를
- *                  검색할 때에, FATAL 이 발생하므로, pBindParam 정보를 아래로 전달해야 한다.
+ *                  검색할 때에, FATAL 이 발생하므로, pBindParam 정보를 아래로 전달해야 한다. 
  *
  ***********************************************************************/
 
@@ -1528,8 +1795,6 @@ IDE_RC qmnMRGE::setBindParam( qcTemplate * aTemplate,
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }

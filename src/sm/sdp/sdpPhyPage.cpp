@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdpPhyPage.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpPhyPage.cpp 84847 2019-01-31 05:18:28Z jiwon.kim $
  *
  * Description :
  *
@@ -1276,10 +1276,11 @@ idBool sdpPhyPage::isPageCorrupted(
     scSpaceID  aSpaceID,
     UChar     *aStartPtr )
 {
-
     idBool isCorrupted = ID_TRUE;
     sdpPhyPageHdr *sPageHdr;
     sdpPageFooter *sPageFooter;
+    smLSN          sHeadLSN;
+    smLSN          sTailLSN;
 
     sPageHdr    = getHdr(aStartPtr);
     sPageFooter = (sdpPageFooter*)
@@ -1287,8 +1288,8 @@ idBool sdpPhyPage::isPageCorrupted(
 
     if ( smuProperty::getCheckSumMethod() == SDP_CHECK_LSN )
     {
-        smLSN sHeadLSN = getPageLSN((UChar*)sPageHdr);
-        smLSN sTailLSN = sPageFooter->mPageLSN;
+        sHeadLSN = getPageLSN((UChar*)sPageHdr);
+        sTailLSN = sPageFooter->mPageLSN;
 
         isCorrupted = smrCompareLSN::isEQ( &sHeadLSN, &sTailLSN ) ?
             ID_FALSE : ID_TRUE;
@@ -1297,13 +1298,35 @@ idBool sdpPhyPage::isPageCorrupted(
     {
         if ( smuProperty::getCheckSumMethod() == SDP_CHECK_CHECKSUM )
         {
-            isCorrupted =
-                ( getCheckSum(sPageHdr) != calcCheckSum(sPageHdr) ?
-                  ID_TRUE : ID_FALSE );
+            // BUG-45598: checksum 값이 초기상태 라면, 이번엔  LSN 으로 검사
+            if( getCheckSum(sPageHdr) == SDP_CHECKSUM_INIT_VAL )
+            {
+                sHeadLSN = getPageLSN((UChar*)sPageHdr);
+                sTailLSN = sPageFooter->mPageLSN;
+
+                isCorrupted = smrCompareLSN::isEQ( &sHeadLSN, &sTailLSN ) ?
+                    ID_FALSE : ID_TRUE;
+            }
+            else
+            {
+                isCorrupted =
+                    ( getCheckSum(sPageHdr) != calcCheckSum(sPageHdr) ?
+                      ID_TRUE : ID_FALSE );
+            }            
         }
         else
         {
             IDE_DASSERT( ID_FALSE );
+        }
+    }
+
+    // BUG-45598: sdpPhyPage::isPageCorrupted 에서 inconsistent 설정
+    if ( ( isCorrupted == ID_TRUE ) )
+    {
+        if ( ( smrRecoveryMgr::isRestart() == ID_FALSE
+               &&( isConsistentPage( aStartPtr ) == ID_TRUE ) ) )
+        {
+            setPageInconsistency( sPageHdr );
         }
     }
 
@@ -1508,6 +1531,45 @@ IDE_RC sdpPhyPage::setPageInconsistency( scSpaceID       aSpaceID,
     return IDE_FAILURE;
 }
 
+// BUG-45598: 운영중 페이지 corrupt 발생할 경우 체크
+IDE_RC sdpPhyPage::setPageInconsistency( sdpPhyPageHdr * aPagePtr )
+{
+    sdrMtx          sMtx;
+    idBool          sIsMtxBegin = ID_FALSE;
+    UChar           sIsConsistent = SDP_PAGE_INCONSISTENT;
+
+    IDE_TEST( sdrMiniTrans::begin( NULL, // idvSQL
+                                   &sMtx,
+                                   NULL, // Trans
+                                   SDR_MTX_LOGGING,
+                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                   SM_DLOG_ATTR_DEFAULT | SM_DLOG_ATTR_DUMMY )
+              != IDE_SUCCESS );
+    sIsMtxBegin = ID_TRUE;
+
+    /* 잘못된 페이지에 대한 정보를 기록함 */
+    sdpPhyPage::tracePage( IDE_DUMP_0,
+                           (UChar*)aPagePtr,
+                           "DRDB PAGE:");
+    IDE_TEST( sdpPhyPage::setPageConsistency( &sMtx,
+                                              aPagePtr,
+                                              &sIsConsistent )
+              != IDE_SUCCESS );
+
+    sIsMtxBegin = ID_FALSE;
+    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsMtxBegin == ID_TRUE )
+    {
+        (void)sdrMiniTrans::rollback( &sMtx );
+    }
+    return IDE_FAILURE;
+}
+
 /***********************************************************************
  *
  * Description :
@@ -1612,6 +1674,7 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
                      "ParentInfo.mIdxInParent   : %"ID_UINT32_FMT"\n"
                      "Prev Page ID, Nex Page ID : %"ID_UINT32_FMT", %"ID_UINT32_FMT"\n"
                      "TableOID                  : %"ID_vULONG_FMT"\n"
+                     "IndexID                   : %"ID_UINT32_FMT"\n"
                      "Seq No                    : %"ID_UINT64_FMT"\n"
                      "----------- Physical Page End ----------\n",
                      (UChar*)sPageHdr,
@@ -1637,6 +1700,7 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
                      sPageHdr->mListNode.mPrev,
                      sPageHdr->mListNode.mNext,
                      sPageHdr->mTableOID,
+                     sPageHdr->mIndexID,
                      sPageHdr->mSeqNo );
 
     return IDE_SUCCESS;
@@ -1685,10 +1749,10 @@ IDE_RC sdpPhyPage::tracePageInternal( UInt           aChkFlag,
                                       const SChar  * aTitle,
                                       va_list        ap )
 {
-    SChar   * sDumpBuf = NULL;
+    SChar         * sDumpBuf = NULL;
     const UChar   * sPage;
-    UInt      sOffset;
-    UInt      sState = 0;
+    UInt            sOffset;
+    UInt            sState = 0;
 
     ideLogEntry sLog( aChkFlag,
                       aModule,

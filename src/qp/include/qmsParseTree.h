@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmsParseTree.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmsParseTree.h 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_QMS_PARSE_TREE_H_
@@ -208,7 +208,8 @@ typedef enum qmsGroupByType
     // PROJ-2415 Grouping Sets Clause
     // QMS_GROUPBY_NULL Type은 Grouping Sets Transform시 사용 되며
     // Validation 단계가 지나면 QMS_GROUPBY_NULL Type은 존재하지 않는다.
-    QMS_GROUPBY_NULL
+    QMS_GROUPBY_NULL,
+    QMS_GROUPBY_WITH_ROLLUP
 } qmsGroupByType;
 
 // for detecting current parent's validation phase.
@@ -353,6 +354,14 @@ typedef enum qmsDelayHint
     QMS_DELAY_FALSE
 } qmsDelayHint;
 
+/* PROJ-2632 */
+typedef enum qmsSerialFilterHint
+{
+    QMS_SERIAL_FILTER_NONE,
+    QMS_SERIAL_FILTER_TRUE,
+    QMS_SERIAL_FILTER_FALSE
+} qmsSerialFilter;
+
 // HINTS 전체를 위한 자료 구조
 // TODO : tableAccess Hint가 존재하면 qmsTableRef::tableAccessHints에 연결,
 //         qmsHints::viewOptType을 qmsTableRef::viewOptType에 설정
@@ -488,6 +497,11 @@ typedef struct qmsHints
     // PROJ-2673 insert before/after trigger를 동작시키지 않는다. (비공개)
     idBool                         disableInsTrigger;
 
+    // BUG-46137
+    idBool                         planCacheKeep;
+
+    /* PROJ-2632 */
+    qmsSerialFilterHint            mSerialFilter;
 } qmsHints;
 
 #define QCP_SET_INIT_HINTS(_dst_)                                           \
@@ -529,6 +543,8 @@ typedef struct qmsHints
     (_dst_)->topResultCache        = ID_FALSE;                              \
     (_dst_)->delayedExec           = QMS_DELAY_NONE;                        \
     (_dst_)->disableInsTrigger     = ID_FALSE;                              \
+    (_dst_)->planCacheKeep         = ID_FALSE;                              \
+    (_dst_)->mSerialFilter         = QMS_SERIAL_FILTER_NONE;                \
 }
 
 #define QCP_SET_INIT_JOIN_METHOD_HINTS(_dst_)                 \
@@ -909,7 +925,7 @@ public:
 
     static inline idBool hasHostBind( qmsLimitValue aLimitValue )
     {
-        return (aLimitValue.constant == QMS_LIMIT_UNKNOWN) ? ID_TRUE : ID_FALSE;
+        return (aLimitValue.hostBindNode == NULL ) ? ID_FALSE : ID_TRUE;
     }
 
     static inline qmsLimitValue makeLimitValue( ULong aPrimitiveValue )
@@ -1534,9 +1550,14 @@ typedef struct qmsUniqueInfo
 typedef struct qmsPreservedInfo
 {
     UInt             tableCount;
-    qmsTableRef    * tableRef[QC_MAX_REF_TABLE_CNT];    
-    idBool           isKeyPreserved[QC_MAX_REF_TABLE_CNT];
-    
+    qmsTableRef    * tableRef[QC_MAX_REF_TABLE_CNT];
+    qmsUniqueInfo  * uniqueInfo[QC_MAX_REF_TABLE_CNT];
+    UShort         * tableMap[QC_MAX_REF_TABLE_CNT];
+    idBool           result[QC_MAX_REF_TABLE_CNT];
+    idBool           isKeyPreserved[QC_MAX_REF_TABLE_CNT]; // BUG-39399
+    idBool           stopFlag;
+    idBool           useKeyPreservedTable;
+    idBool           mIsInValid; /* BUG-46124 */
 } qmsPreservedInfo;
 
 /***********************************************************************

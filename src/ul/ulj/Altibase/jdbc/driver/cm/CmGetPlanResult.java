@@ -26,7 +26,7 @@ public class CmGetPlanResult extends CmStatementIdResult
     {
     }
 
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

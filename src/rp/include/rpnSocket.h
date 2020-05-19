@@ -55,5 +55,6 @@ IDE_RC rpnSocketGetOpt( rpnSocket   * aSocket,
                         void        * aOptionValue,
                         ULong       * aOptionLength );
 
+idBool rpnSocketIsConnecting( UInt  aErrorNumber );
 #endif
 

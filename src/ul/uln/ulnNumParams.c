@@ -52,19 +52,10 @@ SQLRETURN ulnNumParams(ulnStmt *aStmt, acp_sint16_t *aParamCountPtr)
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
 
-    /* PROJ-1891 Deferred Prepare 
-     * If the Defer Prepares is enabled, send the deferred prepare first */
-    if ( aStmt->mAttrDeferredPrepare == ULN_CONN_DEFERRED_PREPARE_ON )
-    {   
-        ACI_TEST( ulnFinalizeProtocolContext(&sFnContext,
-                                             &(aStmt->mParentDbc->mPtContext))
-                  != ACI_SUCCESS );
-
-        ulnUpdateDeferredState(&sFnContext, aStmt);
-    }
-    else
+    /* PROJ-1891, BUG-46011 If deferred prepare is exists, process it first */
+    if (ulnStmtIsSetDeferredQstr(aStmt) == ACP_TRUE)
     {
-        /* Do nothing */
+        ACI_TEST( ulnPrepareDeferComplete(&sFnContext, ACP_TRUE) );
     }
 
     ACI_TEST(ulnNumParamsCheckArgs(&sFnContext, aParamCountPtr) != ACI_SUCCESS);

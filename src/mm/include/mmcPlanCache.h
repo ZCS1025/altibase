@@ -56,9 +56,9 @@ public:
     static IDE_RC freePCB(mmcPCB* aPCB);
     static IDE_RC freePCO(mmcParentPCO* aPCO);
     static IDE_RC freePCO(mmcChildPCO* aPCO);
-    static inline idBool isEnable(mmcSession *aSession,
-                                  idBool      aIsCalledByPSM);
-    
+    static inline idBool isEnable( mmcSession   * aSession,
+                                   qciStatement * aQciStmt );
+
     static void  searchSQLText(mmcStatement  *aStatement,
                                mmcParentPCO  **aFoundedParentPCO,
                                vULong        *aHashKeyVal,
@@ -143,6 +143,9 @@ public:
     static IDE_RC movePCBOfChildToUnUsedLst(idvSQL *aStatistics,
                                             mmcPCB *aUnUsedPCB);
 
+    /* BUG-46158 */
+    static IDE_RC planCacheKeep(void *aMmStatement, SChar *aSQLTextID, idBool aIsKeep);
+
 private:
     /* fix BUG-31232  Reducing x-latch duration of parent PCO
        while perform soft prepare .
@@ -173,11 +176,11 @@ private:
 };
 
 // BUG-23098 plan이 보였다 안보였다 합니다.
-inline idBool mmcPlanCache::isEnable(mmcSession *aSession,
-                                     idBool      aIsCalledByPSM)
+inline idBool mmcPlanCache::isEnable( mmcSession   * aSession,
+                                      qciStatement * aQciStmt )
 {
     /* BUG-36205 Plan Cache On/Off property for PSM */
-    if( aIsCalledByPSM == ID_TRUE )
+    if ( qci::isCalledByPSM( aQciStmt ) == ID_TRUE )
     {
         IDE_TEST(mmuProperty::getSqlPlanCacheUseInPSM() != 1);
     }
@@ -188,9 +191,15 @@ inline idBool mmcPlanCache::isEnable(mmcSession *aSession,
 
     IDE_TEST(mmm::getCurrentPhase() != MMM_STARTUP_SERVICE);
 
-    IDE_TEST(mmuProperty::getSqlPlanCacheSize() <=  0);
+    IDE_TEST(mmuProperty::getSqlPlanCacheSize() <= 0);
 
     IDE_TEST(aSession->getExplainPlan() == QCI_EXPLAIN_PLAN_ONLY);
+
+    /* BUG-45899 */
+    IDE_TEST( sdi::isAnalysisInfoPrintable( &aQciStmt->statement ) == ID_TRUE );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    IDE_TEST( sdi::isRebuildCoordinator( &aQciStmt->statement ) == ID_TRUE );
 
     return ID_TRUE;
 

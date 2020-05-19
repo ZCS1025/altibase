@@ -133,7 +133,8 @@ static ACI_RC ulnDisconnReceiveDisconnectRes(ulnFnContext *aFnContext, ulnPtCont
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * 타임아웃 세팅
@@ -153,6 +154,11 @@ static ACI_RC ulnDisconnReceiveDisconnectRes(ulnFnContext *aFnContext, ulnPtCont
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;

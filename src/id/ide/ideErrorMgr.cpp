@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: ideErrorMgr.cpp 81730 2017-11-24 02:21:51Z reznoa $
+ * $Id: ideErrorMgr.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 /***********************************************************************
@@ -213,6 +213,15 @@ SInt ideFindErrorAction(UInt Action)
     return IDE_FAILURE;
 }
 
+IDE_RC ideFindErrorAction( UInt aErrorCode, UInt Action )
+{
+    if ( ( aErrorCode & E_ACTION_MASK ) == Action )
+    {
+        return IDE_SUCCESS;
+    }
+    return IDE_FAILURE;
+}
+
 SInt   ideIsAbort()
 {
     return ideFindErrorAction(E_ACTION_ABORT);
@@ -238,6 +247,15 @@ SInt   ideIsRebuild()
     return ideFindErrorAction(E_ACTION_REBUILD);
 }
 
+IDE_RC ideIsRetry( UInt aErrorCode )
+{
+    return ideFindErrorAction( aErrorCode, E_ACTION_RETRY );
+}
+
+IDE_RC ideIsRebuild( UInt aErrorCode )
+{
+    return ideFindErrorAction( aErrorCode, E_ACTION_REBUILD );
+}
 
 /* ----------------------------------------------------------------------
  *

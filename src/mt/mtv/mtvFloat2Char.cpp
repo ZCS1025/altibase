@@ -33,6 +33,8 @@ extern mtvModule mtvFloat2Char;
 extern mtdModule mtdChar;
 extern mtdModule mtdFloat;
 
+extern mtxModule mtxFromFloatTo; /* PROJ-2632 */
+
 static IDE_RC mtvEstimate( mtcNode*     aNode,
                            mtcTemplate* aTemplate,
                            mtcStack*    aStack,
@@ -59,6 +61,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Float2Char,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -72,6 +75,10 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns+aNode->column;
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxFromFloatTo.mGetExecute( mtdChar.id, mtdChar.id );
 
     //IDE_TEST( mtdChar.estimate( aStack[0].column, 1, 45, 0 )
     //          != IDE_SUCCESS );

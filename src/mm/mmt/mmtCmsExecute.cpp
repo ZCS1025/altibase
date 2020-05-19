@@ -36,7 +36,9 @@ typedef struct mmtCmsExecuteContext
     UInt                mCursor; // bug-27621: pointer to UInt
 } mmtCmsExecuteContext;
 
-static IDE_RC answerExecuteResult(mmtCmsExecuteContext *aExecuteContext)
+static IDE_RC answerExecuteResult(mmtCmsExecuteContext *aExecuteContext,
+                                  mmcSession           *aSession,
+                                  mmtServiceThread     *aThread)
 {
     cmiProtocolContext    *sCtx   = aExecuteContext->mProtocolContext;
     mmcStatement          *sStmt  = aExecuteContext->mStatement;
@@ -48,11 +50,66 @@ static IDE_RC answerExecuteResult(mmtCmsExecuteContext *aExecuteContext)
     ULong              sFetchedRowCount  = (ULong)aExecuteContext->mFetchedRowCount;
     cmiWriteCheckState sWriteCheckState  = CMI_WRITE_CHECK_DEACTIVATED;
 
+    SChar              sProtocolStr[128] = { '\0', };
+    ULong              sSMNForSession    = aSession->getShardMetaNumber();
+    ULong              sSMNForDataNode   = ID_ULONG(0);
+    const SChar      * sDisconnectStr[2] = { "Y", "N" };
+    UInt               sNeedToDisconnect = 0;
+
     /* BUG-44572 */
     switch (sCtx->mProtocol.mOpID)
     {
         case CMP_OP_DB_ExecuteV2:
         case CMP_OP_DB_ParamDataInListV2:
+            /* BUG-45967 Data Node의 Shard Session 정리 */
+            if ( ( aSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
+                 ( sSMNForSession != ID_ULONG(0) ) &&
+                 /* Autocommit에서 Commit/Rollback하는 Type인지 확인한다.
+                  * 그러나, DDL은 항상 Local로 수행하므로 제외한다.
+                  */
+                 ( ( qciMisc::isStmtDML( sStmt->getStmtType() ) == ID_TRUE ) ||
+                   ( qciMisc::isStmtSP( sStmt->getStmtType() ) == ID_TRUE ) ) )
+            {
+                if ( aSession->isShardData() == ID_FALSE )
+                {
+                    if ( sdi::isShardEnable() == ID_TRUE )
+                    {
+                        sSMNForDataNode = sdi::getSMNForDataNode();
+                        if ( sSMNForSession < sSMNForDataNode )
+                        {
+                            sNeedToDisconnect = ( sdi::getNeedToDisconnect( aSession->getQciSession() ) == ID_TRUE )
+                                              ? 0 : 1;
+                            IDE_RAISE( ERR_INVALID_SMN );
+                        }
+                        else
+                        {
+                            /* Nothing to do */
+                        }
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+                else
+                {
+                    sSMNForDataNode = sdi::getSMNForDataNode();
+                    if ( sSMNForSession < sSMNForDataNode )
+                    {
+                        sNeedToDisconnect = SDU_SHARD_ALLOW_OLD_SMN;
+                        IDE_RAISE( ERR_INVALID_SMN );
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
             sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
             CMI_WRITE_CHECK_WITH_IPCDA(sCtx, 27, 27 + 1);
             sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
@@ -95,6 +152,34 @@ static IDE_RC answerExecuteResult(mmtCmsExecuteContext *aExecuteContext)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INVALID_SMN )
+    {
+        idlOS::snprintf( sProtocolStr,
+                         ID_SIZEOF( sProtocolStr ),
+                         "ExecuteV2Result "
+                         "%"ID_UINT32_FMT" "
+                         "%"ID_UINT32_FMT" "
+                         "%"ID_UINT32_FMT" "
+                         "%"ID_UINT64_FMT" "
+                         "%"ID_UINT64_FMT" "
+                         "%"ID_UINT32_FMT" ",
+                         sStatementID,
+                         sRowNumber,
+                         (UInt)sResultSetCount,
+                         sAffectedRowCount,
+                         sFetchedRowCount,
+                         (UInt)( sStmt->isSimpleQuerySelectExecuted() == ID_TRUE ) ? 1 : 0 );
+
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_WITH_INVALID_SMN,
+                                  sSMNForSession,
+                                  sSMNForDataNode,
+                                  sDisconnectStr[sNeedToDisconnect], /* BUG-46100 Session SMN Update */
+                                  sProtocolStr ) );
+
+        return aThread->answerErrorResult( sCtx,
+                                           sCtx->mProtocol.mOpID,
+                                           0 );
+    }
     IDE_EXCEPTION_END;
 
     /* BUG-44124 ipcda 모드 사용 중 hang - iloader 컬럼이 많은 테이블 */
@@ -126,7 +211,7 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
     UChar                 sLen8;
     UChar                 sTemp;
 
-    smiTrans             *sTrans = NULL;
+    mmcTransObj          *sTrans = NULL;
     smTID                 sTransID;
     idvProfBind           sProfBind;
     cmiWriteCheckState    sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
@@ -145,8 +230,8 @@ static IDE_RC answerParamDataOutList(mmtCmsExecuteContext *aExecuteContext,
 
     if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_BIND_FLAG) == IDV_PROF_TYPE_BIND_FLAG)
     {
-        sTrans = sSession->getTrans(sStatement, ID_FALSE);
-        sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
+        sTrans = sSession->getTransPtr(sStatement);
+        sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
     }
 
     /* PROJ-2160 CM 타입제거
@@ -432,7 +517,8 @@ static IDE_RC getBindParamListCallback(idvSQL       * /* aStatistics */,
             idlOS::memcpy(sDest, sData, sColumnSize);
             break;
         case MTD_BINARY_ID :
-            sColumnSize = ((mtdBinaryType*) sData)->mLength + ID_SIZEOF(SDouble);
+            /* BUG-45962 */
+            sColumnSize = ((mtdBinaryType*) sData)->mLength + ID_SIZEOF(ULong);
 
             idlOS::memcpy(sDest, sData, sColumnSize);
             break;
@@ -1101,7 +1187,7 @@ IDE_RC mmtServiceThread::execute(cmiProtocolContext *aProtocolContext,
 
     if( (aDoAnswer == ID_TRUE) && (sExecuteContext.mSuspended != ID_TRUE) )
     {
-        IDE_TEST(answerExecuteResult(&sExecuteContext) != IDE_SUCCESS);
+        IDE_TEST(answerExecuteResult(&sExecuteContext, aStatement->getSession(), this) != IDE_SUCCESS);
     }
 
     *aSuspended = sExecuteContext.mSuspended;
@@ -1147,10 +1233,13 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
     UInt           sResultSetCount    = 0;
     UInt           sOldResultSetHWM   = 0;
     mmcSession   * sSession           = aStatement->getSession();
-    smiTrans     * sSmiTrans          = NULL;
-    smSCN          sSCN;
-    smiStatement * sRootStmt          = NULL;
-    UInt           sState             = 0;
+    mmcTransObj  * sTrans             = NULL;
+    UInt           sIsTransBegin      = ID_FALSE;
+    smiStatement * sRootSmiStmt       = NULL;
+    idBool         sRetry             = ID_FALSE;
+    /* BUG-46804 */
+    idBool         sIsReplStmt        = ID_FALSE;
+    mmcTransObj  * sShareTrans        = NULL;
 
     sExecuteContext.mProtocolContext  = aProtocolContext;
     sExecuteContext.mStatement        = aStatement;
@@ -1162,8 +1251,15 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
 
     aStatement->setSimpleQuerySelectExecuted(ID_FALSE);
 
+    /* BUG-46625 IPCDA FATAL */
+    // BUG-36203 PSM Optimize
+    IDE_TEST( aStatement->changeStmtState() != IDE_SUCCESS );
+
     sQciStmt   = aStatement->getQciStmt();
 
+    /* BUG-46804 */
+    sIsReplStmt = qci::hasReplicationTable( sQciStmt );
+    
     /* PROJ-2616 */
     /* For SimpleQuery*/
     sShmResult = aProtocolContext->mSimpleQueryFetchIPCDAWriteBlock.mData;
@@ -1174,26 +1270,121 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
 
     if (sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT)
     {
-        sSmiTrans = aStatement->getTrans(ID_TRUE);
-        IDE_TEST(sSmiTrans == NULL);
-        /* BUG-45741 */
-        IDE_TEST(sSmiTrans->begin(&sRootStmt, sSession->getStatSQL(), 0) != IDE_SUCCESS);
+        sTrans = aStatement->allocTrans();
+        mmcTrans::begin(sTrans, sSession->getStatSQL(), 0, sSession);
+        sIsTransBegin = ID_TRUE;
     }
     else
     {
-        sSmiTrans = sSession->getTrans(ID_TRUE);
-        IDE_TEST(sSmiTrans == NULL);
+        sTrans = sSession->getTransPtr();
     }
-    sState = 1;
 
-    IDE_TEST_RAISE(qci::fastExecute( sSmiTrans,
-                                     sQciStmt,
-                                     aBindColInfo,
-                                     aBindBuffer,
-                                     sShmSize,
-                                     sShmResult,
-                                    &sRowCount )
-                   != IDE_SUCCESS, ExecuteFailAbort);
+    sShareTrans = aStatement->getShareTransForSmiStmtLock(sTrans);
+    if (sShareTrans != NULL)
+    {
+        aStatement->acquireShareTransSmiStmtLock(sShareTrans);
+    }
+
+    do
+    {
+        sRetry = ID_FALSE;
+        if ( qci::fastExecute( mmcTrans::getSmiTrans(sTrans),
+                               sQciStmt,
+                               aBindColInfo,
+                               aBindBuffer,
+                               sShmSize,
+                               sShmResult,
+                               &sRowCount )
+                  != IDE_SUCCESS )
+        {
+            /* PROJ-2705 Memory Parition Simple Query */
+            switch ( ideGetErrorCode() & E_ACTION_MASK )
+            {
+                case E_ACTION_REBUILD:
+                    /* BUG-46715 IPCDA Simple Query Stress Test FATAL */
+                    if (sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT)
+                    {
+                        IDE_TEST(mmcTrans::commit(sTrans, sSession) != IDE_SUCCESS);
+                        sIsTransBegin = ID_FALSE;
+                        mmcTrans::begin(sTrans, sSession->getStatSQL(), 0, sSession);
+                        sIsTransBegin = ID_TRUE;
+                    }
+
+                    sRootSmiStmt = mmcTrans::getSmiStatement(sTrans);
+                    /* BUG-46756 smiTrans의 smiStatement와 mmcStatement의 smiStatement가 서로 다른 메모리이므로,
+                     * 각각 smiStatement와 smiTrans를 셋팅해준다. */
+                    sRootSmiStmt->setTrans(mmcTrans::getSmiTrans(sTrans));
+                    aStatement->setSmiStmt(sRootSmiStmt);
+
+                    IDE_TEST( aStatement->rebuild() != IDE_SUCCESS );
+                    sRetry = ID_TRUE;
+                    break;
+                default:
+                    IDE_RAISE( ExecuteFailAbort );
+                    break;
+            }
+        }
+    } while ( sRetry == ID_TRUE );
+
+    /* BUG-46804 */
+    IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteSuccessCount, 1);
+    IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_SUCCESS_COUNT, 1);
+    switch (aStatement->getStmtType())
+    {
+        case QCI_STMT_INSERT:
+            if ( sIsReplStmt != ID_TRUE )
+            {
+                IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteInsertSuccessCount, 1);
+                IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_INSERT_SUCCESS_COUNT, 1);
+            }
+            else
+            {
+                IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteReplInsertSuccessCount, 1);
+                IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_REPL_INSERT_SUCCESS_COUNT, 1);
+            }
+            break;
+
+        case QCI_STMT_UPDATE:
+            if ( sIsReplStmt != ID_TRUE )
+            {
+                IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteUpdateSuccessCount, 1);
+                IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_UPDATE_SUCCESS_COUNT, 1);
+            }
+            else
+            {
+                IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteReplUpdateSuccessCount, 1);
+                IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_REPL_UPDATE_SUCCESS_COUNT, 1);
+            }
+            break;
+
+        case QCI_STMT_DELETE:
+            if ( sIsReplStmt != ID_TRUE )
+            {
+                IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteDeleteSuccessCount, 1);
+                IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_DELETE_SUCCESS_COUNT, 1);
+            }
+            else
+            {
+                IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteReplDeleteSuccessCount, 1);
+                IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_REPL_DELETE_SUCCESS_COUNT, 1);
+            }
+            break;
+
+        case QCI_STMT_SELECT:
+        case QCI_STMT_SELECT_FOR_FIXED_TABLE:
+            IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteSelectSuccessCount, 1);
+            IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_SELECT_SUCCESS_COUNT, 1);
+            break;
+
+        default:
+            break;
+    }
+
+    if (sShareTrans != NULL)
+    {
+        aStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
 
     sOldResultSetHWM = aStatement->getResultSetHWM();
     aStatement->setStmtState(MMC_STMT_STATE_EXECUTED);
@@ -1204,6 +1395,14 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
     aStatement->setResultSetCount(sResultSetCount);
     aStatement->setEnableResultSetCount(sResultSetCount);
     IDE_TEST_RAISE(aStatement->initializeResultSet(sResultSetCount) != IDE_SUCCESS, RestoreResultSetValues);
+
+    /* BUG-46804 NonSimplQuery의 경우  MMC_FETCH_FLAG_CLOSE가 아닌경우 IDV_STAT_INDEX_FETCH_FAILURE_COUNT가 증가한다
+     * ipcda simplqQuery의 경우 MMC_FETCH_FLAG_CLOSE만 셋팅되므로 IDV_STAT_INDEX_FETCH_FAILURE_COUNT 경우가 없다. */
+    if (sResultSetCount > 0)
+    {
+        IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mFetchSuccessCount, 1);
+        IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_FETCH_SUCCESS_COUNT, 1);
+    }
 
     if ((aStatement->getStmtType() == QCI_STMT_SELECT) ||
         (aStatement->getStmtType() == QCI_STMT_SELECT_FOR_UPDATE)) /* BUG-45257 */
@@ -1216,24 +1415,21 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
         sExecuteContext.mAffectedRowCount = sRowCount;
     }
 
-    sState = 0;
     if (sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT)
     {
-        (void)sSmiTrans->commit(&sSCN);
-        (void)mmcTrans::free(sSmiTrans);
-        aStatement->setTrans(NULL);
+        IDE_TEST(mmcTrans::commit(sTrans, sSession) != IDE_SUCCESS);
+        sIsTransBegin = ID_FALSE;
     }
-    else
-    {
-        /* do nothing. */
-    }
+    
     /*PROJ-2616*/
     /*To avoid cursor_close */
     aStatement->setStmtState(MMC_STMT_STATE_PREPARED);
 
+    aStatement->setExecuting(ID_FALSE);
+
     if( (aDoAnswer == ID_TRUE) && (sExecuteContext.mSuspended != ID_TRUE) )
     {
-        IDE_TEST(answerExecuteResult(&sExecuteContext) != IDE_SUCCESS);
+        IDE_TEST(answerExecuteResult(&sExecuteContext, sSession, this) != IDE_SUCCESS);
     }
 
     *aSuspended = sExecuteContext.mSuspended;
@@ -1256,7 +1452,9 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
 
     IDE_EXCEPTION(ExecuteFailAbort);
     {
-        /* No Action */
+        /* BUG-46804 */
+        IDV_SQL_ADD_DIRECT(aStatement->getStatistics(), mExecuteFailureCount, 1);
+        IDV_SESS_ADD_DIRECT(sSession->getStatistics(), IDV_STAT_INDEX_EXECUTE_FAILURE_COUNT, 1);
     }
     IDE_EXCEPTION( RestoreResultSetValues );
     {
@@ -1265,18 +1463,17 @@ IDE_RC mmtServiceThread::executeIPCDASimpleQuery(cmiProtocolContext *aProtocolCo
     }
     IDE_EXCEPTION_END;
 
-    if (sState == 1)
+    if (sShareTrans != NULL)
     {
-        if (sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT)
-        {
-            (void)sSmiTrans->commit(&sSCN);
-            (void)mmcTrans::free(sSmiTrans);
-            aStatement->setTrans(NULL);
-        }
-        else
-        {
-            /* do nothing. */
-        }
+        aStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
+
+    if (sIsTransBegin == ID_TRUE)
+    {
+        IDE_DASSERT(sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT);
+        IDE_DASSERT(sTrans->mSmiTrans.isBegin() == ID_TRUE);
+        (void)mmcTrans::rollback(sTrans, sSession, NULL);
     }
 
     aStatement->setExecuting(ID_FALSE);
@@ -1351,7 +1548,7 @@ IDE_RC mmtServiceThread::executeProtocol(cmiProtocolContext *aProtocolContext,
             sStatement->setRowNumber(sRowNumber);
 
             if ((cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
-                ((qci::isSimpleQuery(sStatement->getQciStmt()) == ID_TRUE)))
+                (sStatement->isSimpleQuery() == ID_TRUE) )
             {
                 IDE_TEST(sThread->executeIPCDASimpleQuery(aProtocolContext,
                                                           sStatement,
@@ -1381,7 +1578,7 @@ IDE_RC mmtServiceThread::executeProtocol(cmiProtocolContext *aProtocolContext,
             sStatement->setRowNumber(sRowNumber);
 
             if ((cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
-                ((qci::isSimpleQuery(sStatement->getQciStmt()) == ID_TRUE)))
+                (sStatement->isSimpleQuery() == ID_TRUE))
             {
                 IDE_TEST(sThread->executeIPCDASimpleQuery(aProtocolContext,
                                                           sStatement,
@@ -1731,7 +1928,7 @@ IDE_RC mmtServiceThread::atomicEnd(mmcStatement * aStatement, cmiProtocolContext
                         IDV_STAT_INDEX_EXECUTE_SUCCESS_COUNT, 1);
 
     IDV_SQL_ADD_DIRECT(sStatistics, mExecuteSuccessCount, 1);
-    IDV_SQL_ADD_DIRECT(sStatistics, mProcessRow, (ULong)(sExecuteContext.mAffectedRowCount));
+    IDV_SQL_ADD_DIRECT(sStatistics, mProcessRow, (ULong)IDL_MAX(0, sExecuteContext.mAffectedRowCount));
 
     aStatement->setStmtState(MMC_STMT_STATE_EXECUTED);
 
@@ -1740,7 +1937,7 @@ IDE_RC mmtServiceThread::atomicEnd(mmcStatement * aStatement, cmiProtocolContext
         IDE_TEST(doEnd(&sExecuteContext, MMC_EXECUTION_FLAG_SUCCESS) != IDE_SUCCESS);
     }
 
-    IDE_TEST(answerExecuteResult(&sExecuteContext) != IDE_SUCCESS);
+    IDE_TEST(answerExecuteResult(&sExecuteContext, sSession, this) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
 

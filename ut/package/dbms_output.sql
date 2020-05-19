@@ -14,6 +14,10 @@ pragma restrict_references(put_line,WNDS,RNDS);
 procedure new_line;
 pragma restrict_references(new_line,WNDS,RNDS);
 
+procedure print_enable;
+
+procedure print_disable;
+
 end;
 /
 

@@ -2417,7 +2417,17 @@ cmpMarshalFunction gCmpReadFunctionRPClient[CMP_OP_RP_MAX] =
     cmpReadRPDummy,
     cmpReadRPDummy,/* BUG-38759 */
     cmpReadRPDummy,
-    cmpReadRPDummy 
+    cmpReadRPDummy,
+    cmpReadRPDummy, /* DDLSyncInfo */
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy, /* DDLSyncCancel */
+    cmpReadRPDummy, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,  //BUG-46120
+    cmpReadRPDummy
 };
 
 cmpMarshalFunction gCmpWriteFunctionRPClient[CMP_OP_RP_MAX] =
@@ -2467,5 +2477,15 @@ cmpMarshalFunction gCmpWriteFunctionRPClient[CMP_OP_RP_MAX] =
     cmpWriteRPDummy,
     cmpWriteRPDummy,/* BUG-38759 */
     cmpWriteRPDummy,
-    cmpWriteRPDummy 
+    cmpWriteRPDummy,
+    cmpWriteRPDummy, /* DDLSyncInfo */
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy, /* DDLSyncCancel */
+    cmpWriteRPDummy, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */    
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,  //BUG-46120
+    cmpWriteRPDummy
 };

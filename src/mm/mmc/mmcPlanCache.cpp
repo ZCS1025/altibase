@@ -66,8 +66,9 @@ IDE_RC mmcPlanCache::initialize()
                                     IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                     ID_FALSE,							/* ForcePooling */
                                     ID_TRUE,							/* GarabageCollection */
-                                    ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                    ID_TRUE,                            /* HWCacheLine */
+                                    IDU_MEMPOOL_TYPE_LEGACY             /* mempool type*/) 
+             != IDE_SUCCESS);			
     
     IDE_TEST(mParentPCOMemPool.initialize(IDU_MEM_MMPLAN_CACHE_CONTROL,
                                           (SChar*)"SQL_PLAN_CACHE_PARENT_PCO_POOL",
@@ -79,8 +80,9 @@ IDE_RC mmcPlanCache::initialize()
                                           IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                           ID_FALSE,							/* ForcePooling */
                                           ID_TRUE,							/* GarbageCollection */
-                                          ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                          ID_TRUE,                          /* HWCacheLine */
+                                          IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     IDE_TEST(mChildPCOMemPool.initialize(IDU_MEM_MMPLAN_CACHE_CONTROL,
                                          (SChar*)"SQL_PLAN_CACHE__PCO_POOL",
@@ -92,8 +94,9 @@ IDE_RC mmcPlanCache::initialize()
                                          IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                          ID_FALSE,							/* ForcePooling */
                                          ID_TRUE,							/* GarbageCollection */
-                                         ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                         ID_TRUE,                          /* HWCacheLine */
+                                         IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
     idlOS::memset(&mPlanCacheSystemInfo,0x00, ID_SIZEOF(mPlanCacheSystemInfo));
     // PROJ-2408
     IDE_ASSERT ( mPerfViewLatch.initialize( (SChar *)"SQL_PLAN_CACHE_PERF_VIEW_LATCH" )
@@ -263,10 +266,10 @@ IDE_RC  mmcPlanCache::tryInsertSQLText(idvSQL         *aStatistics,
         sState = 5;
         // PCB와 child PCO를 초기화 한다.
         //fix BUG-21429
-        (*aPCB)->initialize((SChar*)(sParentPCO->mSQLTextIdString),
+        (*aPCB)->initialize((SChar*)(sParentPCO->mSQLTextId),
                             0);
         sState = 6;        
-        sChildPCO->initialize((SChar*)(sParentPCO->mSQLTextIdString),
+        sChildPCO->initialize((SChar*)(sParentPCO->mSQLTextId),
                               0,
                               MMC_CHILD_PCO_IS_CACHE_MISS,
                               0,
@@ -712,11 +715,11 @@ IDE_RC mmcPlanCache::allocPlanCacheObjs(idvSQL          *aStatistics,
     // PCB와 child PCO를 초기화 한다.
     // fix BUG-21429
     // fix BUG-29116,There is needless +1 operation in numbering child PCO.
-    (*aNewPCB)->initialize((SChar*)(aParentPCO->mSQLTextIdString),
+    (*aNewPCB)->initialize((SChar*)(aParentPCO->mSQLTextId),
                            aPcoId);
     (*aState)++;
     // fix BUG-29116,There is needless +1 operation in numbering child PCO.
-    (*aNewChildPCO)->initialize((SChar*)(aParentPCO->mSQLTextIdString),
+    (*aNewChildPCO)->initialize((SChar*)(aParentPCO->mSQLTextId),
                                 aPcoId,
                                 aRecompileReason,
                                 aRebuildCount,
@@ -1230,4 +1233,22 @@ IDE_RC mmcPlanCache::movePCBOfChildToUnUsedLst(idvSQL *aStatistics,
     }
     
     return IDE_SUCCESS;
+}
+
+/* BUG-46158 PLAN_CACHE_KEEP */
+IDE_RC mmcPlanCache::planCacheKeep(void *aMmStatement, SChar *aSQLTextID, idBool aIsKeep)
+{
+    mmcStatement *sStatement = (mmcStatement *)aMmStatement;
+
+    IDE_TEST(mmcSQLTextHash::planCacheKeep(sStatement->getStatistics(),
+                                           aSQLTextID,
+                                           (aIsKeep == ID_TRUE) ?
+                                           MMC_PCO_PLAN_CACHE_KEEP : MMC_PCO_PLAN_CACHE_UNKEEP)
+             != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

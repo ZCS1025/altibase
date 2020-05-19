@@ -205,7 +205,8 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
     ulnPDContext *sPDContext = &aDescRecApd->mPDContext;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * ulnLob 구조체 얻기
@@ -321,6 +322,11 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_STATE)
     {
         ulnErrorExtended(aFnContext,

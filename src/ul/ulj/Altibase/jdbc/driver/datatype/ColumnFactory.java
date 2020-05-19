@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import Altibase.jdbc.driver.AltibaseTypes;
 import Altibase.jdbc.driver.util.AltibaseProperties;
+import Altibase.jdbc.driver.util.StringUtils;
 
 public class ColumnFactory
 {
@@ -31,14 +32,14 @@ public class ColumnFactory
     private AltibaseProperties mProps;
     private CharsetEncoder mDBEncoder;
     private CharsetEncoder mNCharEncoder;
-    
+
     static
     {
         // BUGBUG (2012-11-15) MTD Type 또는 JDBC Type이 겹치는 것들은 대표 타입이 나중에 등록되어야 한다.
 
         // Altibase는 DATE, TIME을 지원하지 않는다. (DATE는 실제론 TIMESTAMP임)
         // 그래서, 아래 세 컬럼은 모두 MTD Type이 같다. TIMESTAMP가 대표.
-        register(new DateColumn()); 
+        register(new DateColumn());
         register(new TimeColumn());
         register(new TimestampColumn());
 
@@ -79,8 +80,7 @@ public class ColumnFactory
     private static void register(Column aType)
     {
         mMTDTypeMap.put(String.valueOf(aType.getDBColumnType()), aType.getClass());
-        int[] sJDBCTypes = aType.getMappedJDBCTypes();
-        for (int sJDBCType : sJDBCTypes)
+        for (int sJDBCType : aType.getMappedJDBCTypes())
         {
             mJDBCTypeMap.put(String.valueOf(sJDBCType), aType.getClass());
         }
@@ -115,6 +115,15 @@ public class ColumnFactory
                     sVarcharColumn.setNCharEncoder(mNCharEncoder);
                     // BUG-43807 ColumnReader를 삭제하고 바로 Column객체에 redundant관련 플래그를 셋팅한다.
                     sVarcharColumn.setRemoveRedundantMode(mProps.isOnRedundantDataTransmission());
+                    break;
+                case ColumnTypes.TIMESTAMP:
+                    // BUG-46513 date관련 컬럼일때는 date_format jdbc 속성값을 셋팅해 준다.
+                    String sDateFormatStr = mProps.getDateFormat();
+                    if (!StringUtils.isEmpty(sDateFormatStr))
+                    {
+                        CommonDateTimeColumn sDateColumn = (CommonDateTimeColumn)sColumn;
+                        sDateColumn.setDateFormat(sDateFormatStr);
+                    }
                     break;
                 default :
                     break;

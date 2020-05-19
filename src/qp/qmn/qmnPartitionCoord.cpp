@@ -2102,7 +2102,8 @@ qmnPCRD::makeChildrenArea( qcTemplate * aTemplate,
     sTableRef = sCodePlan->tableRef;
 
     /* PROJ-2249 method range 이면 정렬된 children을 할당 한다. */
-    if ( sTableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( ( sTableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+         ( sTableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         for ( i = 0; i < sDataPlan->selectedChildrenCount; i++ )
         {
@@ -2353,6 +2354,10 @@ qmnPCRD::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.filterCallBack = & aDataPlan->callBack;
     sPredicateInfo.callBackDataAnd = & aDataPlan->callBackDataAnd;
     sPredicateInfo.callBackData = aDataPlan->callBackData;
+
+    /* PROJ-2632 */
+    sPredicateInfo.mSerialFilterInfo  = NULL;
+    sPredicateInfo.mSerialExecuteData = NULL;
 
     //-------------------------------------
     // Key Range, Key Filter, Filter의 생성

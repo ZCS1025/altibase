@@ -24,10 +24,17 @@ public class CmProtocolContext
 
     public CmProtocolContext(CmChannel aChannel)
     {
+        this();
         mChannel = aChannel;
+    }
+
+    public CmProtocolContext()
+    {
+        /* BUG-46513 CmProtocolContextShardConnect, CmProtocolContextShasrdStmt에서 참조하기 때문에 CmResult
+           초기화 구문을 추가 */
         mResults = new CmResult[CmOperation.DB_OP_COUNT];
     }
-    
+
     public void addCmResult(CmResult aResult)
     {
         mResults[aResult.getResultOp()] = aResult;
@@ -60,7 +67,7 @@ public class CmProtocolContext
         return sResult;
     }
     
-    void addError(CmErrorResult aError)
+    public void addError(CmErrorResult aError)
     {
         if (mError == null)
         {
@@ -70,5 +77,13 @@ public class CmProtocolContext
         {
             mError.addError(aError);
         }
+
+        // BUG-46513 smn 에러일때 execute결과를 셋팅하기 위해 Context객체 주입
+        mError.setContext(this);
+    }
+
+    public void setChannel(CmChannel aChannel)
+    {
+        this.mChannel = aChannel;
     }
 }

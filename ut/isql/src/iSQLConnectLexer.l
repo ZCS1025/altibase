@@ -148,9 +148,9 @@ HELP                        { return TS_HELP; }
 EXEC                        { return TR_EXEC; }
 EXECUTE                     { return TR_EXECUTE; }
 
-[DVX]$[_A-Z0-9]+            { return TI_DOLLAR_ID; } // BUG-41413
-"\""[DVX]$[_A-Z0-9]+"\""    {
-    if (yytext[1] == 'D' || yytext[1] == 'V' || yytext[1] == 'X')
+[DSVX]$[_A-Z0-9]+           { return TI_DOLLAR_ID; } // BUG-41413, BUG-45646
+"\""[DSVX]$[_A-Z0-9]+"\""   {
+    if (yytext[1] == 'D' || yytext[1] == 'S' || yytext[1] == 'V' || yytext[1] == 'X')
     {
         return TI_DOLLAR_ID;
     }
@@ -158,7 +158,7 @@ EXECUTE                     { return TR_EXECUTE; }
     {
         return TI_IDENTIFIER;
     }
-} // BUG-41413
+} // BUG-41413, BUG-45646
 
 <NEG_TRAIL>([_A-Z]|({NEG_TRAIL_CH}))([_A-Z0-9$#]|({NEG_TRAIL_CH}))*     {
                                                    return TI_IDENTIFIER; }

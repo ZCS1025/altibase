@@ -346,7 +346,7 @@
              "( "                                                                           \
                 "SELECT a.user_id, a.package_oid AS obj_id, a.seq_no, a.parse, b.status "   \
                 "FROM system_.sys_package_parse_ a, system_.sys_packages_ b "               \
-                "WHERE a.package_oid = ? "                                                  \
+                "WHERE a.package_oid = %"ID_INT64_FMT" "                                                  \
                       "AND a.package_oid = b.package_oid "                                  \
              ") parse, system_.sys_packages_ pkg "                                          \
         "WHERE obj_id = pkg.package_oid "
@@ -363,7 +363,7 @@
         "( "                                                                                \
             "SELECT a.user_id, a.proc_oid AS obj_id, a.seq_no, a.parse, b.status "          \
             "FROM system_.sys_proc_parse_ a, system_.sys_procedures_ b "                    \
-            "WHERE a.proc_oid = ? "                                                         \
+            "WHERE a.proc_oid = %"ID_INT64_FMT" "                                                         \
                   "AND a.proc_oid = b.proc_oid "                                            \
         ") parse, system_.sys_procedures_ proc "                                            \
         "WHERE obj_id = proc.proc_oid "                                                     \
@@ -374,7 +374,7 @@
                "CASE2( c.table_type = 'V', '2', c.table_type = 'A', '6' ) AS object_type, " \
                "b.status, c.table_name AS obj_name "                                        \
         "FROM system_.sys_view_parse_ a, system_.sys_views_ b, system_.sys_tables_ c "      \
-        "WHERE a.view_id = ? "                                                              \
+        "WHERE a.view_id = %"ID_INT64_FMT" "                                                              \
               "AND a.view_id = b.view_id "                                                  \
               "AND a.view_id = c.table_id "                                                 \
                                                                                             \
@@ -382,6 +382,7 @@
     ") result, system_.sys_users_ name "                                                    \
     "WHERE result.user_id = name.user_id "                                                  \
     "ORDER BY 4"
+
 
 /* VIEW PROCEDURE 
  *
@@ -398,8 +399,11 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
     SQLRETURN    sRet;
     SChar        sConvQuery[QUERY_LEN];
     SInt         sUserId;
-    SInt         sObjId;
+    SLong        sObjId;
     SInt         sConvUserId;
+
+    /* BUG-46292 */ 
+    SQLBIGINT    sObjId2Bind = SQLBIGINT_INIT_TO_ZERO;
 
     idlOS::fprintf( stdout, "\n##### VIEW #####\n" );
     idlOS::fprintf( stdout, "\n##### MATERIALIZED VIEW #####\n" );
@@ -491,8 +495,8 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
 
     IDE_TEST_RAISE( SQLBindCol( sRetrievalStmt,
                                 3,
-                                SQL_C_SLONG,
-                                (SQLPOINTER)&sObjId,
+                                SQL_C_SBIGINT,
+                                (SQLPOINTER)&sObjId2Bind,
                                 0,
                                 NULL ) != SQL_SUCCESS, sRetrievalStmtError );
 
@@ -501,6 +505,9 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
     while ( ( sRet = SQLFetch( sRetrievalStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, sRetrievalStmtError );
+
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
 
         /* PROJ-2211 Materialized View */
         IDE_TEST( resultViewProcQuery( aViewProcFp,
@@ -549,6 +556,55 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
 #undef IDE_FN
 }
 
+/* BUG-46396 Need to rtrim the last parse */
+void printParse(FILE  *aViewProcFp,
+                idBool aTrimFlag,
+                SChar *aParse,
+                SInt   aObjType)
+{
+    if (aTrimFlag == ID_TRUE)
+    {
+        utString::rtrim(aParse);
+    }
+
+    if ( ( gProgOption.mbExistViewForce == ID_TRUE ) &&
+         ( aObjType == UTM_VIEW ) )
+    {
+        SChar *sTmp;
+        SChar *sOrg = aParse;
+        sTmp = idlOS::strtok( sOrg, " \t\n" );
+
+        while ( sTmp != NULL )
+        {
+            if ( idlOS::strcasecmp( sTmp, "FORCE" ) == 0 )
+            {
+                idlOS::fprintf( aViewProcFp, "%s ", sTmp );
+                break;
+            }
+            else if ( idlOS::strcasecmp( sTmp, "VIEW" ) == 0 )
+            {
+                idlOS::fprintf( aViewProcFp, "force %s ", sTmp );
+                break;
+            }
+            else
+            {
+                idlOS::fprintf( aViewProcFp, "%s ", sTmp );
+            }
+
+            sTmp = idlOS::strtok( NULL, " \t\n" );
+        }
+
+        // BUG-29971 codesonar null pointer dereference
+        IDE_ASSERT( sTmp != NULL );
+
+        idlOS::fprintf( aViewProcFp, sTmp + idlOS::strlen( sTmp ) + 1 );
+    }
+    else
+    {
+        idlOS::fprintf( aViewProcFp,"%s", aParse );
+    }
+}
+
 /*
  * VIEW, PROCEDURE, MATERIALIZED VIEW 의존 관계 없이 존재 하는 경우
  * 의존 관계에서 LEVEL 0 경우
@@ -565,9 +621,10 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
     SChar        sObjName[UTM_NAME_LEN+1];
     SChar        sMViewName[UTM_NAME_LEN+1]; /* PROJ-2211 Materialized View */
     SInt         sSeqNo         = 0;
-    SChar        sParse[STR_LEN*3];
+    SChar        sParse[PARSE_LEN+1];
+    SChar        sDeferredParse[PARSE_LEN+1];
     SInt         sUserId        = 0;
-    SInt         sObjId         = 0;
+    SLong        sObjId         = 0;
     SInt         sObjType       = 0;
     SInt         sStatus        = 0;
     SQLLEN       sUserNameInd   = 0;
@@ -578,9 +635,13 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
     SInt         sPrevInvalidFlag  = ID_TRUE;
     SInt         sPrevObjType   = 0;
     SInt         sPrevUserId    = 0;
-    SInt         sPrevObjId     = 0;
+    SLong        sPrevObjId     = 0;
     FILE        *sViewProcFp    = NULL;
+    FILE        *sPrevViewProcFp = NULL; /* BUG-46295 */
     SChar        sPasswd[STR_LEN];
+
+    /* BUG-46292 */ 
+    SQLBIGINT    sObjId2Bind    = SQLBIGINT_INIT_TO_ZERO;
 
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sResultStmt ) != SQL_SUCCESS, alloc_error );
 
@@ -622,8 +683,8 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
                                 3,
-                                SQL_C_SLONG,
-                                (SQLPOINTER)&sObjId,
+                                SQL_C_SBIGINT,
+                                (SQLPOINTER)&sObjId2Bind,
                                 0,
                                 NULL ) != SQL_SUCCESS, stmtError );
 
@@ -664,14 +725,25 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
 
     IDE_TEST( Execute( sResultStmt ) != SQL_SUCCESS );
 
+    sDeferredParse[0] = '\0'; /* BUG-46396 */
+
     while ( ( sRet = SQLFetch( sResultStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
 
+        /* BUG-46396 Need to rtrim the last parse */
+        if (sFirstFlag != ID_TRUE)
+        {
+            printParse(sViewProcFp,
+                       ( sSeqNo == 1 )? ID_TRUE : ID_FALSE, // rtrim or not
+                       sDeferredParse,
+                       sObjType);
+        }
+
         /* VIEW, PROCEDURE INVALID인 경우 각각의 다른 파일에 WRITE 함 */
         if ( gProgOption.mbExistInvalidScript == ID_TRUE )
         {
-            if ( sStatus == 0 )
+            if ( sStatus == 0 ) // 0: valid, 1: invalid
             {
                 sViewProcFp = aViewProcFp;
 
@@ -689,68 +761,22 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
             sViewProcFp = aViewProcFp;
         }
 
-        if( sSeqNo == 1 )
+        if ( sSeqNo == 1 )
         {
-            if( sFirstFlag != ID_TRUE )
+            if ( sFirstFlag != ID_TRUE )
             {
                 if ( gProgOption.mbExistInvalidScript == ID_TRUE )
                 {
-                    if ( ( sPrevObjType == UTM_VIEW ) ||
-                         ( sPrevObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
-                    {
-                        if ( sPrevInvalidFlag != ID_TRUE )
-                        {
-                            idlOS::fprintf( gFileStream.mInvalidFp, ";\n\n" );
-                        }
-                        else
-                        {
-                            idlOS::fprintf( aViewProcFp, ";\n\n" );
-                        }
-                    }
-                    else
-                    {
-                        if ( sPrevInvalidFlag != ID_TRUE )
-                        {
-                            idlOS::fprintf( gFileStream.mInvalidFp, ";\n/\n\n" );
-                        }
-                        else
-                        {
-                            idlOS::fprintf( aViewProcFp, ";\n/\n\n" );
-                        }
-                    }
-
-                    if ( sPrevInvalidFlag != ID_TRUE )
-                    {
-                        IDE_TEST( searchObjPrivQuery( gFileStream.mInvalidFp,
-                                                      sPrevObjType,
-                                                      sPrevUserId,
-                                                      sPrevObjId ) != SQL_SUCCESS );
-                    }
-                    else
-                    {
-                        IDE_TEST( searchObjPrivQuery( aViewProcFp,
-                                                      sPrevObjType,
-                                                      sPrevUserId,
-                                                      sPrevObjId ) != SQL_SUCCESS );
-                    }
+                    sPrevViewProcFp = sPrevInvalidFlag ? aViewProcFp : gFileStream.mInvalidFp;
                 }
                 else
                 {
-                    if ( ( sPrevObjType == UTM_VIEW ) ||
-                         ( sPrevObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
-                    {
-                        idlOS::fprintf( sViewProcFp, ";\n\n" );
-                    }
-                    else
-                    {
-                        idlOS::fprintf( sViewProcFp, ";\n/\n\n" );
-                    }
-
-                    IDE_TEST( searchObjPrivQuery( sViewProcFp,
-                                                  sPrevObjType,
-                                                  sPrevUserId,
-                                                  sPrevObjId ) != SQL_SUCCESS );
+                    sPrevViewProcFp = sViewProcFp;
                 }
+
+                appendTerminator( sPrevViewProcFp, sPrevObjType ); /* BUG-46295 */ 
+                IDE_TEST( searchObjPrivQuery( sViewProcFp, sPrevObjType,
+                    sPrevUserId, sPrevObjId ) != SQL_SUCCESS );
             }
 
             IDE_TEST( getPasswd( sUserName, sPasswd ) != SQL_SUCCESS );
@@ -812,48 +838,18 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
              * 앞의 객체의 타입을 구해오고 해당 객체의 Object Privilege
              * 를 구하기 위해 앞의 객체 즉 구하고자 하는 객체의 ObjId,
              * UserId,ObjType가  필요 하다 */
+
+            /* BUG-46292 */
+            sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
+
             sPrevUserId      = sUserId; 
             sPrevObjId       = sObjId;
             sPrevObjType     = sObjType;
             sPrevInvalidFlag = sInvalidFlag;
         }
 
-        if ( ( gProgOption.mbExistViewForce == ID_TRUE ) &&
-             ( sObjType == UTM_VIEW ) )
-        {
-            SChar *sTmp;
-            SChar *sOrg = sParse;
-            sTmp = idlOS::strtok( sOrg, " \t\n" );
-
-            while ( sTmp != NULL )
-            {
-                if ( idlOS::strcasecmp( sTmp, "FORCE" ) == 0 )
-                {
-                    idlOS::fprintf( aViewProcFp, "%s ", sTmp );
-                    break;
-                }
-                else if ( idlOS::strcasecmp( sTmp, "VIEW" ) == 0 )
-                {
-                    idlOS::fprintf( aViewProcFp, "force %s ", sTmp );
-                    break;
-                }
-                else
-                {
-                    idlOS::fprintf( aViewProcFp, "%s ", sTmp );
-                }
-
-                sTmp = idlOS::strtok( NULL, " \t\n" );
-            }
-
-            // BUG-29971 codesonar null pointer dereference
-            IDE_ASSERT( sTmp != NULL );
-
-            idlOS::fprintf( aViewProcFp, sTmp + idlOS::strlen( sTmp ) + 1 );
-        }
-        else
-        {
-            idlOS::fprintf( sViewProcFp,"%s", sParse );
-        }
+        /* BUG-46396 Need to rtrim the last parse */
+        idlOS::strcpy(sDeferredParse, sParse);
 
         sFirstFlag = ID_FALSE;
     }
@@ -863,15 +859,14 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
      * */
     if ( sFirstFlag == ID_FALSE )
     {
-        if ( ( sPrevObjType == UTM_VIEW ) ||
-             ( sPrevObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
-        {
-            idlOS::fprintf( sViewProcFp, ";\n\n" );
-        }
-        else
-        {
-            idlOS::fprintf( sViewProcFp, ";\n/\n\n" );
-        }
+        /* BUG-46396 Need to rtrim the last parse */
+        printParse(sViewProcFp,
+                   ID_TRUE,
+                   sDeferredParse,
+                   sObjType);
+
+        /* BUG-46295 */
+        appendTerminator( sViewProcFp, sPrevObjType );
 
         IDE_TEST( searchObjPrivQuery( sViewProcFp,
                                       sPrevObjType,
@@ -879,8 +874,13 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
                                       sPrevObjId ) != SQL_SUCCESS );
     }
 
-    idlOS::fflush( sViewProcFp );
+    /* BUG-46295 */
+    idlOS::fflush( aViewProcFp );
     idlOS::fflush( aRefreshMViewFp );
+    if ( gProgOption.mbExistInvalidScript == ID_TRUE )
+    {
+        idlOS::fflush( gFileStream.mInvalidFp );
+    }
 
     // BUG-33995 aexport have wrong free handle code
     FreeStmt( &sResultStmt );
@@ -913,7 +913,7 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
 /* view, procedure, MATERIALIZED VIEW의 계층 쿼리의 결과를 출력 한다.*/
 SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
                                FILE  *aRefreshMViewFp,
-                               SInt   aObjId )
+                               SLong  aObjId )
 {
 #define IDE_FN "resultViewProcQuery()"
     SQLHSTMT     sResultStmt = SQL_NULL_HSTMT;
@@ -923,9 +923,10 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     SChar        sObjName[UTM_NAME_LEN+1];
     SChar        sMViewName[UTM_NAME_LEN+1]; /* PROJ-2211 Materialized View */
     SInt         sUserId        = 0;
-    SInt         sObjId         = 0;
+    SLong        sObjId         = 0;
     SInt         sSeqNo         = 0;
-    SChar        sParse[QUERY_LEN];
+    SChar        sParse[PARSE_LEN+1];
+    SChar        sDeferredParse[PARSE_LEN+1];
     SInt         sObjType       = 0;
     SInt         sStatus        = 0;
     SQLLEN       sUserNameInd   = 0;
@@ -935,45 +936,21 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     SChar        sUserNameInSQL[UTM_NAME_LEN + 1]; /* BUG-45383 */
     SChar        sPasswd[STR_LEN];
 
+    /* BUG-46292 */
+    SQLBIGINT    sObjId2Bind    = SQLBIGINT_INIT_TO_ZERO;
+
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sResultStmt ) != SQL_SUCCESS, alloc_error );
 
-    idlOS::sprintf( sResultQuery, GET_VIEWPROC_HIER_QUERY );
+    /* BUG-46292 */
+#ifdef ALTIBASE_PRODUCT_HDB
+    idlOS::sprintf( sResultQuery, GET_VIEWPROC_HIER_QUERY, aObjId, aObjId, aObjId );
+#else
+    idlOS::sprintf( sResultQuery, GET_VIEWPROC_HIER_QUERY, aObjId, aObjId);
+#endif
 
-    IDE_TEST( Prepare( sResultQuery, sResultStmt ) != SQL_SUCCESS );
-
-    IDE_TEST_RAISE( SQLBindParameter( sResultStmt,
-                                      1,
-                                      SQL_PARAM_INPUT,
-                                      SQL_C_SLONG,
-                                      SQL_INTEGER,
-                                      0,
-                                      0,
-                                      &aObjId,
-                                      0,
-                                      NULL ) != SQL_SUCCESS, stmtError );
-
-    IDE_TEST_RAISE( SQLBindParameter( sResultStmt,
-                                      2,
-                                      SQL_PARAM_INPUT,
-                                      SQL_C_SLONG,
-                                      SQL_INTEGER,
-                                      0,
-                                      0,
-                                      &aObjId,
-                                      0,
-                                      NULL ) != SQL_SUCCESS, stmtError );
-
-    /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
-    IDE_TEST_RAISE( SQLBindParameter( sResultStmt,
-                                      3,
-                                      SQL_PARAM_INPUT,
-                                      SQL_C_SLONG,
-                                      SQL_INTEGER,
-                                      0,
-                                      0,
-                                      &aObjId,
-                                      0,
-                                      NULL ) != SQL_SUCCESS, stmtError );
+    IDE_TEST_RAISE( SQLExecDirect(sResultStmt, (SQLCHAR *)sResultQuery, SQL_NTS)
+            != SQL_SUCCESS, stmtError);  
+    
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
                                 1,
@@ -991,8 +968,8 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
                                 3,
-                                SQL_C_SLONG,
-                                (SQLPOINTER)&sObjId,
+                                SQL_C_SBIGINT,
+                                (SQLPOINTER)&sObjId2Bind,
                                 0,
                                 NULL ) != SQL_SUCCESS, stmtError );
 
@@ -1031,19 +1008,28 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
                                 (SQLLEN)ID_SIZEOF( sObjName ),
                                 &sObjNameInd ) != SQL_SUCCESS, stmtError );
 
-    IDE_TEST( Execute( sResultStmt ) != SQL_SUCCESS );
-
     /* BUG-45383 */
     idlOS::strcpy( sUserNameInSQL, gProgOption.GetUserNameInSQL() );
+
+    sDeferredParse[0] = '\0'; /* BUG-46396 */
 
     while ( ( sRet = SQLFetch( sResultStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
 
+        /* BUG-46396 Need to rtrim the last parse */
+        if ( sDeferredParse[0] != '\0' )
+        {
+            printParse(sViewProcFp,
+                       ID_FALSE,
+                       sDeferredParse,
+                       sObjType);
+        }
+
         /* VIEW, PROCEDURE INVALID인 경우 각각의 다른 파일에 WRITE 함 */
         if ( gProgOption.mbExistInvalidScript == ID_TRUE )
         {
-            if ( sStatus == 0 )
+            if ( sStatus == 0 ) // 0: valid, 1: invalid
             {
                 sViewProcFp = aViewProcFp;
             }
@@ -1138,56 +1124,24 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
             }
         }
 
-        if ( ( gProgOption.mbExistViewForce == ID_TRUE ) &&
-             ( sObjType == UTM_VIEW ) )
-        {
-            SChar *sTmp;
-            SChar *sOrg = sParse;
-            sTmp = idlOS::strtok( sOrg, " \t\n" );
-
-            while ( sTmp != NULL )
-            {
-                if ( idlOS::strcasecmp( sTmp, "FORCE" ) == 0 )
-                {
-                    idlOS::fprintf( aViewProcFp, "%s ", sTmp );
-                    break;
-                }
-                else if ( idlOS::strcasecmp( sTmp, "VIEW" ) == 0 )
-                {
-                    idlOS::fprintf( aViewProcFp, "force %s ", sTmp );
-                    break;
-                }
-                else
-                {
-                    idlOS::fprintf( aViewProcFp, "%s ", sTmp );
-                }
-
-                sTmp = idlOS::strtok( NULL, " \t\n" );
-            }
-
-            // BUG-29971 codesonar null pointer dereference
-            IDE_ASSERT( sTmp != NULL );
-
-            idlOS::fprintf( aViewProcFp, sTmp + idlOS::strlen( sTmp ) + 1 );
-        }
-        else
-        {
-            idlOS::fprintf( sViewProcFp,"%s", sParse );
-        }
+        /* BUG-46396 Need to rtrim the last parse */
+        idlOS::strcpy(sDeferredParse, sParse);
     }
 
-    if ( ( sObjType == UTM_VIEW ) ||
-         ( sObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
-    {
-        idlOS::fprintf( sViewProcFp, ";\n\n" );
-    }
-    else
-    {
-        idlOS::fprintf( sViewProcFp, ";\n/\n\n" );
-    }
+    /* BUG-46396 Need to rtrim the last parse */
+    printParse(sViewProcFp,
+               ID_TRUE,
+               sDeferredParse,
+               sObjType);
+
+    /* BUG-46295 */
+    appendTerminator( sViewProcFp, sObjType );
 
     idlOS::fflush( sViewProcFp );
     idlOS::fflush( aRefreshMViewFp );
+
+    /* BUG-46292 */
+    sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
 
     IDE_TEST( searchObjPrivQuery( sViewProcFp,
                                   sObjType,
@@ -1219,5 +1173,26 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     }
 
     return SQL_ERROR;
+#undef IDE_FN
+}
+
+/* BUG-46295 */
+void appendTerminator( FILE  *aViewProcFp,
+                       SInt   aObjType )
+{
+#define IDE_FN "appendTerminator()"
+
+    if ( ( aObjType == UTM_VIEW ) ||
+         ( aObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
+    {
+        // SQL Terminator
+        idlOS::fprintf( aViewProcFp, "\n;\n\n" );
+    }
+    else
+    {
+        // PSM Terminator
+        idlOS::fprintf( aViewProcFp, "\n;\n/\n\n" );
+    }
+
 #undef IDE_FN
 }

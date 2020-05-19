@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnPPCRD.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnPPCRD.cpp 83334 2018-06-22 07:50:32Z donovan.seo $
  *
  * Description :
  *     Parallel Partition Coordinator(PPCRD) Node
@@ -1566,7 +1566,8 @@ void qmnPPCRD::makeChildrenSCANArea( qcTemplate * aTemplate,
     sTableRef = sCodePlan->tableRef;
 
     /* PROJ-2249 method range 이면 정렬된 children을 할당 한다. */
-    if ( sTableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+    if ( ( sTableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE ) ||
+         ( sTableRef->tableInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         for ( i = 0; i < sDataPlan->selectedChildrenCount; i++ )
         {

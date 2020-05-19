@@ -25,6 +25,8 @@
 #include <qci.h>
 #include <dki.h>
 #include <sdi.h>
+#include <sdiFailoverTypeStorage.h>
+#include <mmErrorCode.h>
 #include <mmcConvNumeric.h>
 #include <mmcDef.h>
 #include <mmcLob.h>
@@ -52,6 +54,7 @@
 //fix BUG-21311
 #define MMC_SESSION_LOB_HASH_BUCKET_CNT     (5)
 #define MMC_TIMEZONE_MAX_LEN                (MTC_TIMEZONE_NAME_LEN)
+#define MMC_SHARD_PIN_STR_LEN               (SDI_MAX_SHARD_PIN_STR_LEN)
 /*
  * 가장 이상적인 collection buffer의 크기는 통신 버퍼 사이즈(32K)와
  * 동일한 경우이다. 그러나 통신 헤더를 고려해야 하기 때문에 30K를
@@ -291,7 +294,29 @@ typedef struct mmcSessionInfo
     mmcTransID       mTransID;
 
     /* PROJ-2660 */
-    ULong            mShardPin;
+    sdiShardPin      mShardPin;
+
+    /* PROJ-2677 */
+    UInt             mReplicationDDLSync;
+    UInt             mReplicationDDLSyncTimeout;
+
+    /* BUG-46090 Meta Node SMN 전파 */
+    idBool           mIsMetaNodeShardCli;
+    ULong            mShardMetaNumber;
+
+    UInt             mPrintOutEnable;
+    /* BUG-45707 */
+    UInt             mShardClient;
+    UInt             mShardSessionType;
+    /* BUG-45899 */
+    UInt             mTrclogDetailShard;
+
+    /* BUG-46092 */
+    sdiFailoverTypeStorage mDataNodeFailoverType;
+
+    /* PROJ-2632 */
+    UInt             mSerialExecuteMode;
+    UInt             mTrcLogDetailInformation;
 } mmcSessionInfo;
 
 //--------------------
@@ -363,6 +388,18 @@ typedef struct mmcSessionInfo4PerfV
      * BUG-40120  MAX_STATEMENTS_PER_SESSION value has to be seen in v$session when using alter session.
      */
     UInt             mMaxStatementsPerSession;
+    SChar            mShardPinStr[MMC_SHARD_PIN_STR_LEN + 1];
+
+    /* BUG-46090 Meta Node SMN 전파 */
+    ULong            mShardMetaNumber;          // SHARD_META_NUMBER
+
+    /* PROJ-2677 */
+    UInt             mReplicationDDLSync;
+    UInt             mReplicationDDLSyncTimeout;
+
+    /* BUG-45707 */
+    UInt             mShardClient;
+    UInt             mShardSessionType;
 } mmcSessionInfo4PerfV;
 
 //--------------------
@@ -450,11 +487,13 @@ private:
      * Transaction for Non-Autocommit Mode
      */
 
-    smiTrans       *mTrans;
+    mmcTransObj    *mTrans;
+    friend class    mmcTrans;         /* access mTrans of mmcSession private member
+                                       * to control share tx in mmcTrans class
+                                       */
     idBool          mTransAllocFlag;
-    void           *mTransShareSes;   /* trans를 공유하는 세션 */
     idBool          mTransBegin;      /* non-autocommit의 tx begin되었는지 여부 */
-    idBool          mTransRelease;    /* non-autocommit의 tx end시 release할지 여부 */
+    idBool          mTransLazyBegin;  /* Query가 들어오면 Transaction을 시작 */
     idBool          mTransPrepared;   /* trans가 prepare되었는지 여부 */
     ID_XID          mTransXID;        /* trans가 prepare한 XID */
 
@@ -496,6 +535,8 @@ private:
     //PROJ-1677 DEQUEUE
     smuHashBase             mDequeueHash4Rollback;
     mmcPartialRollbackFlag  mPartialRollbackFlag;
+
+    idBool                  mNeedQueueWait;  /* BUG-46183 */
 private:
     /*
      * XA
@@ -504,7 +545,7 @@ private:
     iduList         mXidLst;
     //fix BUG-20850
     mmcCommitMode   mLocalCommitMode;
-    smiTrans       *mLocalTrans;
+    mmcTransObj    *mLocalTrans;
     idBool          mLocalTransBegin;
     //fix BUG-21771
     idBool          mNeedLocalTxBegin;
@@ -559,12 +600,20 @@ public:
 
     inline void   getDeqViewSCN(smSCN * aDeqViewSCN);
     IDE_RC endPendingTrans( ID_XID *aXID, idBool aIsCommit );
-    IDE_RC prepare( ID_XID *aXID, idBool *aReadOnly );
+    IDE_RC prepareForShard( ID_XID *aXID, idBool *aReadOnly );
     IDE_RC commit(idBool bInStoredProc = ID_FALSE);
     IDE_RC commitForceDatabaseLink(idBool bInStoredProc = ID_FALSE);
     IDE_RC rollback(const SChar* aSavePoint = NULL, idBool bInStoredProc = ID_FALSE);
     IDE_RC rollbackForceDatabaseLink( idBool bInStoredProc = ID_FALSE );
     IDE_RC savepoint(const SChar* aSavePoint, idBool bInStoredProc = ID_FALSE);
+
+    /* BUG-46785 Shard statement partial rollback */
+    IDE_RC shardStmtPartialRollback( void );
+
+    IDE_RC shardNodeConnectionReport( UInt              aNodeId, 
+                                      UChar             aDestination );
+    IDE_RC shardNodeTransactionBrokenReport( void );
+
     //PROJ-1677 DEQUEUE
     inline void                     clearPartialRollbackFlag();
     inline mmcPartialRollbackFlag   getPartialRollbackFlag();
@@ -603,10 +652,13 @@ public:
     /*
      * Transaction Accessor
      */
+    mmcTransObj     *allocTrans();
+    mmcTransObj     *allocTrans(mmcStatement* aStmt);
+    mmcTransObj     *getTransPtr();
+    mmcTransObj     *getTransPtr(mmcStatement* aStmt);
 
-    smiTrans        *getTrans(idBool aAllocFlag);
-    smiTrans        *getTrans(mmcStatement *aStmt, idBool aAllocFlag);
-    void             setTrans(smiTrans *aTrans);
+    void             reallocTrans();
+    void             setTrans(mmcTransObj* aTrans);
 
 public:
     /*
@@ -729,10 +781,10 @@ public:
                                              UInt   aTransactionMode,
                                              idBool aCommitWriteWaitMode);
     // transaction의 isolation level을 반환
-    UInt             getTxIsolationLevel(smiTrans * aTrans);
+    UInt             getTxIsolationLevel(mmcTransObj * aTrans);
 
     // transaction의 transaction mode를 반환
-    UInt             getTxTransactionMode(smiTrans * aTrans);
+    UInt             getTxTransactionMode(mmcTransObj * aTrans);
 
     // PROJ-1583 large geometry
     void             setSTObjBufSize(UInt aObjBufSize );
@@ -803,8 +855,9 @@ public:
     /*
      * Database link session property
      */
-    void setDblinkGlobalTransactionLevel( UInt aValue );
-    void setDblinkRemoteStatementAutoCommit( UInt aValue );
+    UInt   getDblinkGlobalTransactionLevel();
+    IDE_RC setDblinkGlobalTransactionLevel( UInt aValue );
+    void   setDblinkRemoteStatementAutoCommit( UInt aValue );
 
     /* PROJ-2441 flashback */
     UInt getRecyclebinEnable();
@@ -848,32 +901,80 @@ public:
     mmcClientAppInfoType getClientAppInfoType( void );
 
     /* PROJ-2638 shard native linker */
-    IDE_RC setShardLinker();
+    IDE_RC reloadShardMetaNumber( idBool aIsLocalOnly );
     IDE_RC touchShardNode(UInt aNodeId);
 
     /* PROJ-2660 */
-    ULong getShardPIN();
-    idBool isShardData();
-    idBool isShardTrans();
+    sdiShardPin getShardPIN();
+    void        setShardPIN( sdiShardPin aShardPin );
+    SChar      *getShardNodeName();
+    idBool      isShardData();
+    idBool      isShardTrans();
+    idBool      isShareableTrans();
+    void        setNewSessionShardPin();
 
-    /* BUG-45411 client-side global transaction */
-    idBool setShardShareTrans();
-    void unsetShardShareTrans();
+    /* BUG-46090 Meta Node SMN 전파 */
+    idBool      isMetaNodeShardCli();
+    void        setMetaNodeShardCli( idBool aIsMetaNodeShardCli );
+    ULong       getShardMetaNumber();
+    void        setShardMetaNumber( ULong aSMN );
+    IDE_RC      applyShardMetaChange( smiTrans * aTrans,
+                                      ULong    * aNewSMN );
+    void        clearShardDataInfo();
+
+    /* BUG-46092 */
+    void        freeRemoteStatement( UInt aNodeId, UChar aMode );
+    UInt        getShardFailoverType( UInt aNodeId );
+
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    IDE_RC      checkSMNForDataNode( const SChar * aProtocolErrorMsg );
+
+    /* BUG-46100 Session SMN Update */
+    IDE_RC      checkSMNForDataNodeAndSetSMN( ULong         aSMNForSession,
+                                              const SChar * aProtocolErrorMsg );
+    void        checkAndFinalizeShardCoordinator();
+    void        checkAndFinalizeRebuildCoordinator();
+
+    /* BUG-45707 */
+    void setShardClient( sdiShardClient aShardClient );
+    /* BUG-46092 */
+    UInt isShardClient();
+
+    void setShardSessionType( sdiSessionType aSessionType );
+    UInt getShardSessionType();
+    inline idBool isShardLibrarySession();
+
+    /* BUG-45899 */
+    void setTrclogDetailShard( UInt aTrclogDetailShard );
+    UInt getTrclogDetailShard();
 
     idBool getTransBegin();
-    void setTransBegin(idBool aBegin, idBool aShareTrans = ID_TRUE);
+    void setTransBegin(idBool aBegin);
 
-    idBool getReleaseTrans();
-    void setReleaseTrans(idBool aRelease);
-
-    /* BUG-45411 client-side global transaction */
-    IDE_RC endTransShareSes( idBool aIsCommit );
+    idBool getTransLazyBegin();
+    void setTransLazyBegin( idBool aLazyBegin );
 
     void initTransStartMode();
 
     idBool getTransPrepared();
     void setTransPrepared(ID_XID * aXID);
     ID_XID* getTransPreparedXID();
+
+    /* PROJ-2677 */
+    UInt   getReplicationDDLSync();
+    void   setReplicationDDLSync( UInt aValue );
+    UInt   getReplicationDDLSyncTimeout();
+    void   setReplicationDDLSyncTimeout( UInt aValue );
+
+    void    setPrintOutEnable(UInt aValue);
+    UInt    getPrintOutEnable();    
+
+    /* PROJ-22632 */
+    UInt getSerialExecuteMode();
+    void setSerialExecuteMode( UInt aValue );
+
+    UInt getTrcLogDetailInformation();
+    void setTrcLogDetailInformation( UInt aValue );
 
 public:
     /*
@@ -1117,7 +1218,7 @@ public:
     /* PROJ-2451 Concurrent Execute Package */
     static IDE_RC          allocInternalSession( void ** aMmSession, void * aOrgMmSession );
     static IDE_RC          freeInternalSession( void * aMmSession, idBool aIsSuccess );
-    static smiTrans      * getSessionTrans( void * aMmSession );
+    static smiTrans      * getSessionSmiTrans( void * aMmSession );
 
     // PROJ-1904 Extend UDT
     static qciSession    * getQciSessionCallback( void * aMmSession );
@@ -1155,11 +1256,39 @@ public:
     /* BUG-42639 Monitoring query */
     static UInt getOptimizerPerformanceViewCallback( void * aSession );
 
+    /* PROJ-2701 Sharding online data rebuild */
+    static idBool isShardDataCallback( void *aSession );
     /* PROJ-2638 shard native linker */
     static ULong getShardPINCallback( void *aSession );
+    static ULong getShardMetaNumberCallback( void *aSession );
     static SChar * getShardNodeNameCallback( void *aSession );
-    static IDE_RC setShardLinkerCallback( void *aSession );
+    static IDE_RC reloadShardMetaNumberCallback( void   *aSession,
+                                                 idBool  aIsLocalOnly );
+
+    /* BUG-45899 */
+    static UInt getTrclogDetailShardCallback( void *aSession );
+
     static UChar getExplainPlanCallback( void *aSession );
+
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+    static UInt getDBLinkGTXLevelCallback( void * aSession );
+
+    /* PROJ-2677 DDL synchronization */
+    static UInt  getReplicationDDLSyncCallback( void *aSession );
+
+    static UInt  getPrintOutEnableCallback( void *aSession );
+
+    /* BUG-46092 */
+    static UInt  isShardCliCallback( void * aSession );
+    static void * getShardStmtCallback( void  * aUserContext );
+    static void  freeShardStmtCallback( void  * aSession, 
+                                        UInt    aNodeId, 
+                                        UChar   aMode );
+    static UInt   getShardFailoverTypeCallback( void *aSession, UInt aNodeId );
+
+    /* PROJ-2632 */
+    static UInt getSerialExecuteModeCallback( void * aSession );
+    static UInt getTrcLogDetailInformationCallback( void *aSession );
 
     // BUG-42464 dbms_alert package
     static IDE_RC           registerCallback( void  * aSession,
@@ -1252,48 +1381,86 @@ inline void mmcSession::unlockForStmtList()
     IDE_ASSERT( mStmtListMutex.unlock() == IDE_SUCCESS);
 }
 
-inline smiTrans *mmcSession::getTrans(idBool aAllocFlag)
+/* Transaction accessor functions renewal, by PROJ-2701 */
+inline mmcTransObj *mmcSession::allocTrans()
 {
-    if ((mTrans == NULL) && (aAllocFlag == ID_TRUE))
+    if ( mTrans == NULL )
     {
-        if ( setShardShareTrans() == ID_FALSE )
-        {
-            IDE_ASSERT( mmcTrans::alloc( &mTrans ) == IDE_SUCCESS );
-            mTransAllocFlag = ID_TRUE;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+        IDE_ASSERT(mmcTrans::alloc(this, &mTrans) == IDE_SUCCESS);
+        mTransAllocFlag = ID_TRUE;
     }
 
     return mTrans;
 }
 
-inline smiTrans *mmcSession::getTrans(mmcStatement *aStmt, idBool aAllocFlag)
+inline mmcTransObj *mmcSession::allocTrans(mmcStatement *aStmt)
 {
-    if (getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
+    mmcTransObj *sTrans = NULL;
+    if ( getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
     {
-        return getTrans(aAllocFlag);
+        sTrans = allocTrans();
     }
     else
     {
-        return aStmt->getTrans(aAllocFlag);
+        sTrans = aStmt->allocTrans();
     }
 
-    return getTrans(aAllocFlag);
+    return sTrans;
 }
 
-inline void mmcSession::setTrans(smiTrans *aTrans)
+inline mmcTransObj *mmcSession::getTransPtr()
+{
+    return mTrans;
+}
+
+inline mmcTransObj *mmcSession::getTransPtr(mmcStatement *aStmt)
+{
+    mmcTransObj *sTrans = NULL;
+
+    if ( getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
+    {
+        sTrans = mTrans;
+    }
+    else
+    {
+        sTrans = aStmt->getTransPtr();
+    }
+
+    return sTrans;
+}
+
+inline void mmcSession::setTrans(mmcTransObj *aTrans)
 {
     if ((mTrans != NULL) && (mTransAllocFlag == ID_TRUE))
     {
-        IDE_ASSERT(mmcTrans::free(mTrans) == IDE_SUCCESS);
+        IDE_ASSERT(mmcTrans::free(this, mTrans) == IDE_SUCCESS);
 
         mTransAllocFlag = ID_FALSE;
     }
 
     mTrans = aTrans;
+}
+
+/*
+ * commit 모드 변경시 
+ * 기존에 사용하던 공유 가능 트랜잭션 혹은 공유 불가 트랜잭션을 free하고, 
+ * 현재 모드에 맞는 신규 트랜잭션을 할당 받는다.
+ *
+ * 신규 트랜잭션은 기존에 사용하던 트랜잭션과 다른 mempool에서 
+ * 할당 받고 다른 형태로 초기화 되어야 한다.
+ */
+inline void mmcSession::reallocTrans()
+{
+    if ( mTrans != NULL )
+    {
+        IDE_DASSERT(mTransAllocFlag == ID_TRUE);
+        (void)mmcTrans::free(this, mTrans);
+        mTransAllocFlag = ID_FALSE;
+        mTrans = NULL;
+    }
+
+    IDE_ASSERT(mmcTrans::alloc(this, &mTrans) == IDE_SUCCESS);
+    mTransAllocFlag = ID_TRUE;
 }
 
 inline mmcSessionInfo *mmcSession::getInfo()
@@ -1634,6 +1801,8 @@ inline void mmcSession::setQueueSCN(smSCN * aDeqViewSCN)
 
 inline void mmcSession::setQueueWaitTime(ULong aWaitMicroSec)
 {
+    PDL_Time_Value sWaitTime;
+
     mQueueWaitTime = aWaitMicroSec;
 
     if (aWaitMicroSec == 0)
@@ -1646,7 +1815,12 @@ inline void mmcSession::setQueueWaitTime(ULong aWaitMicroSec)
     }
     else
     {
-        mQueueEndTime = mmtSessionManager::getBaseTime() + (aWaitMicroSec / 1000000);
+        /* BUG-46183 */
+        sWaitTime.initialize(0, aWaitMicroSec);
+        sWaitTime += idlOS::gettimeofday();
+        mNeedQueueWait = ID_TRUE;
+
+        mQueueEndTime = sWaitTime.microsec();
     }
 }
 
@@ -1682,6 +1856,8 @@ inline idBool mmcSession::isQueueReady()
 
 inline idBool mmcSession::isQueueTimedOut()
 {
+    PDL_Time_Value sCurTime;
+
     if (mQueueInfo != NULL)
     {
         if (mQueueEndTime == 0)
@@ -1694,13 +1870,31 @@ inline idBool mmcSession::isQueueTimedOut()
         }
         else
         {
-            return ((UInt)mQueueEndTime <= mmtSessionManager::getBaseTime()) ? ID_TRUE : ID_FALSE;
+            sCurTime = idlOS::gettimeofday();
+
+            /* BUG-46183 u 단위의 짧은 시간은 Queue 구조상 대기하지 않아 mNeedQueueWait flag를 둔다. */
+            if (mQueueEndTime <= sCurTime.microsec())
+            {
+                if (mNeedQueueWait == ID_TRUE)
+                {
+                    mNeedQueueWait = ID_FALSE;
+                    return ID_FALSE;
+                }
+                else
+                {
+                    return ID_TRUE;
+                }
+            }
+            else
+            {
+                mNeedQueueWait = ID_FALSE;
+                return ID_FALSE;
+            }
         }
     }
 
     return ID_FALSE;
 }
-
 
 //fix BUG-20850
 inline void mmcSession::saveLocalCommitMode()
@@ -1720,7 +1914,7 @@ inline void mmcSession::setGlobalCommitMode(mmcCommitMode aCommitMode)
 
 inline void mmcSession::saveLocalTrans()
 {
-    mLocalTrans = getTrans(ID_FALSE);
+    mLocalTrans = getTransPtr();
     mLocalTransBegin = getTransBegin();
     mTransAllocFlag = ID_FALSE;
     mTransBegin = ID_FALSE;
@@ -1731,7 +1925,8 @@ inline void mmcSession::allocLocalTrans()
 {
     if (mLocalTrans == NULL)
     {
-        IDE_ASSERT(mmcTrans::alloc(&mLocalTrans) == IDE_SUCCESS);
+        /* currently not used: need remove BUGBUG */
+        IDE_ASSERT(mmcTrans::alloc( this, &mLocalTrans ) == IDE_SUCCESS);
     }
     else
     {
@@ -1808,10 +2003,10 @@ inline UInt mmcSession::getSessionInfoFlagForTx()
  Implementaion : Transaction 으로부터 isolation level을 받아
                  이를 반환
 ********************************************************************/
-inline UInt mmcSession::getTxIsolationLevel(smiTrans * aTrans)
+inline UInt mmcSession::getTxIsolationLevel(mmcTransObj * aTrans)
 {
     IDE_ASSERT( aTrans != NULL );
-    return aTrans->getIsolationLevel();
+    return mmcTrans::getSmiTrans(aTrans)->getIsolationLevel();
 }
 
 /*******************************************************************
@@ -1820,11 +2015,11 @@ inline UInt mmcSession::getTxIsolationLevel(smiTrans * aTrans)
  Implementaion : Transaction 으로부터 transaction mode를 받아
                  이를 반환
 ********************************************************************/
-inline UInt mmcSession::getTxTransactionMode(smiTrans * aTrans)
+inline UInt mmcSession::getTxTransactionMode(mmcTransObj * aTrans)
 {
     IDE_ASSERT( aTrans != NULL );
 
-    return aTrans->getTransactionMode();
+    return mmcTrans::getSmiTrans(aTrans)->getTransactionMode();
 }
 //PROJ-1677 DEQUEUE
 inline void  mmcSession::clearPartialRollbackFlag()
@@ -2338,6 +2533,28 @@ inline void mmcSession::resetSessionFailureCount()
     mInfo.mSessionFailureCount = 0;
 }
 
+/* PROJ-2677 DDL synchronization */
+inline UInt mmcSession::getReplicationDDLSync()
+{
+    return mInfo.mReplicationDDLSync;
+}
+
+inline void mmcSession::setReplicationDDLSync( UInt aValue )
+{
+    mInfo.mReplicationDDLSync = aValue;
+}
+
+inline UInt mmcSession::getReplicationDDLSyncTimeout()
+{
+    return mInfo.mReplicationDDLSyncTimeout;
+}
+
+inline void mmcSession::setReplicationDDLSyncTimeout( UInt aValue )
+{
+    mInfo.mReplicationDDLSyncTimeout = aValue;
+}
+
+
 /**
  * PROJ-2626 Snapshot Export
  * 현재 세션의 ClientAppInfoType을 반환한다.
@@ -2347,9 +2564,210 @@ inline mmcClientAppInfoType mmcSession::getClientAppInfoType( void )
     return mInfo.mClientAppInfoType;
 }
 
-inline ULong mmcSession::getShardPIN()
+inline sdiShardPin mmcSession::getShardPIN()
 {
     return mInfo.mShardPin;
+}
+
+inline void mmcSession::setShardPIN( sdiShardPin aShardPin )
+{
+    mInfo.mShardPin = aShardPin;
+}
+
+inline idBool mmcSession::isMetaNodeShardCli()
+{
+    return mInfo.mIsMetaNodeShardCli;
+}
+
+inline void mmcSession::setMetaNodeShardCli( idBool aIsMetaNodeShardCli )
+{
+    mInfo.mIsMetaNodeShardCli = aIsMetaNodeShardCli;
+}
+
+inline ULong mmcSession::getShardMetaNumber()
+{
+    return mInfo.mShardMetaNumber;
+}
+
+inline void mmcSession::setShardMetaNumber( ULong aSMN )
+{
+    mInfo.mShardMetaNumber = aSMN;
+
+    if ( ( isShardData() == ID_TRUE ) &&
+         ( aSMN != ID_ULONG(0) ) &&
+         ( aSMN > sdi::getSMNForDataNode() ) )
+    {
+        sdi::setSMNForDataNode( aSMN );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+
+/* BUG-45967 Data Node의 Shard Session 정리 */
+inline IDE_RC mmcSession::checkSMNForDataNode( const SChar * aProtocolErrorMsg )
+{
+    ULong         sSMNForSession    = getShardMetaNumber();
+    ULong         sSMNForDataNode   = ID_ULONG(0);
+    const SChar * sDisconnectStr[2] = { "Y", "N" };
+    UInt          sNeedToDisconnect = 0;
+
+    if ( sSMNForSession != ID_ULONG(0) )
+    {
+        if ( isShardData() == ID_FALSE )
+        {
+            if ( sdi::isShardEnable() == ID_TRUE )
+            {
+                sSMNForDataNode = sdi::getSMNForDataNode();
+                if ( sSMNForSession < sSMNForDataNode )
+                {
+                    sNeedToDisconnect = ( sdi::getNeedToDisconnect( &mQciSession ) == ID_TRUE ) ? 0 : 1;
+                    IDE_RAISE( ERR_INVALID_SMN );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            sSMNForDataNode = sdi::getSMNForDataNode();
+            if ( sSMNForSession < sSMNForDataNode )
+            {
+                sNeedToDisconnect = SDU_SHARD_ALLOW_OLD_SMN;
+                IDE_RAISE( ERR_INVALID_SMN );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SMN )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_WITH_INVALID_SMN,
+                                  sSMNForSession,
+                                  sSMNForDataNode,
+                                  sDisconnectStr[sNeedToDisconnect], /* BUG-46100 Session SMN Update */
+                                  aProtocolErrorMsg ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46100 Session SMN Update */
+inline IDE_RC mmcSession::checkSMNForDataNodeAndSetSMN( ULong         aSMNForSession,
+                                                        const SChar * aProtocolErrorMsg )
+{
+    ULong         sSMNForDataNode   = ID_ULONG(0);
+    UInt          sShardAllowOldSmn = SDU_SHARD_ALLOW_OLD_SMN;
+    const SChar * sDisconnectStr[2] = { "Y", "N" };
+
+    if ( ( aSMNForSession != ID_ULONG(0) ) &&
+         ( isShardData() == ID_TRUE ) )
+    {
+        sSMNForDataNode = sdi::getSMNForDataNode();
+        IDE_TEST_RAISE( aSMNForSession < sSMNForDataNode, ERR_INVALID_SMN );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    setShardMetaNumber( aSMNForSession );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SMN )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_WITH_INVALID_SMN,
+                                  aSMNForSession,
+                                  sSMNForDataNode,
+                                  sDisconnectStr[sShardAllowOldSmn], /* BUG-46100 Session SMN Update */
+                                  aProtocolErrorMsg ) );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sShardAllowOldSmn != 0 )
+    {
+        setShardMetaNumber( aSMNForSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46100 Session SMN Update */
+inline void mmcSession::checkAndFinalizeShardCoordinator()
+{
+    ULong   sSMNForSession  = getShardMetaNumber();
+    ULong   sSMNForDataNode = ID_ULONG(0);
+
+    if ( ( sSMNForSession != ID_ULONG(0) ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( isShardData() == ID_FALSE ) )
+    {
+        sSMNForDataNode = sdi::getSMNForDataNode();
+
+        if ( ( sSMNForSession < sSMNForDataNode ) &&
+             ( sdi::getNeedToDisconnect( &mQciSession ) == ID_FALSE ) &&
+             ( isMetaNodeShardCli() == ID_FALSE ) &&
+             ( isAllStmtEnd() == ID_TRUE ) )
+        {
+            clearShardDataInfo();
+            sdi::finalizeSession( &mQciSession );
+            setShardMetaNumber( sSMNForDataNode );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
+}
+
+/* PROJ-2701 Sharding online data rebuild */
+inline void mmcSession::checkAndFinalizeRebuildCoordinator()
+{
+    if ( ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( isShardData() == ID_TRUE ) )
+    {
+        clearShardDataInfo();
+        sdi::finalizeSession( &mQciSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
+}
+
+inline SChar *mmcSession::getShardNodeName()
+{
+    return mInfo.mShardNodeName;
 }
 
 inline idBool mmcSession::isShardData()
@@ -2359,12 +2777,28 @@ inline idBool mmcSession::isShardData()
 
 /*
  * PROJ-2660 hybrid sharding
- * data node에서 shard pin이 같은 세션은 tx를 공유할 수 있다.
+ * (변경전)data node에서 shard pin이 같은 세션은 tx를 공유할 수 있다.
+ *
+ * PROJ-2701 Sharding online data rebuild
+ * (변경후)모든 node의 meta,data connection들은 shard pin이 같은 세션끼리 tx를 공유할 수 있다.
  */
 inline idBool mmcSession::isShardTrans()
 {
-    return (((mInfo.mShardPin > 0) && (mInfo.mShardNodeName[0] != '\0'))
-            ? ID_TRUE : ID_FALSE);
+    return (mInfo.mShardPin != SDI_SHARD_PIN_INVALID) ? ID_TRUE : ID_FALSE;
+
+}
+
+/* PROJ-2701 online data rebuild */
+inline idBool mmcSession::isShareableTrans()
+{
+    return ( ( mInfo.mShardPin != SDI_SHARD_PIN_INVALID ) && 
+             ( getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
+             ? ID_TRUE : ID_FALSE );
+}
+
+inline void mmcSession::setNewSessionShardPin()
+{
+    setShardPIN( sdi::makeShardPin() );
 }
 
 inline idBool mmcSession::getTransBegin()
@@ -2372,14 +2806,14 @@ inline idBool mmcSession::getTransBegin()
     return mTransBegin;
 }
 
-inline idBool mmcSession::getReleaseTrans()
+inline idBool mmcSession::getTransLazyBegin()
 {
-    return mTransRelease;
+    return mTransLazyBegin;
 }
 
-inline void mmcSession::setReleaseTrans(idBool aRelease)
+inline void mmcSession::setTransLazyBegin( idBool aLazyBegin )
 {
-    mTransRelease = aRelease;
+    mTransLazyBegin = aLazyBegin;
 }
 
 inline idBool mmcSession::getTransPrepared()
@@ -2390,6 +2824,75 @@ inline idBool mmcSession::getTransPrepared()
 inline ID_XID* mmcSession::getTransPreparedXID()
 {
     return &mTransXID;
+}
+
+inline void mmcSession::setPrintOutEnable(UInt aValue)
+{
+    mInfo.mPrintOutEnable = aValue;
+}
+
+inline UInt mmcSession::getPrintOutEnable()
+{
+    return mInfo.mPrintOutEnable;
+}
+
+/* BUG-45707 */
+inline void mmcSession::setShardClient( sdiShardClient aShardClient )
+{
+    mInfo.mShardClient = (UInt)aShardClient;
+}
+
+inline UInt mmcSession::isShardClient()
+{
+    return mInfo.mShardClient;
+}
+
+inline void mmcSession::setShardSessionType( sdiSessionType aSessionType )
+{
+    mInfo.mShardSessionType = (UInt)aSessionType;
+}
+
+inline UInt mmcSession::getShardSessionType()
+{
+    return mInfo.mShardSessionType;
+}
+
+/* PROJ-2701 online data rebuild */
+inline idBool mmcSession::isShardLibrarySession()
+{
+    return ( ( mInfo.mShardSessionType == 0 ) && ( isShardData() == ID_TRUE ) ) ? ID_TRUE : ID_FALSE;
+}
+
+/* BUG-45899 */
+inline UInt mmcSession::getTrclogDetailShard()
+{
+    return mInfo.mTrclogDetailShard;
+}
+
+inline void mmcSession::setTrclogDetailShard( UInt aTrclogDetailShard )
+{
+    mInfo.mTrclogDetailShard = aTrclogDetailShard;
+}
+
+/* PROJ-2632 */
+inline UInt mmcSession::getSerialExecuteMode()
+{
+    return mInfo.mSerialExecuteMode;
+}
+
+inline void mmcSession::setSerialExecuteMode( UInt aValue )
+{
+    mInfo.mSerialExecuteMode = aValue;
+}
+
+inline UInt mmcSession::getTrcLogDetailInformation()
+{
+    return mInfo.mTrcLogDetailInformation;
+}
+
+inline void mmcSession::setTrcLogDetailInformation( UInt aValue )
+{
+    mInfo.mTrcLogDetailInformation = aValue;
 }
 
 #endif

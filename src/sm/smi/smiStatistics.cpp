@@ -179,11 +179,11 @@ void smiStatistics::run()
                     if( sNumRowGap > ( sTable->mStat.mNumRow *
                         smuProperty::getDBMSStatAutoPercentage() / 100 ) )
                     {
-                        IDE_TEST(sTrans->begin( NULL,
-                                                ( SMI_TRANSACTION_REPL_NONE |
-                                                  SMI_COMMIT_WRITE_NOWAIT ),
-                                                SMX_NOT_REPL_TX_ID )
-                                 != IDE_SUCCESS);
+                        IDE_ASSERT( sTrans->begin( NULL,
+                                                   ( SMI_TRANSACTION_REPL_NONE |
+                                                     SMI_COMMIT_WRITE_NOWAIT ),
+                                                   SMX_NOT_REPL_TX_ID )
+                                    == IDE_SUCCESS);
                         /* dummy set resource group */
                         smxTrans::setRSGroupID((void*)sTrans, 0);
                         sState = 1;
@@ -224,7 +224,8 @@ void smiStatistics::run()
     switch( sState )
     {
     case 1:
-        (void) sTrans->abort();
+        (void) sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                              NULL      /* aLegacyTrans */ );
     default:
         break;
     }

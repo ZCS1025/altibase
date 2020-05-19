@@ -62,22 +62,6 @@ UChar * cmnLinkPeerGetWriteBlockForSimpleQuery(UInt aChannelID)
                                               aChannelID);
 }
 
-void cmnLinkPeerFinalizeSvrReadIPCDA(void *aCtx)
-{
-    cmiProtocolContext *sCtx = (cmiProtocolContext *)aCtx;
-
-    /* BUG-44125 [mm-cli] IPCDA 모드 테스트 중 hang - iloader CLOB */
-    if (sCtx->mReadBlock != NULL)
-    {
-        ((cmbBlockIPCDA *)sCtx->mReadBlock)->mRFlag = CMB_IPCDA_SHM_DEACTIVATED;
-    }
-    else
-    {
-        /* do nothing */
-    }
-    return;
-}
-
 IDE_RC cmnLinkPeerInitIPCDA(void *aCtx, UInt aChannelID )
 {
     cmiProtocolContext *sCtx = (cmiProtocolContext*)aCtx;
@@ -94,61 +78,46 @@ IDE_RC cmnLinkPeerInitIPCDA(void *aCtx, UInt aChannelID )
 
 IDE_RC cmnLinkPeerInitSvrWriteIPCDA(void *aCtx)
 {
-    cmiProtocolContext *sCtx =(cmiProtocolContext *)aCtx;
-    cmbBlockIPCDA  *sBlock         = NULL;
+    cmiProtocolContext *sCtx        = (cmiProtocolContext *)aCtx;
+    cmbBlockIPCDA      *sWriteBlock = NULL;
+    cmnLinkPeerIPCDA   *sLink       = NULL;
+    cmnLinkDescIPCDA   *sDesc       = NULL;
 
     IDE_TEST(sCtx->mIsDisconnect == ID_TRUE);
 
-    sBlock = (cmbBlockIPCDA *)sCtx->mWriteBlock;
+    sWriteBlock = (cmbBlockIPCDA *)sCtx->mWriteBlock;
 
-    IDE_TEST_CONT(sBlock->mWFlag == CMB_IPCDA_SHM_ACTIVATED, ContInitSvrWriteIPCDA);
+    /* BUG-46390 WriteBlock 초기화 작업이므로 WFlag는 무조건 DEACTIVATED 이어야 함 
+     * DEACTIVATED가 아닐경우 cmiLinkPeerFinalizeSvrForIPCDA가 호출되지 않았다는 의미,
+     * 따라서 connection을 종료한다. */
+    IDE_TEST_RAISE(acpAtomicGet32(&sWriteBlock->mWFlag) != CMB_IPCDA_SHM_DEACTIVATED, lockFlagError);
 
-    sBlock->mWFlag                  = CMB_IPCDA_SHM_ACTIVATED;
-    /* BUG-44705 메모리 배리어 추가
-     * mData, mBlockSize, mCursor, mOperationCount
-     * 와 같은 변수들은 mWFlag값이 변경된 후에 설정되어야 한다.*/
-    IDL_MEM_BARRIER;
-    sBlock->mBlock.mData            = &sBlock->mData;
-    sBlock->mBlock.mBlockSize       = CMB_BLOCK_DEFAULT_SIZE - sizeof(cmbBlockIPCDA);
-    sBlock->mBlock.mCursor          = CMP_HEADER_SIZE;
-    sBlock->mOperationCount         = 0;
-    /* BUG-44705 메모리 배리어 추가
-     * mData, mBlockSize, mCursor, mOperationCount
-     * 의 변수값이 설정이 끝난후에 mRFlag값이 변경되어야 한다.*/
-    IDL_MEM_BARRIER;
-    sBlock->mRFlag                  = CMB_IPCDA_SHM_ACTIVATED;
+    /* BUG-46502 atomic 함수 적용, atomic에 mem_barrier가 포함되어 있다.*/
+    acpAtomicSet32(&sWriteBlock->mWFlag, CMB_IPCDA_SHM_ACTIVATED);
 
-    IDE_EXCEPTION_CONT(ContInitSvrWriteIPCDA);
+    sWriteBlock->mBlock.mData      = &sWriteBlock->mData;
+    sWriteBlock->mBlock.mBlockSize = CMB_BLOCK_DEFAULT_SIZE - sizeof(cmbBlockIPCDA);
+    sWriteBlock->mBlock.mCursor    = CMP_HEADER_SIZE;
+
+    acpAtomicSet32(&sWriteBlock->mRFlag, CMB_IPCDA_SHM_ACTIVATED);
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(lockFlagError);
+    {
+        sLink = (cmnLinkPeerIPCDA*)sCtx->mLink;
+        sDesc = &sLink->mDesc;
+        ideLog::log(IDE_SERVER_0, "[IPCDA Recv] WriteBuffer LockFlag Error! "
+                                  "chnlID: %"ID_INT32_FMT" "
+                                  "RFlag: %"ID_INT32_FMT" "
+                                  "WFlag: %"ID_INT32_FMT" "
+                                  "OperationCount: %"ID_INT32_FMT" ",
+                                  sDesc->mChannelID, sWriteBlock->mRFlag, sWriteBlock->mWFlag, sWriteBlock->mOperationCount );
+
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-}
-
-void cmnLinkPeerFinalizeSvrWriteIPCDA(void *aCtx)
-{
-    cmiProtocolContext *sCtx = (cmiProtocolContext *)aCtx;
-    if (sCtx->mWriteBlock != NULL)
-    {
-        /* BUG-44275 "IPCDA select test 에서 fetch 이상"
-         * ID_SERIAL_BEGIN을 통하여 데이터 처리 순서를 보장한다 */ 
-        /* Write marking for end-of-protocol. */
-        ID_SERIAL_BEGIN(CMI_WOP(sCtx, CMP_OP_DB_IPCDALastOpEnded));
-
-        ID_SERIAL_EXEC(((cmbBlockIPCDA*)sCtx->mWriteBlock)->mBlock.mDataSize = ((cmbBlockIPCDA*)sCtx->mWriteBlock)->mBlock.mCursor, 1);
-
-        /* Increase Data Count. */
-        ID_SERIAL_EXEC(((cmbBlockIPCDA *)sCtx->mWriteBlock)->mOperationCount++, 2);
-
-        ID_SERIAL_END(((cmbBlockIPCDA *)sCtx->mWriteBlock)->mWFlag = CMB_IPCDA_SHM_DEACTIVATED);
-    }
-    else
-    {
-        /* do nothing. */
-    }
-    return;
 }
 
 IDE_RC cmnLinkPeerInitializeServerIPCDA(cmnLink *aLink)
@@ -219,6 +188,14 @@ IDE_RC cmnLinkPeerCloseServerIPCDA(cmnLink *aLink)
         
         if (gIPCDAShmInfo.mChannelList[sDesc->mChannelID] == ID_TRUE)
         {
+            /* BUG-46390 normal server mode : waiting for client to be killed */
+            while (0 != idlOS::semop(gIPCDAShmInfo.mSemChannelID[sDesc->mChannelID],
+                                     sDesc->mOpWaitCliExit,
+                                     2))
+            {
+                IDE_TEST_RAISE(errno != EINTR, SemWaitClientDeadError);
+            }
+
             /*
              * BUG-32398
              * 값을 변경해 여러 Client로의 혼선을 예방하자.
@@ -247,6 +224,10 @@ IDE_RC cmnLinkPeerCloseServerIPCDA(cmnLink *aLink)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(SemWaitClientDeadError);
+    {
+        IDE_SET(ideSetErrorCode(cmERR_FATAL_CMN_SEM_OP));
+    }
     IDE_EXCEPTION_END;
 
     if (sLocked == ID_TRUE)
@@ -441,7 +422,7 @@ IDE_RC cmnLinkPeerAllocChannelServerIPCDA(cmnLinkPeer *aLink, SInt *aChannelID)
 
     IDE_EXCEPTION(NoChannelError);
     {
-        SChar             sProtoBuffer[20];
+        SChar               sProtoBuffer[32];  /* BUG-46054 */
         cmnLinkDescIPCDAMsg sIPCMsg;
 
         sIPCMsg.mChannelID = -1;
@@ -940,24 +921,43 @@ IDE_RC cmnLinkPeerCheckServerIPCDA(cmnLinkPeer * aLink, idBool * aIsClosed)
     cmnLinkPeerIPCDA *sLink = (cmnLinkPeerIPCDA *)aLink;
     cmnLinkDescIPCDA *sDesc = &sLink->mDesc;
 
-    SInt    rc;
+    SInt rc;
 
-    rc = idlOS::semop(gIPCDAShmInfo.mSemChannelID[sDesc->mChannelID],
-                      sDesc->mOpCheckCliExit, 2);
-    IDE_TEST_RAISE(rc == 0, ConnectionClosed);
+    /* BUG-45976 */
+    while (1)
+    {
+        rc = idlOS::semop(gIPCDAShmInfo.mSemChannelID[sDesc->mChannelID],
+                          sDesc->mOpCheckCliExit, 2);
+        if (rc == 0)
+        {
+            IDE_RAISE(ConnectionClosed);
+        }
+        else if ((rc == -1) && (errno == EAGAIN))
+        {
+            break;
+        }
+        else
+        {
+            IDE_TEST_RAISE(errno == EIDRM, ConnectionClosed);
+            IDE_TEST_RAISE(errno != EINTR, SemOpError);
+        }
+    }
 
     *aIsClosed = ID_FALSE;
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ConnectionClosed);
+    IDE_EXCEPTION(ConnectionClosed)
     {
         (void)idlOS::semop(gIPCDAShmInfo.mSemChannelID[sDesc->mChannelID],
                            sDesc->mOpSignCliExit, 1);
 
         IDE_SET(ideSetErrorCode(cmERR_ABORT_CONNECTION_CLOSED));
     }
-
+    IDE_EXCEPTION(SemOpError)
+    {
+        IDE_SET(ideSetErrorCode(cmERR_FATAL_CMN_SEM_OP));
+    }
     IDE_EXCEPTION_END;
 
     *aIsClosed = ID_TRUE;

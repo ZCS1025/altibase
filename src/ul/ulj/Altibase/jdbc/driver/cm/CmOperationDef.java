@@ -16,7 +16,7 @@
 
 package Altibase.jdbc.driver.cm;
 
-abstract class CmOperationDef
+abstract public class CmOperationDef
 {
     static final byte             DB_OP_MESSAGE                          = 0;
     static final byte             DB_OP_ERROR_RESULT                     = 1;
@@ -47,7 +47,6 @@ abstract class CmOperationDef
     static final byte             DB_OP_FREE_RESULT                      = 42;
     static final byte             DB_OP_CANCEL                           = 43;  // 사용하지 않음. 대신 OPERATION_CANCEL_BY_CID 사용.
     static final byte             DB_OP_CANCEL_RESULT                    = 44;
-    static final byte             DB_OP_TRANSACTION                      = 45;
     static final byte             DB_OP_TRANSACTION_RESULT               = 46;
     static final byte             DB_OP_LOB_GET_SIZE                     = 47;
     static final byte             DB_OP_LOB_GET_SIZE_RESULT              = 48;
@@ -83,13 +82,27 @@ abstract class CmOperationDef
     static final byte             DB_OP_CONNECT_EX                       = 78;  // BUG-38496
     static final byte             DB_OP_CONNECT_EX_RESULT                = 79;  // BUG-38496
     static final byte             DB_OP_FETCH_V2                         = 80;  // BUG-39463
-    static final byte             DB_OP_SET_PROPERTY_V2                  = 81;  // BUG-41793 
-    static final byte             DB_OP_PARAM_DATA_IN_LIST_V2            = 83;  // BUG-44572
+    static final byte             DB_OP_SET_PROPERTY_V2                  = 81;  // BUG-41793
     static final byte             DB_OP_PARAM_DATA_IN_LIST_V2_RESULT     = 84;  // BUG-44572
-    static final byte             DB_OP_EXECUTE_V2                       = 85;  // BUG-44572
-    static final byte             DB_OP_EXECUTE_V2_RESULT                = 86;  // BUG-44572
-    static final byte             DB_OP_COUNT                            = 87;  // the number of the operations
-    
+    static final byte             DB_OP_SHARD_ANALYZE                    = 87;
+    static final byte             DB_OP_SHARD_ANALYZE_RESULT             = 88;
+    static final byte             DB_OP_SHARD_NODE_UPDATE_LIST           = 89;
+    static final byte             DB_OP_SHARD_NODE_UPDATE_LIST_RESULT    = 90;
+    static final byte             DB_OP_SHARD_NODE_GET_LIST              = 91;
+    static final byte             DB_OP_SHARD_NODE_GET_LIST_RESULT       = 92;
+    static final byte             DB_OP_SHARD_HANDSHAKE                  = 93;
+    static final byte             DB_OP_SHARD_HANDSHAKE_RESULT           = 94;
+    static final byte             DB_OP_SHARD_TRANSACTION_RESULT         = 96;
+    static final        byte      DB_OP_COUNT                            = 97;  // the number of the operations
+
+    // BUG-46513 shardjdbc 관련클래스에서 참조하기 위해 아래 속성들을 public으로 변경
+    public static final byte      DB_OP_SET_PROPERTY                     = 10;
+    public static final byte      DB_OP_TRANSACTION                      = 45;
+    public static final byte      DB_OP_PARAM_DATA_IN_LIST_V2            = 83;  // BUG-44572
+    public static final byte      DB_OP_EXECUTE_V2                       = 85;  // BUG-44572
+    public static final byte      DB_OP_EXECUTE_V2_RESULT                = 86;  // BUG-44572
+    public static final byte      DB_OP_SHARD_TRANSACTION                = 95;
+
     private static final String[] DB_OP_NAMES = {
         "DB_OP_MESSAGE",
         "DB_OP_ERROR_RESULT",
@@ -177,7 +190,17 @@ abstract class CmOperationDef
         "DB_OP_PARAM_DATA_IN_LIST_V2",        // BUG-44572
         "DB_OP_PARAM_DATA_IN_LIST_V2_RESULT", // BUG-44572
         "DB_OP_EXECUTE_V2",                   // BUG-44572
-        "DB_OP_EXECUTE_V2_RESULT",            // BUG-44572
+        "DB_OP_EXECUTE_V2_RESULT",            // BUG-44572,
+        "DB_OP_SHARD_ANALYZE",
+        "DB_OP_SHARD_ANALYZE_RESULT",
+        "DB_OP_SHARD_NODE_UPDATE_LIST",
+        "DB_OP_SHARD_NODE_UPDATE_LIST_RESULT",
+        "DB_OP_SHARD_NODE_GET_LIST",
+        "DB_OP_SHARD_NODE_GET_LIST_RESULT",
+        "DB_OP_SHARD_HANDSHAKE",
+        "DB_OP_SHARD_HANDSHAKE_RESULT",
+        "DB_OP_SHARD_TRANSACTION",
+        "DB_OP_SHARD_TRANSACTION_RESULT"
     };
 
     public static final short     CONNECT_MODE_NORMAL                    = 0;

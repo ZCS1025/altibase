@@ -75,7 +75,8 @@ typedef enum
     CMN_LINK_IMPL_UNIX,
     CMN_LINK_IMPL_IPC,
     CMN_LINK_IMPL_SSL,     /* PROJ-2474 SSL/TLS */
-    CMN_LINK_IMPL_IPCDA,   /*PROJ-2616*/
+    CMN_LINK_IMPL_IPCDA,   /* PROJ-2616 */
+    CMN_LINK_IMPL_IB,      /* PROJ-2681 */
     CMN_LINK_IMPL_INVALID,
     CMN_LINK_IMPL_BASE    = CMN_LINK_IMPL_TCP,
     CMN_LINK_IMPL_MAX     = CMN_LINK_IMPL_INVALID
@@ -90,7 +91,8 @@ typedef enum
 {
     CMN_DISPATCHER_IMPL_SOCK    = 0,
     CMN_DISPATCHER_IMPL_IPC,
-    CMN_DISPATCHER_IMPL_IPCDA,        /*PROJ-2616*/
+    CMN_DISPATCHER_IMPL_IPCDA,   /* PROJ-2616 */
+    CMN_DISPATCHER_IMPL_IB,      /* PROJ-2681 */
     CMN_DISPATCHER_IMPL_INVALID,
     CMN_DISPATCHER_IMPL_BASE    = 0,
     CMN_DISPATCHER_IMPL_MAX     = CMN_DISPATCHER_IMPL_INVALID
@@ -105,13 +107,13 @@ typedef enum cmnLinkInfoKey
 {
     CMN_LINK_INFO_ALL = 0,
     CMN_LINK_INFO_IMPL,
-    CMN_LINK_INFO_TCP_LOCAL_ADDRESS,
-    CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS,
-    CMN_LINK_INFO_TCP_LOCAL_PORT,
-    CMN_LINK_INFO_TCP_REMOTE_ADDRESS,
-    CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS,
-    CMN_LINK_INFO_TCP_REMOTE_PORT,
-    CMN_LINK_INFO_TCP_REMOTE_SOCKADDR,
+    CMN_LINK_INFO_LOCAL_ADDRESS,
+    CMN_LINK_INFO_LOCAL_IP_ADDRESS,
+    CMN_LINK_INFO_LOCAL_PORT,
+    CMN_LINK_INFO_REMOTE_ADDRESS,
+    CMN_LINK_INFO_REMOTE_IP_ADDRESS,
+    CMN_LINK_INFO_REMOTE_PORT,
+    CMN_LINK_INFO_REMOTE_SOCKADDR,
     CMN_LINK_INFO_UNIX_PATH,
     CMN_LINK_INFO_IPC_KEY,
     CMN_LINK_INFO_IPCDA_KEY,             /*PROJ-2616 shared memory key*/
@@ -143,28 +145,31 @@ typedef struct cmnLinkListenArgIPC
     acp_uint32_t  mMaxListen;
 } cmnLinkListenArgIPC;
 
-/*PROJ-2616*/
+/* PROJ-2616 */
 typedef struct cmnLinkListenArgIPCDA
 {
     acp_char_t   *mFilePath;
     acp_uint32_t  mMaxListen;
 } cmnLinkListenArgIPCDA;
 
-typedef union cmnLinkListenArg
-{
-    cmnLinkListenArgTCP  mTCP;
-    cmnLinkListenArgUNIX mUNIX;
-    cmnLinkListenArgIPC  mIPC;
-    cmnLinkListenArgIPCDA mIPCDA;/*PROJ-2616*/
-} cmnLinkListenArg;
-
-/* PROJ-2474 SSL/TLS */
-typedef struct cmnLinkListenArgSSL
+/* PROJ-2681 */
+typedef struct cmnLinkListenArgIB
 {
     acp_uint16_t  mPort;
     acp_uint32_t  mMaxListen;
     acp_uint32_t  mIPv6;
-} cmnLinkListenArgSSL;
+    acp_uint32_t  mLatency;    /* for RDMA_LATENCY rsocket option */
+    acp_uint32_t  mConChkSpin; /* for RDMA_CONCHKSPIN rsocket option */
+} cmnLinkListenArgIB;
+
+typedef union cmnLinkListenArg
+{
+    cmnLinkListenArgTCP   mTCP;
+    cmnLinkListenArgUNIX  mUNIX;
+    cmnLinkListenArgIPC   mIPC;
+    cmnLinkListenArgIPCDA mIPCDA; /* PROJ-2616 */
+    cmnLinkListenArgIB    mIB;    /* PROJ-2681 */
+} cmnLinkListenArg;
 
 /* proj-1538 ipv6
  * these macro values are defined according to those of
@@ -196,7 +201,7 @@ typedef struct cmnLinkConnectArgIPC
     acp_char_t   *mFilePath;
 } cmnLinkConnectArgIPC;
 
-/*PROJ-2616*/
+/* PROJ-2616 */
 typedef struct cmnLinkConnectArgIPCDA
 {
     acp_char_t   *mFilePath;
@@ -218,13 +223,25 @@ typedef struct cmnLinkConnectArgSSL
     acp_bool_t    mVerify;
 } cmnLinkConnectArgSSL;
 
+/* PROJ-2681 */
+typedef struct cmnLinkConnectArgIB
+{
+    acp_char_t   *mBindAddr;
+    acp_char_t   *mAddr;
+    acp_uint16_t  mPort;
+    acp_uint32_t  mPreferIPv6;
+    acp_uint32_t  mLatency;    /* for RDMA_LATENCY rsocket option */
+    acp_uint32_t  mConChkSpin; /* for RDMA_CONCHKSPIN rsocket option */
+} cmnLinkConnectArgIB;
+
 typedef union cmnLinkConnectArg
 {
     cmnLinkConnectArgTCP   mTCP;
     cmnLinkConnectArgUNIX  mUNIX;
     cmnLinkConnectArgIPC   mIPC;
-    cmnLinkConnectArgSSL   mSSL; /* PROJ-2474 SSL/TLS */
-    cmnLinkConnectArgIPCDA mIPCDA;/*PROJ-2616*/
+    cmnLinkConnectArgSSL   mSSL;   /* PROJ-2474 SSL/TLS */
+    cmnLinkConnectArgIPCDA mIPCDA; /* PROJ-2616 */
+    cmnLinkConnectArgIB    mIB;    /* PROJ-2681 */
 } cmnLinkConnectArg;
 
 /* PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning */

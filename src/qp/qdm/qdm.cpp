@@ -302,6 +302,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
                   != IDE_SUCCESS );
 
         if ( (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_RANGE) ||
+             (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH) ||
              (sParseTree->partTable->partMethod == QCM_PARTITION_METHOD_LIST) )
         {
             for ( sPartAttr = sParseTree->partTable->partAttr, sPartCount = 0;
@@ -590,7 +591,7 @@ IDE_RC qdm::existMViewByName(
                     UInt           aMViewNameSize,
                     idBool       * aExist )
 {
-    idBool               sIsCursorOpen    = ID_FALSE;
+    volatile idBool      sIsCursorOpen;
     smiRange             sRange;
     smiTableCursor       sCursor;
     const void         * sRow             = NULL;
@@ -607,6 +608,12 @@ IDE_RC qdm::existMViewByName(
 
     scGRID               sRid; /* Disk Table을 위한 Record IDentifier */
     smiCursorProperties  sCursorProperty;
+
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdm::existMViewByName::__FT__" );
+
+    sIsCursorOpen = ID_FALSE;
 
     sCursor.initialize();
 
@@ -643,6 +650,8 @@ IDE_RC qdm::existMViewByName(
                         &sCursorProperty )
                   != IDE_SUCCESS );
         sIsCursorOpen = ID_TRUE;
+
+        IDU_FIT_POINT_FATAL( "qdm::existMViewByName::__FT__::CursorCreateDB" );
 
         IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
 
@@ -723,6 +732,8 @@ IDE_RC qdm::existMViewByName(
                   != IDE_SUCCESS );
         sIsCursorOpen = ID_TRUE;
 
+        IDU_FIT_POINT_FATAL( "qdm::existMViewByName::__FT__::CursorCreateMV" );
+
         IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
 
         IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
@@ -741,14 +752,24 @@ IDE_RC qdm::existMViewByName(
     sIsCursorOpen = ID_FALSE;
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
 
     if ( sIsCursorOpen == ID_TRUE )
     {
         (void)sCursor.close();
     }
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 }

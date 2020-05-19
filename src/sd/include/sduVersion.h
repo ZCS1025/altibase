@@ -24,11 +24,11 @@
 
 /* shard meta, shard protocol 통합 버젼 */
 #define SHARD_MAJOR_VERSION 2
-#define SHARD_MINOR_VERSION 0
-#define SHARD_PATCH_VERSION 0
+#define SHARD_MINOR_VERSION 2
+#define SHARD_PATCH_VERSION 1
 
 #define SHARD_MAJOR_VERSION_STR "2"
-#define SHARD_MINOR_VERSION_STR "0"
-#define SHARD_PATCH_VERSION_STR "0"
+#define SHARD_MINOR_VERSION_STR "2"
+#define SHARD_PATCH_VERSION_STR "1"
 
 #endif /* _O_SDU_VERSION_H_ */

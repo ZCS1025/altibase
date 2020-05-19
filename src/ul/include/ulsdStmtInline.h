@@ -35,7 +35,7 @@ ACP_INLINE void ulsdStmtSetShardKeyDataType(ulnStmt *aStmt, acp_uint32_t aShardK
     aStmt->mShardStmtCxt.mShardKeyDataType = aShardKeyDataType;
 }
 
-ACP_INLINE void ulsdStmtSetShardDefaultNodeID(ulnStmt *aStmt, acp_uint16_t aShardDefaultNodeID)
+ACP_INLINE void ulsdStmtSetShardDefaultNodeID(ulnStmt *aStmt, acp_uint32_t aShardDefaultNodeID)
 {
     aStmt->mShardStmtCxt.mShardDefaultNodeID = aShardDefaultNodeID;
 }

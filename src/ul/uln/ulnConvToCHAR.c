@@ -134,7 +134,8 @@ ACI_RC ulncCHAR_CHAR(ulnFnContext  * aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     aLength->mNeeded = aColumn->mDataLength - aColumn->mGDPosition;
 
@@ -155,6 +156,11 @@ ACI_RC ulncCHAR_CHAR(ulnFnContext  * aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -336,7 +342,8 @@ ACI_RC ulncSMALLINT_CHAR(ulnFnContext*  aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sValue = ulnItoA( *(acp_sint16_t *)aColumn->mBuffer, sTempBuffer );
     sLen   = acpCStrLen( sValue, ACI_SIZEOF(sTempBuffer));
@@ -360,6 +367,11 @@ ACI_RC ulncSMALLINT_CHAR(ulnFnContext*  aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -378,7 +390,8 @@ ACI_RC ulncINTEGER_CHAR(ulnFnContext  * aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sValue = ulnItoA( *(acp_sint32_t *)aColumn->mBuffer, sTempBuffer );
     sLen   = acpCStrLen( sValue, ACI_SIZEOF(sTempBuffer));
@@ -402,6 +415,11 @@ ACI_RC ulncINTEGER_CHAR(ulnFnContext  * aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -420,7 +438,8 @@ ACI_RC ulncBIGINT_CHAR(ulnFnContext  *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sValue = ulnItoA( *(acp_sint64_t *)aColumn->mBuffer, sTempBuffer );
     sLen   = acpCStrLen( sValue, ACI_SIZEOF(sTempBuffer));
@@ -444,6 +463,11 @@ ACI_RC ulncBIGINT_CHAR(ulnFnContext  *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -460,7 +484,8 @@ ACI_RC ulncREAL_CHAR(ulnFnContext  *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     acpSnprintf(sTempBuffer,
                 ACI_SIZEOF(sTempBuffer),
@@ -484,6 +509,11 @@ ACI_RC ulncREAL_CHAR(ulnFnContext  *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -501,7 +531,9 @@ ACI_RC ulncDOUBLE_CHAR(ulnFnContext  *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     // BUG-34100 Bus Error
     acpMemCpy(&sValue, aColumn->mBuffer, ACI_SIZEOF(acp_double_t));
 
@@ -527,6 +559,11 @@ ACI_RC ulncDOUBLE_CHAR(ulnFnContext  *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -1027,7 +1064,8 @@ ACI_RC ulncCLOB_CHAR(ulnFnContext  *aFnContext,
     acp_uint32_t  sRemainAppBufferSize = 0;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aAppBuffer->mBuffer == NULL || aAppBuffer->mBufferSize <= 1)
     {
@@ -1165,6 +1203,11 @@ ACI_RC ulncCLOB_CHAR(ulnFnContext  *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -1180,7 +1223,8 @@ ACI_RC ulncNCHAR_CHAR(ulnFnContext  *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );     //BUG-28561 [CodeSonar] Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     aLength->mNeeded = aColumn->mDataLength - aColumn->mGDPosition;
 
@@ -1201,6 +1245,11 @@ ACI_RC ulncNCHAR_CHAR(ulnFnContext  *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;

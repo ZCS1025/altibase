@@ -72,6 +72,10 @@ public:
     
     static inline UInt   getSQLTextId(UInt aBucket);
     static inline void   incSQLTextId(UInt aBucket);
+
+    static IDE_RC planCacheKeep(idvSQL              *aStatistics,  /* BUG-46158 */
+                                SChar               *aSQLTextID,
+                                mmcPCOPlanCacheKeep  aPlanKeep);
                                                     
 private:
     static void  initBucket(mmcSQLTextHashBucket* aBucket);

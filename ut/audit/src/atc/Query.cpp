@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: Query.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: Query.cpp 82637 2018-03-27 04:37:41Z bethy $
  ******************************************************************************/
 #include <utdb.h>
 
@@ -102,11 +102,6 @@ IDE_RC Query::bind(const UInt i, Field * f)
  return (f)
      ? bind(i, f->getValue(), f->getValueSize(), f->getSQLType(), f->isNull(), f->getValueLength())
      : IDE_FAILURE;
-}
-
-IDE_RC Query::lobAtToAt(Query *, Query *, SChar *)
-{
-    return IDE_SUCCESS;
 }
 
 IDE_RC Query::bindColumn(UShort i,SInt aSqlType)

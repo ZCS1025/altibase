@@ -21,36 +21,44 @@
 #include <sdf.h>
 
 extern mtfModule sdfCreateMetaModule;
+extern mtfModule sdfResetMetaNodeIdModule;
 extern mtfModule sdfSetNodeModule;
-extern mtfModule sdfResetNodeModule;
 extern mtfModule sdfUnsetNodeModule;
 extern mtfModule sdfSetShardTableModule;
 extern mtfModule sdfSetShardProcedureModule;
 extern mtfModule sdfSetShardRangeModule;
 extern mtfModule sdfSetShardCloneModule;
 extern mtfModule sdfSetShardSoloModule;
+extern mtfModule sdfResetShardResidentNodeModule;
 extern mtfModule sdfUnsetShardTableModule;
 extern mtfModule sdfUnsetShardTableByIDModule;
+extern mtfModule sdfUnsetOldSmnModule;
 extern mtfModule sdfExecImmediateModule;
 // PROJ-2638
 extern mtfModule sdfShardNodeName;
 extern mtfModule sdfShardKey;
 extern mtfModule sdfShardConditionModule;
+extern mtfModule sdfResetNodeInternalModule;
+extern mtfModule sdfResetNodeExternalModule;
 
 const mtfModule* sdf::extendedFunctionModules[] =
 {
     &sdfCreateMetaModule,
+    &sdfResetMetaNodeIdModule,
     &sdfSetNodeModule,
-    &sdfResetNodeModule,
     &sdfUnsetNodeModule,
     &sdfSetShardTableModule,
     &sdfSetShardProcedureModule,
     &sdfSetShardRangeModule,
     &sdfSetShardCloneModule,
     &sdfSetShardSoloModule,
+    &sdfResetShardResidentNodeModule,
     &sdfUnsetShardTableModule,
     &sdfUnsetShardTableByIDModule,
+    &sdfUnsetOldSmnModule,
     &sdfExecImmediateModule,
+    &sdfResetNodeInternalModule,
+    &sdfResetNodeExternalModule,
     NULL
 };
 

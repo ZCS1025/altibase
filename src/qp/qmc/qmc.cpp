@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmc.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
  *
  * Description :
  *     Execution에서 사용하는 공통 모듈로
@@ -41,6 +41,7 @@
 #include <qmn.h>
 #include <qci.h>
 #include <qmv.h>
+#include <qsxUtil.h>
 
 extern mtdModule mtdBigint;
 extern mtdModule mtdByte;
@@ -53,6 +54,7 @@ mtcExecute qmc::valueExecute = {
     mtf::calculateNA,     // Aggregation 종료 함수, 없음
     qmc::calculateValue,  // VALUE 연산 함수
     NULL,                 // 연산을 위한 부가 정보, 없음
+    mtx::calculateNA,
     mtk::estimateRangeNA, // Key Range 크기 추출 함수, 없음
     mtk::extractRangeNA   // Key Range 생성 함수, 없음
 };
@@ -2019,6 +2021,20 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
 
     for ( sNode = aNode; sNode != NULL; sNode = sNode->next )
     {
+        // BUG-46678
+        // Precision을 명시하지 않은 return column의 size가 원복되지 않는 경우가 있습니다.
+        if ( (sNode->dstColumn->flag & MTC_COLUMN_SP_ADJUST_PRECISION_MASK) == MTC_COLUMN_SP_ADJUST_PRECISION_TRUE )
+        {
+            IDE_TEST( qsxUtil::finalizeParamAndReturnColumnInfo( sNode->dstColumn )
+                      != IDE_SUCCESS );
+        }
+
+        if ( (sNode->srcColumn->flag & MTC_COLUMN_SP_ADJUST_PRECISION_MASK) == MTC_COLUMN_SP_ADJUST_PRECISION_TRUE )
+        {
+            IDE_TEST( qsxUtil::finalizeParamAndReturnColumnInfo( sNode->srcColumn )
+                      != IDE_SUCCESS );
+        }
+
         switch ( sNode->flag & QMC_MTR_TYPE_MASK )
         {
             //-----------------------------------------------------------
@@ -4485,11 +4501,31 @@ qmc::appendAttribute( qcStatement  * aStatement,
 
                 if( &sAttrs->expr->node != sExpr )
                 {
+                    sCopiedNode = (qtcNode *)sExpr;
+
                     IDE_TEST( makeReference( aStatement,
                                              aMakePassNode,
                                              sAttrs->expr,
                                              (qtcNode**)&sExpr )
                               != IDE_SUCCESS );
+             
+                    // BUG-46424
+                    if ( sExpr->module == &qtc::passModule )
+                    {
+                        for ( sArg = sCopiedNode->node.arguments;
+                              sArg != NULL;
+                              sArg = sArg->next )
+                        {
+                            IDE_TEST( appendAttribute( aStatement,
+                                                       aQuerySet,
+                                                       aResult,
+                                                       (qtcNode *)sArg,
+                                                       0,
+                                                       0,
+                                                       ID_FALSE )
+                                      != IDE_SUCCESS );
+                        }
+                    }
                 }
                 else
                 {
@@ -5321,3 +5357,24 @@ qmc::duplicateGroupExpression( qcStatement * aStatement,
 
     return IDE_FAILURE;
 }
+
+void qmc::disableSealTrueFlag( qmcAttrDesc * aResult )
+{
+    qmcAttrDesc * sItrAttr;
+
+    for ( sItrAttr = aResult;
+          sItrAttr != NULL;
+          sItrAttr = sItrAttr->next )
+    {
+        if ( ( sItrAttr->flag & QMC_ATTR_SEALED_MASK ) == QMC_ATTR_SEALED_TRUE )
+        {
+            sItrAttr->flag &= ~QMC_ATTR_SEALED_MASK;
+            sItrAttr->flag |= QMC_ATTR_SEALED_FALSE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+}
+

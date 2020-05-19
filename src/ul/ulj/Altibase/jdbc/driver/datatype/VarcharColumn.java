@@ -22,6 +22,8 @@ public class VarcharColumn extends CommonCharVarcharColumn
 {
     VarcharColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.VARCHAR);
+        addMappedJdbcTypeSet(AltibaseTypes.LONGVARCHAR);
     }
 
     protected boolean isNationalCharset()
@@ -34,11 +36,6 @@ public class VarcharColumn extends CommonCharVarcharColumn
         return ColumnTypes.VARCHAR;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.VARCHAR, AltibaseTypes.LONGVARCHAR };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "VARCHAR";

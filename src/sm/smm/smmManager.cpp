@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
-* $Id: smmManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+* $Id: smmManager.cpp 84887 2019-02-14 10:13:01Z emlee $
 **********************************************************************/
 
 
@@ -100,7 +100,6 @@
 void                   *smmManager::m_catTableHeader = NULL;
 void                   *smmManager::m_catTempTableHeader = NULL;
 smmPCH                **smmManager::mPCHArray[SC_MAX_SPACE_COUNT];
-iduMemPool              smmManager::mIndexMemPool;
 smmGetPersPagePtrFunc   smmManager::mGetPersPagePtrFunc = NULL;
 
 smmManager::smmManager()
@@ -131,20 +130,6 @@ IDE_RC smmManager::initializeStatic()
 
     m_catTableHeader        = NULL;
     m_catTempTableHeader    = NULL;
-
-    // added for peformance view
-    IDE_TEST(mIndexMemPool.initialize( IDU_MEM_SM_INDEX,
-                                       (SChar*)"INDEX_MEMORY_POOL",
-                                       1,
-                                       SM_PAGE_SIZE,
-                                       smuProperty::getTempPageChunkCount(),
-                                       IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
-                                       ID_TRUE,								/* UseMutex */
-                                       IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,		/* AlignByte */
-                                       ID_FALSE,							/* ForcePooling */
-                                       ID_TRUE,								/* GarbageCollection */
-                                       ID_TRUE)								/* HWCacheLine */
-             != IDE_SUCCESS);
 
     IDE_TEST( smLayerCallback::prepareIdxFreePages() != IDE_SUCCESS );
 
@@ -493,7 +478,6 @@ IDE_RC smmManager::destroyStatic()
      *  release all index free page list
      * ----------------------------------------------*/
     IDE_TEST( smLayerCallback::releaseIdxFreePages() != IDE_SUCCESS );
-    IDE_TEST( mIndexMemPool.destroy() != IDE_SUCCESS );
 
     IDE_TEST( smmDatabase::destroy() != IDE_SUCCESS );
 
@@ -702,12 +686,12 @@ IDE_RC smmManager::closeAndRemoveChkptImages(smmTBSNode * aTBSNode,
 
 
     IDE_DASSERT( aTBSNode != NULL );
+    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace( aTBSNode->mHeader.mID ) == ID_TRUE );
+
     sSpaceID = aTBSNode->mHeader.mID;
 
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,"[TBSID:%d-%s] closeAndRemove.. \n", sSpaceID, aTBSNode->mHeader.mName );
 
-    IDE_DASSERT(sctTableSpaceMgr::isMemTableSpace(sSpaceID)
-                == ID_TRUE);
 
     for (sWhichDB = 0; sWhichDB < SMM_PINGPONG_COUNT; sWhichDB++)
     {
@@ -720,7 +704,6 @@ IDE_RC smmManager::closeAndRemoveChkptImages(smmTBSNode * aTBSNode,
                                  SMM_GETDBFILEOP_NONE,
                                  &sDBFilePtr )
                       != IDE_SUCCESS );
-
 
             IDE_TEST( sDBFilePtr->closeAndRemoveDbFile( sSpaceID,
                                                         aRemoveImageFiles,
@@ -1820,8 +1803,9 @@ IDE_RC smmManager::initPageSystem( smmTBSNode        * aTBSNode )
                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                  ID_FALSE,							/* ForcePooling */
                  ID_TRUE,							/* GarbageCollection */
-                 ID_TRUE)              				/* HWCacheLine */
-        != IDE_SUCCESS);
+                 ID_TRUE,                           /* HWCacheLine */
+                 IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+             != IDE_SUCCESS);			
 
 
     return IDE_SUCCESS;
@@ -3015,62 +2999,6 @@ IDE_RC smmManager::destroyPagePool( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
-
-
-// added for performance view.
-IDE_RC smmManager::allocateIndexPage(smmTempPage ** aAllocated)
-{
-
-    IDE_DASSERT( aAllocated != NULL );
-
-    /* smmManager_allocateIndexPage_alloc_Allocated.tc */
-    IDU_FIT_POINT("smmManager::allocateIndexPage::alloc::Allocated");
-    IDE_TEST( mIndexMemPool.alloc((void **)aAllocated)
-              != IDE_SUCCESS);
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
-}
-
-IDE_RC smmManager::freeIndexPage ( smmTempPage  *aHead,
-                                   smmTempPage  *aTail)
-{
-
-    smmTempPage     *sCurTemp;
-
-    IDE_DASSERT(aHead != NULL);
-
-    sCurTemp  = aHead;
-    while( 1 )
-    {
-        smmTempPage *sNextPage; // to prevent FMR (free memroy read)
-
-        sNextPage  = sCurTemp->m_header.m_next;
-
-        IDE_TEST(mIndexMemPool.memfree(sCurTemp) != IDE_SUCCESS);
-
-        if (aTail == NULL ||    // single page free called
-            sNextPage  == NULL) // or all page free done.
-        {
-            break;
-        }
-        sCurTemp = sNextPage;
-    }
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
-}
-
 /*
  * smmManager::prepareDB를 위한 Action함수
  */
@@ -3684,7 +3612,7 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
         {
             sFirstDBFile = sDBFile;
         }
-
+        
         // LogAnchor에서 초기화될때는 파일을 오픈하지 않으므로,
         // 최초로 Open하는 곳이다.
         if (sDBFile->isOpen() != ID_TRUE )
@@ -3694,7 +3622,7 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
     }
 
     // BUG-27456 Klocwork SM (4)
-    IDE_ASSERT( sFirstDBFile != NULL );
+    IDE_ERROR_RAISE (sFirstDBFile != NULL, ERR_NOEXIST_FILE );
 
     /* ------------------------------------------------
      *  Read catalog page(PageID=0) &
@@ -3728,6 +3656,18 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOEXIST_FILE );
+    {
+        SChar sErrorFile[SM_MAX_FILE_NAME];
+
+        idlOS::snprintf( (SChar*)sErrorFile, SM_MAX_FILE_NAME, "%s-%"ID_UINT32_FMT"-0",
+                         aTBSNode->mHeader.mName,
+                         i );
+
+        IDE_SET( ideSetErrorCode( smERR_ABORT_NoExistFile,
+                                  (SChar*)sErrorFile ) );
+    }
 
     IDE_EXCEPTION_END;
 
@@ -3789,30 +3729,40 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
     /* ------------------------------------------------
      * [3] All DB File Open
      * ----------------------------------------------*/
-    for (sPingPong = 0; sPingPong < SMM_PINGPONG_COUNT; sPingPong++)
+    for ( sPingPong = 0 ; sPingPong < SMM_PINGPONG_COUNT; sPingPong++ )
     {
-        sDBFileCount = getRestoreDBFileCount( aTBSNode);
+        sDBFileCount = getRestoreDBFileCount( aTBSNode );
 
         // 파일이 있을 경우에만 Open한다.
-        for (sFileIdx = 1; sFileIdx < sDBFileCount; sFileIdx++)
+        for ( sFileIdx = 1; sFileIdx < sDBFileCount; sFileIdx++ )
         {
-            IDE_ASSERT(sFileIdx < aTBSNode->mHighLimitFile);
+            IDE_ASSERT( sFileIdx < aTBSNode->mHighLimitFile );
 
-            sFound =  smmDatabaseFile::findDBFile( aTBSNode,
+            if( smmManager::getCreateDBFileOnDisk( aTBSNode,
                                                    sPingPong,
-                                                   sFileIdx,
-                                                   (SChar*)sDBFileName,
-                                                   &sDBFileDir);
-            if ( sFound == ID_TRUE )
+                                                   sFileIdx ) == ID_TRUE )
             {
-                IDE_TEST( openAndGetDBFile( aTBSNode,
-                                            sPingPong,
-                                            sFileIdx,
-                                            & sDBFile )
-                          != IDE_SUCCESS )
+
+                sFound =  smmDatabaseFile::findDBFile( aTBSNode,
+                                                       sPingPong,
+                                                       sFileIdx,
+                                                       (SChar*)sDBFileName,
+                                                       &sDBFileDir );
+                if ( sFound == ID_TRUE )
+                {
+                    IDE_TEST( openAndGetDBFile( aTBSNode,
+                                                sPingPong,
+                                                sFileIdx,
+                                                & sDBFile )
+                              != IDE_SUCCESS )
+                }
             }
-        }
-    }
+            else
+            {
+                /*  디스크에 생성된 기록이 없으면 확인할 필요도 없음. */  
+            }
+        } // for
+    } // for
 
     /* ------------------------------------------------
      * [2] 실제 DB 로딩
@@ -4461,8 +4411,7 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
 
     while( sCurTBS != NULL )
     {
-        if( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-            == ID_TRUE)
+        if ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) == ID_TRUE )
         {
 
             sDBFileCount = 0;
@@ -4504,7 +4453,7 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
                 // 마지막 생성된 DB파일 번호이므로, DB파일 갯수에서 1감소
                 sCurTBS->mLstCreatedDBFile = sDBFileCount - 1;
             }
-        }
+        } // isMemTableSpace
 
         sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
     }
@@ -4530,10 +4479,8 @@ IDE_RC smmManager::freeAllFreePageMemory()
 
     while( sCurTBS != NULL )
     {
-        if( (sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-             != ID_TRUE) ||
-            ( sCurTBS->mRestoreType ==
-              SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
+        if ( ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) ||
+             ( sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -5003,7 +4950,7 @@ IDE_RC smmManager::syncDB( sctStateSet aSkipStateSet,
 
     while( sSpaceNode != NULL )
     {
-        if( sctTableSpaceMgr::isMemTableSpace( sSpaceNode->mID) == ID_TRUE)
+        if ( sctTableSpaceMgr::isMemTableSpace( sSpaceNode->mID) == ID_TRUE )
         {
             if ( aSyncLatch == ID_TRUE )
             {
@@ -5990,13 +5937,13 @@ IDE_RC smmManager::openAndGetDBFile( smmTBSNode *      aTBSNode,
  * 데이터베이스 파일 객체를 리턴한다.
  * ( 필요하다면 모든 DB 디렉토리에서 DB파일을 찾는다 )
  *
- * aStableDB [IN] Ping/Pong DB 지정 ( 0이나 1 )
- * aDBFileNo [IN] 데이터베이스 파일 번호
- * aOp       [IN] getDBFile 옵션
- * aDBFile   [OUT] 데이터베이스 파일 객체
+ * aPingPongDBNum [IN] Ping/Pong DB 지정 ( 0이나 1 )
+ * aDBFileNo      [IN] 데이터베이스 파일 번호
+ * aOp            [IN] getDBFile 옵션
+ * aDBFile        [OUT] 데이터베이스 파일 객체
  */
 IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
-                              UInt               aStableDB,
+                              UInt               aPingPongDBNum,
                               UInt               aDBFileNo,
                               smmGetDBFileOption aOp,
                               smmDatabaseFile ** aDBFile )
@@ -6007,15 +5954,14 @@ IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
     idBool  sFound;
 
     //BUG-27610	CodeSonar::Type Underrun, Overrun (2)
-    IDE_ASSERT(  aStableDB <  SM_DB_DIR_MAX_COUNT );
+    IDE_ASSERT(  aPingPongDBNum <  SM_DB_DIR_MAX_COUNT );
     IDE_DASSERT( aDBFile != NULL );
-//      IDE_DASSERT( aDBFileNo < mHighLimitFile );
 
     // 모든 MEM_DB_DIR에서 데이터베이스 파일을 찾아야 하는지 여부
     if( aOp == SMM_GETDBFILEOP_SEARCH_FILE )
     {
         sFound =  smmDatabaseFile::findDBFile( aTBSNode,
-                                               aStableDB,
+                                               aPingPongDBNum,
                                                aDBFileNo,
                                                (SChar*)sDBFileName,
                                                &sDBFileDir);
@@ -6023,10 +5969,8 @@ IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
         IDE_TEST_RAISE( sFound != ID_TRUE,
                         file_exist_error );
 
-        ((smmDatabaseFile*)aTBSNode->mDBFile[aStableDB][aDBFileNo])->
-            setFileName(sDBFileName);
-        ((smmDatabaseFile*)aTBSNode->mDBFile[aStableDB][aDBFileNo])->
-            setDir(sDBFileDir);
+        ((smmDatabaseFile*)aTBSNode->mDBFile[aPingPongDBNum][aDBFileNo])->setFileName(sDBFileName);
+        ((smmDatabaseFile*)aTBSNode->mDBFile[aPingPongDBNum][aDBFileNo])->setDir(sDBFileDir);
     }
 
     /* BUG-32214 [sm] when server start to check the db file size.
@@ -6035,9 +5979,7 @@ IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
     IDE_TEST_RAISE( aDBFileNo >= aTBSNode->mHighLimitFile ,
                     error_invalid_mem_max_db_size );
 
-
-    *aDBFile = (smmDatabaseFile*)aTBSNode->mDBFile[aStableDB][aDBFileNo];
-
+    *aDBFile = (smmDatabaseFile*)aTBSNode->mDBFile[aPingPongDBNum][aDBFileNo];
 
     return IDE_SUCCESS;
 
@@ -6045,22 +5987,22 @@ IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
     {
         SChar sErrorFile[SM_MAX_FILE_NAME];
 
-        idlOS::snprintf((SChar*)sErrorFile, SM_MAX_FILE_NAME, "%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT"",
-                aTBSNode->mHeader.mName,
-                aStableDB,
-                aDBFileNo);
+        idlOS::snprintf( (SChar*)sErrorFile, SM_MAX_FILE_NAME, "%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT"",
+                         aTBSNode->mHeader.mName,
+                         aPingPongDBNum,
+                         aDBFileNo );
 
-        IDE_SET(ideSetErrorCode(smERR_ABORT_NoExistFile,
-                                (SChar*)sErrorFile));
+        IDE_SET( ideSetErrorCode( smERR_ABORT_NoExistFile,
+                                  (SChar*)sErrorFile ) );
     }
     IDE_EXCEPTION( error_invalid_mem_max_db_size );
     {
         SChar sErrorFile[SM_MAX_FILE_NAME];
 
-        idlOS::snprintf((SChar*)sErrorFile, SM_MAX_FILE_NAME, "%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT"",
-                aTBSNode->mHeader.mName,
-                aStableDB,
-                aDBFileNo);
+        idlOS::snprintf( (SChar*)sErrorFile, SM_MAX_FILE_NAME, "%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT"",
+                         aTBSNode->mHeader.mName,
+                         aPingPongDBNum,
+                         aDBFileNo );
 
         IDE_SET( ideSetErrorCode( smERR_ABORT_DB_FILE_SIZE_EXCEEDS_LIMIT,
                                   (SChar*)sErrorFile ) );
@@ -6076,29 +6018,42 @@ IDE_RC smmManager::openOrCreateDBFileinRecovery( smmTBSNode * aTBSNode,
                                                  SInt         aDBFileNo,
                                                  idBool     * aIsCreated )
 {
-    SInt   sCurrentDB;
+    SInt             sCurrentDB;
     smmDatabaseFile *sDBFile;
+    idBool           sNeedToCreate = ID_TRUE ;
 
     IDE_ASSERT( aIsCreated != NULL );
 
-    IDE_RC sSuccess;
-
     for ( sCurrentDB=0 ; sCurrentDB<SMM_PINGPONG_COUNT; sCurrentDB++ )
     {
-        sSuccess = getDBFile( aTBSNode,
-                              sCurrentDB,
-                              aDBFileNo,
-                              SMM_GETDBFILEOP_SEARCH_FILE,
-                              &sDBFile );
-
-        if( sSuccess != IDE_SUCCESS )
+        if( smmManager::getCreateDBFileOnDisk( aTBSNode,
+                                               sCurrentDB ,
+                                               aDBFileNo ) == ID_TRUE )
         {
-            IDE_TEST(((smmDatabaseFile*)aTBSNode->mDBFile[sCurrentDB][aDBFileNo])->createDbFile(
-                         aTBSNode,
-                         sCurrentDB,
-                         aDBFileNo,
-                         0/* DB File Header만 기록*/)
-                     != IDE_SUCCESS);
+            if ( getDBFile( aTBSNode,
+                            sCurrentDB,
+                            aDBFileNo,
+                            SMM_GETDBFILEOP_SEARCH_FILE,
+                            &sDBFile ) == IDE_SUCCESS )
+            {
+                sNeedToCreate = ID_FALSE; 
+                *aIsCreated   = ID_FALSE;
+
+                if( sDBFile->isOpen() != ID_TRUE )
+                {
+                    IDE_TEST( sDBFile->open() != IDE_SUCCESS );
+                }
+            }
+        }
+
+        if( sNeedToCreate == ID_TRUE )
+        {
+            IDE_TEST( ((smmDatabaseFile*)aTBSNode->mDBFile[sCurrentDB][aDBFileNo])->createDbFile(
+                                                                         aTBSNode,
+                                                                         sCurrentDB,
+                                                                         aDBFileNo,
+                                                                         0/* DB File Header만 기록*/)
+                      != IDE_SUCCESS );
 
             // fix BUG-17513
             // restart recovery완료이후 loganchor resorting과정에서
@@ -6114,49 +6069,15 @@ IDE_RC smmManager::openOrCreateDBFileinRecovery( smmTBSNode * aTBSNode,
         }
         else
         {
-            if (sDBFile->isOpen() != ID_TRUE)
-            {
-                IDE_TEST(sDBFile->open() != IDE_SUCCESS);
-            }
-            *aIsCreated = ID_FALSE;
+            /* nothing to do */
         }
-    }
-
-//      for ( sCurrentDB=0 ; sCurrentDB<SMM_PINGPONG_COUNT; sCurrentDB++ )
-//      {
-//          IDE_TEST(smuUtility::makeDatabaseFileName((SChar *)smuProperty::getDBName(),
-//                                                    sDBDir)
-//                   != IDE_SUCCESS);
-//          idlOS::sprintf(sDBFileName, "%s-%"ID_INT32_FMT,
-//                         sDBDir[sCurrentDB],
-//                         aDBFileNo);
-
-//          // DB화일이 없는 경우 생성: disk space가 없는 경우 blocking될수 있음
-//          rc = idf::access(sDBFileName, F_OK);
-//          if ( rc != 0 )
-//          {
-//              IDE_TEST(mDBFile[sCurrentDB][aDBFileNo]->createDbFile(sCurrentDB,
-//                                                                     aDBFileNo)
-//                       != IDE_SUCCESS);
-//          }
-//          else
-//          {
-//              IDE_TEST(mDBFile[sCurrentDB][aDBFileNo]->setFileName(sDBFileName)
-//                       != IDE_SUCCESS);
-
-//              IDE_ASSERT(mDBFile[sCurrentDB][aDBFileNo]->isOpen() != ID_TRUE);
-
-//              IDE_TEST(mDBFile[sCurrentDB][aDBFileNo]->open() != IDE_SUCCESS);
-//          }
-//      }
-
+    } // for
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-
 }
 
 /*

@@ -176,12 +176,18 @@ typedef struct sdtWAFlushQueue
     SInt                 mFQBegin;  /* Queue의 Begin 지점 */
     SInt                 mFQEnd;    /* Queue의 Begin 지점 */
     idBool               mFQDone;   /* Flush 동작이 종료되어야 하는가? */
+    UInt                 mWAFlusherIdx; /* 담당한 Flusher의 ID */
     smiTempTableStats ** mStatsPtr;
     idvSQL             * mStatistics;
 
     sdtWAFlushQueue    * mNextTarget;   /* Flusher의 Queue 관리 */
-    UInt                 mWAFlusherIdx; /* 담당한 Flusher의 ID */
+
     void               * mWASegment;
+
+    ULong                mWriteCount;  /* 통계 정보 */
+    ULong                mWritePageCount;
+    ULong                mRedirtyCount;
+
     scPageID             mSlotPtr[ 1 ]; /* Flush할 작업 Slot*/
 } sdtWAFlushQueue;
 
@@ -328,11 +334,11 @@ typedef struct sdtTRPInfo4Select
 {
     sdtTRPHeader  * mSrcRowPtr;
     sdtTRPHeader  * mTRPHeader;
-    /* Chainig Row일경우, HeadRow가 unfix될 수 있기에 복사해둠 */
-    sdtTRPHeader    mTRPHeaderBuffer;
 
-    UInt            mValueLength; /* Value총 길이 */
+    scGRID          mTRPHGRID;    /* TRPHeaderRowPiece의 GRID */
+
     UChar        *  mValuePtr;    /* Value의 첫 위치*/
+    UInt            mValueLength; /* Value총 길이 */
 } sdtTRPInfo4Select;
 
 

@@ -45,6 +45,16 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aProtocolContext,
                                 void               *aServiceSession,
                                 void               *aUserContext);
 
+/* BUG-45967 Data Node의 Shard Session 정리 */
+ACI_RC ulnCallbackExecuteResultInternal(cmiProtocolContext *aProtocolContext,
+                                        void               *aUserContext,
+                                        acp_uint32_t        aStatementID,
+                                        acp_uint32_t        aRowNumber,
+                                        acp_uint16_t        aResultSetCount,
+                                        acp_sint64_t        aAffectedRowCount,
+                                        acp_sint64_t        aFetchedRowCount,
+                                        acp_uint8_t         aIsSimpleSelectExecute);
+
 #define ULN_EXECUTE_CHECK_NO_DATA(aFnContext, aStmt)                    \
     do                                                                  \
     {                                                                   \

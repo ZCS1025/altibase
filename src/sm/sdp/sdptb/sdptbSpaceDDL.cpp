@@ -2202,7 +2202,7 @@ IDE_RC sdptbSpaceDDL::alterDropFileCommitPending(
      * 다시 구하기 때문이다. */
     IDE_ASSERT( smrRecoveryMgr::isRestart() == ID_FALSE );
 
-    // 여기 들어오는 Tablespace는 항상 Memory Tablespace여야 한다.
+    // 여기 들어오는 Tablespace는 항상 Disk Tablespace여야 한다.
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
                 == ID_TRUE );
 

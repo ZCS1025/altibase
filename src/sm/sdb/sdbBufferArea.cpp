@@ -74,8 +74,9 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
                                     8,                  // align byte
                                     ID_FALSE,			// ForcePooling
                                     ID_TRUE,			// GarbageCollection
-                                    ID_TRUE)			// HWCacheLine
-             != IDE_SUCCESS);
+                                    ID_TRUE,            /* HWCacheLine */
+                                    IDU_MEMPOOL_TYPE_LEGACY   /* mempool type*/) 
+             != IDE_SUCCESS);			
     sState = 2;
 
     IDE_TEST(mFrameMemPool.initialize(IDU_MEM_SM_SDB,
@@ -98,8 +99,9 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
                                      8,                 // align byte
                                      ID_FALSE,			// ForcePooling 
                                      ID_TRUE,			// GarbageCollection
-                                     ID_TRUE)			// HWCacheLine
-             != IDE_SUCCESS);
+                                     ID_TRUE,			// HWCacheLine
+                                     IDU_MEMPOOL_TYPE_LEGACY /* mempool type */) 
+             != IDE_SUCCESS);			
     sState = 4;
 
     // 실제로 BCB array와 frame chunk를 할당한다.

@@ -65,7 +65,7 @@ IDE_RC dkmCheckDblinkEnabled( void )
 IDE_RC dkmCheckDblinkOrShardMetaEnabled( void )
 {
     IDE_TEST_RAISE( ( DKU_DBLINK_ENABLE != DK_ENABLE ) &&
-                    ( qci::isShardMetaEnable() != ID_TRUE ),
+                    ( sdi::isShardEnable() != ID_TRUE ),
                     ERR_DBLINK_DISABLED );
 
     return IDE_SUCCESS;
@@ -249,7 +249,7 @@ IDE_RC dkmSessionInitialize( UInt          aSessionID,
                              dkmSession ** aSession )
 {
     if ( ( dkmDblinkStarted() == ID_TRUE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( dksSessionMgr::createDataSession( aSessionID,
                                                           aSession_ )
@@ -319,7 +319,7 @@ IDE_RC dkmSessionFinalize( dkmSession   *aSession )
 void dkmSessionSetUserId( dkmSession * aSession, UInt aUserId )
 {
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         aSession->mUserId = aUserId;
     }
@@ -338,7 +338,7 @@ void dkmSessionSetUserId( dkmSession * aSession, UInt aUserId )
 IDE_RC dkmGetGlobalTransactionLevel( UInt * aValue )
 {
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         *aValue = DKU_DBLINK_GLOBAL_TRANSACTION_LEVEL;
     }
@@ -388,7 +388,7 @@ IDE_RC dkmSessionSetGlobalTransactionLevel( dkmSession * aSession,
     IDE_ASSERT( aSession != NULL );
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( aValue > DKT_ADLP_TWO_PHASE_COMMIT, ERR_INVALID_VALUE );
 
@@ -540,7 +540,7 @@ IDE_RC dkmPrepare( dkmSession * aSession )
     dksDataSession       * sSession           = NULL;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( aSession == NULL, ERR_INTERNAL_ERROR );
 
@@ -561,6 +561,12 @@ IDE_RC dkmPrepare( dkmSession * aSession )
             {
                 /* Nothing to do */
             }
+
+            /* BUG-46092 */
+            /* DKT_COORD_FLAG_TRANSACTION_BROKEN_* flag is used for sharding. */
+            IDE_TEST_RAISE( sGlobalCoordinator->getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                            == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE,
+                            ERR_GTX_SHARD_NEED_ROLLBACK );
 
             if ( sGlobalCoordinator->getGTxStatus() == DKT_GTX_STATUS_PREPARED )
             {
@@ -591,9 +597,23 @@ IDE_RC dkmPrepare( dkmSession * aSession )
         IDE_SET( ideSetErrorCode( dkERR_ABORT_DK_INTERNAL_ERROR,
                                  "[dkmPrepare] aSession is NULL" ) );
     }
-    IDE_EXCEPTION( ERR_GTX_PREPARE_PHASE_FAILED );
+    IDE_EXCEPTION( ERR_GTX_SHARD_NEED_ROLLBACK );
     {
         IDE_SET( ideSetErrorCode( dkERR_ABORT_DKM_COMMIT_FAILED ) );
+    }
+    IDE_EXCEPTION( ERR_GTX_PREPARE_PHASE_FAILED );
+    {
+        if ( sdi::isShardEnable() == ID_TRUE )
+        {
+            /* BUG-46092
+             * Nothing to do.
+             * Do not over-write error code.
+             */
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode( dkERR_ABORT_DKM_COMMIT_FAILED ) );
+        }
     }
     IDE_EXCEPTION_END;
 
@@ -623,7 +643,7 @@ void dkmSetGtxPreparedStatus( dkmSession * aSession )
     sSession = (dksDataSession *)aSession;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         (void)dktGlobalTxMgr::findGlobalCoordinator( sSession->mGlobalTxId, &sGlobalCoordinator );
 
@@ -654,7 +674,7 @@ IDE_RC dkmCommit( dkmSession    *aSession )
     dksDataSession          *sSession           = NULL;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( aSession == NULL, ERR_INTERNAL_ERROR );
 
@@ -689,17 +709,15 @@ IDE_RC dkmCommit( dkmSession    *aSession )
             }
 
             /* Destroy global coordinator */
-            dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+            dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
         }
         else
         {
-            /* there is no transaction */
+            dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
+            dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
         }
 
-        /* clear transaction info of this session */
         (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-        dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
     }
     else
     {
@@ -717,28 +735,26 @@ IDE_RC dkmCommit( dkmSession    *aSession )
 
     IDE_PUSH();
 
+    if ( sGlobalCoordinator != NULL )
+    {
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
+    }
+    else
+    {
+        if ( sSession != NULL )
+        {
+            dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
+            dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
+        }
+        else
+        {
+            /* do nothing */
+        }
+    }
+
     if ( sSession != NULL )
     {
         (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
-    }
-    else
-    {
-        /* do nothing */
-    }
-
-    if ( sGlobalCoordinator != NULL )
-    {
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    if ( sSession != NULL )
-    {
-        dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-        dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
     }
     else
     {
@@ -763,7 +779,7 @@ IDE_RC dkmRollback( dkmSession  *aSession, SChar  *aSavepoint )
     dksDataSession          *sSession           = NULL;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( aSession == NULL, ERR_INTERNAL_ERROR );
 
@@ -790,10 +806,13 @@ IDE_RC dkmRollback( dkmSession  *aSession, SChar  *aSavepoint )
             if ( ( sGlobalCoordinator->getRemoteTxCount() == 0 ) ||
                  ( sSession->mAtomicTxLevel == DKT_ADLP_TWO_PHASE_COMMIT ) )
             {
-                dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+                /* BUG-46092 */
+                /* DKT_COORD_FLAG_TRANSACTION_BROKEN_* flag is used for sharding. */
+                sGlobalCoordinator->setFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK,
+                                             DKT_COORD_FLAG_TRANSACTION_BROKEN_FALSE );
+
+                dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
                 (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
-                dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-                dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
             }
             else
             {
@@ -827,10 +846,13 @@ IDE_RC dkmRollback( dkmSession  *aSession, SChar  *aSavepoint )
         if ( ( sGlobalCoordinator->getRemoteTxCount() == 0 ) ||
              ( sSession->mAtomicTxLevel == DKT_ADLP_TWO_PHASE_COMMIT ) )
         {
-            dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+            /* BUG-46092 */
+            /* DKT_COORD_FLAG_TRANSACTION_BROKEN_* flag is used for sharding. */
+            sGlobalCoordinator->setFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK,
+                                         DKT_COORD_FLAG_TRANSACTION_BROKEN_FALSE );
+
+            dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
             (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
-            dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-            dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
         }
         else
         {
@@ -839,17 +861,16 @@ IDE_RC dkmRollback( dkmSession  *aSession, SChar  *aSavepoint )
     }
     else
     {
-        /* Nothing to do */
-    }
-
-    if ( sSession != NULL )
-    {
-        dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-        dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
-    }
-    else
-    {
-        /* Nothing to do */
+        if ( sSession != NULL )
+        {
+            dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
+            dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
+            (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     IDE_POP();
@@ -874,7 +895,7 @@ IDE_RC dkmRollbackForce( dkmSession * aSession )
     dksDataSession          *sSession           = NULL;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( aSession == NULL, ERR_INTERNAL_ERROR );
 
@@ -905,17 +926,16 @@ IDE_RC dkmRollbackForce( dkmSession * aSession )
                 IDE_TEST( sGlobalCoordinator->executeRollbackForce() != IDE_SUCCESS );
             }
 
-            dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+            dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
         }
         else
         {
-            /* success */
+            dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
+            dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
         }
 
         /* clear transaction info of this session */
         (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-        dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
     }
     else
     {
@@ -935,22 +955,21 @@ IDE_RC dkmRollbackForce( dkmSession * aSession )
 
     if ( sGlobalCoordinator != NULL )
     {
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    if ( sSession != NULL )
-    {
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
         (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
-        dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
     }
     else
     {
-        /* Nothing to do */
+        if ( sSession != NULL )
+        {
+            dksSessionMgr::setDataSessionGlobalTxId( sSession, DK_INIT_GTX_ID );
+            dksSessionMgr::setDataSessionLocalTxId( sSession, DK_INIT_LTX_ID );
+            (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     IDE_POP();
@@ -976,7 +995,7 @@ IDE_RC dkmSavepoint( dkmSession *aSession, const SChar  *aSavepoint )
     SInt                     sRemoteNodeRecvTimeout = 0;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( aSession == NULL, ERR_INTERNAL_ERROR );
 
@@ -1576,15 +1595,11 @@ static IDE_RC dkmAllocStatement( void            *aQcStatement,
         IDE_TEST( dkmGetLocalTransactionId( aQcStatement, &sLocalTxId )
                   != IDE_SUCCESS );
 
-        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinator( sSession,
-                                                           sLocalTxId,
-                                                           &sGlobalCoordinator )
+        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( sSession,
+                                                                            sLocalTxId,
+                                                                            &sGlobalCoordinator )
                   != IDE_SUCCESS );
         sIsGTxCreated = ID_TRUE;
-
-        dksSessionMgr::setDataSessionLocalTxId( sSession, sLocalTxId );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession,
-                                                 sGlobalCoordinator->getGlobalTxId() );
 
         IDE_TEST( sGlobalCoordinator->createRemoteTx( sStatistics,
                                                       sSession,
@@ -1720,7 +1735,7 @@ static IDE_RC dkmAllocStatement( void            *aQcStatement,
 
     if ( ( sIsGTxCreated == ID_TRUE ) && ( sGlobalCoordinator->getRemoteTxCount() == 0 ) )
     {
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
     }
     else
     {
@@ -1728,7 +1743,14 @@ static IDE_RC dkmAllocStatement( void            *aQcStatement,
     }
     /* << BUG-37663 */
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     IDE_POP();
 
@@ -1969,7 +1991,14 @@ IDE_RC dkmCalculateExecuteStatement( void           *aQcStatement,
 
     IDE_PUSH();
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
 #ifdef ALTIBASE_PRODUCT_XDB
     /* nothing to do */
@@ -2491,15 +2520,11 @@ IDE_RC dkmCalculateExecuteImmediate( void           *aQcStatement,
                   != IDE_SUCCESS );
 
         /* this data session tries to execute remote stmt firstly */
-        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinator( sSession,
-                                                           sLocalTxId,
-                                                           &sGlobalCoordinator )
+        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( sSession,
+                                                                            sLocalTxId,
+                                                                            &sGlobalCoordinator )
                   != IDE_SUCCESS );
         sIsGTxCreated = ID_TRUE;
-
-        dksSessionMgr::setDataSessionLocalTxId( sSession, sLocalTxId );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession,
-                                                 sGlobalCoordinator->getGlobalTxId() );
 
         IDE_TEST( sGlobalCoordinator->createRemoteTx( sStatistics,
                                                       sSession,
@@ -2622,7 +2647,7 @@ IDE_RC dkmCalculateExecuteImmediate( void           *aQcStatement,
 
     if ( ( sIsGTxCreated == ID_TRUE ) && ( sGlobalCoordinator->getRemoteTxCount() == 0 ) )
     {
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
     }
     else
     {
@@ -3651,7 +3676,14 @@ extern IDE_RC dkmCalculateNextRow( void         *aQcStatement,
 
     IDE_PUSH();
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
 #ifdef ALTIBASE_PRODUCT_XDB
     /* nothing to do */
@@ -4152,7 +4184,7 @@ IDE_RC dkmStartAltilinkerProcess( void )
     }
     else
     {
-        if ( qci::isShardMetaEnable() == ID_TRUE )
+        if ( sdi::isShardEnable() == ID_TRUE )
         {
             sNotifier = dktGlobalTxMgr::getNotifier();
             sNotifier->setPause( ID_FALSE );
@@ -4276,8 +4308,15 @@ IDE_RC dkmCloseSessionAll( idvSQL * aStatistics, dkmSession   *aSession )
     {
         sSession = (dksDataSession *)aSession;
 
-        IDE_TEST( dksSessionMgr::connectDataSession( sSession )
-                  != IDE_SUCCESS );
+        if ( dkmDblinkStarted() == ID_TRUE )
+        {
+            IDE_TEST( dksSessionMgr::connectDataSession( sSession )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
+        }
 
         IDE_TEST( dksSessionMgr::closeRemoteNodeSession( aStatistics, sSession, NULL )
                   != IDE_SUCCESS );
@@ -4323,14 +4362,21 @@ IDE_RC dkmCloseSession( idvSQL       *aStatistics,
 
     IDE_TEST( dkmCheckDblinkEnabled() != IDE_SUCCESS );
 
-    IDE_TEST( aDblinkName == NULL );
+    IDE_TEST_RAISE( aDblinkName == NULL, ERR_INTERNAL_ERROR );
 
     sSession = (dksDataSession *)aSession;
 
     if ( sSession != NULL )
     {
-        IDE_TEST( dksSessionMgr::connectDataSession( sSession )
-                  != IDE_SUCCESS );
+        if ( dkmDblinkStarted() == ID_TRUE )
+        {
+            IDE_TEST( dksSessionMgr::connectDataSession( sSession )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
+        }
 
         IDE_TEST( dksSessionMgr::closeRemoteNodeSession( aStatistics, sSession, aDblinkName )
                   != IDE_SUCCESS );
@@ -4342,6 +4388,11 @@ IDE_RC dkmCloseSession( idvSQL       *aStatistics,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INTERNAL_ERROR )
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DK_INTERNAL_ERROR,
+                                  "aDblinkName is NULL" ) );
+    }
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
@@ -4906,15 +4957,11 @@ IDE_RC dkmAllocAndExecuteQueryStatement( void           *aQcStatement,
         IDE_TEST( dkmGetLocalTransactionId( aQcStatement, &sLocalTxId )
                   != IDE_SUCCESS );
 
-        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinator( sSession,
-                                                           sLocalTxId,
-                                                           &sGlobalCoordinator )
+        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( sSession,
+                                                                            sLocalTxId,
+                                                                            &sGlobalCoordinator )
                   != IDE_SUCCESS );
         sIsGTxCreated = ID_TRUE;
-
-        dksSessionMgr::setDataSessionLocalTxId( sSession, sLocalTxId );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession,
-                                                 sGlobalCoordinator->getGlobalTxId() );
 
         IDE_TEST( sGlobalCoordinator->createRemoteTx( sStatistics,
                                                       sSession,
@@ -5138,14 +5185,21 @@ IDE_RC dkmAllocAndExecuteQueryStatement( void           *aQcStatement,
 
     if ( ( sIsGTxCreated == ID_TRUE ) && ( sGlobalCoordinator->getRemoteTxCount() == 0 ) )
     {
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
     }
     else
     {
         /* done */
     }
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     IDE_POP();
 
@@ -5257,15 +5311,11 @@ IDE_RC dkmAllocAndExecuteQueryStatementWithoutFetch( void           *aQcStatemen
         IDE_TEST( dkmGetLocalTransactionId( aQcStatement, &sLocalTxId )
                   != IDE_SUCCESS );
 
-        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinator( sSession,
-                                                           sLocalTxId,
-                                                           &sGlobalCoordinator )
+        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( sSession,
+                                                                            sLocalTxId,
+                                                                            &sGlobalCoordinator )
                   != IDE_SUCCESS );
         sIsGTxCreated = ID_TRUE;
-
-        dksSessionMgr::setDataSessionLocalTxId( sSession, sLocalTxId );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession,
-                                                 sGlobalCoordinator->getGlobalTxId() );
 
         IDE_TEST( sGlobalCoordinator->createRemoteTx( sStatistics,
                                                       sSession,
@@ -5445,14 +5495,21 @@ IDE_RC dkmAllocAndExecuteQueryStatementWithoutFetch( void           *aQcStatemen
 
     if ( ( sIsGTxCreated == ID_TRUE ) && ( sGlobalCoordinator->getRemoteTxCount() == 0 ) )
     {
-        dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
     }
     else
     {
         /* done */
     }
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     IDE_POP();
 
@@ -5528,7 +5585,7 @@ IDE_RC dkmFreeQueryStatement( dkmSession    *aSession,
         }
         else
         {
-            dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+            dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
         }
     }
     else
@@ -5570,7 +5627,14 @@ IDE_RC dkmFreeQueryStatement( dkmSession    *aSession,
 
     IDE_PUSH();
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     /* >> BUG-37630 */
     if ( sIsRemoteStmtCleaned != ID_TRUE )
@@ -5751,7 +5815,14 @@ static IDE_RC dkmFetchNextRowInternal( dksDataSession          *aSession,
     sDataMgr = aRemoteStmt->getDataMgr();
     if ( sDataMgr->isNeedFetch() == ID_TRUE )
     {
-        IDE_TEST( dksSessionMgr::connectDataSession( aSession ) != IDE_SUCCESS );
+        if ( dkmDblinkStarted() == ID_TRUE )
+        {
+            IDE_TEST( dksSessionMgr::connectDataSession( aSession ) != IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
+        }
 
         IDE_TEST( aRemoteStmt->fetchProtocol( &aSession->mSession,
                                               aSession->mId,
@@ -5774,8 +5845,15 @@ static IDE_RC dkmFetchNextRowInternal( dksDataSession          *aSession,
     if ( sRemoteTableMgr->getInsertRowCnt() == 0 )
     {
 
-        IDE_TEST( dksSessionMgr::connectDataSession( aSession )
-                  != IDE_SUCCESS );
+        if ( dkmDblinkStarted() == ID_TRUE )
+        {
+            IDE_TEST( dksSessionMgr::connectDataSession( aSession )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
+        }
 
         IDE_TEST( aRemoteStmt->executeRemoteFetch( &aSession->mSession,
                                                    aSession->mId )
@@ -5926,8 +6004,15 @@ IDE_RC dkmRestartRow( dkmSession    *aSession,
 
     sSession = (dksDataSession *)aSession;
 
-    IDE_TEST( dksSessionMgr::connectDataSession( sSession )
-              != IDE_SUCCESS );
+    if ( dkmDblinkStarted() == ID_TRUE )
+    {
+        IDE_TEST( dksSessionMgr::connectDataSession( sSession )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
 
     IDE_TEST( dktGlobalTxMgr::findGlobalCoordinator( sSession->mGlobalTxId,
                                                      &sGlobalCoordinator )
@@ -5971,7 +6056,14 @@ IDE_RC dkmRestartRow( dkmSession    *aSession,
 
     IDE_PUSH();
 
-    (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    if ( sSession != NULL )
+    {
+        (void)dksSessionMgr::checkAndDisconnectDataSession( sSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     IDE_POP();
 
@@ -6219,11 +6311,8 @@ IDE_RC dkmOpenShardConnection( dkmSession     * aSession,
     return IDE_FAILURE;
 }
 
-void dkmCloseShardConnection( dkmSession     * aSession,
-                              sdiConnectInfo * aConnectInfo )
+void dkmCloseShardConnection( sdiConnectInfo * aConnectInfo )
 {
-    DK_UNUSED( aSession );
-
     sdi::freeConnectImmediately( aConnectInfo );
 }
 
@@ -6239,12 +6328,6 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
     dksDataSession         * sSession           = NULL;
 
     sSession = (dksDataSession *)aSession;
-
-    /* 초기화 */
-    aConnectInfo->mFlag &= ~SDI_CONNECT_COORDINATOR_CREATE_MASK;
-    aConnectInfo->mFlag |= SDI_CONNECT_COORDINATOR_CREATE_FALSE;
-    aConnectInfo->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
-    aConnectInfo->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
 
     IDE_TEST_RAISE( sSession == NULL, ERR_SESSION_NOT_EXIST );
 
@@ -6279,18 +6362,11 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
     }
     else
     {
-        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinator( sSession,
-                                                           aTransID,
-                                                           &sGlobalCoordinator )
+        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( sSession,
+                                                                            aTransID,
+                                                                            &sGlobalCoordinator )
                   != IDE_SUCCESS );
         sIsGTxCreated = ID_TRUE;
-
-        aConnectInfo->mFlag &= ~SDI_CONNECT_COORDINATOR_CREATE_MASK;
-        aConnectInfo->mFlag |= SDI_CONNECT_COORDINATOR_CREATE_TRUE;
-
-        dksSessionMgr::setDataSessionLocalTxId( sSession, aTransID );
-        dksSessionMgr::setDataSessionGlobalTxId( sSession,
-                                                 sGlobalCoordinator->getGlobalTxId() );
 
         IDE_TEST( sGlobalCoordinator->createRemoteTxForShard( aStatistics,
                                                               sSession,
@@ -6320,7 +6396,6 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
     sGlobalCoordinator->setGlobalTxStatus( DKT_GTX_STATUS_BEGIN );
     sRemoteTx->setStatus( DKT_RTX_STATUS_BEGIN );
 
-    aConnectInfo->mGlobalCoordinator = (void*)sGlobalCoordinator;
     aConnectInfo->mRemoteTx = (void*)sRemoteTx;
 
     return IDE_SUCCESS;
@@ -6338,7 +6413,6 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
         sGlobalCoordinator->destroyRemoteTx( sRemoteTx );
 
         aConnectInfo->mRemoteTx = NULL;
-
         aConnectInfo->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
         aConnectInfo->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
     }
@@ -6349,12 +6423,7 @@ IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
 
     if ( ( sIsGTxCreated == ID_TRUE ) && ( sGlobalCoordinator->getRemoteTxCount() == 0 ) )
     {
-        (void)dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
-
-        aConnectInfo->mGlobalCoordinator = NULL;
-
-        aConnectInfo->mFlag &= ~SDI_CONNECT_COORDINATOR_CREATE_MASK;
-        aConnectInfo->mFlag |= SDI_CONNECT_COORDINATOR_CREATE_FALSE;
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
     }
     else
     {
@@ -6371,25 +6440,38 @@ void dkmDelShardTransaction( dkmSession     * aSession,
 {
     dktRemoteTx            * sRemoteTx          = NULL;
     dktGlobalCoordinator   * sGlobalCoordinator = NULL;
+    dksDataSession         * sSession           = NULL;
 
-    DK_UNUSED( aSession );
+    sSession = (dksDataSession *)aSession;
 
-    sGlobalCoordinator = (dktGlobalCoordinator*)aConnectInfo->mGlobalCoordinator;
-    sRemoteTx          = (dktRemoteTx*)aConnectInfo->mRemoteTx;
+    IDE_DASSERT( sSession != NULL );
+    IDE_TEST_RAISE( sSession == NULL, ERR_SESSION_NOT_EXIST );
 
-    IDE_DASSERT( sGlobalCoordinator != NULL );
-    IDE_DASSERT( sRemoteTx          != NULL );
+    IDE_TEST( dktGlobalTxMgr::findGlobalCoordinator( sSession->mGlobalTxId,
+                                                     &sGlobalCoordinator )
+              != IDE_SUCCESS );
 
-    if ( ( aConnectInfo->mFlag & SDI_CONNECT_REMOTE_TX_CREATE_MASK )
-         == SDI_CONNECT_REMOTE_TX_CREATE_TRUE )
+    if ( sGlobalCoordinator != NULL )
     {
-        if ( sGlobalCoordinator->checkAndCloseRemoteTx( sRemoteTx ) == IDE_SUCCESS )
+        if ( ( aConnectInfo->mFlag & SDI_CONNECT_REMOTE_TX_CREATE_MASK )
+               == SDI_CONNECT_REMOTE_TX_CREATE_TRUE )
         {
-            sGlobalCoordinator->destroyRemoteTx( sRemoteTx );
+            sRemoteTx = (dktRemoteTx*)aConnectInfo->mRemoteTx;
+            IDE_DASSERT( sRemoteTx != NULL );
+            IDE_TEST_RAISE( sRemoteTx == NULL, ERR_REMOTE_TX_NOT_EXIST );
 
-            aConnectInfo->mRemoteTx = NULL;
-            aConnectInfo->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
-            aConnectInfo->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+            if ( sGlobalCoordinator->checkAndCloseRemoteTx( sRemoteTx ) == IDE_SUCCESS )
+            {
+                sGlobalCoordinator->destroyRemoteTx( sRemoteTx );
+
+                aConnectInfo->mRemoteTx = NULL;
+                aConnectInfo->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+                aConnectInfo->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
         else
         {
@@ -6398,22 +6480,81 @@ void dkmDelShardTransaction( dkmSession     * aSession,
     }
     else
     {
-        /* Nothing to do. */
+        aConnectInfo->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+        aConnectInfo->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+
+        aConnectInfo->mRemoteTx = NULL;
     }
 
-    if ( ( aConnectInfo->mFlag & SDI_CONNECT_COORDINATOR_CREATE_MASK )
-         == SDI_CONNECT_COORDINATOR_CREATE_TRUE )
-    {
-        (void)dktGlobalTxMgr::destroyGlobalCoordinator( sGlobalCoordinator );
+    return;
 
-        aConnectInfo->mGlobalCoordinator = NULL;
-        aConnectInfo->mFlag &= ~SDI_CONNECT_COORDINATOR_CREATE_MASK;
-        aConnectInfo->mFlag |= SDI_CONNECT_COORDINATOR_CREATE_FALSE;
+    IDE_EXCEPTION( ERR_SESSION_NOT_EXIST );
+    {
+        ideLog::log(IDE_DK_0, "Session not found." );
+    }
+    IDE_EXCEPTION( ERR_REMOTE_TX_NOT_EXIST );
+    {
+        ideLog::log(IDE_DK_0, "Remote transaction is not found." );
+    }
+    IDE_EXCEPTION_END;
+
+    return;
+}
+
+/* BUG-46092 */
+IDE_RC dkmSetTransactionBrokenOnGlobalCoordinator( dkmSession * aSession,
+                                                   smTID        aTransID )
+{
+    idBool                   sIsGTxCreated      = ID_FALSE;
+    dktGlobalCoordinator   * sGlobalCoordinator = NULL;
+    dksDataSession         * sSession           = NULL;
+
+    sSession = (dksDataSession *)aSession;
+
+    IDE_DASSERT( sSession != NULL );
+    IDE_TEST_RAISE( sSession == NULL, ERR_SESSION_NOT_EXIST );
+
+    IDE_TEST( dktGlobalTxMgr::findGlobalCoordinator( sSession->mGlobalTxId,
+                                                     &sGlobalCoordinator )
+              != IDE_SUCCESS );
+
+    if ( sGlobalCoordinator != NULL )
+    {
+        sGlobalCoordinator->setFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK,
+                                     DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
     }
     else
     {
-        /* Nothing to do. */
+        IDE_TEST( dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( sSession,
+                                                                            aTransID,
+                                                                            &sGlobalCoordinator )
+                  != IDE_SUCCESS );
+        sIsGTxCreated = ID_TRUE;
+
+        sGlobalCoordinator->setGlobalTxStatus( DKT_GTX_STATUS_BEGIN );
+
+        sGlobalCoordinator->setFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK,
+                                     DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
     }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SESSION_NOT_EXIST )
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DKS_SESSION_NOT_EXIST ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( ( sIsGTxCreated == ID_TRUE ) && ( sSession != NULL ) )
+    {
+        dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( sGlobalCoordinator, sSession );
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
 }
 
 IDE_RC dkmIsExistRemoteTx( dkmSession * aSession,

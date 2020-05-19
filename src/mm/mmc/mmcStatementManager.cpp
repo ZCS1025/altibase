@@ -53,7 +53,9 @@ IDE_RC mmcStatementManager::initialize()
                                         IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                         ID_FALSE,							/* ForcePooling */
                                         ID_TRUE,							/* GarbageCollection */
-                                        ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                                        ID_TRUE,                          /* HWCacheLine */
+                                        IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+            != IDE_SUCCESS);			
 
     IDE_TEST(mStmtPool.initialize(IDU_MEM_MMC,
                                   (SChar *)"MMC_STMT_POOL",
@@ -65,8 +67,9 @@ IDE_RC mmcStatementManager::initialize()
                                   IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                   ID_FALSE,							/* ForcePooling */
                                   ID_TRUE,							/* GarbageCollection */
-                                  ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
-
+                                  ID_TRUE,                          /* HWCacheLine */
+                                  IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+             != IDE_SUCCESS);			
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     IDE_TEST(mStmtPageTablePool.initialize(IDU_MEM_MMC,
                                            (SChar *)"MMC_STMTPAGETABLE_POOL",
@@ -78,8 +81,9 @@ IDE_RC mmcStatementManager::initialize()
                                            IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                            ID_FALSE,						/* ForcePooling */
                                            ID_TRUE,							/* GarbageCollection */
-                                           ID_TRUE							/* HWCacheLine */
-                                          ) != IDE_SUCCESS);
+                                           ID_TRUE,                         /* HWCacheLine */
+                                           IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     /*
      * PageTableArr 할당
@@ -1275,7 +1279,7 @@ static iduFixedTableColDesc gSTATEMENTColDesc[] =
     //PROJ-1436
     {
         (SChar *)"SQL_CACHE_TEXT_ID",
-        offsetof(mmcStatementInfo,mSQLPlanCacheTextIdStr),
+        offsetof(mmcStatementInfo, mSQLPlanCacheTextId),
         MMC_SQL_CACHE_TEXT_ID_LEN,
         IDU_FT_TYPE_VARCHAR | IDU_FT_TYPE_POINTER,
         NULL,
@@ -1643,6 +1647,40 @@ static iduFixedTableColDesc gSTATEMENTColDesc[] =
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0, NULL // for internal use
+    },
+    {   /* BUG-45823 */     
+        (SChar *)"SHARD_PIN",
+        offsetof(mmcStatementInfo, mShardPinStr),
+        IDU_FT_SIZEOF(mmcStatementInfo, mShardPinStr) - 1,
+        IDU_FT_TYPE_VARCHAR,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"SHARD_SESSION_TYPE",
+        offsetof(mmcStatementInfo, mShardSessionType),
+        IDU_FT_SIZEOF(mmcStatementInfo, mShardSessionType),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"SHARD_QUERY_TYPE",
+        offsetof(mmcStatementInfo, mShardQueryType),
+        IDU_FT_SIZEOF(mmcStatementInfo, mShardQueryType),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    /* BUG-46892 */
+    {
+        (SChar *)"MATHEMATICS_TEMP_MEMORY",
+        offsetof( mmcStatementInfo, mStatistics ) +
+        offsetof( idvSQL, mMathTempMem ),
+        IDU_FT_SIZEOF( idvSQL, mMathTempMem ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL
     },
     {
         NULL,

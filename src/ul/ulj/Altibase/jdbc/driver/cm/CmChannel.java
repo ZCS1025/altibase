@@ -21,6 +21,7 @@ import Altibase.jdbc.driver.AltibaseVersion;
 import Altibase.jdbc.driver.ClobReader;
 import Altibase.jdbc.driver.LobConst;
 import Altibase.jdbc.driver.datatype.ColumnFactory;
+import Altibase.jdbc.driver.datatype.ListBufferHandle;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.logging.DumpByteUtil;
@@ -29,28 +30,24 @@ import Altibase.jdbc.driver.logging.MultipleFileHandler;
 import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.util.*;
 
-import javax.net.ssl.*;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigInteger;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.security.*;
-import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.*;
 import java.util.regex.Pattern;
+
+import static Altibase.jdbc.driver.datatype.ListBufferHandle.BUFFER_ALLOC_UNIT_4_SIMPLE;
+import static Altibase.jdbc.driver.datatype.ListBufferHandle.BUFFER_INIT_SIZE_4_SIMPLE;
 
 public class CmChannel extends CmBufferWriter
 {
@@ -67,14 +64,8 @@ public class CmChannel extends CmBufferWriter
     private static final byte  CM_PACKET_HEADER_RESERVED_BYTE  = 0;
     private static final short CM_PACKET_HEADER_RESERVED_SHORT = 0;
     private static final int   CM_PACKET_HEADER_RESERVED_INT   = 0;
-    private static final int   CHAR_VARCHAR_COLUMN_SIZE        = 32000;
-    public static final int    INVALID_SOCKTFD                 = -1;
 
     private static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\[[^\\]]+\\])");
-
-    // PROJ-2474 keystore파일을 접근하는 기본 프로토콜은 file:이다.
-    private static final String DEFAULT_URL_FILE_SCHEME = "file:";
-    private static final String DEFAULT_KEYSTORE_TYPE = "JKS";
 
     // PROJ-2583 jdbc logging
     private static final String JRE_DEFAULT_VERSION = "1.4.";
@@ -82,12 +73,10 @@ public class CmChannel extends CmBufferWriter
     private short mSessionID = 0;
 
     private int mState;
-    private Socket mSocket;
-    private int mSocketFD = INVALID_SOCKTFD; // PROJ-2625
+    private CmConnType mConnType = CmConnType.TCP;    // PROJ-2681
+    private CmSocket mSocket;
     private CharBuffer mCharBuf;
     private byte[] mLobBuf;
-    private WritableByteChannel mWriteChannel;
-    private ReadableByteChannel mReadChannel;
     private AltibaseReadableCharChannel mReadChannel4Clob;
     private ColumnFactory mColumnFactory = new ColumnFactory();
 
@@ -115,15 +104,15 @@ public class CmChannel extends CmBufferWriter
 
     private int mLobCacheThreshold;
 
-    // PROJ-2474 SSL이 활성화 되어있는지 나타내는 flag
-    private boolean mUseSsl;
-    // PROJ-2474 SSL 관련된 속성들을 가지고 있는 객체
-    private SSLProperties mSslProps;
+    // PROJ-2681
+    private AltibaseProperties mProps;
+
     private transient Logger mCmLogger;
 
     // PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning
     public static final int CM_DEFAULT_SNDBUF_SIZE = CM_BLOCK_SIZE * 2;
     public static final int CM_DEFAULT_RCVBUF_SIZE = CM_BLOCK_SIZE * 2;
+    public static final int CHAR_VARCHAR_COLUMN_SIZE = 32000;
 
     private int mSockRcvBufSize = CM_DEFAULT_RCVBUF_SIZE;
 
@@ -131,6 +120,9 @@ public class CmChannel extends CmBufferWriter
 
     // BUG-45237 DB Message protocol을 처리할 콜백
     private AltibaseMessageCallback mMessageCallback;
+
+    // BUG-46443 일반 bind parameter를 list protocol로 전송할때 사용할 객체
+    private ListBufferHandle mTempListBufferHandle;
 
     // Channel for Target
     private class AltibaseReadableCharChannel implements ReadableCharChannel
@@ -325,6 +317,7 @@ public class CmChannel extends CmBufferWriter
         mBuffer = ByteBuffer.allocateDirect(CM_BLOCK_SIZE);
         mCharBuf = CharBuffer.allocate(CM_BLOCK_SIZE);
         mCharVarcharColumnBuffer = ByteBuffer.allocate(CHAR_VARCHAR_COLUMN_SIZE);
+        mTempListBufferHandle = new ListBufferHandle(BUFFER_INIT_SIZE_4_SIMPLE, BUFFER_ALLOC_UNIT_4_SIMPLE);
         mState = CHANNEL_STATE_CLOSED;
 
         initializeLogger();
@@ -534,197 +527,46 @@ public class CmChannel extends CmBufferWriter
     {
         try
         {
-            if (mUseSsl)
+            switch (mConnType)
             {
-                mSocket = getSslSocketFactory(mSslProps).createSocket();
-                if (mSslProps.getCipherSuiteList() != null)
-                {
-                    ((SSLSocket)mSocket).setEnabledCipherSuites(mSslProps.getCipherSuiteList());
-                }
-            }
-            else
-            {
-                mSocket = new Socket();
-            }
-    
-            if (aBindAddr != null)
-            {
-                mSocket.bind(new InetSocketAddress(aBindAddr, 0));
-            }
-            if (aResponseTimeout > 0)
-            {
-                mSocket.setSoTimeout(aResponseTimeout * 1000);
-            }
-            mSocket.setKeepAlive(true);
-            mSocket.setReceiveBufferSize(mSockRcvBufSize); // PROJ-2625
-            mSocket.setSendBufferSize(CM_DEFAULT_SNDBUF_SIZE);
-            mSocket.setTcpNoDelay(true);  // BUG-45275 disable nagle algorithm
+                case TCP:
+                    mSocket = new CmTcpSocket();
+                    break;
 
-            mSocket.connect(aSockAddr, aLoginTimeout * 1000);
-        
-            if (mUseSsl)
-            {
-                ((SSLSocket)mSocket).setEnabledProtocols(new String[] { "TLSv1" });
-                ((SSLSocket)mSocket).startHandshake();
+                case SSL:
+                    mSocket = new CmSecureSocket(mProps);
+                    break;
+
+                case IB:
+                    mSocket = new CmRdmaSocket(mProps);
+                    break;
+
+                default:
+                    Error.throwSQLException(ErrorDef.UNKNOWN_CONNTYPE,
+                                            mConnType.toString() + "(" + Integer.toString(mConnType.getValue()) + ")");
+                    break;
             }
-    
-            mWriteChannel = Channels.newChannel(mSocket.getOutputStream());
-            mReadChannel = Channels.newChannel(mSocket.getInputStream());
+
+            mSocket.setSockRcvBufSize(mSockRcvBufSize);
+
+            mSocket.open(aSockAddr, aBindAddr, aLoginTimeout, aResponseTimeout);
+
             initToWrite();
         }
-        catch (SQLException sEx)
+        catch (SQLException e)
         {
             quiteClose();
-            throw sEx;
+            throw e;
         }
         // connect 실패시 날 수 있는 예외가 한종류가 아니므로 모든 예외를 잡아 연결 실패로 처리한다.
         // 예를들어, AIX 6.1에서는 ClosedSelectorException가 나는데 이는 RuntimeException이다. (ref. BUG-33341)
-        catch (Exception sCauseEx)
+        catch (Exception e)
         {
             quiteClose();
-            Error.throwCommunicationErrorException(sCauseEx);
+            Error.throwCommunicationErrorException(e);
         }
     }
 
-    /**
-     * 인증서 정보를 이용해 SSLSocketFactory 객체를 생성한다.
-     * @param aCertiProps ssl관련 설정 정보를 가지고 있는 객체
-     * @return SSLSocketFactory 객체
-     * @throws SQLException keystore에서 에러가 발생한 경우
-     */
-    private SSLSocketFactory getSslSocketFactory(SSLProperties aCertiProps) throws SQLException
-    {
-        String sKeyStoreUrl = aCertiProps.getKeyStoreUrl();
-        String sKeyStorePassword = aCertiProps.getKeyStorePassword();
-        String sKeyStoreType = aCertiProps.getKeyStoreType();
-        String sTrustStoreUrl = aCertiProps.getTrustStoreUrl();
-        String sTrustStorePassword = aCertiProps.getTrustStorePassword();
-        String sTrustStoreType = aCertiProps.getTrustStoreType();
-
-        TrustManagerFactory sTmf = null;
-        KeyManagerFactory sKmf = null;
-
-        try
-        {
-            sTmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            sKmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        }
-        catch (NoSuchAlgorithmException sNsae)
-        {
-            Error.throwSQLException(ErrorDef.DEFAULT_ALGORITHM_DEFINITION_INVALID, sNsae);
-        }
-
-        loadKeyStore(sKeyStoreUrl, sKeyStorePassword, sKeyStoreType, sKmf);
-
-        // BUG-40165 verify_server_certificate가 true일때만 TrustManagerFactory를 초기화 해준다.
-        if (aCertiProps.verifyServerCertificate())
-        {
-            loadKeyStore(sTrustStoreUrl, sTrustStorePassword, sTrustStoreType, sTmf);
-        }
-        
-        return createAndInitSslContext(aCertiProps, sKeyStoreUrl, sTrustStoreUrl, sTmf, sKmf).getSocketFactory();
-    }
-
-    private SSLContext createAndInitSslContext(SSLProperties aCertiInfo, String aKeyStoreUrl, String aTrustStoreUrl,
-                                               TrustManagerFactory aTmf, KeyManagerFactory aKmf) throws SQLException
-    {
-        SSLContext sSslContext = null;
-
-        try 
-        {
-            sSslContext = SSLContext.getInstance("TLS");
-            
-            KeyManager[] sKeyManagers = (StringUtils.isEmpty(aKeyStoreUrl)) ?  null : aKmf.getKeyManagers();
-            TrustManager[] sTrustManagers;
-            if (aCertiInfo.verifyServerCertificate())
-            {
-                sTrustManagers = (StringUtils.isEmpty(aTrustStoreUrl)) ? null : aTmf.getTrustManagers();
-            }
-            else
-            {
-                sTrustManagers = new X509TrustManager[] { BlindTrustManager.getInstance() };
-            }
-            sSslContext.init(sKeyManagers, sTrustManagers, null);
-            
-        }
-        catch (NoSuchAlgorithmException sNsae) 
-        {
-            Error.throwSQLException(ErrorDef.UNSUPPORTED_KEYSTORE_ALGORITHM, sNsae.getMessage(), sNsae);
-        } 
-        catch (KeyManagementException sKme) 
-        {
-            Error.throwSQLException(ErrorDef.KEY_MANAGEMENT_EXCEPTION_OCCURRED, sKme.getMessage(), sKme);
-        }
-        return sSslContext;
-    }
-
-    /**
-     * PROJ-2474 KeyStore 및 TrustStore 파일을 읽어들인다.
-     */
-    private void loadKeyStore(String aKeyStoreUrl, String aKeyStorePassword, String aKeyStoreType, 
-                                    Object aKeystoreFactory) throws SQLException
-    {
-        if (StringUtils.isEmpty(aKeyStoreUrl)) return;
-        InputStream keyStoreStream = null;
-        
-        try 
-        {
-            aKeyStoreType = (StringUtils.isEmpty(aKeyStoreType)) ? DEFAULT_KEYSTORE_TYPE : aKeyStoreType;
-            KeyStore sClientKeyStore = KeyStore.getInstance(aKeyStoreType);
-            URL sKsURL = new URL(DEFAULT_URL_FILE_SCHEME + aKeyStoreUrl);
-            char[] sPassword = (aKeyStorePassword == null) ? new char[0] : aKeyStorePassword.toCharArray();
-            keyStoreStream = sKsURL.openStream();
-            sClientKeyStore.load(keyStoreStream, sPassword);
-            keyStoreStream.close();
-            if (aKeystoreFactory instanceof KeyManagerFactory)
-            {
-                ((KeyManagerFactory)aKeystoreFactory).init(sClientKeyStore, sPassword);
-            }
-            else if (aKeystoreFactory instanceof TrustManagerFactory)
-            {
-                ((TrustManagerFactory)aKeystoreFactory).init(sClientKeyStore);
-            }
-        }
-        catch (UnrecoverableKeyException sUke) 
-        {
-            Error.throwSQLException(ErrorDef.CAN_NOT_RETREIVE_KEY_FROM_KEYSTORE, sUke);
-        } 
-        catch (NoSuchAlgorithmException sNsae) 
-        {
-            Error.throwSQLException(ErrorDef.UNSUPPORTED_KEYSTORE_ALGORITHM, sNsae.getMessage(), sNsae);   
-        } 
-        catch (KeyStoreException sKse) 
-        {
-            Error.throwSQLException(ErrorDef.CAN_NOT_CREATE_KEYSTORE_INSTANCE, sKse.getMessage(), sKse);
-        } 
-        catch (CertificateException sNsae) 
-        {
-            Error.throwSQLException(ErrorDef.CAN_NOT_LOAD_KEYSTORE, aKeyStoreType, sNsae);
-        } 
-        catch (MalformedURLException sMue) 
-        {
-            Error.throwSQLException(ErrorDef.INVALID_KEYSTORE_URL, sMue);   
-        } 
-        catch (IOException sIoe) 
-        {
-            Error.throwSQLException(ErrorDef.CAN_NOT_OPEN_KEYSTORE, sIoe);
-        }
-        finally
-        {
-            try
-            {
-                if (keyStoreStream != null)
-                {
-                    keyStoreStream.close();
-                }
-            }
-            catch (IOException sIOe)
-            {
-                Error.throwSQLExceptionForIOException(sIOe.getCause());
-            }
-        }
-    }
-    
     public boolean isClosed()
     {
         return (mState == CHANNEL_STATE_CLOSED);
@@ -734,22 +576,12 @@ public class CmChannel extends CmBufferWriter
     {
         if (mState != CHANNEL_STATE_CLOSED)
         {
-            if (mWriteChannel != null)
-            {
-                mWriteChannel.close();
-                mWriteChannel = null;
-            }
-            if (mReadChannel != null)
-            {
-                mReadChannel.close();
-                mReadChannel = null;
-            }
             if (mSocket != null)
             {
                 mSocket.close();
                 mSocket = null;
             }
-            mSocketFD = INVALID_SOCKTFD;
+
             mState = CHANNEL_STATE_CLOSED;
         }
     }
@@ -787,6 +619,9 @@ public class CmChannel extends CmBufferWriter
         // PROJ-2427 getBytes시 사용할 Encoder를 ColumnFactory에 셋팅
         mColumnFactory.setCharSetEncoder(mDBEncoder);
         mColumnFactory.setNCharSetEncoder(mNCharEncoder);
+
+        // ListBufferHandle 의 Encoder 에 적용할 charset name 들을 가져와야한다.
+        mTempListBufferHandle.setCharset(getCharset(), getNCharset());
     }
     
     public Charset getCharset()
@@ -804,7 +639,7 @@ public class CmChannel extends CmBufferWriter
         return (int)Math.ceil(mDBEncoder.maxBytesPerChar());
     }
     
-    void writeOp(byte aOpCode) throws SQLException
+    public void writeOp(byte aOpCode) throws SQLException
     {
         checkWritable(1);
         mBuffer.put(aOpCode);
@@ -1001,7 +836,7 @@ public class CmChannel extends CmBufferWriter
             }
             while (mBuffer.hasRemaining())
             {
-                mWriteChannel.write(mBuffer);
+                mSocket.write(mBuffer);
             }
         }
         catch (IOException sException)
@@ -1109,7 +944,7 @@ public class CmChannel extends CmBufferWriter
         {
             try
             {
-                sRead = mReadChannel.read(mBuffer);
+                sRead = mSocket.read(mBuffer);
             }
             catch (SocketTimeoutException sTimeoutException)
             {
@@ -1135,7 +970,7 @@ public class CmChannel extends CmBufferWriter
         return sRead;
     }
     
-    byte readOp() throws SQLException
+    public byte readOp() throws SQLException
     {
         if (mBuffer.remaining() == 0)
         {
@@ -1180,7 +1015,7 @@ public class CmChannel extends CmBufferWriter
         return mBuffer.getInt();
     }
     
-    long readUnsignedInt() throws SQLException
+    public long readUnsignedInt() throws SQLException
     {
         checkReadable(4);        
         return mBuffer.getInt() & 0xFFFFFFFFL;
@@ -1269,12 +1104,20 @@ public class CmChannel extends CmBufferWriter
         }
     }
 
-    String readString(int aByteSize, int aSkipLength) throws SQLException
+    public String readDecodedString(int aByteSize, int aSkipLength) throws SQLException
     {
         StringBuffer sStrBuf = readStringBy(aByteSize, aSkipLength, mDBDecoder);
         return sStrBuf.toString();
     }
-    
+
+    public String readString(int aLength) throws SQLException
+    {
+        byte[] sBuf = new byte[aLength];
+        readBytes(sBuf);
+
+        return new String(sBuf);
+    }
+
     int readCharArrayTo(char[] aDst, int aDstOffset, int aByteLength, int aCharLength) throws SQLException
     {
         StringBuffer sStrBuf = readStringBy(aByteLength, 0, mDBDecoder);
@@ -1337,7 +1180,7 @@ public class CmChannel extends CmBufferWriter
         return mCharBuf.toString();
     }
 
-    String readStringForErrorResult() throws SQLException
+    public String readStringForErrorResult() throws SQLException
     {
         int sSize = readUnsignedShort();
         byte[] sBuf = new byte[sSize];
@@ -1394,7 +1237,7 @@ public class CmChannel extends CmBufferWriter
         readBytes(sBuf);
         return new String(sBuf);
     }
-    
+
     private void checkReadable(int aLengthToRead) throws SQLException
     {
         if (mState != CHANNEL_STATE_READABLE)
@@ -1666,15 +1509,31 @@ public class CmChannel extends CmBufferWriter
         }
     }
 
-    /**
-     * PROJ-2474 ssl_enable 이 활성화 되어 있는 경우 mUseSsl flag를 true로 셋팅해주고, 인증서 관련된 정보를 읽어와
-     * mSslProps 객체에 저장한다.
-     * @param aProps  AltibaseProperties객체
-     */
-    public void setSslProps(AltibaseProperties aProps)
+    public CmConnType getConnType()
     {
-        this.mSslProps = new SSLProperties(aProps);
-        this.mUseSsl = mSslProps.isSslEnabled();
+        return mConnType;
+    }
+
+    public void setConnType(String aConnType) throws SQLException
+    {
+        CmConnType sConnType = CmConnType.toConnType(aConnType);
+
+        if (sConnType == CmConnType.None)
+        {
+            Error.throwSQLException(ErrorDef.UNKNOWN_CONNTYPE, aConnType);
+        }
+
+        mConnType = sConnType;
+    }
+
+    /**
+     * PROJ-2681 접속 타입에 따른 프로퍼티 값을 읽기 위해 설정한다. 
+     * (SSL : PROJ-2474 SSL 관련 인증서 정보를 읽어와 mSslProps 객체에 저장한다.)
+     * @param aProps  AltibaseProperties 객체
+     */
+    public void setProps(AltibaseProperties aProps)
+    {
+        this.mProps = aProps;
     }
 
     /**
@@ -1683,7 +1542,10 @@ public class CmChannel extends CmBufferWriter
      */
     public String[] getCipherSuitList()
     {
-        return ((SSLSocket)mSocket).getEnabledCipherSuites();
+        if (mConnType != CmConnType.SSL)
+            return null;
+
+        return ((CmSecureSocket)mSocket).getEnabledCipherSuites();
     }
 
     /**
@@ -1703,7 +1565,7 @@ public class CmChannel extends CmBufferWriter
 
         if (!isClosed())
         {
-            mSocket.setReceiveBufferSize(sSockRcvBufSize);
+            mSocket.setSockRcvBufSize(sSockRcvBufSize);
         }
 
         mSockRcvBufSize = sSockRcvBufSize;
@@ -1727,7 +1589,7 @@ public class CmChannel extends CmBufferWriter
 
         if (!isClosed())
         {
-            mSocket.setReceiveBufferSize(sSockRcvBufSize);
+            mSocket.setSockRcvBufSize(sSockRcvBufSize);
         }
 
         mSockRcvBufSize = sSockRcvBufSize;
@@ -1764,19 +1626,12 @@ public class CmChannel extends CmBufferWriter
     {
         throwErrorForClosed();
 
-        if (mSocketFD == INVALID_SOCKTFD)
+        if (mSocket != null)
         {
-            try
-            {
-                mSocketFD = SocketUtils.getFileDescriptor(mSocket);
-            }
-            catch (Exception e)
-            {
-                Error.throwSQLException(ErrorDef.COMMUNICATION_ERROR, "Failed to get a file descriptor of the socket.", e);
-            }
+            return mSocket.getSocketFD();
         }
 
-        return mSocketFD;
+        return CmSocket.INVALID_SOCKTFD;
     }
 
     /**
@@ -1786,5 +1641,23 @@ public class CmChannel extends CmBufferWriter
     public void setMessageCallback(AltibaseMessageCallback aCallback)
     {
         this.mMessageCallback = aCallback;
+    }
+
+    public ListBufferHandle getTempListBufferHandle()
+    {
+        return mTempListBufferHandle;
+    }
+
+    /**
+     * CLOB의 경우 LOB_CACHE_THRESHOLD가 CM_BLOCK_SIZE를 초과한 경우
+     * 디코딩을 위해 mCharBuf를 재할당한다.
+     * @param aLobDataLength LOB데이터길이
+     */
+    public void checkDecodingBuffer(int aLobDataLength) throws SQLException
+    {
+        if (aLobDataLength > mCharBuf.capacity())  /* BUG-46411 */
+        {
+            mCharBuf = CharBuffer.allocate(AltibaseProperties.MAX_LOB_CACHE_THRESHOLD);
+        }
     }
 }

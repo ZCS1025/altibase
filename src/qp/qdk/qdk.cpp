@@ -39,7 +39,8 @@ static qcDatabaseLinkCallback gCallback = {
     NULL,   /* mOpenShardConnection        */
     NULL,   /* mCloseShardConnection       */
     NULL,   /* mAddShardTransaction        */
-    NULL    /* mDelShardTransaction        */
+    NULL,   /* mDelShardTransaction        */
+    NULL    /* mSetTransactionBrokenOnGlobalCoordinator */
 };
 
 
@@ -426,4 +427,25 @@ void qdkDelShardTransaction( sdiConnectInfo * aDataNode )
     {
         /* do nothing */
     }
+}
+
+IDE_RC qdkSetTransactionBrokenOnGlobalCoordinator( void * aDkiSession,
+                                                   smTID  aTransID )
+{
+    if ( gCallback.mSetTransactionBrokenOnGlobalCoordinator != NULL )
+    {
+        IDE_TEST( gCallback.mSetTransactionBrokenOnGlobalCoordinator( aDkiSession,
+                                                                      aTransID )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

@@ -183,10 +183,12 @@ SQLRETURN objectModeInfoQuery()
     SQLRETURN sRet  = 0;
     SChar     sQuery[QUERY_LEN*2];
     SInt      sUserId   = 0;
-    SInt      sObjId    = 0;
+    SLong     sObjId    = 0;
     SInt      sObjType  = 0;
     SInt      i;
 
+    /* BUG-46292 */
+    SQLBIGINT sObjId2Bind  = SQLBIGINT_INIT_TO_ZERO;
 
     for ( i = 0 ; i < gProgOption.mObjModeOptCount; i++ )
     {
@@ -208,7 +210,7 @@ SQLRETURN objectModeInfoQuery()
             SQLBindCol(sStmt, 1, SQL_C_SLONG, (SQLPOINTER)&sUserId, 0, NULL)
             != SQL_SUCCESS, StmtError);
         IDE_TEST_RAISE(        
-            SQLBindCol(sStmt, 2, SQL_C_SLONG, (SQLPOINTER)&sObjId, 0, NULL)
+            SQLBindCol(sStmt, 2, SQL_C_SBIGINT, (SQLPOINTER)&sObjId2Bind, 0, NULL)
             != SQL_SUCCESS, StmtError);
         IDE_TEST_RAISE(        
             SQLBindCol(sStmt, 3, SQL_C_SLONG, (SQLPOINTER)&sObjType, 0, NULL)
@@ -219,6 +221,9 @@ SQLRETURN objectModeInfoQuery()
         if ( sRet != SQL_NO_DATA )
         {
             IDE_TEST_RAISE( sRet != SQL_SUCCESS, notExist );
+
+            /* BUG-46292 */
+            sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
 
             gObjectModeInfo[i].mObjUserId    = sUserId;
             gObjectModeInfo[i].mObjObjectId   = sObjId;

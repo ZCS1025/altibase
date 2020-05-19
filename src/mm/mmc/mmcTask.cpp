@@ -305,7 +305,7 @@ IDE_RC mmcTask::log(ideLogEntry &aLog)
 
     if (sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
     {
-        logTransactionInfo(sSession->getTrans(ID_FALSE),
+        logTransactionInfo(mmcTrans::getSmiTrans(sSession->getTransPtr()),
                            sBuffer,
                            ID_SIZEOF(sBuffer),
                            "        Transaction ID ");
@@ -406,7 +406,7 @@ IDE_RC mmcTask::logTransactionInfo(smiTrans *aTrans, SChar *aBuffer, UInt aBuffe
 
 IDE_RC mmcTask::logStatementInfo(mmcStatement *aStmt, SChar *aBuffer, UInt aBufferLen)
 {
-    smiTrans *sTrans;
+    mmcTransObj *sTrans;
     smSCN     sSCN;
     ULong     sOutSCN;
     UInt      sQueryTimeGap;
@@ -415,7 +415,7 @@ IDE_RC mmcTask::logStatementInfo(mmcStatement *aStmt, SChar *aBuffer, UInt aBuff
 
     SM_INIT_SCN(&sSCN);
 
-    sTrans = getSession()->getTrans(aStmt, ID_FALSE);
+    sTrans = getSession()->getTransPtr(aStmt);
 
     if (aStmt->isStmtBegin() == ID_TRUE)
     {
@@ -430,7 +430,7 @@ IDE_RC mmcTask::logStatementInfo(mmcStatement *aStmt, SChar *aBuffer, UInt aBuff
 
     sQueryTimeGap  = aStmt->getQueryStartTime();
     sFetchTimeGap  = aStmt->getFetchStartTime();
-    sUTransTimeGap = sTrans ? sTrans->getFirstUpdateTime() : 0;
+    sUTransTimeGap = (sTrans != NULL) ? mmcTrans::getFirstUpdateTime(sTrans) : 0;
 
     sQueryTimeGap  = (sQueryTimeGap > 0)  ? (mmtSessionManager::getBaseTime() - sQueryTimeGap)  : 0;
     sFetchTimeGap  = (sFetchTimeGap > 0)  ? (mmtSessionManager::getBaseTime() - sFetchTimeGap)  : 0;
@@ -457,7 +457,8 @@ IDE_RC mmcTask::logStatementInfo(mmcStatement *aStmt, SChar *aBuffer, UInt aBuff
     if ( ( getSession()->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
          ( aStmt->isRootStmt() == ID_TRUE ) )
     {
-        logTransactionInfo(aStmt->getTrans(ID_FALSE), aBuffer, aBufferLen, "                Tx ID");
+        sTrans = aStmt->getTransPtr();
+        logTransactionInfo(mmcTrans::getSmiTrans(sTrans), aBuffer, aBufferLen, "                Tx ID");
     }
 
     aStmt->lockQuery();

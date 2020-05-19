@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxOIDList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxOIDList.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -168,8 +168,9 @@ IDE_RC smxOIDList::initializeStatic()
                                        IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                        ID_FALSE,						/* ForcePooling */
                                        ID_TRUE,							/* GarbageCollection */
-                                       ID_TRUE )						/* HWCacheLine */
-                  != IDE_SUCCESS );
+                                       ID_TRUE,                         /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/ ) 
+                  != IDE_SUCCESS );			
     }
 
     return IDE_SUCCESS;
@@ -826,8 +827,7 @@ IDE_RC smxOIDList::setSlotNextToSCN(smxOIDInfo* aOIDInfo,
 {
     smpSlotHeader *sSlotHeader;
 
-    if (sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID)
-        == ID_TRUE)
+    if ( sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID) == ID_TRUE )
     {
         IDE_ASSERT( svmManager::getOIDPtr( aOIDInfo->mSpaceID,
                                            aOIDInfo->mTargetOID,
@@ -839,6 +839,8 @@ IDE_RC smxOIDList::setSlotNextToSCN(smxOIDInfo* aOIDInfo,
     }
     else
     {
+        IDE_ERROR ( sctTableSpaceMgr::isMemTableSpace(aOIDInfo->mSpaceID) == ID_TRUE );
+
         IDE_ASSERT( smmManager::getOIDPtr( aOIDInfo->mSpaceID,
                                            aOIDInfo->mTargetOID,
                                            (void**)&sSlotHeader )
@@ -888,8 +890,8 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
                 /* Tablespace에 DDL이 발생했다는 알리기 위해 TableSpace의
                    DDL SCN을 변경한다.*/
                 sctTableSpaceMgr::updateTblDDLCommitSCN(
-                    aOIDInfo->mSpaceID,
-                    aSCN );
+                                                    aOIDInfo->mSpaceID,
+                                                    aSCN );
 
                 break;
 
@@ -899,8 +901,7 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
 
                 /* PROJ-1594 Volatile TBS
                  * 처리할 OID가 volatile TBS에 속해 있으면 svc 모듈을 호출해야 한다.*/
-                if (sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID)
-                    == ID_TRUE )
+                if ( sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID) == ID_TRUE )
                 {
                     IDE_ERROR( svmManager::getOIDPtr( aOIDInfo->mSpaceID,
                                                       aOIDInfo->mTargetOID,
@@ -912,6 +913,8 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
                 }
                 else
                 {
+                    IDE_ERROR ( sctTableSpaceMgr::isMemTableSpace(aOIDInfo->mSpaceID) == ID_TRUE );
+                    
                     /* PROJ-2429 Dictionary based data compress for on-disk DB */
                     if ( (sFlag & SM_OID_ACT_COMPRESSION) != SM_OID_ACT_COMPRESSION )
                     {
@@ -933,8 +936,7 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
             case SM_OID_OP_UNLOCK_FIXED_SLOT:
                 /* PROJ-1594 Volatile TBS
                    처리할 OID가 volatile TBS에 속해 있으면 svc 모듈을 호출해야 한다.*/
-                if (sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID)
-                    == ID_TRUE )
+                if ( sctTableSpaceMgr::isVolatileTableSpace(aOIDInfo->mSpaceID) == ID_TRUE )
                 {
                     IDE_ERROR( svmManager::getOIDPtr( aOIDInfo->mSpaceID,
                                                       aOIDInfo->mTargetOID,
@@ -946,6 +948,8 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
                 }
                 else
                 {
+                    IDE_ERROR ( sctTableSpaceMgr::isMemTableSpace(aOIDInfo->mSpaceID) == ID_TRUE );
+
                     IDE_ERROR( smmManager::getOIDPtr( aOIDInfo->mSpaceID,
                                                       aOIDInfo->mTargetOID,
                                                       (void**)&sRowPtr )
@@ -959,10 +963,10 @@ IDE_RC smxOIDList::processOIDListAtCommit(smxOIDInfo* aOIDInfo,
 
             case SM_OID_OP_DROP_TABLE:
                 IDE_ERROR( smmManager::getOIDPtr( 
-                        SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
-                        aOIDInfo->mTableOID,
-                        (void**)&sSmpSlotHeader )
-                    == IDE_SUCCESS );
+                                            SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
+                                            aOIDInfo->mTableOID,
+                                            (void**)&sSmpSlotHeader )
+                           == IDE_SUCCESS );
                 IDE_TEST(smcRecord::setDeleteBitOnHeader(
                                         SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                         sSmpSlotHeader)
@@ -1103,7 +1107,7 @@ IDE_RC smxOIDList::processDropTblPending(smxOIDInfo* aOIDInfo)
             IDE_ASSERT( sTrans->begin( NULL,
                                        ( SMI_TRANSACTION_REPL_NONE |
                                          SMI_COMMIT_WRITE_NOWAIT ),
-                                         SMX_NOT_REPL_TX_ID )
+                                       SMX_NOT_REPL_TX_ID )
                         == IDE_SUCCESS);
 
             IDE_ASSERT( smcTable::dropTablePending( NULL,

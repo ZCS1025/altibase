@@ -29,6 +29,7 @@
 #include <qdpRole.h>
 #include <qdbComment.h>
 #include <qdbCopySwap.h>
+#include <qmoPartition.h>
 
 IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement )
 {
@@ -1029,6 +1030,8 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
  *      - 양쪽 Table이 같은 Replication에 속하면 안 된다.
  *          - Replication에서 Table Meta Log를 하나씩 처리하므로, 이 기능을 지원하지 않는다.
  *
+ *  13. partition table swap validate 수행
+ *
  ***********************************************************************/
 
     qdTableParseTree        * sParseTree            = NULL;
@@ -1037,7 +1040,7 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
     qcmRefChildInfo         * sRefChildInfo         = NULL;
     qcmIndex                * sPeerIndex            = NULL;
     UInt                      sSourceUserID         = 0;
-
+    
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     IDU_FIT_POINT( "qdbCopySwap::validateReplaceTable::alloc::mSourcePartTable",
@@ -1288,6 +1291,11 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
                                                 sSourceTableInfo )
               != IDE_SUCCESS );
 
+    /* 13. partition table swap validate 수행 */
+    IDE_TEST( validateReplacePartition( aStatement,
+                                        sParseTree )
+              != IDE_SUCCESS );
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_DIFFERENT_TABLE_OWNER )
@@ -1531,7 +1539,7 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     qcmPartitionInfoList    * sTempNewPartInfoList              = NULL;
     qdIndexTableList        * sTempIndexTableList               = NULL;
     void                    * sTempTableHandle                  = NULL;
-    smSCN                     sSCN;
+    smSCN                     sSCN;    
 
     SMI_INIT_SCN( & sSCN );
 
@@ -2175,17 +2183,17 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                 if ( sTempOldPartInfoList != NULL )
                 {
                     IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(
-                                    aStatement,
-                                    sTempOldPartInfoList->partitionInfo->tableOID,
-                                    sTempNewPartInfoList->partitionInfo->tableOID )
+                                  aStatement,
+                                  sTempOldPartInfoList->partitionInfo->tableOID,
+                                  sTempNewPartInfoList->partitionInfo->tableOID )
                               != IDE_SUCCESS );
                 }
                 else
                 {
                     IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(
-                                    aStatement,
-                                    0,
-                                    sTempNewPartInfoList->partitionInfo->tableOID )
+                                  aStatement,
+                                  0,
+                                  sTempNewPartInfoList->partitionInfo->tableOID )
                               != IDE_SUCCESS );
                 }
             }
@@ -2201,6 +2209,28 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     else
     {
         /* Nothing to do */
+    }
+
+    if ( sNewTableInfo->replicationCount > 0 )
+    {
+        /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+        if ( ( aStatement->session->mQPSpecific.mFlag
+               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        {
+            IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
+                                                    sNewTableInfo->tableOwnerID,
+                                                    sNewTableInfo->name )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do
+        }
+    }
+    else
+    {
+        // Nothing to do
     }
 
     if ( ( sDDLSupplementalLog == 1 ) || ( sNewSourceTableInfo->replicationCount > 0 ) )
@@ -2221,17 +2251,17 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                 if ( sTempOldPartInfoList != NULL )
                 {
                     IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(
-                                    aStatement,
-                                    sTempOldPartInfoList->partitionInfo->tableOID,
-                                    sTempNewPartInfoList->partitionInfo->tableOID )
+                                  aStatement,
+                                  sTempOldPartInfoList->partitionInfo->tableOID,
+                                  sTempNewPartInfoList->partitionInfo->tableOID )
                               != IDE_SUCCESS );
                 }
                 else
                 {
                     IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(
-                                    aStatement,
-                                    0,
-                                    sTempNewPartInfoList->partitionInfo->tableOID )
+                                  aStatement,
+                                  0,
+                                  sTempNewPartInfoList->partitionInfo->tableOID )
                               != IDE_SUCCESS );
                 }
             }
@@ -2378,7 +2408,7 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
 
     (void)qcm::destroyQcmTableInfo( sNewTableInfo );
     (void)qcm::destroyQcmTableInfo( sNewSourceTableInfo );
-
+    
     // on failure, restore tempinfo.
     qcmPartition::restoreTempInfo( sTableInfo,
                                    sPartInfoList,
@@ -2396,6 +2426,449 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                        sPartTableList->mPartInfoList,
                                        NULL );
     }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
+{
+/***********************************************************************
+ * Description :
+ *      PROJ-2600 Online DDL for Tablespace Alteration
+ *
+ *      ALTER TABLE [user_name.]target_table_name
+ *          REPLACE [user_name.]source_table_name
+ *          PARTITION partition_name
+ *          [USING PREFIX name_prefix]
+ *          [RENAME FORCE]
+ *          [IGNORE FOREIGN KEY CHILD];
+ *      구문의 Execution
+ *
+ * Implementation :
+ *
+ *  1. Target Table에 IX Lock을 잡는다.
+ *      - 지정한 Partition에 X Lock을 잡는다.
+ *
+ *  2. Source Table에 IX Lock을 잡는다.
+ *      - 지정한 Partition에 X Lock을 잡는다.
+ *
+ *  3. Replication 대상 Partition인 경우, 제약 조건을 검사하고 Receiver Thread를 중지한다.
+ *      - REPLICATION_DDL_ENABLE 시스템 프라퍼티가 1 이어야 한다.
+ *      - REPLICATION 세션 프라퍼티가 NONE이 아니어야 한다.
+ *      - Eager Sender/Receiver Thread를 확인하고, Receiver Thread를 중지한다.
+ *          - 해당 Partition 관련 Eager Sender/Receiver Thread가 없어야 한다.
+ *          - 해당 Partition 관련 Receiver Thread를 중지한다.
+ *
+ *  4. Source와 Target의 Table Partitions 기본 정보를 교환한다. (Meta Table)
+ *      - SYS_TABLE_PARTITIONS_
+ *          - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT를 교환한다.
+ *          - LAST_DDL_TIME을 갱신한다. (SYSDATE)
+ *
+ *  5. Source와 Target의 Table Partitions 기본 정보를 교환한다. (Meta Table)
+ *      - SYS_PART_LOBS__
+ *          - TABLE_ID
+ *
+ *  6. Source와 Target의 Table Partitions 기본 정보를 교환한다. (Meta Table)
+ *      - SYS_INDEX_PARTITIONS__
+ *          - TABLE_PARTITION_ID, INDEX_PARTITION_ID를 교환한다.
+ *          - LAST_DDL_TIME을 갱신한다. (SYSDATE)
+ *
+ *  7. Partition의 Replication Flag를 교환한다.
+ *
+ *  8. Partition Info를 다시 얻는다.
+ *      - Partition Info를 생성하고, SM에 등록한다. (Meta Cache)
+ *      - Partition Info를 얻는다.
+ *
+ *  9. Replication 대상 Partition인 경우, Replication Meta Table을 수정한다. (Meta Table)
+ *      - SYS_REPL_ITEMS_
+ *          - SYS_REPL_ITEMS_의 TABLE_OID는 Non-Partitioned Table OID이거나
+ *            Partition OID이다.
+ *              - Partitioned Table OID는 SYS_REPL_ITEMS_에 없다.
+ *          - Target, Source Partition의 TABLE_OID(Partition OID) 교환
+ *
+ *  10. Replication 대상 Partition이거나 DDL_SUPPLEMENTAL_LOG_ENABLE이 1인 경우, Supplemental Log를 기록한다.
+ *      - Table Meta Log Record를 기록한다.
+ *          - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
+ *
+ *  11. Old Partition Info를 제거한다.
+ *
+ ***********************************************************************/
+
+    qdTableParseTree        * sParseTree                        = NULL;
+    qcmTableInfo            * sTableInfo                        = NULL;
+    qcmTableInfo            * sSourceTableInfo                  = NULL;
+    UInt                      sDDLSupplementalLog               = QCU_DDL_SUPPLEMENTAL_LOG;
+    qcmTableInfo            * sTargetPartitionInfo              = NULL;
+    qcmTableInfo            * sNewTargetPartitionInfo           = NULL;
+    qcmTableInfo            * sSourcePartitionInfo              = NULL;
+    qcmTableInfo            * sNewSourcePartitionInfo           = NULL;
+    void                    * sTempTableHandle                  = NULL;
+    qcmColumn               * sColumns                          = NULL;
+    UInt                      i                                 = 0;
+    smSCN                     sSCN;
+
+    SMI_INIT_SCN( & sSCN );
+
+    sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
+
+    /* 1. Target Table에 IX Lock을 잡는다.
+     *  - 지정한 Partition에 X Lock을 잡는다.
+     */
+    IDE_TEST( qcm::validateAndLockTable( aStatement,
+                                         sParseTree->tableHandle,
+                                         sParseTree->tableSCN,
+                                         SMI_TABLE_LOCK_IX )
+              != IDE_SUCCESS );
+
+    sTableInfo = sParseTree->tableInfo;
+
+    IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                              sTableInfo->tableID,
+                                              sParseTree->mPartAttr->tablePartName,
+                                              & sTargetPartitionInfo,
+                                              & sSCN,
+                                              & sTempTableHandle )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
+                                                         sTargetPartitionInfo->tableHandle,
+                                                         sSCN,
+                                                         SMI_TBSLV_DDL_DML, // TBS Validation 옵션
+                                                         SMI_TABLE_LOCK_X,
+                                                         ( ( smiGetDDLLockTimeOut() == -1 ) ?
+                                                           ID_ULONG_MAX :
+                                                           smiGetDDLLockTimeOut() * 1000000 ) )
+              != IDE_SUCCESS );
+
+    /* 2. Source Table에 IX Lock을 잡는다.
+     *  - 지정한 Partition에 X Lock을 잡는다.
+     */
+    IDE_TEST( qcm::validateAndLockTable( aStatement,
+                                         sParseTree->mSourcePartTable->mTableHandle,
+                                         sParseTree->mSourcePartTable->mTableSCN,
+                                         SMI_TABLE_LOCK_IX )
+              != IDE_SUCCESS );
+
+    sSourceTableInfo = sParseTree->mSourcePartTable->mTableInfo;
+
+    IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                              sSourceTableInfo->tableID,
+                                              sParseTree->mPartAttr->tablePartName,
+                                              & sSourcePartitionInfo,
+                                              & sSCN,
+                                              & sTempTableHandle )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
+                                                         sSourcePartitionInfo->tableHandle,
+                                                         sSCN,
+                                                         SMI_TBSLV_DDL_DML, // TBS Validation 옵션
+                                                         SMI_TABLE_LOCK_X,
+                                                         ( ( smiGetDDLLockTimeOut() == -1 ) ?
+                                                           ID_ULONG_MAX :
+                                                           smiGetDDLLockTimeOut() * 1000000 ) )
+              != IDE_SUCCESS );
+
+    /* 3. Replication 대상 Partition인 경우, 제약 조건을 검사하고 Receiver Thread를 중지한다.
+     *  - REPLICATION_DDL_ENABLE 시스템 프라퍼티가 1 이어야 한다.
+     *  - REPLICATION 세션 프라퍼티가 NONE이 아니어야 한다.
+     *  - Eager Sender/Receiver Thread를 확인하고, Receiver Thread를 중지한다.
+     *      - 해당 Partition 관련 Eager Sender/Receiver Thread가 없어야 한다.
+     *      - 해당 Partition 관련 Receiver Thread를 중지한다.
+     */
+    if ( sTargetPartitionInfo->replicationCount > 0 )
+    {
+        /* PROJ-1442 Replication Online 중 DDL 허용
+         * Validate와 Execute는 다른 Transaction이므로, 프라퍼티 검사는 Execute에서 한다.
+         */
+        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, // aRequireLevel
+                                                                                 sTableInfo )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( QC_SMI_STMT( aStatement )->getTrans()->getReplicationMode()
+                        == SMI_TRANSACTION_REPL_NONE,
+                        ERR_CANNOT_WRITE_REPL_INFO );
+
+        /* PROJ-1442 Replication Online 중 DDL 허용
+         * 관련 Receiver Thread 중지
+         */
+        IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
+                                                                   & sTargetPartitionInfo->tableOID,
+                                                                   1 )
+                  != IDE_SUCCESS );
+
+        // BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지
+        // 않아야 합니다.
+        // mStatistics 통계 정보를 전달 합니다.
+        IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT( aStatement ),
+                                                                        QC_STATISTICS( aStatement ),
+                                                                        & sTargetPartitionInfo->tableOID,
+                                                                        1 )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sSourcePartitionInfo->replicationCount > 0 )
+    {
+        /* PROJ-1442 Replication Online 중 DDL 허용
+         * Validate와 Execute는 다른 Transaction이므로, 프라퍼티 검사는 Execute에서 한다.
+         */
+        IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, // aRequireLevel
+                                                                                 sSourceTableInfo )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( QC_SMI_STMT( aStatement )->getTrans()->getReplicationMode()
+                        == SMI_TRANSACTION_REPL_NONE,
+                        ERR_CANNOT_WRITE_REPL_INFO );
+
+        /* PROJ-1442 Replication Online 중 DDL 허용
+         * 관련 Receiver Thread 중지
+         */
+        IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
+                                                                   & sSourcePartitionInfo->tableOID,
+                                                                   1 )
+                  != IDE_SUCCESS );
+
+        // BUG-22703 : Begin Statement를 수행한 후에 Hang이 걸리지
+        // 않아야 합니다.
+        // mStatistics 통계 정보를 전달 합니다.
+        IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT( aStatement ),
+                                                                        QC_STATISTICS( aStatement ),
+                                                                        & sSourcePartitionInfo->tableOID,
+                                                                        1 )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 4. Source와 Target의 Table Partitions 기본 정보를 교환한다. (Meta Table)
+     *  - SYS_TABLE_PARTITIONS_
+     *      - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT를 교환한다.
+     *      - LAST_DDL_TIME을 갱신한다. (SYSDATE)
+     */
+    IDE_TEST( swapTablePartitionsMeta( aStatement,
+                                       sTableInfo->tableID,
+                                       sSourceTableInfo->tableID,
+                                       sParseTree->mPartAttr->tablePartName )
+              != IDE_SUCCESS );
+
+    /* 5. Source와 Target의 Table Partitions 기본 정보를 교환한다. (Meta Table)
+     *  - SYS_PART_LOBS__
+     *      - TABLE_ID
+     */
+    for ( sColumns = sSourceTableInfo->columns;
+          sColumns != NULL;
+          sColumns = sColumns->next )
+    {
+        if ( ( sColumns->basicInfo->type.dataTypeId == MTD_BLOB_ID ) ||
+             ( sColumns->basicInfo->type.dataTypeId == MTD_BLOB_LOCATOR_ID ) ||
+             ( sColumns->basicInfo->type.dataTypeId == MTD_CLOB_ID ) ||
+             ( sColumns->basicInfo->type.dataTypeId == MTD_CLOB_LOCATOR_ID ) )
+        {
+            break;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    // lob column  없으면 수행 하지 않음
+    if ( sColumns != NULL )
+    {
+        IDE_TEST( swapPartLobs( aStatement,
+                                sTableInfo->tableID,
+                                sSourceTableInfo->tableID,
+                                sTargetPartitionInfo->partitionID,
+                                sSourcePartitionInfo->partitionID )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 6. Source와 Target의 Table Partitions 기본 정보를 교환한다. (Meta Table)
+     *  - SYS_INDEX_PARTITIONS__
+     *      - TABLE_PARTITION_ID, INDEX_PARTITION_ID를 교환한다.
+     *      - LAST_DDL_TIME을 갱신한다. (SYSDATE)
+     */
+    IDE_TEST( swapIndexPartitions( aStatement,
+                                   sTableInfo->tableID,
+                                   sSourceTableInfo->tableID,
+                                   sTargetPartitionInfo,
+                                   sSourcePartitionInfo )
+              != IDE_SUCCESS );
+
+    if ( ( sTargetPartitionInfo->indices != NULL ) ||
+         ( sSourcePartitionInfo->indices != NULL ) )
+    {
+        for ( i = 0;
+              i < sSourcePartitionInfo->indexCount;
+              i++ )
+        {
+            IDE_TEST( smiTable::swapIndexID( QC_SMI_STMT( aStatement ),
+                                             sTargetPartitionInfo->tableHandle,
+                                             sTargetPartitionInfo->indices[i].indexHandle,
+                                             sSourcePartitionInfo->tableHandle,
+                                             sSourcePartitionInfo->indices[i].indexHandle )
+                      != IDE_SUCCESS );
+
+            /* BUG-46274 Partition swap error */
+            IDE_TEST( smiTable::swapIndexColumns( QC_SMI_STMT( aStatement ),
+                                                  sTargetPartitionInfo->indices[i].indexHandle,
+                                                  sSourcePartitionInfo->indices[i].indexHandle )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        // nothing to do
+    }
+
+    /* 7. Partition의 Replication Flag를 교환한다. */
+    IDE_TEST( swapReplicationFlagOnPartitonTableHeader( QC_SMI_STMT( aStatement ),
+                                                        sTargetPartitionInfo,
+                                                        sSourcePartitionInfo )
+              != IDE_SUCCESS );
+
+    /* BUG-46274 Partition swap error */
+    IDE_TEST( swapTablePartitionColumnID( aStatement,
+                                          sTargetPartitionInfo,
+                                          sSourcePartitionInfo )
+              != IDE_SUCCESS );
+
+    /* 8. Partition Info를 다시 얻는다.
+     *  - Partition Info를 생성하고, SM에 등록한다. (Meta Cache)
+     *  - Partition Info를 얻는다.
+     */
+    IDE_TEST( qcmPartition::makeAndSetQcmPartitionInfo( QC_SMI_STMT( aStatement ),
+                                                        sSourcePartitionInfo->partitionID,
+                                                        smiGetTableId( sSourcePartitionInfo->tableHandle ),
+                                                        sTableInfo,
+                                                        NULL )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                              sTableInfo->tableID,
+                                              sParseTree->mPartAttr->tablePartName,
+                                              & sNewTargetPartitionInfo,
+                                              & sSCN,
+                                              & sTempTableHandle )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::makeAndSetQcmPartitionInfo( QC_SMI_STMT( aStatement ),
+                                                        sTargetPartitionInfo->partitionID,
+                                                        smiGetTableId( sTargetPartitionInfo->tableHandle ),
+                                                        sSourceTableInfo,
+                                                        NULL )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                              sSourceTableInfo->tableID,
+                                              sParseTree->mPartAttr->tablePartName,
+                                              & sNewSourcePartitionInfo,
+                                              & sSCN,
+                                              & sTempTableHandle )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::touchPartition( QC_SMI_STMT( aStatement ),
+                                            sTargetPartitionInfo->partitionID )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcmPartition::touchPartition( QC_SMI_STMT( aStatement ),
+                                            sSourcePartitionInfo->partitionID )
+              != IDE_SUCCESS );
+
+    /* 9. Replication 대상 Partition인 경우, Replication Meta Table을 수정한다. (Meta Table)
+     *  - SYS_REPL_ITEMS_
+     *      - SYS_REPL_ITEMS_의 TABLE_OID는 Non-Partitioned Table OID이거나
+     *        Partition OID이다.
+     *          - Partitioned Table OID는 SYS_REPL_ITEMS_에 없다.
+     *      - Target, Source Partition의 TABLE_OID(Partition OID) 교환
+     */
+    IDE_TEST( swapReplItemsForParititonMeta( aStatement,
+                                             sTargetPartitionInfo,
+                                             sSourcePartitionInfo )
+              != IDE_SUCCESS );
+
+    /* 10. Replication 대상 Partition이거나 DDL_SUPPLEMENTAL_LOG_ENABLE이 1인 경우, Supplemental Log를 기록한다.
+     *  - Table Meta Log Record를 기록한다.
+     *      - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
+     */
+    if ( ( sDDLSupplementalLog == 1 ) || ( sTargetPartitionInfo->replicationCount > 0 ) )
+    {
+        IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(
+                      aStatement,
+                      sTargetPartitionInfo->tableOID,
+                      sSourcePartitionInfo->tableOID )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sTargetPartitionInfo->replicationCount > 0 )
+    {
+        /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+        if ( ( aStatement->session->mQPSpecific.mFlag
+               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        {
+            IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
+                                                    sTargetPartitionInfo->tableOwnerID,
+                                                    sTargetPartitionInfo->name )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do
+        }
+    }
+    else
+    {
+        // Nothing to do
+    }
+
+    if ( ( sDDLSupplementalLog == 1 ) || ( sSourcePartitionInfo->replicationCount > 0 ) )
+    {
+        IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog(
+                      aStatement,
+                      sSourcePartitionInfo->tableOID,
+                      sTargetPartitionInfo->tableOID )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 11. Old Partition Info를 제거한다. */
+    (void)qcmPartition::destroyQcmPartitionInfo( sTargetPartitionInfo );
+    (void)qcmPartition::destroyQcmPartitionInfo( sSourcePartitionInfo );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CANNOT_WRITE_REPL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_WRITE_REPL_INFO ) );
+    }
+    IDE_EXCEPTION_END;
+
+    (void)qcmPartition::destroyQcmPartitionInfo( sNewTargetPartitionInfo );
+    (void)qcmPartition::destroyQcmPartitionInfo( sNewSourcePartitionInfo );
+
+    qcmPartition::restoreTempInfoForPartition( sTableInfo,
+                                               sTargetPartitionInfo );
+
+    qcmPartition::restoreTempInfoForPartition( sSourceTableInfo,
+                                               sSourcePartitionInfo );
 
     return IDE_FAILURE;
 }
@@ -5856,6 +6329,873 @@ IDE_RC qdbCopySwap::checkNormalUserTable( qcStatement    * aStatement,
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_COPY_SWAP_SUPPORT_NORMAL_USER_TABLE,
                                   sqlInfo.getErrMessage() ) );
         (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::swapTablePartitionsMeta( qcStatement     * aStatement,
+                                             UInt              aTargetTableID,
+                                             UInt              aSourceTableID,
+                                             qcNamePosition    aPartitionName )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      Source와 Target의 Table 기본 정보를 교환한다. (Meta Table)
+ *          - SYS_TABLE_PARTITIONS_
+ *              - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT를 교환한다.
+ *              - LAST_DDL_TIME을 갱신한다. (SYSDATE)
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar  * sSqlStr = NULL;
+    vSLong   sRowCnt = ID_vLONG(0);
+    SChar    sPartitionName[QC_MAX_OBJECT_NAME_LEN + 1];
+
+    QC_STR_COPY( sPartitionName, aPartitionName );
+    
+    IDU_FIT_POINT( "qdbCopySwap::swapTablePartitionsMeta::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
+                   idERR_ABORT_InsufficientMemory );
+
+    IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+                                      SChar,
+                                      QD_MAX_SQL_LENGTH,
+                                      & sSqlStr )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr,
+                     QD_MAX_SQL_LENGTH,
+                     "UPDATE SYS_TABLE_PARTITIONS_ A "
+                     "   SET (        TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT ) = "
+                     "       ( SELECT TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT "
+                     "           FROM SYS_TABLE_PARTITIONS_ B "
+                     "          WHERE B.TABLE_ID = CASE2( A.TABLE_ID = INTEGER'%"ID_INT32_FMT"', "
+                     "                                    INTEGER'%"ID_INT32_FMT"', "
+                     "                                    INTEGER'%"ID_INT32_FMT"' ) "
+                     "              AND PARTITION_NAME = VARCHAR'%s' ), "
+                     "       LAST_DDL_TIME = SYSDATE "
+                     " WHERE TABLE_ID IN ( INTEGER'%"ID_INT32_FMT"', INTEGER'%"ID_INT32_FMT"' ) "
+                     " AND PARTITION_NAME = VARCHAR'%s' ",
+                     aTargetTableID,
+                     aSourceTableID,
+                     aTargetTableID,
+                     sPartitionName,
+                     aTargetTableID,
+                     aSourceTableID,
+                     sPartitionName );
+
+    IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                 sSqlStr,
+                                 & sRowCnt )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCnt != 2, ERR_META_CRASH );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_META_CRASH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCM_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::swapPartLobs( qcStatement * aStatement,
+                                  UInt          aTargetTableID,
+                                  UInt          aSourceTableID,
+                                  UInt          aTargetPartTableID,
+                                  UInt          aSourcePartTableID )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      Source와 Target의 Partition Table 기본 정보를 교환한다. (Meta Table)
+ *          - SYS_PART_LOBS_
+ *              - TABLE_ID
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar  * sSqlStr = NULL;
+    vSLong   sRowCnt = ID_vLONG(0);
+
+    IDU_FIT_POINT( "qdbCopySwap::swapPartLobs::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
+                   idERR_ABORT_InsufficientMemory );
+
+    IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+                                      SChar,
+                                      QD_MAX_SQL_LENGTH,
+                                      & sSqlStr )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr,
+                     QD_MAX_SQL_LENGTH,
+                     "UPDATE SYS_PART_LOBS_ "
+                     " SET TABLE_ID = "
+                     "   CASE2( TABLE_ID = INTEGER'%"ID_INT32_FMT"' AND "
+                     "           PARTITION_ID = INTEGER'%"ID_INT32_FMT"' "
+                     "        ,INTEGER'%"ID_INT32_FMT"', "
+                     "        TABLE_ID = INTEGER'%"ID_INT32_FMT"' AND "
+                     "           PARTITION_ID = INTEGER'%"ID_INT32_FMT"' "
+                     "        ,INTEGER'%"ID_INT32_FMT"' ) "
+                     " WHERE PARTITION_ID = INTEGER'%"ID_INT32_FMT"' OR "
+                     "       PARTITION_ID = INTEGER'%"ID_INT32_FMT"' ",
+                     aTargetTableID,
+                     aTargetPartTableID,
+                     aSourceTableID,
+                     aSourceTableID,
+                     aSourcePartTableID,
+                     aTargetTableID,
+                     aTargetPartTableID,
+                     aSourcePartTableID );
+
+    IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                 sSqlStr,
+                                 & sRowCnt )
+              != IDE_SUCCESS );
+
+   IDE_TEST_RAISE( (UInt)sRowCnt == 0, ERR_META_CRASH );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_META_CRASH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCM_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::swapIndexPartitions( qcStatement  * aStatement,
+                                         UInt           aTargetTableID,
+                                         UInt           aSourceTableID,
+                                         qcmTableInfo * aTargetPartTableInfo,
+                                         qcmTableInfo * aSourcePartTableInfo )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      Source와 Target의 Table 기본 정보를 교환한다. (Meta Table)
+ *          - SYS_INDEX_PARTITIONS_
+ *              - TABLE_ID, INDEX_ID, INDEX_PARTITION_NAME
+ *              - LAST_DDL_TIME을 갱신한다. (SYSDATE)
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar  * sSqlStr = NULL;
+    vSLong   sRowCnt = ID_vLONG(0);
+    UInt     sIndexCount = 0;
+    
+    IDU_FIT_POINT( "qdbCopySwap::swapIndexPartitions::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
+                   idERR_ABORT_InsufficientMemory );
+
+    IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+                                      SChar,
+                                      QD_MAX_SQL_LENGTH,
+                                      & sSqlStr )
+              != IDE_SUCCESS );
+
+    for ( sIndexCount = 0;
+          sIndexCount < aTargetPartTableInfo->indexCount;
+          sIndexCount++ )
+    {
+        idlOS::snprintf( sSqlStr,
+                         QD_MAX_SQL_LENGTH,
+                         " UPDATE SYS_INDEX_PARTITIONS_ "
+                         " SET TABLE_ID = "
+                         " CASE2( TABLE_ID = INTEGER'%"ID_INT32_FMT"', "
+                         " INTEGER'%"ID_INT32_FMT"', "
+                         " TABLE_ID = INTEGER'%"ID_INT32_FMT"', "
+                         " INTEGER'%"ID_INT32_FMT"' ), "
+                         " INDEX_ID = "
+                         " CASE2( INDEX_ID = INTEGER'%"ID_INT32_FMT"', "
+                         " INTEGER'%"ID_INT32_FMT"', "
+                         " INDEX_ID = INTEGER'%"ID_INT32_FMT"', "
+                         " INTEGER'%"ID_INT32_FMT"' ), "
+                         " INDEX_PARTITION_NAME = "
+                         " CASE2( INDEX_PARTITION_NAME = VARCHAR'%s', "
+                         " VARCHAR'%s', "
+                         " INDEX_PARTITION_NAME = VARCHAR'%s', "
+                         " VARCHAR'%s' ), "
+                         " LAST_DDL_TIME = SYSDATE "
+                         " WHERE TABLE_PARTITION_ID = INTEGER'%"ID_INT32_FMT"' "
+                         " AND INDEX_PARTITION_ID = INTEGER'%"ID_INT32_FMT"' "
+                         " OR TABLE_PARTITION_ID = INTEGER'%"ID_INT32_FMT"' "
+                         " AND INDEX_PARTITION_ID = INTEGER'%"ID_INT32_FMT"' ",
+                         aTargetTableID,
+                         aSourceTableID,
+                         aSourceTableID,
+                         aTargetTableID,
+                         aTargetPartTableInfo->indices[sIndexCount].indexId,
+                         aSourcePartTableInfo->indices[sIndexCount].indexId,
+                         aSourcePartTableInfo->indices[sIndexCount].indexId,
+                         aTargetPartTableInfo->indices[sIndexCount].indexId,
+                         aTargetPartTableInfo->indices[sIndexCount].name,
+                         aSourcePartTableInfo->indices[sIndexCount].name,
+                         aSourcePartTableInfo->indices[sIndexCount].name,
+                         aTargetPartTableInfo->indices[sIndexCount].name,
+                         aTargetPartTableInfo->partitionID,
+                         aTargetPartTableInfo->indices[sIndexCount].indexPartitionID,
+                         aSourcePartTableInfo->partitionID,
+                         aSourcePartTableInfo->indices[sIndexCount].indexPartitionID );
+        
+        IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                     sSqlStr,
+                                     & sRowCnt )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( (UInt)sRowCnt == 0, ERR_META_CRASH );
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_META_CRASH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCM_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::swapReplItemsForParititonMeta( qcStatement  * aStatement,
+                                                   qcmTableInfo * aTargetPartTableInfo,
+                                                   qcmTableInfo * aSourcePartTableInfo )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      Replication Meta Table을 수정한다. (Meta Table)
+ *          - SYS_REPL_ITEMS_
+ *          - SYS_REPL_ITEMS_의 TABLE_OID는 Non-Partitioned Table OID이거나
+ *            Partition OID이다.
+ *          - Partitioned Table OID는 SYS_REPL_ITEMS_에 없다.
+ *          - target, source Partitioned Table 의 TABLE_OID(Partition OID) 교환
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar  * sSqlStr = NULL;
+    vSLong   sRowCnt = ID_vLONG(0);
+
+    if ( ( aTargetPartTableInfo->replicationCount > 0 ) ||
+         ( aSourcePartTableInfo->replicationCount > 0 ) )
+    {
+        IDU_FIT_POINT( "qdbCopySwap::swapReplItemsForParititonMeta::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+                                          SChar,
+                                          QD_MAX_SQL_LENGTH,
+                                          & sSqlStr )
+                  != IDE_SUCCESS );
+
+        idlOS::snprintf( sSqlStr,
+                         QD_MAX_SQL_LENGTH,
+                         "UPDATE SYS_REPL_ITEMS_ A "
+                         " SET TABLE_OID = CASE2( TABLE_OID = INTEGER'%"ID_INT32_FMT"', "
+                         "        INTEGER'%"ID_INT32_FMT"', "
+                         "     TABLE_OID = INTEGER'%"ID_INT32_FMT"', "
+                         "        INTEGER'%"ID_INT32_FMT"' ) "
+                         " WHERE TABLE_OID = INTEGER'%"ID_INT32_FMT"' OR "
+                         "       TABLE_OID = INTEGER'%"ID_INT32_FMT"' ",
+                         aTargetPartTableInfo->tableOID,
+                         aSourcePartTableInfo->tableOID,
+                         aSourcePartTableInfo->tableOID,
+                         aTargetPartTableInfo->tableOID,
+                         aTargetPartTableInfo->tableOID,
+                         aSourcePartTableInfo->tableOID );
+
+        IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                     sSqlStr,
+                                     & sRowCnt )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( (UInt)sRowCnt == 0, ERR_META_CRASH );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_META_CRASH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCM_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::swapReplicationFlagOnPartitonTableHeader( smiStatement  * aStatement,
+                                                              qcmTableInfo  * aTargetPartTableInfo,
+                                                              qcmTableInfo  * aSourcePartTableInfo )
+{
+/***********************************************************************
+ * Description :
+ *      Partition의 Replication Flag를 교환한다.
+ *
+  *      - Partition : SMI_TABLE_REPLICATION_MASK, SMI_TABLE_REPLICATION_TRANS_WAIT_MASK
+  *
+ * Implementation :
+ *
+ ***********************************************************************/
+    
+    UInt sTableFlag = 0;
+
+    if ( ( aTargetPartTableInfo->replicationCount > 0 ) ||
+         ( aSourcePartTableInfo->replicationCount > 0 ) )
+    {
+        // Partition의 Replication Flag를 교환한다.
+        sTableFlag  = aTargetPartTableInfo->tableFlag
+            & ~( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
+        sTableFlag |= aSourcePartTableInfo->tableFlag
+            &  ( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
+
+        IDE_TEST( smiTable::modifyTableInfo( aStatement,
+                                             aTargetPartTableInfo->tableHandle,
+                                             NULL,
+                                             0,
+                                             NULL,
+                                             0,
+                                             sTableFlag,
+                                             SMI_TBSLV_DDL_DML,
+                                             aSourcePartTableInfo->maxrows,
+                                             0,         /* Parallel Degree */
+                                             ID_TRUE )  /* aIsInitRowTemplate */
+                  != IDE_SUCCESS );
+
+        sTableFlag  = aSourcePartTableInfo->tableFlag
+            & ~( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
+        sTableFlag |= aTargetPartTableInfo->tableFlag
+            &  ( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
+
+        IDE_TEST( smiTable::modifyTableInfo( aStatement,
+                                             aSourcePartTableInfo->tableHandle,
+                                             NULL,
+                                             0,
+                                             NULL,
+                                             0,
+                                             sTableFlag,
+                                             SMI_TBSLV_DDL_DML,
+                                             aTargetPartTableInfo->maxrows,
+                                             0,         /* Parallel Degree */
+                                             ID_TRUE )  /* aIsInitRowTemplate */
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // nothing to do
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
+                                              qdTableParseTree * aParseTree )
+{
+/***********************************************************************
+ * Description :
+ *      BUG-45745
+ *
+ * Implementation :
+ *  partition table swap validate 수행
+ *      1, partition table swap validate 수행
+ *      2. table parttion key 관련체크
+ *      3. table partiton column 관련 체크
+ *      4. table partiton 속성 관련 체크
+ *
+ ***********************************************************************/
+
+    qcmTableInfo            * sTableInfo            = NULL;
+    qcmTableInfo            * sSourceTableInfo      = NULL;
+    qcmTableInfo            * sSrcTempPartInfo      = NULL;
+    qcmTableInfo            * sDstTempPartInfo      = NULL;
+    void                    * sHandle               = NULL;
+    qcmColumn               * sTargetColumns        = NULL;
+    qcmColumn               * sSourceColumns        = NULL;
+    qdPartitionAttribute    * sNewTargetPartAttr    = NULL;
+    qdPartitionAttribute    * sNewSourcePartAttr    = NULL;
+    qcmPartitionInfoList    * sTargetPartInfoList   = NULL;
+    qcmPartitionInfoList    * sSourcePartInfoList   = NULL;
+    UInt                      sTargetPartOrder      = 0;
+    UInt                      sSourcePartOrder      = 0;
+    UInt                      sTargetPartCount      = 0;
+    UInt                      sSourcePartCount      = 0;    
+    UInt                      sMaxValCount          = 0;
+    UInt                      sTargetColumnOrder    = 0;
+    UInt                      sSourceColumnOrder    = 0;    
+    smSCN                     sSCN                  = SM_SCN_INIT;
+    qcuSqlSourceInfo          sqlInfo;
+        
+    /* 1, partition table swap validate 수행 */
+    if ( aParseTree->mPartAttr != NULL )
+    {
+        sTableInfo          = aParseTree->tableInfo;
+        sSourceTableInfo    = aParseTree->mSourcePartTable->mTableInfo;
+
+        /* 1. table parttion 존재여부 체크 */
+        
+        // target, source  paritioned table check
+        IDE_TEST_RAISE ( ( aParseTree->partTable->partInfoList == NULL ) ||
+                         ( aParseTree->mSourcePartTable->mPartInfoList == NULL ),
+                         ERR_NOT_EXIST_PARTITION_TABLE );
+
+        // target exist partition table
+        if ( qcmPartition::getPartitionInfo( aStatement,
+                                             aParseTree->tableInfo->tableID,
+                                             aParseTree->mPartAttr->tablePartName,
+                                             & sDstTempPartInfo,
+                                             & sSCN,
+                                             & sHandle )
+             != IDE_SUCCESS )
+        {
+            sqlInfo.setSourceInfo(aStatement,
+                                  & aParseTree->mPartAttr->tablePartName);
+            IDE_RAISE( ERR_NOT_EXIST_TABLE_PARTITION );
+        }
+        else
+        {
+            // nothing to do 
+        }
+
+        // Source exist partition table
+        if ( qcmPartition::getPartitionInfo( aStatement,
+                                             aParseTree->mSourcePartTable->mTableInfo->tableID,
+                                             aParseTree->mPartAttr->tablePartName,
+                                             & sSrcTempPartInfo,
+                                             & sSCN,
+                                             & sHandle )
+             != IDE_SUCCESS )
+        {
+            sqlInfo.setSourceInfo(aStatement,
+                                  & aParseTree->mPartAttr->tablePartName);
+            IDE_RAISE( ERR_NOT_EXIST_TABLE_PARTITION );
+        }
+        else
+        {
+            // nothing to do
+        }
+
+        /* 2. table parttion key 관련체크 */
+        
+        // partition key column count 같아야함.
+        IDE_TEST_RAISE( sTableInfo->partKeyColCount != sSourceTableInfo->partKeyColCount,
+                        ERR_REPLACE_DIFFERENT_PARTITION );
+        
+        // partition key column의 column order 같아야함
+        for ( sTargetColumns = sTableInfo->partKeyColumns,
+                  sSourceColumns = sSourceTableInfo->partKeyColumns;
+              sTargetColumns != NULL;
+              sTargetColumns = sTargetColumns->next,
+                  sSourceColumns = sSourceColumns->next )
+        {
+            sTargetColumnOrder = ( sTargetColumns->basicInfo->column.id & SMI_COLUMN_ID_MASK);
+            sSourceColumnOrder = ( sSourceColumns->basicInfo->column.id & SMI_COLUMN_ID_MASK);
+
+            IDE_TEST_RAISE( sTargetColumnOrder != sSourceColumnOrder,
+                            ERR_REPLACE_DIFFERENT_PARTITION );
+        }
+
+        /* 3. table partiton column 관련 체크 */
+
+        // column count, index count
+        IDE_TEST_RAISE( ( sDstTempPartInfo->columnCount != sSrcTempPartInfo->columnCount ) ||
+                        ( sDstTempPartInfo->indexCount != sSrcTempPartInfo->indexCount ),
+                        ERR_REPLACE_DIFFERENT_PARTITION );
+
+        // target, source column type은 같아야 함.
+        sTargetColumns = sTableInfo->columns;
+        sSourceColumns = sSourceTableInfo->columns;
+        
+        while ( sSourceColumns != NULL)
+        {
+            if ( qtc::isSameType( sSourceColumns->basicInfo,
+                                  sTargetColumns->basicInfo ) == ID_TRUE )
+            {
+                // nothing to do
+            }            
+            else
+            {
+                IDE_RAISE( ERR_NOT_COMPATIBLE_TYPE );
+            }
+
+            sSourceColumns = sSourceColumns->next;
+            sTargetColumns = sTargetColumns->next;
+        }
+
+        /* 4. table partiton 속성 관련 체크 */
+        
+        // target, source partition method 
+        IDE_TEST_RAISE( ( sDstTempPartInfo->partitionMethod !=
+                          sSrcTempPartInfo->partitionMethod ),
+                        ERR_REPLACE_DIFFERENT_PARTITION );
+
+        // target partition total count
+        IDE_TEST( qcmPartition::getPartitionCount( aStatement,
+                                                   sDstTempPartInfo->tableID,
+                                                   & sTargetPartCount )
+                  != IDE_SUCCESS );
+
+        // source partition total count
+        IDE_TEST( qcmPartition::getPartitionCount( aStatement,
+                                                   sSrcTempPartInfo->tableID,
+                                                   & sSourcePartCount )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sTargetPartCount != sSourcePartCount,
+                        ERR_REPLACE_DIFFERENT_PARTITION );
+            
+        // target partAttr
+        IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::sNewTargetPartAttr",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+                                           qdPartitionAttribute,
+                                           1,
+                                           & sNewTargetPartAttr )
+                  != IDE_SUCCESS );
+
+        QD_SET_INIT_PARTITION_ATTR( sNewTargetPartAttr );
+
+        IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::alterPart",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+                                           qdAlterPartition,
+                                           1,
+                                           & sNewTargetPartAttr->alterPart )
+                  != IDE_SUCCESS );
+        
+        // source partAttr
+        IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::sNewSourcePartAttr",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+                                           qdPartitionAttribute,
+                                           1,
+                                           & sNewSourcePartAttr )
+                  != IDE_SUCCESS );
+
+        QD_SET_INIT_PARTITION_ATTR( sNewSourcePartAttr );
+
+        IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::alterPart",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+                                           qdAlterPartition,
+                                           1,
+                                           & sNewSourcePartAttr->alterPart )
+                  != IDE_SUCCESS );
+
+        if ( sSrcTempPartInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
+        {
+            for ( sTargetPartInfoList = aParseTree->partTable->partInfoList,
+                      sSourcePartInfoList = aParseTree->mSourcePartTable->mPartInfoList;
+                  sTargetPartInfoList != NULL;
+                  sTargetPartInfoList = sTargetPartInfoList->next,
+                      sSourcePartInfoList = sSourcePartInfoList->next )
+            {
+                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                          sTargetPartInfoList->partitionInfo,
+                                                          sTargetPartInfoList->partitionInfo->partitionID,
+                                                          sNewTargetPartAttr )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                          sSourcePartInfoList->partitionInfo,
+                                                          sSourcePartInfoList->partitionInfo->partitionID,
+                                                          sNewSourcePartAttr )
+                          != IDE_SUCCESS );
+
+                if (( sNewTargetPartAttr->alterPart->partKeyCondMinValStr->length != 0 ) ||
+                    ( sNewSourcePartAttr->alterPart->partKeyCondMinValStr->length != 0 ))
+                {
+                    // min value
+                    IDE_TEST_RAISE( qmoPartition::compareRangePartition(
+                                        sTableInfo->partKeyColumns,
+                                        sNewTargetPartAttr->alterPart->partCondMinVal,
+                                        sNewSourcePartAttr->alterPart->partCondMinVal ) != 0,
+                                    ERR_REPLACE_DIFFERENT_PARTITION );
+                }
+                else
+                {
+                    // nothing to do
+                }
+
+                if (( sNewTargetPartAttr->alterPart->partKeyCondMaxValStr->length != 0 ) ||
+                    ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length != 0 ))
+                {
+                    // max value
+                    IDE_TEST_RAISE( qmoPartition::compareRangePartition(
+                                        sTableInfo->partKeyColumns,
+                                        sNewTargetPartAttr->alterPart->partCondMaxVal,
+                                        sNewSourcePartAttr->alterPart->partCondMaxVal ) != 0,
+                                    ERR_REPLACE_DIFFERENT_PARTITION );
+                }
+                else
+                {
+                    // nothing to do
+                }
+            }
+        }
+        /* BUG-46065 support range using hash */
+        else if ( sSrcTempPartInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
+        {
+            for ( sTargetPartInfoList = aParseTree->partTable->partInfoList,
+                      sSourcePartInfoList = aParseTree->mSourcePartTable->mPartInfoList;
+                  sTargetPartInfoList != NULL;
+                  sTargetPartInfoList = sTargetPartInfoList->next,
+                      sSourcePartInfoList = sSourcePartInfoList->next )
+            {
+                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                          sTargetPartInfoList->partitionInfo,
+                                                          sTargetPartInfoList->partitionInfo->partitionID,
+                                                          sNewTargetPartAttr )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                          sSourcePartInfoList->partitionInfo,
+                                                          sSourcePartInfoList->partitionInfo->partitionID,
+                                                          sNewSourcePartAttr )
+                          != IDE_SUCCESS );
+
+                if (( sNewTargetPartAttr->alterPart->partKeyCondMinValStr->length != 0 ) ||
+                    ( sNewSourcePartAttr->alterPart->partKeyCondMinValStr->length != 0 ))
+                {
+                    // min value
+                    IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                                        sNewTargetPartAttr->alterPart->partCondMinVal,
+                                        sNewSourcePartAttr->alterPart->partCondMinVal ) != 0,
+                                    ERR_REPLACE_DIFFERENT_PARTITION );
+                }
+                else
+                {
+                    // nothing to do
+                }
+
+                if (( sNewTargetPartAttr->alterPart->partKeyCondMaxValStr->length != 0 ) ||
+                    ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length != 0 ))
+                {
+                    // max value
+                    IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                                        sNewTargetPartAttr->alterPart->partCondMaxVal,
+                                        sNewSourcePartAttr->alterPart->partCondMaxVal ) != 0,
+                                    ERR_REPLACE_DIFFERENT_PARTITION );
+                }
+                else
+                {
+                    // nothing to do
+                }
+            }
+        }
+        else if( sSrcTempPartInfo->partitionMethod == QCM_PARTITION_METHOD_HASH )
+        {
+            // target partition order
+            IDE_TEST( qcmPartition::getPartitionOrder(
+                          QC_SMI_STMT( aStatement ),
+                          sDstTempPartInfo->tableID,
+                          (UChar *) sDstTempPartInfo->name,
+                          idlOS::strlen( sDstTempPartInfo->name ),
+                          & sTargetPartOrder )
+                      != IDE_SUCCESS );
+
+            // source partition order
+            IDE_TEST( qcmPartition::getPartitionOrder(
+                          QC_SMI_STMT( aStatement ),
+                          sSrcTempPartInfo->tableID,
+                          (UChar *) sSrcTempPartInfo->name,
+                          idlOS::strlen( sSrcTempPartInfo->name ),
+                          & sSourcePartOrder )
+                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( sTargetPartOrder != sSourcePartOrder,
+                            ERR_REPLACE_DIFFERENT_PARTITION );
+        }
+        else if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_LIST )
+        {
+            for ( sTargetPartInfoList = aParseTree->partTable->partInfoList,
+                      sSourcePartInfoList = aParseTree->mSourcePartTable->mPartInfoList;
+                  sTargetPartInfoList != NULL;
+                  sTargetPartInfoList = sTargetPartInfoList->next,
+                      sSourcePartInfoList = sSourcePartInfoList->next )
+            {
+                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                          sTargetPartInfoList->partitionInfo,
+                                                          sTargetPartInfoList->partitionInfo->partitionID,
+                                                          sNewTargetPartAttr )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                          sSourcePartInfoList->partitionInfo,
+                                                          sSourcePartInfoList->partitionInfo->partitionID,
+                                                          sNewSourcePartAttr )
+                          != IDE_SUCCESS );
+                
+                if ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length > 0 )
+                    {
+                        for( sMaxValCount = 0;
+                             sMaxValCount < sNewSourcePartAttr->alterPart->partCondMaxVal->partCondValCount;
+                             sMaxValCount++ )
+                        {
+                            IDE_TEST_RAISE( qmoPartition::compareListPartition(
+                                                sTableInfo->partKeyColumns,
+                                                sNewTargetPartAttr->alterPart->partCondMaxVal,
+                                                sNewSourcePartAttr->alterPart->partCondMaxVal->partCondValues[sMaxValCount] )
+                                            != ID_TRUE,
+                                            ERR_REPLACE_DIFFERENT_PARTITION );
+                        }
+                    }
+                    else
+                    {
+                        // nothing to do
+                    }
+            }
+        }
+        else
+        {
+            // Nothing to do
+        }
+    }
+    else
+    {
+        // nothing to do
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_PARTITION_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_ALTER_REPLACE_PARTITON_NONE_PART ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE_PARTITION )
+    {
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QCM_NOT_EXIST_TABLE_PARTITION,
+                                 sqlInfo.getErrMessage()) );
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION( ERR_REPLACE_DIFFERENT_PARTITION )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_REPLACE_DIFFERENT_PARTITION ) );
+    }         
+    IDE_EXCEPTION( ERR_NOT_COMPATIBLE_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDN_NOT_COMPATIBLE_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdbCopySwap::swapTablePartitionColumnID( qcStatement  * aStatement,
+                                                qcmTableInfo * aTargetTablePartInfo,
+                                                qcmTableInfo * aSourceTablePartInfo )
+{
+    smiColumnList * sSrcColumnList = NULL;
+    smiColumnList * sDstColumnList = NULL;
+    mtcColumn     * sSrcMtcColumns = NULL;
+    mtcColumn     * sDstMtcColumns = NULL;
+    UInt            sColCount      = 0;
+    ULong           sAllocSize     = 0;
+    qcmColumn     * sColumn1       = NULL;
+    qcmColumn     * sColumn2       = NULL;
+    UInt            i              = 0;
+
+    sColCount = aSourceTablePartInfo->columnCount;
+
+    IDE_TEST_RAISE( sColCount != aTargetTablePartInfo->columnCount, ERR_UNEXPECTED );
+
+    sAllocSize = (ULong)sColCount * ID_SIZEOF(mtcColumn);
+    IDE_TEST( aStatement->qmxMem->alloc( sAllocSize,
+                                         (void**)&sSrcMtcColumns )
+             != IDE_SUCCESS);
+    IDE_TEST( aStatement->qmxMem->alloc( sAllocSize,
+                                         (void**)&sDstMtcColumns )
+             != IDE_SUCCESS);
+
+    sAllocSize = (ULong)sColCount * ID_SIZEOF(smiColumnList);
+    IDE_TEST( aStatement->qmxMem->alloc( sAllocSize,
+                                         (void**)&sSrcColumnList )
+              != IDE_SUCCESS );
+    IDE_TEST( aStatement->qmxMem->alloc( sAllocSize,
+                                         (void**)&sDstColumnList )
+              != IDE_SUCCESS );
+
+    for ( sColumn1 = aSourceTablePartInfo->columns, sColumn2 = aTargetTablePartInfo->columns, i = 0;
+          sColumn1 != NULL;
+          sColumn1 = sColumn1->next, sColumn2 = sColumn2->next, i++ )
+    {
+        idlOS::memcpy( &sSrcMtcColumns[i], sColumn1->basicInfo, ID_SIZEOF(mtcColumn) );
+        sSrcMtcColumns[i].column.id = sColumn2->basicInfo->column.id;
+        sSrcColumnList[i].column = (const smiColumn*)(&sSrcMtcColumns[i]);
+
+        idlOS::memcpy( &sDstMtcColumns[i], sColumn2->basicInfo, ID_SIZEOF(mtcColumn) );
+        sDstMtcColumns[i].column.id = sColumn1->basicInfo->column.id;
+        sDstColumnList[i].column = (const smiColumn*)(&sDstMtcColumns[i]);
+
+        if ( i == sColCount - 1 )
+        {
+            sSrcColumnList[i].next = NULL;
+            sDstColumnList[i].next = NULL;
+        }
+        else
+        {
+            sSrcColumnList[i].next = &sSrcColumnList[i + 1];
+            sDstColumnList[i].next = &sDstColumnList[i + 1];
+        }
+    }
+
+    IDE_TEST( smiTable::modifyTableInfo( QC_SMI_STMT( aStatement ),
+                                         aSourceTablePartInfo->tableHandle,
+                                         (const smiColumnList *)sSrcColumnList,
+                                         ID_SIZEOF(mtcColumn),
+                                         NULL,
+                                         0,
+                                         SMI_TABLE_FLAG_UNCHANGE,
+                                         SMI_TBSLV_DDL_DML,
+                                         0,
+                                         0,         /* Parallel Degree */
+                                         ID_TRUE )  /* aIsInitRowTemplate */
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiTable::modifyTableInfo( QC_SMI_STMT( aStatement ),
+                                         aTargetTablePartInfo->tableHandle,
+                                         (const smiColumnList *)sDstColumnList,
+                                         ID_SIZEOF(mtcColumn),
+                                         NULL,
+                                         0,
+                                         SMI_TABLE_FLAG_UNCHANGE,
+                                         SMI_TBSLV_DDL_DML,
+                                         0,
+                                         0,         /* Parallel Degree */
+                                         ID_TRUE )  /* aIsInitRowTemplate */
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qdbCopySwap::swapTablePartitionColumnID",
+                                  "column count is not same" ));
     }
     IDE_EXCEPTION_END;
 

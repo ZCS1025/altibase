@@ -195,6 +195,11 @@ IDE_RC smrLogFileDump::initializeStatic()
                    "SMR_DLT_REF_NTA" );
     idlOS::strcpy( mStrLogType[SMR_DLT_COMPENSATION],
                    "SMR_DLT_COMPENSATION" );
+    idlOS::strcpy( mStrLogType[SMR_LT_XA_PREPARE_REQ],
+                   "SMR_LT_XA_PREPARE_REQ" );
+    idlOS::strcpy( mStrLogType[SMR_LT_XA_END],
+                   "SMR_LT_XA_END" );
+
 
     /* Init Log Type Table */
     idlOS::strcpy( mStrUpdateType[SMR_PHYSICAL],

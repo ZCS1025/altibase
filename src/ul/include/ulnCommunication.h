@@ -79,6 +79,19 @@ typedef enum
     ULN_PROPERTY_SHARD_PIN             = CMP_DB_PROPERTY_SHARD_PIN,
     /* PROJ-2660 */
     ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL = CMP_DB_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL,
+    /* BUG-46090 Meta Node SMN 전파 */
+    ULN_PROPERTY_SHARD_META_NUMBER     = CMP_DB_PROPERTY_SHARD_META_NUMBER,
+    /* BUG-45707 */
+    ULN_PROPERTY_SHARD_CLIENT          = CMP_DB_PROPERTY_SHARD_CLIENT,
+    ULN_PROPERTY_SHARD_SESSION_TYPE    = CMP_DB_PROPERTY_SHARD_SESSION_TYPE,
+
+    /* BUG-46092
+     * ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT
+     * Only send property by shardcli.
+     * User can not set attibute value. */
+    /* BUG- 46785 Deprecated */
+    ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT = CMP_DB_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT,
+
     ULN_PROPERTY_MAX
 } ulnPropertyId;
 
@@ -252,6 +265,16 @@ ACI_RC ulnWriteCancelByCIDREQ(ulnFnContext  *aFnContext,
                               ulnPtContext  *aPtContext,
                               acp_uint32_t  aStmtCID);
 
+/* BUG-46785 Shard statement partial rollback */
+ACI_RC ulnWriteSetSavepointREQ( ulnFnContext     *aFnContext,
+                                ulnPtContext     *aPtContext,
+                                const acp_char_t *aSavepointName,
+                                acp_uint32_t      aSavepointNameLength );
+
+ACI_RC ulnWriteRollbackToSavepointREQ( ulnFnContext     *aFnContext,
+                                       ulnPtContext     *aPtContext,
+                                       const acp_char_t *aSavepointName,
+                                       acp_uint32_t      aSavepointNameLength );
 /* BUG-39817 */
 ACP_EXTERN_C_END
 

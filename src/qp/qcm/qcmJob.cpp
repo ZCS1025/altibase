@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmJob.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmJob.cpp 82252 2018-02-13 00:44:29Z donovan.seo $
  **********************************************************************/
 
 #include <qc.h>
@@ -805,6 +805,30 @@ IDE_RC qcmJob::isExistJob( smiStatement   * aSmiStmt,
     {
         /* Nothing to do */
     }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qcmJob::updateInitialJobState( smiStatement * aSmiStmt )
+{
+    SChar           sSqlStr[QCM_JOB_UPDATE_QUERY_LEN];
+    vSLong          sRowCnt = 0;
+
+    idlOS::snprintf( sSqlStr, QCM_JOB_UPDATE_QUERY_LEN,
+                     "UPDATE SYS_JOBS_ SET STATE = 0,"
+                     "ERROR_CODE = "
+                     "VARCHAR'0x%05"ID_XINT32_FMT"' "
+                     "WHERE STATE = 1",
+                     E_ERROR_CODE(idERR_ABORT_Session_Closed) );
+
+    IDE_TEST( qcg::runDMLforDDL( aSmiStmt,
+                                 sSqlStr,
+                                 &sRowCnt )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }

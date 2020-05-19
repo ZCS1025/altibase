@@ -63,25 +63,6 @@ SQLRETURN ulsdNodeFreeStmt(ulnStmt      *aMetaStmt,
     return sRet;
 }
 
-SQLRETURN ulsdNodeSilentFreeStmt(ulsdDbc      *aShard,
-                                 ulnStmt      *aMetaStmt)
-{
-    acp_uint16_t        i;
-
-    for ( i = 0; i < aShard->mNodeCount; i++ )
-    {
-        ulnFreeStmt(aMetaStmt->mShardStmtCxt.mShardNodeStmt[i], SQL_DROP);
-
-        SHARD_LOG("(Free Stmt) NodeId=%d, Server=%s:%d, StmtID=%d\n",
-                  aShard->mNodeInfo[i]->mNodeId,
-                  aShard->mNodeInfo[i]->mServerIP,
-                  aShard->mNodeInfo[i]->mPortNo,
-                  aMetaStmt->mShardStmtCxt.mShardNodeStmt[i]->mStatementID);
-    }
-
-    return SQL_SUCCESS;
-}
-
 SQLRETURN ulsdNodeFreeHandleStmt(ulsdDbc       *aShard,
                                  ulnStmt       *aMetaStmt)
 {
@@ -130,7 +111,7 @@ SQLRETURN ulsdNodeDecideStmt(ulnStmt       *aMetaStmt,
     {
         /* 분산정보가 없으면 에러를 발생시킨다. */
         ACI_TEST_RAISE( ( aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt == 0 ) &&
-                        ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX ),
+                        ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX ),
                         LABEL_NO_RANGE_FOUNDED );
 
         ACI_TEST( ulsdNodeDecideStmtByValues(aMetaStmt,
@@ -193,20 +174,20 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
 
     acp_uint16_t    sNodeDbcIndex;
 
-    ulsdRangeIndex sRangeIndex[1000];
-    acp_uint16_t sRangeIndexCount = 0;
+    ulsdRangeIndex  sRangeIndex[1000];
+    acp_uint16_t    sRangeIndexCount = 0;
 
-    ulsdRangeIndex sSubRangeIndex[1000];
-    acp_uint16_t sSubRangeIndexCount = 0;
+    ulsdRangeIndex  sSubRangeIndex[1000];
+    acp_uint16_t    sSubRangeIndexCount = 0;
 
-    acp_uint16_t sSubValueIndex = ACP_UINT16_MAX;
+    acp_uint16_t    sSubValueIndex = ACP_UINT16_MAX;
 
-    acp_bool_t sExecDefaultNode = ACP_FALSE;
+    acp_bool_t      sExecDefaultNode = ACP_FALSE;
 
     acp_uint16_t i;
     acp_uint16_t j;
 
-    acp_bool_t sIsFound = ACP_FALSE;
+    acp_bool_t      sIsFound = ACP_FALSE;
 
     ulsdValueInfo * sValue = aMetaStmt->mShardStmtCxt.mShardValueInfo;
     ulsdValueInfo * sSubValue;
@@ -481,12 +462,12 @@ SQLRETURN ulsdNodeDecideStmtByValues(ulnStmt       *aMetaStmt,
             // Default node외에 수행 대상 노드가 없는데
             // Default node가 설정 되어있지 않다면 에러
             ACI_TEST_RAISE(( sIsFound == ACP_FALSE ) &&
-                           ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT16_MAX ),
+                           ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX ),
                            LABEL_NO_NODE_FOUNDED);
 
             // Default node가 없더라도, 수행 대상 노드가 하나라도 있으면
             // 그 노드에서만 수행시킨다. ( for SELECT )
-            if ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT16_MAX )
+            if ( aMetaStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT32_MAX )
             {
                 ACI_TEST(ulsdConvertNodeIdToNodeDbcIndex(
                              aMetaStmt,
@@ -639,13 +620,14 @@ SQLRETURN ulsdGetRangeIndexByValues(ulnStmt        *aMetaStmt,
                                                 (*sValue).mValue,
                                                 MTD_OFFSET_USELESS );
 
+            /* BUG-46288 */
             if ( aMetaStmt->mParentDbc->mShardDbcCxt.mShardDbc->mIsTestEnable == ACP_FALSE )
             {
-                sHashValue = (sHashValue % 1000) + 1;
+                sHashValue %= ULSD_HASH_MAX_VALUE;
             }
             else
             {
-                sHashValue = (sHashValue % 100) + 1;
+                sHashValue %= ULSD_HASH_MAX_VALUE_FOR_TEST;
             }
 
             ACI_TEST(ulsdGetRangeIndexFromHash(aMetaStmt,
@@ -814,26 +796,33 @@ SQLRETURN ulsdCreateNodeStmt(ulnDbc        *aDbc,
     ulsdDbc        *sShard;
     acp_uint16_t    sCnt;
 
+    ulnStmt       **sShardNodeStmt = NULL;
+    
+    acp_uint16_t    sAllocHandleCnt = 0;
+
     ulsdGetShardFromDbc(aDbc, &sShard);
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&(aMetaStmt->mShardStmtCxt.mShardNodeStmt),
-                                                  ACI_SIZEOF(ulnStmt *) * sShard->mNodeCount)),
-                   LABEL_SHARD_NODE_ALLOC_STMT_MEM_ERROR);
+    ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sShardNodeStmt,
+                                                   ACI_SIZEOF(ulnStmt *) * sShard->mNodeCount) ),
+                    LABEL_SHARD_NODE_ALLOC_STMT_MEM_ERROR );
 
     for (sCnt = 0;sCnt < sShard->mNodeCount;sCnt++)
     {
-        sNodeReturnCode = ulnAllocHandle(SQL_HANDLE_STMT,
-                                         sShard->mNodeInfo[sCnt]->mNodeDbc,
-                                         (void **)&(aMetaStmt->mShardStmtCxt.mShardNodeStmt[sCnt]));
+        sNodeReturnCode = ulnAllocHandle( SQL_HANDLE_STMT,
+                                          sShard->mNodeInfo[sCnt]->mNodeDbc,
+                                          (void **)&sShardNodeStmt[sCnt] );
         ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeReturnCode), LABEL_SHARD_NODE_ALLOC_STMT_FAIL);
+        sAllocHandleCnt++;
 
-        ulsdInitalizeNodeStmt(aMetaStmt->mShardStmtCxt.mShardNodeStmt[sCnt]);
+        ulsdInitalizeNodeStmt( sShardNodeStmt[sCnt] );
 
         SHARD_LOG("(Alloc Stmt Handle) NodeId=%d, Server=%s:%d\n",
                   sShard->mNodeInfo[sCnt]->mNodeId,
                   sShard->mNodeInfo[sCnt]->mServerIP,
                   sShard->mNodeInfo[sCnt]->mPortNo);
     }
+
+    aMetaStmt->mShardStmtCxt.mShardNodeStmt = sShardNodeStmt;
 
     return SQL_SUCCESS;
 
@@ -853,12 +842,19 @@ SQLRETURN ulsdCreateNodeStmt(ulnDbc        *aDbc,
                                   (ulnObject *)sShard->mNodeInfo[sCnt]->mNodeDbc,
                                   sShard->mNodeInfo[sCnt],
                                   (acp_char_t *)"AllocStmtHandle");
-
-        ulsdNodeSilentFreeStmt(sShard, aMetaStmt);
-
-        ulsdNodeStmtDestroy(aMetaStmt);
     }
     ACI_EXCEPTION_END;
+
+    for ( sCnt = 0; sCnt < sAllocHandleCnt; sCnt++ )
+    {
+        ulnFreeHandle( SQL_HANDLE_STMT, &sShardNodeStmt[sCnt] );
+    }
+
+    if ( sShardNodeStmt != NULL )
+    {
+        acpMemFree( sShardNodeStmt );
+        sShardNodeStmt = NULL;
+    }
 
     return SQL_ERROR;
 }
@@ -870,6 +866,9 @@ void ulsdInitalizeNodeStmt(ulnStmt    *aNodeStmt)
 
 void ulsdNodeStmtDestroy(ulnStmt *aStmt)
 {
+    acp_list_node_t * sNode = NULL;
+    acp_list_node_t * sNext = NULL;
+
     if ( aStmt->mShardStmtCxt.mShardNodeStmt != NULL )
     {
         acpMemFree(aStmt->mShardStmtCxt.mShardNodeStmt);
@@ -889,4 +888,254 @@ void ulsdNodeStmtDestroy(ulnStmt *aStmt)
     {
         /* Do Nothing */
     }
+
+    /* BUG-46100 Session SMN Update */
+    if ( aStmt->mShardStmtCxt.mOrgPrepareTextBuf != NULL )
+    {
+        acpMemFree( aStmt->mShardStmtCxt.mOrgPrepareTextBuf );
+
+        aStmt->mShardStmtCxt.mOrgPrepareTextBuf       = NULL;
+        aStmt->mShardStmtCxt.mOrgPrepareTextBufMaxLen = 0;
+        aStmt->mShardStmtCxt.mOrgPrepareTextBufLen    = 0;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mStmtAttrList, sNode, sNext )
+    {
+        acpListDeleteNode( sNode );
+        acpMemFree( sNode->mObj );
+    }
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mBindParameterList, sNode, sNext )
+    {
+        acpListDeleteNode( sNode );
+        acpMemFree( sNode->mObj );
+    }
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mBindColList, sNode, sNext )
+    {
+        acpListDeleteNode( sNode );
+        acpMemFree( sNode->mObj );
+    }
+}
+
+SQLRETURN ulsdNodeStmtEnsureAllocOrgPrepareTextBuf( ulnFnContext * aFnContext,
+                                                    ulnStmt      * aStmt,
+                                                    acp_char_t   * aStatementText,
+                                                    acp_sint32_t   aTextLength )
+{
+    acp_sint32_t   sBufLen = 0;
+
+    if ( aTextLength == SQL_NTS )
+    {
+        sBufLen = acpCStrLen( aStatementText, ACP_SINT32_MAX );
+    }
+    else
+    {
+        sBufLen = aTextLength;
+    }
+
+    if ( aStmt->mShardStmtCxt.mOrgPrepareTextBufMaxLen < sBufLen )
+    {
+        if ( aStmt->mShardStmtCxt.mOrgPrepareTextBuf != NULL )
+        {
+            acpMemFree( aStmt->mShardStmtCxt.mOrgPrepareTextBuf );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        ACI_TEST_RAISE( acpMemAlloc( (void **) & aStmt->mShardStmtCxt.mOrgPrepareTextBuf,
+                                     sBufLen )
+                        != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+        aStmt->mShardStmtCxt.mOrgPrepareTextBufMaxLen = sBufLen;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    aStmt->mShardStmtCxt.mOrgPrepareTextBufLen = sBufLen;
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
+    {
+        ulnError( aFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "NodeStmtEnsureAllocOrgPrepareTextBuf",
+                  "Memory allocation error." );
+    }
+    ACI_EXCEPTION_END;
+
+    aStmt->mShardStmtCxt.mOrgPrepareTextBuf       = NULL;
+    aStmt->mShardStmtCxt.mOrgPrepareTextBufMaxLen = 0;
+    aStmt->mShardStmtCxt.mOrgPrepareTextBufLen    = 0;
+
+    return SQL_ERROR;
+}
+
+SQLRETURN ulsdAddNodeToStmt( ulnFnContext * aFnContext,
+                             ulnStmt      * aMetaStmt,
+                             ulsdNodeInfo * aNewNodeInfo )
+{
+    ulsdDbc           * sShard              = NULL;
+    ulnStmt          ** sNewShardNodeStmt   = NULL;
+    ulnStmt           * sNewStmt            = NULL;
+    SQLRETURN           sRet                = SQL_ERROR;
+    acp_uint16_t        i                   = 0;
+
+    ulsdGetShardFromDbc( aMetaStmt->mParentDbc, &sShard );
+
+    ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( acpMemCalloc( (void **) & sNewShardNodeStmt,
+                                                      sShard->mNodeCount + 1,
+                                                      ACI_SIZEOF(ulnStmt *) ) ),
+                    LABEL_SHARD_NODE_ALLOC_STMT_MEM_ERROR );
+
+    for ( i = 0; i < sShard->mNodeCount; i++ )
+    {
+        sNewShardNodeStmt[i] = aMetaStmt->mShardStmtCxt.mShardNodeStmt[i];
+    }
+
+    sRet = ulnAllocHandle( SQL_HANDLE_STMT,
+                           aNewNodeInfo->mNodeDbc,
+                           (void **) & sNewShardNodeStmt[i] );
+    ACI_TEST_RAISE( !SQL_SUCCEEDED(sRet), LABEL_SHARD_NODE_ALLOC_STMT_FAIL );
+    sNewStmt = sNewShardNodeStmt[i];
+
+    ulsdInitalizeNodeStmt( sNewStmt );
+
+    sRet = ulsdSetStmtAttrOnNode( aFnContext,
+                                  & aMetaStmt->mShardStmtCxt,
+                                  sNewStmt,
+                                  aNewNodeInfo );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    sRet = ulsdNodeBindParameterOnNode( aFnContext,
+                                        & aMetaStmt->mShardStmtCxt,
+                                        sNewStmt,
+                                        aNewNodeInfo );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    sRet = ulsdNodeBindColOnNode( aFnContext,
+                                  & aMetaStmt->mShardStmtCxt,
+                                  sNewStmt,
+                                  aNewNodeInfo );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    acpMemFree( (void *)aMetaStmt->mShardStmtCxt.mShardNodeStmt );
+    aMetaStmt->mShardStmtCxt.mShardNodeStmt = sNewShardNodeStmt;
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_SHARD_NODE_ALLOC_STMT_MEM_ERROR )
+    {
+        ulnError( aFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "AddNodeToStmt",
+                  "Alloc node stmt memory error" );
+
+        sRet = ULN_FNCONTEXT_GET_RC( aFnContext );
+    }
+    ACI_EXCEPTION( LABEL_SHARD_NODE_ALLOC_STMT_FAIL )
+    {
+        ulsdNativeErrorToUlnError( aFnContext,
+                                   SQL_HANDLE_DBC,
+                                   (ulnObject *)aNewNodeInfo->mNodeDbc,
+                                   aNewNodeInfo,
+                                   (acp_char_t *)"AllocStmtHandle" );
+    }
+    ACI_EXCEPTION_END;
+
+    if ( sNewStmt != NULL )
+    {
+        (void)ulnFreeHandle( SQL_HANDLE_STMT, (void *)sNewStmt );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sNewShardNodeStmt != NULL )
+    {
+        acpMemFree( (void *)sNewShardNodeStmt );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sRet;
+}
+
+void ulsdRemoveNodeFromStmt( ulnStmt      * aMetaStmt,
+                             ulsdNodeInfo * aRemoveNodeInfo )
+{
+    ulsdDbc           * sShard        = NULL;
+    acp_uint16_t        sTarget       = 0;
+    acp_uint16_t        sNodeDbcIndex = 0;
+    acp_uint16_t        i             = 0;
+
+    /* Disconnect 시에 Statement Free를 수행하므로, 여기에서는 Mapping 정보만 정리한다.
+     *  struct ulsdStmtContext
+     *  {
+     *      ulnStmt      ** mShardNodeStmt;
+     *  ...
+     *      acp_uint16_t    mNodeDbcIndexArr[ULSD_SD_NODE_MAX_COUNT];
+     *      acp_uint16_t    mNodeDbcIndexCount;
+     *      acp_sint16_t    mNodeDbcIndexCur;   // 현재 fetch중인 dbc index
+     *  ...
+     *  }
+     */
+
+    ulsdGetShardFromDbc( aMetaStmt->mParentDbc, &sShard );
+
+    for ( sTarget = 0; sTarget < sShard->mNodeCount; sTarget++ )
+    {
+        if ( sShard->mNodeInfo[sTarget]->mNodeId == aRemoveNodeInfo->mNodeId )
+        {
+            break;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    ACE_DASSERT( sTarget < sShard->mNodeCount );
+
+    for ( i = sTarget; i < (sShard->mNodeCount - 1); i++ )
+    {
+        aMetaStmt->mShardStmtCxt.mShardNodeStmt[i] = aMetaStmt->mShardStmtCxt.mShardNodeStmt[i + 1];
+    }
+
+    for ( sNodeDbcIndex = 0; sNodeDbcIndex < aMetaStmt->mShardStmtCxt.mNodeDbcIndexCount; sNodeDbcIndex++ )
+    {
+        if ( aMetaStmt->mShardStmtCxt.mNodeDbcIndexArr[sNodeDbcIndex] == sTarget )
+        {
+            for ( i = sNodeDbcIndex; i < (aMetaStmt->mShardStmtCxt.mNodeDbcIndexCount - 1); i++ )
+            {
+                aMetaStmt->mShardStmtCxt.mNodeDbcIndexArr[i] = aMetaStmt->mShardStmtCxt.mNodeDbcIndexArr[i + 1];
+            }
+
+            aMetaStmt->mShardStmtCxt.mNodeDbcIndexCount--;
+
+            /* Fetch 시에 SQL_NO_DATA를 반환하는 상태이므로, mNodeDbcIndexCur를 감소시키지 않는다. */
+            break;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return;
 }

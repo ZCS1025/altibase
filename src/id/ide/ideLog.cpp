@@ -72,6 +72,7 @@ const SChar *ideLog::mMsgModuleName[] =
     "SM",
     "RP",
     "QP",
+    "SD",   /* BUG-46138 */
     "DK",
     "XA",
     "MM",
@@ -365,6 +366,15 @@ IDE_RC ideLog::initializeStaticModule(idBool aDebug)
             IDE_TEST(mLogObj[i].initialize((ideLogModule)i, sPath,
                                            sFileSize, sFileCount,
                                            iduProperty::getRpConflictTrcEnable() == 1?
+                                           ID_TRUE:ID_FALSE)
+                     != IDE_SUCCESS);
+        }
+        else if ( i == IDE_SD )
+        {
+            /* BUG-46138 */
+            IDE_TEST(mLogObj[i].initialize((ideLogModule)i, sPath,
+                                           sFileSize, sFileCount,
+                                           iduProperty::getSdTrcEnable() == 1?
                                            ID_TRUE:ID_FALSE)
                      != IDE_SUCCESS);
         }
@@ -982,13 +992,11 @@ void ideLog::writeErrorTrace( const SChar * aErrInfo,
                               const SChar * aFileName,
                               const UInt    aLineNum,
                               const SChar * aFormat,
-                              ... )
+                              va_list       ap )
 {
-    va_list      ap;
 
     if ( iduProperty::getErrorValidationLevel() == IDE_ERROR_VALIDATION_LEVEL_FATAL )
     {
-        va_start( ap, aFormat );
 
         writeErrorTraceInternal( IDE_ERR_0,
                                  aErrInfo,
@@ -996,7 +1004,6 @@ void ideLog::writeErrorTrace( const SChar * aErrInfo,
                                  aLineNum,
                                  aFormat,
                                  ap );
-        va_end( ap );
 
         if (gCallbackForAssert( (SChar *)idlVA::basename( aFileName ),
                                 aLineNum, aAcceptFaultTolerance ) == ID_TRUE)
@@ -1014,7 +1021,6 @@ void ideLog::writeErrorTrace( const SChar * aErrInfo,
     {
         if ( iduProperty::getWriteErrorTrace() == ID_TRUE )
         {
-            va_start( ap, aFormat );
 
             writeErrorTraceInternal( IDE_ERR_0,
                                      aErrInfo,
@@ -1022,7 +1028,6 @@ void ideLog::writeErrorTrace( const SChar * aErrInfo,
                                      aLineNum,
                                      aFormat,
                                      ap );
-            va_end( ap );
         }
         IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerError ));
     }

@@ -41,6 +41,7 @@ public class DoubleColumn extends AbstractColumn
 
     DoubleColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.DOUBLE);
     }
 
     public int getDBColumnType()
@@ -48,11 +49,6 @@ public class DoubleColumn extends AbstractColumn
         return ColumnTypes.DOUBLE;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.DOUBLE };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "DOUBLE";

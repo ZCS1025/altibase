@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsParseTree.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsParseTree.h 84499 2018-12-04 01:47:06Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QS_PARSE_TREE_H_
@@ -145,7 +145,8 @@ struct qsProcException;         // BUG-37501
 enum qsBlockItemType
 {
     QS_VARIABLE,
-    QS_TRIGGER_VARIABLE,         // PROJ-1359 Trigger를 위한 Variable
+    QS_TRIGGER_NEW_VARIABLE,         // PROJ-1359 Trigger를 위한 Variable
+    QS_TRIGGER_OLD_VARIABLE,         // PROJ-1359 Trigger를 위한 Variable
     QS_CURSOR,
     QS_EXCEPTION,
     QS_TYPE,                     // PROJ-1075 UDT
@@ -551,6 +552,8 @@ typedef struct qsProcStmtSql
 
     // BUG-37333
     qsUsingSubprograms    * usingSubprograms; 
+    // BUG-46174
+    qtcNode               * usingRecValueInsUpt;
 } qsProcStmtSql;
 
 // BUG-34288 if exists subquery

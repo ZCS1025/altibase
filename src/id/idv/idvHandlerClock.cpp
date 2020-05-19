@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idvHandlerClock.cpp 68602 2015-01-23 00:13:11Z sbjang $
+ * $Id: idvHandlerClock.cpp 82316 2018-02-21 22:33:24Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -49,7 +49,7 @@ idvClockThread::idvClockThread() : idtBaseThread()
 IDE_RC idvClockThread::initialize(ULong *aClockArea, ULong *aSecondArea)
 {
     mExitFlag   = ID_FALSE;
-    mClockArea  = aClockArea;
+    mClockArea  = aClockArea;/*no need to use atomic because nobody knows it.*/
     mSecondArea = aSecondArea;
     mGapOfTickAvg   = 0;
     mTV.set(0, 0);
@@ -89,14 +89,16 @@ void idvClockThread::run()
             mGapOfTickAvg = (mGapOfTickAvg + sTmpCur) / 2;
         }
 
+	
         // set micro-second
-        *mClockArea = mGapOfTickAvg / mSleepMicro;
+	(void)acpAtomicSet64(mClockArea, mGapOfTickAvg / mSleepMicro); /*BUG-45547*/
+
 #ifdef NOTDEF
         ideLog::log(IDE_SERVER_0, " Clock Value = %llu"
                     " sleepMicro = %llu : %lluusec calc\n",
-                    *mClockArea,
+                    acpAtomicGet64(mClockArea),
                     mSleepMicro,
-                    ((sAfterTick - sBeforeTick) / (*mClockArea)) );
+                    ((sAfterTick - sBeforeTick) / acpAtomicGet64(mClockArea)) );
 #endif
     }
 }
@@ -117,7 +119,7 @@ void   idvClockThread::waitServiceAvail()
 {
     // thread가 실행되어서 clock 초기화가 될때까지 
     // 대기하다 리턴한다. 
-    while( *mClockArea == 0 )
+    while( acpAtomicGet64(mClockArea) == 0 )
     {
         idlOS::sleep(1);
     }

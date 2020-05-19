@@ -187,13 +187,13 @@ public:
                                        scPageID      aNewChunkFirstPID,
                                        scPageID      aNewChunkLastPID);
 
-    
+#if 0  // not used 
     // DB로부터 하나의 Page를 할당받는다.
     static IDE_RC allocatePersPage (void       *  aTrans,
                                     scSpaceID     aSpaceID,
                                     void      **  aAllocatedPage);
     
-    
+#endif    
     // DB로부터 Page를 여러개 할당받아 트랜잭션에게 Free Page를 제공한다.
     // aHeadPage부터 aTailPage까지
     // Page Header의 Prev/Next포인터로 연결해준다.
@@ -358,21 +358,20 @@ svmManager::isValidSpaceID( scSpaceID aSpaceID )
 }
 
 // Page ID가 Valid한 값인지 체크한다.
+// 이함수는 Validation작업이 없습니다. 사용하는 곳에서 aSpaceID 가 정상인지 확인이 필요합니다. 
 inline idBool
 svmManager::isValidPageID( scSpaceID aSpaceID ,
                            scPageID aPageID )
 {
    svmTBSNode *sTBSNode;
 
-    sTBSNode = (svmTBSNode*)sctTableSpaceMgr::getSpaceNodeBySpaceID(
-        aSpaceID );
+    sTBSNode = (svmTBSNode*)sctTableSpaceMgr::getSpaceNodeBySpaceID( aSpaceID );
 
     if( sTBSNode != NULL )
     {
         IDE_DASSERT( sTBSNode->mDBMaxPageCount > 0 );
 
-        return ( aPageID <= sTBSNode->mDBMaxPageCount ) ?
-            ID_TRUE : ID_FALSE;
+        return ( aPageID <= sTBSNode->mDBMaxPageCount ) ? ID_TRUE : ID_FALSE;
 
     }
 

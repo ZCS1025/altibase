@@ -85,7 +85,4 @@ extern void dkiRollback( dkiSession * aSession, const SChar * aSavepoint );
 extern IDE_RC dkiSavepoint( dkiSession * aSession, const SChar * aSavepoint );
 extern idBool dkiIsReadOnly( dkiSession * aSession );
 
-/* PROJ-2661 commit/rollback failure test of 2PC */
-extern void dkiTxLogOfRM( ID_XID * aXid );
-extern void dkiTxAbortRM();
 #endif /* _O_DKI_H_ */ 

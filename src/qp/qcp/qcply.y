@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcply.y 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcply.y 85350 2019-04-30 09:30:35Z khkwak $
  **********************************************************************/
 
 /*
@@ -118,6 +118,7 @@
 #include <qdbDisjoin.h> /* PROJ-1810 */
 #include <qdbJoin.h>    /* PROJ-1810 */
 #include <qdbCopySwap.h>    /* PROJ-2600 Online DDL for Tablespace Alteration */
+#include <sdi.h>
     
 #define PARAM       ((qcplx*)param)
 #define SESSION     (PARAM->mSession)
@@ -377,6 +378,7 @@ extern mtfModule mtfVc2coll;
     qmsTableRef *           tableRef;
     qmsPartitionRef *       partitionRef; // PROJ-1502 PARTITIONED DISK TABLE
     qriParseTree *          replParseTree;
+    qriReplConnOpt *        replConnOpt;      // BUG-45984 Replication support of InfiniBand
     qriReplHost *           replHost;
     qriReplItem *           replItem;
     qriReplDirPath *        replDirPath;        /* BUG-31703 다수의 옵션 지원 */
@@ -605,6 +607,12 @@ extern mtfModule mtfVc2coll;
 
     // BUG-45359
     qcShardNodes                * shardNodes;
+
+    /* BUG-45921 */
+    qdQueueSequenceParseTree    * queueSequenceParseTree;
+
+    /* PROJ-2701 Sharding online data rebuild */
+    qciStmtType                   stmtKind;
 }
 
 //-------------------------------------------------------
@@ -669,6 +677,7 @@ extern mtfModule mtfVc2coll;
 //%token TR_CLOB
 %token TR_CHECKPOINT
 %token TR_SHRINK_MEMPOOL
+%token TR_DUMP_CALLSTACKS
 %token TR_CLOSE
 %token TR_COALESCE
 //%token TR_COLLATE
@@ -1080,6 +1089,7 @@ extern mtfModule mtfVc2coll;
 %token TA_NODE_DATA  /* BUG-44710 */
 %token TA_DISJOIN /* PROJ-1810 Partition Exchange */
 %token TA_CONJOIN /* BUG-42468 JOIN TO CONJOIN */
+%token TA_ANALYSIS_PROPAGATION // BUG-46095
 
 %token TI_NONQUOTED_IDENTIFIER
 %token TI_QUOTED_IDENTIFIER
@@ -1119,6 +1129,7 @@ extern mtfModule mtfVc2coll;
 %token TM_TOP                    /* BUG-36580 supported TOP */
 %token TM_TOP_ALL
 %token TX_HINTS
+%token TC_WITH_ROLLUP
 
 %{
 #include <idl.h>
@@ -1510,7 +1521,7 @@ sql_stmt
           STATEMENT->myPlan->parseTree->stmt = STATEMENT;
           STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_DELETE;
           // set shard statement
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
           {
               STATEMENT->myPlan->parseTree->stmtShard = $<shardStmtSpec>1.shardType;
               STATEMENT->myPlan->parseTree->nodes = $<shardStmtSpec>1.nodes;
@@ -1522,7 +1533,7 @@ sql_stmt
           STATEMENT->myPlan->parseTree->stmt = STATEMENT;
           STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_INSERT;
           // set shard statement
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
           {
               STATEMENT->myPlan->parseTree->stmtShard = $<shardStmtSpec>1.shardType;
               STATEMENT->myPlan->parseTree->nodes = $<shardStmtSpec>1.nodes;
@@ -1534,7 +1545,7 @@ sql_stmt
           STATEMENT->myPlan->parseTree->stmt = STATEMENT;
           STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_UPDATE;
           // set shard statement
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
           {
               STATEMENT->myPlan->parseTree->stmtShard = $<shardStmtSpec>1.shardType;
               STATEMENT->myPlan->parseTree->nodes = $<shardStmtSpec>1.nodes;
@@ -1559,7 +1570,7 @@ sql_stmt
           // set size of select_statement
           QCP_ADJUST_LAST_POSITION( STATEMENT->myPlan->parseTree->stmtPos );
           // set shard statement
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
           {
               STATEMENT->myPlan->parseTree->stmtShard = $<shardStmtSpec>1.shardType;
               STATEMENT->myPlan->parseTree->nodes = $<shardStmtSpec>1.nodes;
@@ -1688,7 +1699,7 @@ sql_stmt
           STATEMENT->myPlan->parseTree->stmt = STATEMENT;
           STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_EXEC_PROC;
           // set shard statement
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
           {
               STATEMENT->myPlan->parseTree->stmtShard = $<shardStmtSpec>1.shardType;
               STATEMENT->myPlan->parseTree->nodes = $<shardStmtSpec>1.nodes;
@@ -1959,7 +1970,121 @@ sql_stmt
         STATEMENT->myPlan->parseTree->stmt = STATEMENT;
         STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_SCHEMA_DDL;
       }
+    | anonymous_block semicolon_option
+      {
+        STATEMENT->myPlan->parseTree = (qcParseTree*)$<spParseTree>1;
+        STATEMENT->myPlan->parseTree->stmt = STATEMENT;
+        STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_EXEC_AB;
+      }
     ;
+
+SP_declaration_option
+    : /* NULL */
+      {
+        $<boolType>$ = ID_FALSE;
+      }
+    | TR_DECLARE
+      {
+        $<boolType>$ = ID_TRUE;
+      }
+    | TR_AS
+      {
+        $<boolType>$ = ID_TRUE;
+      }
+    | TR_IS
+      {
+        $<boolType>$ = ID_TRUE;
+      }
+    ;
+
+SP_label_option
+    : SP_label_statement
+      {
+          $<spStmts>$ = (qsProcStmts*) $<spLabel>1;
+      }
+    | /* NULL */
+      {
+          $<spStmts>$ = NULL;
+      }
+    ;
+
+anonymous_block
+    : SP_label_option SP_declaration_option SP_first_block SP_name_option
+      {
+        mtcColumn        * sCursorColumn;
+        qtcNode          * sCursorTypeNode[2];
+        qcuSqlSourceInfo   sqlInfo;
+        qsLabels         * sLabel;
+
+        QCP_STRUCT_ALLOC($<spParseTree>$, qsProcParseTree);
+        QC_SET_INIT_PARSE_TREE($<spParseTree>$, $<position>1);
+        QS_PROC_PARSE_TREE_INIT($<spParseTree>$);
+
+        $<spParseTree>$->objType = QS_PROC;
+
+        $<spParseTree>$->procNamePos.stmtText = (SChar*)"ANONYMOUS_BLOCK";
+        $<spParseTree>$->procNamePos.offset   = 0;
+        $<spParseTree>$->procNamePos.size     = idlOS::strlen($<spParseTree>$->procNamePos.stmtText);
+
+        $<spParseTree>$->returnTypeVar    = NULL ;
+        $<spParseTree>$->returnTypeModule = NULL ;
+        $<spParseTree>$->returnTypeColumn = NULL ;
+
+        $<spParseTree>$->paraDecls      = NULL;
+        $<spParseTree>$->block = $<spBlock>3;
+
+        if ( ($<boolType>2 == ID_FALSE) &&
+             $<spParseTree>$->block->variableItems != NULL )
+        {
+            sqlInfo.setSourceInfo( STATEMENT, &$<spParseTree>$->block->variableItems->name );
+            sqlInfo.init(MEMORY);
+            IDE_SET(ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                     sqlInfo.getErrMessage() ));
+            sqlInfo.fini();
+            YYABORT;
+        }
+
+        if ( $<spStmts>1 != NULL )
+        {
+            QCP_STRUCT_ALLOC( sLabel, qsLabels );
+            SET_POSITION( sLabel->namePos, ((qsProcStmtLabel*)$<spStmts>1)->labelNamePos );
+            sLabel->id = 0;
+            sLabel->stmt = NULL;
+            sLabel->next = NULL;
+            $<spParseTree>$->block->common.parentLabels = sLabel;
+        }
+
+        $<spParseTree>$->expCallSpec    = NULL;
+        $<spParseTree>$->procType       = QS_INTERNAL;
+
+        $<spParseTree>$->paraDeclCount  = 0;
+        $<spParseTree>$->isDefiner      = ID_FALSE;
+
+        // BUG-21761
+        $<spParseTree>$->ncharList = NCHARLIST;
+
+        // create SQL cursor
+        QCP_TEST( qtc::createColumn( STATEMENT,
+                                     &qtc::spCursorModule,
+                                     &sCursorColumn,
+                                     0, NULL, NULL, 1 )
+                  != IDE_SUCCESS );
+
+        QCP_TEST( qtc::makeProcVariable( STATEMENT,
+                                         sCursorTypeNode,
+                                         &( $<spParseTree>$->procNamePos ),
+                                         sCursorColumn,
+                                         QTC_PROC_VAR_OP_NEXT_COLUMN )
+                  != IDE_SUCCESS );
+
+        $<spParseTree>$->sqlCursorTypeNode = sCursorTypeNode[0];
+
+        $<spParseTree>$->common.parse    = qsv::parseAB;
+        $<spParseTree>$->common.validate = qsv::validateAB;
+        $<spParseTree>$->common.optimize = qso::optimizeCreate;
+        $<spParseTree>$->common.execute  = qsx::executeAB;
+      }
+      ;
 
 semicolon_option
     : /* empty */
@@ -2224,6 +2349,10 @@ column_name
           idlOS::strUpper( QTEXT + $<position>1.offset, $<position>1.size );
       }
     | TR_SHRINK_MEMPOOL
+      {
+          idlOS::strUpper( QTEXT + $<position>1.offset, $<position>1.size );
+      }
+    | TR_DUMP_CALLSTACKS
       {
           idlOS::strUpper( QTEXT + $<position>1.offset, $<position>1.size );
       }
@@ -2967,18 +3096,6 @@ alter_session_set_statement
               YYABORT;
           }
       }
-    | TR_ALTER TR_SESSION TR_SET TA_SHARD TA_LINKER TS_EQUAL_SIGN TR_ON
-      /* ALTER SESSION SET SHARD LINKER = ON */
-      {
-          QCP_STRUCT_ALLOC($<commonParseTree>$, qcParseTree);
-          QC_SET_INIT_PARSE_TREE($<commonParseTree>$, $<position>1);
-          $<commonParseTree>$->stmtKind = QCI_STMT_SET_SHARD_LINKER_ON;
-
-          $<commonParseTree>$->parse    = qcc::parse;
-          $<commonParseTree>$->validate = qcc::validate;
-          $<commonParseTree>$->optimize = qcc::optimize;
-          $<commonParseTree>$->execute  = qcc::execute;
-      }
     | TR_ALTER TR_SESSION TR_SET TI_NONQUOTED_IDENTIFIER TS_EQUAL_SIGN TL_INTEGER
       /* ALTER SESSION SET property = integer */
       {
@@ -3142,6 +3259,30 @@ alter_system_statement
           $<systemParseTree>$->common.optimize = qcc::optimize;
           $<systemParseTree>$->common.execute  = qdc::execute;
           $<systemParseTree>$->common.stmtKind = QCI_STMT_ALT_SYS_SHRINK_MEMPOOL;
+      }
+    | TR_ALTER TI_NONQUOTED_IDENTIFIER TR_DUMP_CALLSTACKS
+      /* ALTER SYSTEM DUMP_CALLSTACKS(BUG-45182)*/
+      {
+          qcuSqlSourceInfo    sqlInfo;
+          if (idlOS::strMatch(
+                "SYSTEM", 6,
+                QTEXT+$<position>2.offset, $<position>2.size) != 0)
+          { // syntax error
+              sqlInfo.setSourceInfo(STATEMENT, & $<position>2 );
+              sqlInfo.init(MEMORY);
+              IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                      sqlInfo.getErrMessage() ));
+              sqlInfo.fini();
+              YYABORT;
+          }
+          QCP_STRUCT_ALLOC($<systemParseTree>$, qdSystemParseTree);
+          QC_SET_INIT_PARSE_TREE($<systemParseTree>$, $<position>1);
+
+          $<systemParseTree>$->common.parse    = qcc::parse;
+          $<systemParseTree>$->common.validate = qdc::validate;
+          $<systemParseTree>$->common.optimize = qcc::optimize;
+          $<systemParseTree>$->common.execute  = qdc::execute;
+          $<systemParseTree>$->common.stmtKind = QCI_STMT_ALT_SYS_DUMP_CALLSTACKS;
       }
     // PROJ-2264 Dictionary table
     | TR_ALTER TI_NONQUOTED_IDENTIFIER TA_REORGANIZE
@@ -3786,6 +3927,70 @@ alter_system_statement
           $<systemSetParseTree>$->common.execute  = qdc::execute;
 
           $<systemSetParseTree>$->common.stmtKind = QCI_STMT_RELOAD_ACCESS_LIST;
+      }
+    | TR_ALTER TI_NONQUOTED_IDENTIFIER TI_NONQUOTED_IDENTIFIER TA_SHARD TI_NONQUOTED_IDENTIFIER TI_NONQUOTED_IDENTIFIER opt_local
+      /* ALTER SYSTEM RELOAD SHARD META NUMBER
+       * ALTER SYSTEM RELOAD SHARD META NUMBER LOCAL */
+      {
+          qcuSqlSourceInfo    sqlInfo;
+
+          if ( idlOS::strMatch( "SYSTEM", 6,
+                                QTEXT + $<position>2.offset, $<position>2.size) != 0 )
+          {
+              sqlInfo.setSourceInfo( STATEMENT, & $<position>2 );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX, sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+          if ( idlOS::strMatch( "RELOAD", 6,
+                                QTEXT + $<position>3.offset, $<position>3.size) != 0 )
+          {
+              sqlInfo.setSourceInfo( STATEMENT, & $<position>3 );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX, sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+          if ( idlOS::strMatch( "META", 4,
+                                QTEXT + $<position>5.offset, $<position>5.size) != 0 )
+          {
+              sqlInfo.setSourceInfo( STATEMENT, & $<position>5 );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX, sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+          if ( idlOS::strMatch( "NUMBER", 6,
+                                QTEXT + $<position>6.offset, $<position>6.size) != 0 )
+          {
+              sqlInfo.setSourceInfo( STATEMENT, & $<position>6 );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX, sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+
+          QCP_STRUCT_ALLOC( $<systemParseTree>$, qdSystemParseTree );
+          QC_SET_INIT_PARSE_TREE( $<systemParseTree>$, $<position>1 );
+
+          $<systemSetParseTree>$->common.stmtKind = $<stmtKind>7;
+
+          $<systemSetParseTree>$->common.parse    = qcc::parse;
+          $<systemSetParseTree>$->common.validate = qdc::validate;
+          $<systemSetParseTree>$->common.optimize = qcc::optimize;
+          $<systemSetParseTree>$->common.execute  = qdc::execute;
+      }
+    ;
+
+opt_local
+    : /* empty */
+      {
+          $<stmtKind>$ = QCI_STMT_RELOAD_SHARD_META_NUMBER;
+      }
+    | TR_LOCAL
+      {
+          $<stmtKind>$ = QCI_STMT_RELOAD_SHARD_META_NUMBER_LOCAL;
       }
     ;
 
@@ -7223,6 +7428,7 @@ replication_statement
       /* ALTER REPLICATION replication_name SET RECOVERY ENABLE/DISABLE */
       /* ALTER REPLICATION replication_name SET GAPLESS ENABLE/DISABLE */
       /* ALTER REPLICATION replication_name SET GROUPING ENABLE/DISABLE */
+      /* ALTER REPLICATION replication_name SET DDL_REPLICATE ENABLE/DISABLE */
     {
         qcuSqlSourceInfo sqlInfo;
 
@@ -7319,6 +7525,34 @@ replication_statement
             $<replParseTree>$->common.validate = qrc::validateAlterSetGrouping;
             $<replParseTree>$->common.optimize = qcc::optimize;
             $<replParseTree>$->common.execute  = qrc::executeAlterSetGrouping;
+        
+        }
+        else if (idlOS::strMatch(
+                     "DDL_REPLICATE", 13,
+                     QTEXT+$<position>5.offset, $<position>5.size) == 0)
+        {
+            QCP_STRUCT_ALLOC($<replParseTree>$, qriParseTree);
+            QC_SET_INIT_PARSE_TREE($<replParseTree>$, $<position>1);
+            QR_PARSE_TREE_INIT($<replParseTree>$);
+
+            QCP_STRUCT_ALLOC($<replParseTree>$->replOptions, qriReplOptions);
+            QR_REPL_OPTIONS_INIT( $<replParseTree>$->replOptions );
+
+            SET_POSITION($<replParseTree>$->replName, $<position>3);
+
+            if ( $<boolType>6 == ID_TRUE )
+            {
+                $<replParseTree>$->replOptions->optionsFlag = RP_OPTION_DDL_REPLICATE_SET;
+            }
+            else
+            {
+                $<replParseTree>$->replOptions->optionsFlag = RP_OPTION_DDL_REPLICATE_UNSET;
+            }
+
+            $<replParseTree>$->common.parse    = qcc::parse;
+            $<replParseTree>$->common.validate = qrc::validateAlterSetDDLReplicate;
+            $<replParseTree>$->common.optimize = qcc::optimize;
+            $<replParseTree>$->common.execute  = qrc::executeAlterSetDDLReplicate;
         
         }
         else
@@ -7621,6 +7855,7 @@ replication_statement
 
             /* BUG-42852 STOP과 FLUSH를 DCL로 변환합니다. */
             $<replParseTree>$->common.stmtKind = QCI_STMT_ALT_REPLICATION_STOP;
+            $<replParseTree>$->isImmediateStop = ID_FALSE;
 
             $<replParseTree>$->common.parse    = qcc::parse;
             $<replParseTree>$->common.validate = qcc::validate;
@@ -7651,9 +7886,10 @@ replication_statement
             YYABORT;
         }
     }
-    | TR_ALTER TA_REPLICATION TI_IDENTIFIER TI_NONQUOTED_IDENTIFIER repl_sync_retry opt_repl_sync_table
-      /* ALTER REPLICATION replication_name SYNC ONLY */
+    | TR_ALTER TA_REPLICATION TI_IDENTIFIER TI_NONQUOTED_IDENTIFIER TI_NONQUOTED_IDENTIFIER opt_repl_sync_table
+      /* ALTER REPLICATION replication_name SYNC ONLY ( table_name )*/
       /* ALTER REPLICATION replication_name QUICKSTART RETRY */
+      /* ALTER REPLICATION replication_name STOP IMMEDIATE */
     {
         qcuSqlSourceInfo    sqlInfo;
 
@@ -7681,6 +7917,132 @@ replication_statement
             YYABORT;
         }
 
+        if ( idlOS::strMatch( "SYNC", 4,
+                              QTEXT+$<position>4.offset, $<position>4.size) == 0 )
+        {
+             if ( idlOS::strMatch( "ONLY", 4,
+                                   QTEXT+$<position>5.offset, $<position>5.size ) == 0 )
+            {
+                QCP_STRUCT_ALLOC($<replParseTree>$, qriParseTree);
+                QC_SET_INIT_PARSE_TREE($<replParseTree>$, $<position>1);
+                QR_PARSE_TREE_INIT($<replParseTree>$);
+
+                SET_POSITION($<replParseTree>$->replName, $<position>3);
+                $<replParseTree>$->startType = RP_SYNC_ONLY;
+                $<replParseTree>$->parallelFactor = 1;
+                $<replParseTree>$->replItems = $<replItem>6;
+
+                $<replParseTree>$->common.parse    = qcc::parse;
+                if($<replItem>6 != NULL)
+                {
+                    $<replParseTree>$->common.validate = qrc::validateSyncTbl;
+                }
+                else
+                {
+                    $<replParseTree>$->common.validate = qrc::validateSync;
+                }
+                $<replParseTree>$->common.optimize = qcc::optimize;
+                $<replParseTree>$->common.execute  = qrc::executeSync;
+            }
+            else
+            {
+                sqlInfo.setSourceInfo( STATEMENT, & $<position>5 );
+                sqlInfo.init( MEMORY );
+                IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                          sqlInfo.getErrMessage() ) );
+                sqlInfo.fini();
+                YYABORT;
+            }
+        }
+        else if ( idlOS::strMatch( "QUICKSTART", 10,
+                                   QTEXT+$<position>4.offset, $<position>4.size ) == 0 ) 
+        {
+            if ( idlOS::strMatch( "RETRY", 5,
+                                  QTEXT+$<position>5.offset, $<position>5.size ) == 0 )
+            {
+                QCP_STRUCT_ALLOC($<replParseTree>$, qriParseTree);
+                QC_SET_INIT_PARSE_TREE($<replParseTree>$, $<position>1);
+                QR_PARSE_TREE_INIT($<replParseTree>$);
+
+                SET_POSITION($<replParseTree>$->replName, $<position>3);
+
+                $<replParseTree>$->parallelFactor = 1;
+                $<replParseTree>$->startType      = RP_QUICK;
+                $<replParseTree>$->startOption    = RP_START_OPTION_RETRY;
+
+                $<replParseTree>$->common.parse    = qcc::parse;
+                $<replParseTree>$->common.validate = qrc::validateQuickStart;
+                $<replParseTree>$->common.optimize = qcc::optimize;
+                $<replParseTree>$->common.execute  = qrc::executeQuickStart;
+            }
+            else
+            {
+                sqlInfo.setSourceInfo( STATEMENT, & $<position>5 );
+                sqlInfo.init( MEMORY );
+                IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                          sqlInfo.getErrMessage() ) );
+                sqlInfo.fini();
+                YYABORT;
+            }
+        }
+        else if ( idlOS::strMatch( "STOP", 4,
+                                   QTEXT+$<position>4.offset, $<position>4.size ) == 0 )
+        {
+            if ( idlOS::strMatch( "IMMEDIATE", 9,
+                                  QTEXT+$<position>5.offset, $<position>5.size ) == 0 )
+            {
+                QCP_STRUCT_ALLOC($<replParseTree>$, qriParseTree);
+                QC_SET_INIT_PARSE_TREE($<replParseTree>$, $<position>1);
+                QR_PARSE_TREE_INIT($<replParseTree>$);
+
+                SET_POSITION($<replParseTree>$->replName, $<position>3);
+
+                /* BUG-42852 STOP과 FLUSH를 DCL로 변환합니다. */
+                $<replParseTree>$->common.stmtKind = QCI_STMT_ALT_REPLICATION_STOP;
+                $<replParseTree>$->isImmediateStop = ID_TRUE;
+
+                $<replParseTree>$->common.parse    = qcc::parse;
+                $<replParseTree>$->common.validate = qcc::validate;
+                $<replParseTree>$->common.optimize = qcc::optimize;
+                $<replParseTree>$->common.execute  = qcc::execute;
+            }
+            else
+            {
+                sqlInfo.setSourceInfo( STATEMENT, & $<position>5 );
+                sqlInfo.init( MEMORY );
+                IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                          sqlInfo.getErrMessage() ) );
+                sqlInfo.fini();
+                YYABORT;
+            }
+        }
+        else
+        { // syntax error
+            sqlInfo.setSourceInfo( STATEMENT, & $<position>4 );
+            sqlInfo.init( MEMORY );
+            IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                      sqlInfo.getErrMessage() ) );
+            sqlInfo.fini();
+            YYABORT;
+        }
+    }
+    | TR_ALTER TA_REPLICATION TI_IDENTIFIER TI_NONQUOTED_IDENTIFIER repl_sync_parallel opt_repl_sync_table
+    /* ALTER REPLICATION replication_name SYNC ( PARALLEL number ) ( table_name )*/
+    /* ALTER REPLICATION replication_name SYNC ONLY ( PARALLEL number ) ( table_name )*/
+    {
+        qcuSqlSourceInfo    sqlInfo;
+
+        // replication name
+        if ($<position>3.size > QC_MAX_NAME_LEN)
+        {
+            sqlInfo.setSourceInfo(STATEMENT, &($<position>3));
+            sqlInfo.init(MEMORY);
+            IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_MAX_NAME_LENGTH_OVERFLOW,
+                                    sqlInfo.getErrMessage()));
+            sqlInfo.fini();
+            YYABORT;
+        }
+
         if (idlOS::strMatch(
                 "SYNC", 4,
                 QTEXT+$<position>4.offset, $<position>4.size) == 0)
@@ -7702,7 +8064,7 @@ replication_statement
                 $<replParseTree>$->startType = RP_SYNC_ONLY;
                 $<replParseTree>$->parallelFactor = $<sIntVal>5 * (-1);
             }
-            else //to fix BUG-19610 : SYNC RETRY error
+            else
             {
                 sqlInfo.setSourceInfo(STATEMENT, &($<position>5));
                 sqlInfo.init(MEMORY);
@@ -7724,26 +8086,6 @@ replication_statement
             }
             $<replParseTree>$->common.optimize = qcc::optimize;
             $<replParseTree>$->common.execute  = qrc::executeSync;
-        }
-        else if((idlOS::strMatch(
-                    "QUICKSTART", 10,
-                    QTEXT+$<position>4.offset, $<position>4.size) == 0) &&
-                ($<sIntVal>5 == 0))
-        {
-            QCP_STRUCT_ALLOC($<replParseTree>$, qriParseTree);
-            QC_SET_INIT_PARSE_TREE($<replParseTree>$, $<position>1);
-            QR_PARSE_TREE_INIT($<replParseTree>$);
-
-            SET_POSITION($<replParseTree>$->replName, $<position>3);
-
-            $<replParseTree>$->parallelFactor = 1;
-            $<replParseTree>$->startType      = RP_QUICK;
-            $<replParseTree>$->startOption    = RP_START_OPTION_RETRY;
-
-            $<replParseTree>$->common.parse    = qcc::parse;
-            $<replParseTree>$->common.validate = qrc::validateQuickStart;
-            $<replParseTree>$->common.optimize = qcc::optimize;
-            $<replParseTree>$->common.execute  = qrc::executeQuickStart;
         }
         else
         { // syntax error
@@ -7915,6 +8257,21 @@ repl_option
                 QTEXT+$<position>1.offset, $<position>1.size) == 0 )
         {
             $<replOptions>$->optionsFlag = RP_OPTION_GROUPING_SET;
+        }
+        else if (idlOS::strMatch(
+                "DDL_REPLICATE", 13,
+                QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        {
+            $<replOptions>$->optionsFlag = RP_OPTION_DDL_REPLICATE_SET;
+        }
+        else if ( idlOS::strMatch(
+                  "V6_PROTOCOL", 11,
+                  QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        {
+            /* BUG-46528 Apply __REPLICATION_USE_V6_PROTOCOL to each replication  */
+            $<replOptions>$->optionsFlag = RP_OPTION_V6_PROTOCOL_SET;
+            $<replOptions>$->logDirPath  = NULL;
+            $<replOptions>$->next        = NULL;
         }
         else
         {
@@ -8091,12 +8448,18 @@ replication_with_hosts
         }
 
         QCP_STRUCT_ALLOC($<replHost>$, qriReplHost);
+        QCP_STRUCT_ALLOC($<replHost>$->connOpt, qriReplConnOpt);
 
         // host IP
         SET_POSITION($<replHost>$->hostIp, $<position>1);
 
         // port
         $<replHost>$->portNumber = 0;
+
+        // connection type
+        $<replHost>$->connOpt->connType = RP_SOCKET_TYPE_UNIX;
+        $<replHost>$->connOpt->ibLatency = RP_IB_LATENCY_NONE;
+        
         $<replHost>$->next       = NULL;
     }
     ;
@@ -8120,7 +8483,7 @@ replication_hosts
     ;
 
 repl_host
-    : TL_LITERAL TS_COMMA TL_INTEGER
+    : TL_LITERAL TS_COMMA TL_INTEGER opt_using_conntype
     {
         SLong               sPortNo;
         qcuSqlSourceInfo    sqlInfo;
@@ -8150,14 +8513,116 @@ repl_host
             YYABORT;
         }
         $<replHost>$->portNumber = sPortNo;
+
+        // connection type
+        $<replHost>$->connOpt = $<replConnOpt>4;
+
         $<replHost>$->next       = NULL;
     }
     ;
+
+opt_using_conntype
+    : // empty
+    {
+        QCP_STRUCT_ALLOC( $<replConnOpt>$, qriReplConnOpt );
+       
+        $<replConnOpt>$->connType  = RP_SOCKET_TYPE_TCP;
+        $<replConnOpt>$->ibLatency = RP_IB_LATENCY_NONE;
+
+    }
+    | TR_USING TI_IDENTIFIER 
+    {
+        qcuSqlSourceInfo sqlInfo;
+
+        QCP_STRUCT_ALLOC( $<replConnOpt>$, qriReplConnOpt );
+        
+        if( idlOS::strMatch(
+                RP_SOCKET_TCP_STR, RP_SOCKET_TCP_LEN,
+                QTEXT+$<position>2.offset, $<position>2.size) == 0)
+        {
+            $<replConnOpt>$->connType  = RP_SOCKET_TYPE_TCP;
+            $<replConnOpt>$->ibLatency = RP_IB_LATENCY_NONE;
+        }
+        else if( idlOS::strMatch(
+                RP_SOCKET_IB_STR, RP_SOCKET_IB_LEN,
+                QTEXT+$<position>2.offset, $<position>2.size) == 0)
+        {
+            $<replConnOpt>$->connType  = RP_SOCKET_TYPE_IB;
+            $<replConnOpt>$->ibLatency = RP_IB_LATENCY_0;
+        }
+        else
+        { // syntax error
+            sqlInfo.setSourceInfo(STATEMENT, &($<position>2));
+            sqlInfo.init(MEMORY);
+            IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                    sqlInfo.getErrMessage()));
+            sqlInfo.fini();
+            YYABORT;
+        }
+
+
+    }
+    | TR_USING TI_IDENTIFIER TL_INTEGER
+    { // IB
+        SLong            sLatency;
+        qcuSqlSourceInfo sqlInfo;
+
+        QCP_STRUCT_ALLOC( $<replConnOpt>$, qriReplConnOpt );
+
+        if ( idlOS::strMatch(
+                RP_SOCKET_IB_STR, RP_SOCKET_IB_LEN,
+                QTEXT+$<position>2.offset, $<position>2.size) == 0)
+        {
+            $<replConnOpt>$->connType  = RP_SOCKET_TYPE_IB;
+        }
+        else
+        { // syntax error
+            sqlInfo.setSourceInfo(STATEMENT, &($<position>2));
+            sqlInfo.init(MEMORY);
+            IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                    sqlInfo.getErrMessage()));
+            sqlInfo.fini();
+            YYABORT;
+        }
+        
+        if ( qtc::getBigint( QTEXT, &sLatency, &($<position>3) ) == IDE_SUCCESS )
+        {
+            if ( sLatency == (SLong)RP_IB_LATENCY_0 || sLatency == (SLong)RP_IB_LATENCY_1 )
+            {
+                $<replConnOpt>$->ibLatency = (rpIBLatency)sLatency;
+            }
+            else
+            { // syntax error
+                sqlInfo.setSourceInfo(STATEMENT, &($<position>3));
+                sqlInfo.init(MEMORY);
+                IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                        sqlInfo.getErrMessage()));
+                sqlInfo.fini();
+                YYABORT;
+            }
+        }
+        else
+        { // syntax error
+            sqlInfo.setSourceInfo(STATEMENT, &($<position>3));
+            sqlInfo.init(MEMORY);
+            IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                    sqlInfo.getErrMessage()));
+            sqlInfo.fini();
+            YYABORT;
+        }
+        
+    }
+    ;
+
 
 opt_role
     : // empty
     {
         $<sIntVal>$ = RP_ROLE_REPLICATION;
+    }
+    | TR_FOR TA_ANALYSIS_PROPAGATION
+    {
+        $<sIntVal>$ = RP_ROLE_ANALYSIS_PROPAGATION;
     }
     | TR_FOR TI_NONQUOTED_IDENTIFIER
     {
@@ -8441,7 +8906,7 @@ repl_flush_option
 // If sIntVal is negative number, start mode is RP_SYNC_START.
 // else start mode is RP_SYNC_START_ONLY.
 // Absoulte value of sIntVal is number of parallel factor.
-repl_sync_retry
+repl_sync_parallel
     : TI_NONQUOTED_IDENTIFIER TR_PARALLEL TL_INTEGER
     {
         SLong               sParallelFactor;
@@ -8465,32 +8930,6 @@ repl_sync_retry
                 YYABORT;
             }
             $<sIntVal>$ = (SInt)(sParallelFactor * (-1));
-        }
-        else
-        { // syntax error
-            sqlInfo.setSourceInfo( STATEMENT, & $<position>1 );
-            sqlInfo.init( MEMORY );
-            IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
-                                      sqlInfo.getErrMessage() ) );
-            sqlInfo.fini(); 
-            YYABORT;
-        }
-    }
-    | TI_NONQUOTED_IDENTIFIER
-    {
-        qcuSqlSourceInfo    sqlInfo;
-
-        if (idlOS::strMatch(
-               "ONLY", 4,
-               QTEXT+$<position>1.offset, $<position>1.size) == 0)
-        {
-            $<sIntVal>$ = (-1);
-        }
-        else if(idlOS::strMatch(
-               "RETRY", 5,
-               QTEXT+$<position>1.offset, $<position>1.size) == 0)
-        {
-            $<sIntVal>$ = 0;
         }
         else
         { // syntax error
@@ -9314,6 +9753,46 @@ join_partitioning_clause
               }
 
               if( sDefPartCnt != 1 )
+              {
+                  IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_INVALID_DEFAULT_PARTITION_COUNT, "" ) );
+                  YYABORT;
+              }
+
+              $<partTable>$->partCount = sTotalPartCnt;
+          }
+          else if ( idlOS::strMatch( "RANGE_USING_HASH",
+                                      16,
+                                      QTEXT+$<position>3.offset,
+                                      $<position>3.size ) == 0 )
+          {
+              $<partTable>$->partKeyColumns = $<columnDef>5;
+              $<partTable>$->partAttr = $<partAttr>8;
+              $<partTable>$->partMethod = QCM_PARTITION_METHOD_RANGE_USING_HASH;
+              $<partTable>$->partInfoList = NULL;
+
+              for ( sCurr = $<partAttr>8;
+                    sCurr != NULL;
+                    sCurr = sCurr->next )
+              {
+                  if ( ( sCurr->partValuesType == QD_LIST_VALUES_TYPE ) )
+                  {
+                      sqlInfo.setSourceInfo( STATEMENT, & $<position>3 );
+                      sqlInfo.init( MEMORY );
+                      IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                  sqlInfo.getErrMessage() ) );
+                      sqlInfo.fini();
+                      YYABORT;
+                  }
+
+                  if ( sCurr->partValuesType == QD_DEFAULT_VALUES_TYPE )
+                  {
+                      sDefPartCnt++;
+                  }
+
+                  sTotalPartCnt++;
+              }
+
+              if ( sDefPartCnt != 1 )
               {
                   IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_INVALID_DEFAULT_PARTITION_COUNT, "" ) );
                   YYABORT;
@@ -11143,9 +11622,10 @@ alter_table_statement
       }
     /* PROJ-2600 Online DDL for Tablespace Alteration */
     | TR_ALTER TR_TABLE user_object_name TO_REPLACE user_object_name
-      opt_using_prefix              // 6
-      opt_rename_force              // 7
-      opt_ignore_foreign_key_child  // 8
+      opt_partition                 // 6
+      opt_using_prefix              // 7
+      opt_rename_force              // 8
+      opt_ignore_foreign_key_child  // 9
       {
           qcuSqlSourceInfo    sqlInfo;
 
@@ -11161,11 +11641,13 @@ alter_table_statement
           SET_POSITION( $<tableParseTree>$->mSourceUserName,  $<userNObjName>5->userName );
           SET_POSITION( $<tableParseTree>$->mSourceTableName, $<userNObjName>5->objectName );
 
-          SET_POSITION( $<tableParseTree>$->mNamesPrefix, $<position>6 );
+          $<tableParseTree>$->mPartAttr = $<partAttr>6;
+          
+          SET_POSITION( $<tableParseTree>$->mNamesPrefix, $<position>7 );
 
-          $<tableParseTree>$->mIsRenameForce = $<boolType>7;
+          $<tableParseTree>$->mIsRenameForce = $<boolType>8;
 
-          $<tableParseTree>$->mIgnoreForeignKeyChild = $<boolType>8;
+          $<tableParseTree>$->mIgnoreForeignKeyChild = $<boolType>9;
 
           // BUG-21761
           $<tableParseTree>$->ncharList = NCHARLIST;
@@ -11178,7 +11660,15 @@ alter_table_statement
           $<tableParseTree>$->common.parse    = qcc::parse;
           $<tableParseTree>$->common.validate = qdbCopySwap::validateReplaceTable;
           $<tableParseTree>$->common.optimize = qcc::optimize;
-          $<tableParseTree>$->common.execute  = qdbCopySwap::executeReplaceTable;
+
+          if ( $<tableParseTree>$->mPartAttr == NULL )
+          {
+              $<tableParseTree>$->common.execute = qdbCopySwap::executeReplaceTable;
+          }
+          else
+          {
+              $<tableParseTree>$->common.execute = qdbCopySwap::executeReplacePartition;
+          }
       }
    | TR_ALTER TR_TABLE user_object_name table_attr_clause
      // ALTER TABLE TBSNAME COMPRESSED LOGGING
@@ -16457,6 +16947,106 @@ table_partitioning_clause
 
               $<partTable>$->partCount = sTotalPartCnt;
           }
+          else if( idlOS::strMatch( "RANGE_USING_HASH",
+                                16,
+                                QTEXT+$<position>3.offset,
+                                $<position>3.size ) == 0 )
+          {
+              $<partTable>$->partKeyColumns = $<columnDef>5;
+              $<partTable>$->partAttr = $<partAttr>8;
+              $<partTable>$->partMethod = QCM_PARTITION_METHOD_RANGE_USING_HASH;
+              $<partTable>$->partInfoList = NULL;
+
+              qdPartitionAttribute * sLast = NULL;
+              UInt                   sTotalPartCnt = 0;
+              UInt                   sDefPartCnt = 0;
+              qmmValueNode  * sKey    = NULL;
+              qcmColumn     * sColumn = NULL;
+              UInt sColumnCount = 0;
+              UInt sMaxCount    = 0;
+
+              for ( sColumn = $<partTable>$->partKeyColumns;
+                    sColumn != NULL;
+                    sColumn = sColumn->next, sColumnCount++ );
+
+              for( sLast = $<partAttr>8;
+                   sLast != NULL;
+                   sLast = sLast->next )
+              {
+                  if( ( sLast->partValuesType == QD_HASH_VALUES_TYPE ) ||
+                      ( sLast->partValuesType == QD_LIST_VALUES_TYPE ) )
+                  {
+                      sqlInfo.setSourceInfo( STATEMENT, & $<position>3 );
+                      sqlInfo.init( MEMORY );
+                      IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                                sqlInfo.getErrMessage() ) );
+                      sqlInfo.fini();
+                      YYABORT;
+                  }
+                  else
+                  {
+                      // BUG-43042
+                      sMaxCount = 0;
+                      sKey = sLast->partKeyCond;
+
+                      while( sKey != NULL )
+                      {
+                          if ( idlOS::strMatch( "MAXVALUE",
+                                                8,
+                                                QTEXT + sKey->value->position.offset,
+                                                sKey->value->position.size ) == 0 )
+                          {
+                              sMaxCount++;
+                          }
+                          else
+                          {
+                              // Nothing to do.
+                          }
+
+                          sKey = sKey->next;
+                      }
+
+                      if ( sMaxCount > 0 )
+                      {
+                          if ( sMaxCount == sColumnCount )
+                          {
+                              sLast->partValuesType = QD_DEFAULT_VALUES_TYPE;
+                              sLast->partKeyCond = NULL;
+                          }
+                          else
+                          {
+
+                              sqlInfo.setSourceInfo( STATEMENT, &sLast->partKeyCond->value->position );
+                              sqlInfo.init( MEMORY );
+                              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                                        sqlInfo.getErrMessage() ) );
+                              sqlInfo.fini();
+                              YYABORT;
+                          }
+                      }
+                      else
+                      {
+                          // Nothing to do.
+                      }
+                  }
+
+                  if( sLast->partValuesType == QD_DEFAULT_VALUES_TYPE )
+                  {
+                      sDefPartCnt++;
+                  }
+
+                  sTotalPartCnt++;
+              }
+
+              if( sDefPartCnt != 1 )
+              {
+                  IDE_SET(ideSetErrorCode(
+                              qpERR_ABORT_QDB_INVALID_DEFAULT_PARTITION_COUNT, ""));
+                  YYABORT;
+              }
+
+              $<partTable>$->partCount = sTotalPartCnt;
+          }
           else
           {
               sqlInfo.setSourceInfo(STATEMENT, & $<position>3 );
@@ -19623,6 +20213,7 @@ create_queue_statement
       opt_in_row
       TS_CLOSING_PARENTHESIS
       table_maxrows_option
+      tablespace_name_option
       {
           QCP_STRUCT_ALLOC($<tableParseTree>$, qdTableParseTree);
           QC_SET_INIT_PARSE_TREE($<tableParseTree>$, $<position>1);
@@ -19664,6 +20255,17 @@ create_queue_statement
               $<tableParseTree>$->maxrows = 0;
           }
           
+          /* TableSpace Name */
+          if ( $<positionPtr>10 != NULL )
+          {
+              SET_POSITION( $<tableParseTree>$->TBSName,
+                            *($<positionPtr>10));
+          }
+          else
+          {
+              SET_EMPTY_POSITION( $<tableParseTree>$->TBSName );
+          }
+ 
           /* PROJ-2464 hybrid partitioned table 지원
            * Segment Storage Attribute list
            */
@@ -19693,6 +20295,7 @@ create_queue_statement
       column_def_commalist
       TS_CLOSING_PARENTHESIS
       table_maxrows_option
+      tablespace_name_option
       {
           QCP_STRUCT_ALLOC($<tableParseTree>$, qdTableParseTree);
           QC_SET_INIT_PARSE_TREE($<tableParseTree>$, $<position>1);
@@ -19741,6 +20344,17 @@ create_queue_statement
           else
           {
               $<tableParseTree>$->maxrows = 0;
+          }
+
+          /* TableSpace Name */
+          if ( $<positionPtr>8 != NULL )
+          {
+              SET_POSITION( $<tableParseTree>$->TBSName,
+                            *($<positionPtr>8));
+          }
+          else
+          {
+              SET_EMPTY_POSITION( $<tableParseTree>$->TBSName );
           }
 
           /* PROJ-2464 hybrid partitioned table 지원
@@ -19817,6 +20431,64 @@ alter_queue_statement
             sqlInfo.fini();
             YYABORT;
         }
+    }
+    /* BUG-45921 */
+    | TR_ALTER TR_QUEUE user_object_name TI_NONQUOTED_IDENTIFIER TI_NONQUOTED_IDENTIFIER
+      /* ALTER QUEUE IDENTIFIER MSGID RESET */
+    {
+        qcuSqlSourceInfo sqlInfo;
+
+        QCP_STRUCT_ALLOC( $<queueSequenceParseTree>$, qdQueueSequenceParseTree );
+        QC_SET_INIT_PARSE_TREE( $<queueSequenceParseTree>$, $<position>1 );
+        QD_QUEUE_SEQUENCE_PARSE_TREE_INIT( $<queueSequenceParseTree>$ );
+
+        /* set userName position */
+        SET_POSITION( $<queueSequenceParseTree>$->mUserName,
+                      $<userNObjName>3->userName );
+        /* set tableName position */
+        SET_POSITION( $<queueSequenceParseTree>$->mQueueName,
+                      $<userNObjName>3->objectName );
+
+        if ( idlOS::strMatch( "MSGID",
+                              5,
+                              QTEXT + $<position>4.offset,
+                              $<position>4.size )
+             == 0 )
+        {
+            /* Nothing to do */
+        }
+        else
+        {
+            sqlInfo.setSourceInfo( STATEMENT, & $<position>4 );
+            sqlInfo.init( MEMORY );
+            IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                      sqlInfo.getErrMessage() ) );
+            sqlInfo.fini();
+            YYABORT;
+        }
+
+        if ( idlOS::strMatch( "RESET",
+                              5,
+                              QTEXT + $<position>5.offset,
+                              $<position>5.size )
+             == 0 )
+        {
+            /* Nothing to do */
+        }
+        else
+        {
+            sqlInfo.setSourceInfo( STATEMENT, & $<position>5 );
+            sqlInfo.init( MEMORY );
+            IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                      sqlInfo.getErrMessage() ) );
+            sqlInfo.fini();
+            YYABORT;
+        }
+
+        $<queueSequenceParseTree>$->common.parse    = qcc::parse;
+        $<queueSequenceParseTree>$->common.validate = qdq::validateAlterQueueSequence;
+        $<queueSequenceParseTree>$->common.optimize = qcc::optimize;
+        $<queueSequenceParseTree>$->common.execute  = qdq::executeAlterQueueSequence;
     }
     ;
 
@@ -20771,67 +21443,7 @@ dml_table_reference
       ;
 
 insert_statement
-    : TR_INSERT opt_hints TR_INTO dml_table_reference TR_DEFAULT TR_VALUES opt_return_clause opt_wait_clause
-      {
-          QCP_STRUCT_ALLOC($<insParseTree>$, qmmInsParseTree);
-          QC_SET_INIT_PARSE_TREE($<insParseTree>$, $<position>1);
-          // set size of statement
-          if ( $<dmlReturnInto>7 == NULL )
-          {
-              QCP_ADJUST_END_POSITION( $<insParseTree>$->common.stmtPos );
-          }
-          else
-          {
-              QCP_ADJUST_LAST_POSITION( $<insParseTree>$->common.stmtPos );
-          }
-
-          /* PROJ-2204 JOIN UPDATE, DELETE */
-          $<insParseTree>$->tableRef = $<tableRef>4;
-          
-          /* PROJ-2204 JOIN UPDATE, DELETE */
-          $<insParseTree>$->insertTableRef = NULL;
-          $<insParseTree>$->insertColumns  = NULL;
-          
-          // Proj-1360 Queue
-          $<insParseTree>$->flag = 0;
-          $<insParseTree>$->queueMsgIDSeq = NULL;
-
-          // PROJ-1566
-          $<insParseTree>$->hints = $<hints>2;
-          
-          $<insParseTree>$->columns = NULL;
-          $<insParseTree>$->rows    = NULL;
-          $<insParseTree>$->select  = NULL;
-
-          /* PROJ-1584 DML Return Clause */
-          $<insParseTree>$->returnInto = $<dmlReturnInto>7;
-
-          $<insParseTree>$->outerQuerySet = NULL;
-          
-          $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
-
-          /* PROJ-1107 Check Constraint 지원 */
-          $<insParseTree>$->checkConstrList = NULL;
-
-          /* PROJ-1090 Function-based Index */
-          $<insParseTree>$->defaultTableRef    = NULL;
-          $<insParseTree>$->defaultExprColumns = NULL;
-
-          // BUG-43063 insert nowait
-          $<insParseTree>$->lockWaitMicroSec = $<uLongVal>8;
-          
-          // BUG-36596 multi-table insert
-          $<insParseTree>$->next = NULL;
-          
-          // function pointer
-          $<insParseTree>$->common.parse    = qmv::parseInsertAllDefault;
-          $<insParseTree>$->common.validate = qmv::validateInsertAllDefault;
-          $<insParseTree>$->common.optimize = qmo::optimizeInsert;
-          $<insParseTree>$->common.execute  = qmx::executeInsertValues;
-      }
-    | TR_INSERT opt_hints TR_INTO dml_table_reference opt_table_column_commalist
-        TR_VALUES
-        multi_rows_list opt_return_clause opt_wait_clause
+    : TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name TR_DEFAULT TR_VALUES opt_return_clause opt_wait_clause
       {
           QCP_STRUCT_ALLOC($<insParseTree>$, qmmInsParseTree);
           QC_SET_INIT_PARSE_TREE($<insParseTree>$, $<position>1);
@@ -20858,13 +21470,105 @@ insert_statement
 
           // PROJ-1566
           $<insParseTree>$->hints = $<hints>2;
-          
-          $<insParseTree>$->columns = $<columnDef>5;
-          $<insParseTree>$->rows    = $<multiRows>7;
-          $<insParseTree>$->select  = NULL;
 
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
+          
+          $<insParseTree>$->columns = NULL;
+          $<insParseTree>$->rows    = NULL;
+          $<insParseTree>$->select  = NULL;
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
+          
           /* PROJ-1584 DML Return Clause */
           $<insParseTree>$->returnInto = $<dmlReturnInto>8;
+
+          $<insParseTree>$->outerQuerySet = NULL;
+          
+          $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
+
+          /* PROJ-1107 Check Constraint 지원 */
+          $<insParseTree>$->checkConstrList = NULL;
+
+          /* PROJ-1090 Function-based Index */
+          $<insParseTree>$->defaultTableRef    = NULL;
+          $<insParseTree>$->defaultExprColumns = NULL;
+
+          // BUG-43063 insert nowait
+          $<insParseTree>$->lockWaitMicroSec = $<uLongVal>9;
+          
+          // BUG-36596 multi-table insert
+          $<insParseTree>$->next = NULL;
+          
+          // function pointer
+          $<insParseTree>$->common.parse    = qmv::parseInsertAllDefault;
+          $<insParseTree>$->common.validate = qmv::validateInsertAllDefault;
+          $<insParseTree>$->common.optimize = qmo::optimizeInsert;
+          $<insParseTree>$->common.execute  = qmx::executeInsertValues;
+      }
+      | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name opt_table_column_commalist
+        TR_VALUES
+        SP_variable_name opt_return_clause opt_wait_clause
+      {
+          qcuSqlSourceInfo    sqlInfo;
+
+          QCP_STRUCT_ALLOC($<insParseTree>$, qmmInsParseTree);
+          QC_SET_INIT_PARSE_TREE($<insParseTree>$, $<position>1);
+          // set size of statement
+          if ( $<dmlReturnInto>9 == NULL )
+          {
+              QCP_ADJUST_END_POSITION( $<insParseTree>$->common.stmtPos );
+          }
+          else
+          {
+              QCP_ADJUST_LAST_POSITION( $<insParseTree>$->common.stmtPos );
+          }
+
+          /* PROJ-2204 JOIN UPDATE, DELETE */
+          $<insParseTree>$->tableRef = $<tableRef>4;
+          
+          /* PROJ-2204 JOIN UPDATE, DELETE */
+          $<insParseTree>$->insertTableRef = NULL;
+          $<insParseTree>$->insertColumns  = NULL;
+          
+          // Proj-1360 Queue
+          $<insParseTree>$->flag = 0;
+          $<insParseTree>$->queueMsgIDSeq = NULL;
+
+          // PROJ-1566
+          $<insParseTree>$->hints = $<hints>2;
+
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
+
+          if ( $<columnDef>6 != NULL )
+          {
+              // syntax error
+              sqlInfo.setSourceInfo( STATEMENT, &($<columnDef>6->namePos) );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                        sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+
+          $<insParseTree>$->columns = $<columnDef>6;
+          $<insParseTree>$->rows    = NULL;
+          $<insParseTree>$->select  = NULL;
+
+          // BUG-46174
+          QCP_STRUCT_ALLOC( $<insParseTree>$->rows, qmmMultiRows );
+          $<insParseTree>$->rows->values       = NULL; 
+          $<insParseTree>$->rows->next         = NULL;
+
+          $<insParseTree>$->spVariable = $<expression>8[0];
+          $<insParseTree>$->spVariable->lflag &= ~QTC_NODE_SP_INS_UPT_VALUE_REC_MASK;
+          $<insParseTree>$->spVariable->lflag |= QTC_NODE_SP_INS_UPT_VALUE_REC_TRUE; 
+
+          /* PROJ-1584 DML Return Clause */
+          $<insParseTree>$->returnInto = $<dmlReturnInto>9;
           
           $<insParseTree>$->outerQuerySet = NULL;
           
@@ -20878,7 +21582,7 @@ insert_statement
           $<insParseTree>$->defaultExprColumns = NULL;
      
           // BUG-43063 insert nowait
-          $<insParseTree>$->lockWaitMicroSec = $<uLongVal>9;
+          $<insParseTree>$->lockWaitMicroSec = $<uLongVal>10;
           
           // BUG-36596 multi-table insert
           $<insParseTree>$->next = NULL;
@@ -20888,15 +21592,14 @@ insert_statement
           $<insParseTree>$->common.optimize = qmo::optimizeInsert;
           $<insParseTree>$->common.execute  = qmx::executeInsertValues;
       }
-    | TR_INSERT opt_hints TR_INTO dml_table_reference
-      select_or_with_select_statement opt_for_update_clause
+    | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name opt_table_column_commalist
+        TR_VALUES
+        multi_rows_list opt_return_clause opt_wait_clause
       {
-          qcStatement       * sStatement;
-          
           QCP_STRUCT_ALLOC($<insParseTree>$, qmmInsParseTree);
           QC_SET_INIT_PARSE_TREE($<insParseTree>$, $<position>1);
           // set size of statement
-          if ( $<forUpdate>6 != NULL )
+          if ( $<dmlReturnInto>9 == NULL )
           {
               QCP_ADJUST_END_POSITION( $<insParseTree>$->common.stmtPos );
           }
@@ -20907,7 +21610,7 @@ insert_statement
 
           /* PROJ-2204 JOIN UPDATE, DELETE */
           $<insParseTree>$->tableRef = $<tableRef>4;
-
+          
           /* PROJ-2204 JOIN UPDATE, DELETE */
           $<insParseTree>$->insertTableRef = NULL;
           $<insParseTree>$->insertColumns  = NULL;
@@ -20915,42 +21618,25 @@ insert_statement
           // Proj-1360 Queue
           $<insParseTree>$->flag = 0;
           $<insParseTree>$->queueMsgIDSeq = NULL;
-          
+
           // PROJ-1566
           $<insParseTree>$->hints = $<hints>2;
-          
-          $<insParseTree>$->columns = NULL;
-          $<insParseTree>$->rows = NULL;
+
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
+
+          $<insParseTree>$->columns = $<columnDef>6;
+          $<insParseTree>$->rows    = $<multiRows>8;
+          $<insParseTree>$->select  = NULL;
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
 
           /* PROJ-1584 DML Return Clause */
-          $<insParseTree>$->returnInto = NULL;
+          $<insParseTree>$->returnInto = $<dmlReturnInto>9;
           
           $<insParseTree>$->outerQuerySet = NULL;
           
-          // select_statement
-          $<selectParseTree>5->forUpdate = $<forUpdate>6;
-          QCP_STRUCT_ALLOC(sStatement, qcStatement);
-          QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>5)
-          $<insParseTree>$->select = sStatement;
-          $<insParseTree>$->select->myPlan->parseTree->stmt = sStatement;
-          if ( $<selectParseTree>5->forUpdate == NULL )
-          {
-              $<insParseTree>$->select->myPlan->parseTree->stmtKind = QCI_STMT_SELECT;
-          }
-          else
-          {
-              $<insParseTree>$->select->myPlan->parseTree->stmtKind = QCI_STMT_SELECT_FOR_UPDATE;
-          }
-          // set size of select_statement
-          if ( $<forUpdate>6 != NULL )
-          {
-              QCP_ADJUST_END_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
-          }
-          else
-          {
-              QCP_ADJUST_LAST_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
-          }
-
           $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
 
           /* PROJ-1107 Check Constraint 지원 */
@@ -20959,20 +21645,20 @@ insert_statement
           /* PROJ-1090 Function-based Index */
           $<insParseTree>$->defaultTableRef    = NULL;
           $<insParseTree>$->defaultExprColumns = NULL;
-          
+     
           // BUG-43063 insert nowait
-          $<insParseTree>$->lockWaitMicroSec = ID_ULONG_MAX;
+          $<insParseTree>$->lockWaitMicroSec = $<uLongVal>10;
           
           // BUG-36596 multi-table insert
           $<insParseTree>$->next = NULL;
-          
-          $<insParseTree>$->common.parse    = qmv::parseInsertSelect;
-          $<insParseTree>$->common.validate = qmv::validateInsertSelect;
+
+          $<insParseTree>$->common.parse    = qmv::parseInsertValues;
+          $<insParseTree>$->common.validate = qmv::validateInsertValues;
           $<insParseTree>$->common.optimize = qmo::optimizeInsert;
-          $<insParseTree>$->common.execute  = qmx::executeInsertSelect;
+          $<insParseTree>$->common.execute  = qmx::executeInsertValues;
       }
-    | TR_INSERT opt_hints TR_INTO dml_table_reference
-      shard_stmt_spec select_or_with_select_statement opt_for_update_clause
+    | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+      select_or_with_select_statement opt_for_update_clause
       {
           qcStatement       * sStatement;
           
@@ -21001,9 +21687,16 @@ insert_statement
           
           // PROJ-1566
           $<insParseTree>$->hints = $<hints>2;
+
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
           
           $<insParseTree>$->columns = NULL;
           $<insParseTree>$->rows = NULL;
+
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
 
           /* PROJ-1584 DML Return Clause */
           $<insParseTree>$->returnInto = NULL;
@@ -21013,13 +21706,7 @@ insert_statement
           // select_statement
           $<selectParseTree>6->forUpdate = $<forUpdate>7;
           QCP_STRUCT_ALLOC(sStatement, qcStatement);
-          QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>6);
-          // set shard statement
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
-          {
-              sStatement->myPlan->parseTree->stmtShard = $<shardStmtSpec>5.shardType;
-              sStatement->myPlan->parseTree->nodes = $<shardStmtSpec>5.nodes;
-          }
+          QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>6)
           $<insParseTree>$->select = sStatement;
           $<insParseTree>$->select->myPlan->parseTree->stmt = sStatement;
           if ( $<selectParseTree>6->forUpdate == NULL )
@@ -21060,16 +21747,15 @@ insert_statement
           $<insParseTree>$->common.optimize = qmo::optimizeInsert;
           $<insParseTree>$->common.execute  = qmx::executeInsertSelect;
       }
-    | TR_INSERT opt_hints TR_INTO dml_table_reference
-        TS_OPENING_PARENTHESIS table_column_commalist TS_CLOSING_PARENTHESIS
-        select_or_with_select_statement opt_for_update_clause
+    | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+      shard_stmt_spec select_or_with_select_statement opt_for_update_clause
       {
           qcStatement       * sStatement;
-
+          
           QCP_STRUCT_ALLOC($<insParseTree>$, qmmInsParseTree);
           QC_SET_INIT_PARSE_TREE($<insParseTree>$, $<position>1);
           // set size of statement
-          if ( $<forUpdate>9 != NULL )
+          if ( $<forUpdate>8 != NULL )
           {
               QCP_ADJUST_END_POSITION( $<insParseTree>$->common.stmtPos );
           }
@@ -21091,9 +21777,16 @@ insert_statement
           
           // PROJ-1566
           $<insParseTree>$->hints = $<hints>2;
+
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
           
-          $<insParseTree>$->columns = $<columnDef>6;
-          $<insParseTree>$->rows    = NULL;
+          $<insParseTree>$->columns = NULL;
+          $<insParseTree>$->rows = NULL;
+
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
 
           /* PROJ-1584 DML Return Clause */
           $<insParseTree>$->returnInto = NULL;
@@ -21101,12 +21794,18 @@ insert_statement
           $<insParseTree>$->outerQuerySet = NULL;
           
           // select_statement
-          $<selectParseTree>8->forUpdate = $<forUpdate>9;
+          $<selectParseTree>7->forUpdate = $<forUpdate>8;
           QCP_STRUCT_ALLOC(sStatement, qcStatement);
-          QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>8)
+          QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>7);
+          // set shard statement
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
+          {
+              sStatement->myPlan->parseTree->stmtShard = $<shardStmtSpec>6.shardType;
+              sStatement->myPlan->parseTree->nodes = $<shardStmtSpec>6.nodes;
+          }
           $<insParseTree>$->select = sStatement;
           $<insParseTree>$->select->myPlan->parseTree->stmt = sStatement;
-          if ( $<selectParseTree>8->forUpdate == NULL )
+          if ( $<selectParseTree>7->forUpdate == NULL )
           {
               $<insParseTree>$->select->myPlan->parseTree->stmtKind = QCI_STMT_SELECT;
           }
@@ -21115,7 +21814,7 @@ insert_statement
               $<insParseTree>$->select->myPlan->parseTree->stmtKind = QCI_STMT_SELECT_FOR_UPDATE;
           }
           // set size of select_statement
-          if ( $<forUpdate>9 != NULL )
+          if ( $<forUpdate>8 != NULL )
           {
               QCP_ADJUST_END_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
           }
@@ -21144,9 +21843,9 @@ insert_statement
           $<insParseTree>$->common.optimize = qmo::optimizeInsert;
           $<insParseTree>$->common.execute  = qmx::executeInsertSelect;
       }
-    | TR_INSERT opt_hints TR_INTO dml_table_reference
+    | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
         TS_OPENING_PARENTHESIS table_column_commalist TS_CLOSING_PARENTHESIS
-        shard_stmt_spec select_or_with_select_statement opt_for_update_clause
+        select_or_with_select_statement opt_for_update_clause
       {
           qcStatement       * sStatement;
 
@@ -21175,9 +21874,16 @@ insert_statement
           
           // PROJ-1566
           $<insParseTree>$->hints = $<hints>2;
+
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
           
-          $<insParseTree>$->columns = $<columnDef>6;
+          $<insParseTree>$->columns = $<columnDef>7;
           $<insParseTree>$->rows    = NULL;
+
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
 
           /* PROJ-1584 DML Return Clause */
           $<insParseTree>$->returnInto = NULL;
@@ -21188,11 +21894,6 @@ insert_statement
           $<selectParseTree>9->forUpdate = $<forUpdate>10;
           QCP_STRUCT_ALLOC(sStatement, qcStatement);
           QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>9)
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
-          {
-              sStatement->myPlan->parseTree->stmtShard = $<shardStmtSpec>8.shardType;
-              sStatement->myPlan->parseTree->nodes = $<shardStmtSpec>8.nodes;
-          }
           $<insParseTree>$->select = sStatement;
           $<insParseTree>$->select->myPlan->parseTree->stmt = sStatement;
           if ( $<selectParseTree>9->forUpdate == NULL )
@@ -21205,6 +21906,102 @@ insert_statement
           }
           // set size of select_statement
           if ( $<forUpdate>10 != NULL )
+          {
+              QCP_ADJUST_END_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
+          }
+          else
+          {
+              QCP_ADJUST_LAST_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
+          }
+
+          $<insParseTree>$->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
+
+          /* PROJ-1107 Check Constraint 지원 */
+          $<insParseTree>$->checkConstrList = NULL;
+
+          /* PROJ-1090 Function-based Index */
+          $<insParseTree>$->defaultTableRef    = NULL;
+          $<insParseTree>$->defaultExprColumns = NULL;
+          
+          // BUG-43063 insert nowait
+          $<insParseTree>$->lockWaitMicroSec = ID_ULONG_MAX;
+          
+          // BUG-36596 multi-table insert
+          $<insParseTree>$->next = NULL;
+          
+          $<insParseTree>$->common.parse    = qmv::parseInsertSelect;
+          $<insParseTree>$->common.validate = qmv::validateInsertSelect;
+          $<insParseTree>$->common.optimize = qmo::optimizeInsert;
+          $<insParseTree>$->common.execute  = qmx::executeInsertSelect;
+      }
+    | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+        TS_OPENING_PARENTHESIS table_column_commalist TS_CLOSING_PARENTHESIS
+        shard_stmt_spec select_or_with_select_statement opt_for_update_clause
+      {
+          qcStatement       * sStatement;
+
+          QCP_STRUCT_ALLOC($<insParseTree>$, qmmInsParseTree);
+          QC_SET_INIT_PARSE_TREE($<insParseTree>$, $<position>1);
+          // set size of statement
+          if ( $<forUpdate>11 != NULL )
+          {
+              QCP_ADJUST_END_POSITION( $<insParseTree>$->common.stmtPos );
+          }
+          else
+          {
+              QCP_ADJUST_LAST_POSITION( $<insParseTree>$->common.stmtPos );
+          }
+
+          /* PROJ-2204 JOIN UPDATE, DELETE */
+          $<insParseTree>$->tableRef = $<tableRef>4;
+
+          /* PROJ-2204 JOIN UPDATE, DELETE */
+          $<insParseTree>$->insertTableRef = NULL;
+          $<insParseTree>$->insertColumns  = NULL;
+          
+          // Proj-1360 Queue
+          $<insParseTree>$->flag = 0;
+          $<insParseTree>$->queueMsgIDSeq = NULL;
+          
+          // PROJ-1566
+          $<insParseTree>$->hints = $<hints>2;
+
+          SET_POSITION(
+          $<insParseTree>$->tableRef->aliasName,
+          $<position>5);
+          
+          $<insParseTree>$->columns = $<columnDef>7;
+          $<insParseTree>$->rows    = NULL;
+
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
+
+          /* PROJ-1584 DML Return Clause */
+          $<insParseTree>$->returnInto = NULL;
+          
+          $<insParseTree>$->outerQuerySet = NULL;
+          
+          // select_statement
+          $<selectParseTree>10->forUpdate = $<forUpdate>11;
+          QCP_STRUCT_ALLOC(sStatement, qcStatement);
+          QC_SET_STATEMENT(sStatement, STATEMENT, $<selectParseTree>10)
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
+          {
+              sStatement->myPlan->parseTree->stmtShard = $<shardStmtSpec>9.shardType;
+              sStatement->myPlan->parseTree->nodes = $<shardStmtSpec>9.nodes;
+          }
+          $<insParseTree>$->select = sStatement;
+          $<insParseTree>$->select->myPlan->parseTree->stmt = sStatement;
+          if ( $<selectParseTree>10->forUpdate == NULL )
+          {
+              $<insParseTree>$->select->myPlan->parseTree->stmtKind = QCI_STMT_SELECT;
+          }
+          else
+          {
+              $<insParseTree>$->select->myPlan->parseTree->stmtKind = QCI_STMT_SELECT_FOR_UPDATE;
+          }
+          // set size of select_statement
+          if ( $<forUpdate>11 != NULL )
           {
               QCP_ADJUST_END_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
           }
@@ -21292,6 +22089,9 @@ insert_statement
               QCP_ADJUST_LAST_POSITION( $<insParseTree>$->select->myPlan->parseTree->stmtPos );
           }
 
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
+
           $<insParseTree>$->common.parse    = qmv::parseMultiInsertSelect;
           $<insParseTree>$->common.validate = qmv::validateMultiInsertSelect;
           $<insParseTree>$->common.optimize = qmo::optimizeMultiInsertSelect;
@@ -21344,6 +22144,9 @@ multi_insert_value
           QCP_STRUCT_ALLOC($<insParseTree>$->rows, qmmMultiRows);
           $<insParseTree>$->rows->values       = $<valueNode>6;
           $<insParseTree>$->rows->next         = NULL;
+
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
 
           /* PROJ-1584 DML Return Clause */
           $<insParseTree>$->returnInto = NULL;
@@ -21439,7 +22242,7 @@ one_row
 
 update_statement
     : TR_UPDATE opt_hints dml_table_reference opt_as_name
-        TR_SET assignment_commalist
+        TR_SET assignment_list
         opt_where_clause
         opt_return_clause
         opt_limit_clause
@@ -21470,10 +22273,12 @@ update_statement
           $<uptParseTree>$->querySet->SFWGH->hints = $<hints>2;
 
           // SET clause
-          $<uptParseTree>$->columns    = $<setClause>6.columns;
-          $<uptParseTree>$->values     = $<setClause>6.values;
-          $<uptParseTree>$->subqueries = $<setClause>6.subqueries;
-          $<uptParseTree>$->lists      = $<setClause>6.lists;
+          $<uptParseTree>$->columns     = $<setClause>6.columns;
+          $<uptParseTree>$->values      = $<setClause>6.values;
+          $<uptParseTree>$->subqueries  = $<setClause>6.subqueries;
+          $<uptParseTree>$->lists       = $<setClause>6.lists;
+          // BUG-46174
+          $<uptParseTree>$->spVariable  = $<setClause>6.spVariable;
 
           // WHERE clause
           $<uptParseTree>$->querySet->SFWGH->where = $<expression>7[0];
@@ -21545,6 +22350,9 @@ enqueue_statement:
           $<insParseTree>$->insertTableRef = NULL;
           $<insParseTree>$->insertColumns  = NULL;
           
+          // BUG-46174
+          $<insParseTree>$->spVariable = NULL;
+
           /* PROJ-1584 DML Return Clause */
           $<insParseTree>$->returnInto = NULL;
 
@@ -21751,6 +22559,147 @@ opt_fifo
 
 ;
 
+assignment_list
+    : assignment_commalist
+      {
+          $<setClause>$ = $<setClause>1;
+      }
+    | TR_ROW TS_EQUAL_SIGN arithmetic_expression 
+      {
+          // BUG-46174
+          qtcNode           * sRightNode = NULL;
+          qtcNode           * sNode      = NULL;
+          qmmValueNode      * sPrevNode  = NULL;
+          qmmValueNode      * sValue;
+          qcuSqlSourceInfo    sqlInfo;
+
+          // setClause init
+          $<setClause>$.columns = NULL;
+          $<setClause>$.values = NULL;
+          $<setClause>$.subqueries = NULL;
+          $<setClause>$.lists = NULL;
+          $<setClause>$.spVariable = NULL;
+
+          sRightNode = $<expression>3[0];
+
+          if ( ( sRightNode->node.lflag & MTC_NODE_OPERATOR_MASK ) ==
+               MTC_NODE_OPERATOR_LIST )
+          {
+              // SET ROW = ( :B0, :B1, ..., :Bn );
+              if ( STATEMENT->calledByPSMFlag == ID_FALSE )
+              {
+                  // syntax error
+                  // EXECUTE PSM인 경우에만 사용 가능하다.
+                  sqlInfo.setSourceInfo( STATEMENT, & $<position>1 );
+                  sqlInfo.init( MEMORY );
+                  IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                            sqlInfo.getErrMessage() ) );
+                  sqlInfo.fini();
+                  YYABORT;
+              }
+
+              for( sNode = (qtcNode *)sRightNode->node.arguments;
+                   sNode != NULL;
+                   sNode = (qtcNode *)sNode->node.next )
+              {
+                  if ( (sNode->node.lflag & MTC_NODE_BIND_MASK)
+                       != MTC_NODE_BIND_EXIST )
+                  {
+                      // 모두 host 변수여야 한다.
+                      sqlInfo.setSourceInfo( STATEMENT, &(sNode->position) );
+                      sqlInfo.init( MEMORY );
+                      IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                                sqlInfo.getErrMessage() ) );
+                      sqlInfo.fini();
+                      YYABORT;
+                  }
+
+                  QCP_STRUCT_ALLOC(sValue, qmmValueNode);
+                  sValue->value     = sNode;
+                  sValue->validate  = ID_TRUE;
+                  sValue->calculate = ID_TRUE;
+                  sValue->timestamp = ID_FALSE;
+                  sValue->expand    = ID_FALSE;
+                  sValue->next      = NULL;
+                  sValue->msgID     = ID_FALSE;
+
+                  if ( sPrevNode == NULL )
+                  {
+                      $<setClause>$.values = sValue;
+                  }
+                  else
+                  {
+                      sPrevNode->next = sValue;
+                  }
+
+                  sPrevNode = sValue;
+              }
+
+              QCP_STRUCT_ALLOC($<setClause>$.lists, qmmValueNode);
+              $<setClause>$.lists->value     = sRightNode;
+              $<setClause>$.lists->validate  = ID_TRUE;
+              $<setClause>$.lists->calculate = ID_FALSE;
+              $<setClause>$.lists->timestamp = ID_FALSE;
+              $<setClause>$.lists->expand    = ID_FALSE;
+              $<setClause>$.lists->msgID     = ID_FALSE;
+              $<setClause>$.lists->next      = NULL;
+          }
+          else if ( ( sRightNode->node.module == &qtc::columnModule ) ||
+                    ( sRightNode->node.module == &qtc::spFunctionCallModule) )
+          {
+
+              if ( idlOS::strMatch(
+                      QTEXT+$<expression>3[0]->position.offset, 1,
+                      "(", 1 ) == 0 )
+              {
+                  if ( ( STATEMENT->calledByPSMFlag == ID_TRUE ) &&
+                       ( (sRightNode->node.lflag & MTC_NODE_BIND_MASK) !=
+                         MTC_NODE_BIND_EXIST) )
+                  {
+                      // ROW = ( :B0 )
+                      // EXECUTE PSM인 경우에만 사용 가능하다.
+                      QCP_STRUCT_ALLOC($<setClause>$.values, qmmValueNode);
+                      $<setClause>$.values->value     = sRightNode;
+                      $<setClause>$.values->validate  = ID_TRUE;
+                      $<setClause>$.values->calculate = ID_TRUE;
+                      $<setClause>$.values->timestamp = ID_FALSE;
+                      $<setClause>$.values->expand    = ID_FALSE;
+                      $<setClause>$.values->msgID     = ID_FALSE;
+                      $<setClause>$.values->next      = NULL;
+                  }
+                  else
+                  {
+                      // UPDATE t1 SET ROW = (variable_name) 인 경우 syntax error
+                      // list에 1개만 있는 경우 list로 생기지 않음.
+                      sqlInfo.setSourceInfo( STATEMENT, &($<expression>3[0]->position) );
+                      sqlInfo.init( MEMORY );
+                      IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                                sqlInfo.getErrMessage() ) );
+                      sqlInfo.fini();
+                      YYABORT;
+                  }
+              }
+              else
+              {
+                  // SET ROW = variable_name
+                  $<setClause>$.spVariable = $<expression>3[0];
+
+                  $<setClause>$.spVariable->lflag &= ~QTC_NODE_SP_INS_UPT_VALUE_REC_MASK;
+                  $<setClause>$.spVariable->lflag |= QTC_NODE_SP_INS_UPT_VALUE_REC_TRUE; 
+              }
+          }
+          else
+          {
+              sqlInfo.setSourceInfo( STATEMENT, &($<expression>3[0]->position) );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                        sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+      }
+    ; 
+
 assignment_commalist
     : assignment_commalist TS_COMMA assignment
       {
@@ -21810,6 +22759,9 @@ assignment_commalist
                    sLastList = sLastList->next ) ;
               sLastList->next = $<setClause>3.lists;
           }
+
+          // BUG-46174
+          $<setClause>$.spVariable = NULL;
       }
     | assignment
       {
@@ -21834,6 +22786,8 @@ assignment
           $<setClause>$.values->msgID     = ID_FALSE;
           $<setClause>$.subqueries = NULL;
           $<setClause>$.lists      = NULL;
+          // BUG-46174
+          $<setClause>$.spVariable = NULL;
       }
     | set_column_def TS_EQUAL_SIGN TR_DEFAULT
       {
@@ -21850,6 +22804,8 @@ assignment
 
           $<setClause>$.subqueries = NULL;
           $<setClause>$.lists      = NULL;
+          // BUG-46174
+          $<setClause>$.spVariable = NULL;
       }
     | TS_OPENING_PARENTHESIS assignment_column_comma_list
       TS_CLOSING_PARENTHESIS TS_EQUAL_SIGN arithmetic_expression
@@ -21936,6 +22892,9 @@ assignment
               IDE_SET(ideSetErrorCode(mtERR_ABORT_INVALID_FUNCTION_ARGUMENT));
               YYABORT;
           }
+
+          // BUG-46174
+          $<setClause>2.spVariable = NULL;
 
           $<setClause>$ = $<setClause>2;
       }
@@ -22028,6 +22987,8 @@ assignment_column_comma_list
 
           $<setClause>$.subqueries = NULL;
           $<setClause>$.lists      = NULL;
+          // BUG-46174
+          $<setClause>$.spVariable = NULL;
       }
     | assignment_column
       {
@@ -22062,10 +23023,13 @@ assignment_column
           $<setClause>$.values->calculate = ID_FALSE;
           $<setClause>$.values->timestamp = ID_FALSE;
           $<setClause>$.values->expand    = ID_FALSE;
+          $<setClause>$.values->msgID     = ID_FALSE;
           $<setClause>$.values->next      = NULL;
 
           $<setClause>$.subqueries = NULL;
           $<setClause>$.lists      = NULL;
+          // BUG-46174
+          $<setClause>$.spVariable = NULL;
       }
     | TI_IDENTIFIER TS_PERIOD TI_IDENTIFIER
       {
@@ -22102,10 +23066,13 @@ assignment_column
           $<setClause>$.values->calculate = ID_FALSE;
           $<setClause>$.values->timestamp = ID_FALSE;
           $<setClause>$.values->expand    = ID_FALSE;
+          $<setClause>$.values->msgID     = ID_FALSE;
           $<setClause>$.values->next      = NULL;
 
           $<setClause>$.subqueries = NULL;
           $<setClause>$.lists      = NULL;
+          // BUG-46174
+          $<setClause>$.spVariable = NULL;
       }
     ;
 
@@ -22324,8 +23291,13 @@ merge_statement
           $<mergeParseTree>$->source->SFWGH->thisQuerySet = $<mergeParseTree>$->source;
 
           $<mergeParseTree>$->updateParseTree = NULL;
+          $<mergeParseTree>$->whereForUpdate = NULL;
           $<mergeParseTree>$->updateStatement = NULL;
+          $<mergeParseTree>$->deleteParseTree = NULL;
+          $<mergeParseTree>$->whereForDelete = NULL;
+          $<mergeParseTree>$->deleteStatement = NULL;
           $<mergeParseTree>$->insertParseTree = NULL;
+          $<mergeParseTree>$->whereForInsert = NULL;
           $<mergeParseTree>$->insertStatement = NULL;
           $<mergeParseTree>$->insertNoRowsParseTree = NULL;
           $<mergeParseTree>$->insertNoRowsStatement = NULL;
@@ -22334,7 +23306,7 @@ merge_statement
           $<mergeParseTree>$->selectTargetStatement = NULL;
           $<mergeParseTree>$->selectSourceParseTree = NULL;
           $<mergeParseTree>$->selectTargetStatement = NULL;
-          
+                    
           /* target table 4 partition 5 with alias 6 */
           SET_POSITION($<mergeParseTree>$->target->SFWGH->from->tableRef->userName, 
                        $<userNObjName>4->userName);
@@ -22345,7 +23317,7 @@ merge_statement
         
           SET_POSITION($<mergeParseTree>$->target->SFWGH->from->tableRef->aliasName,
                        $<position>6);
-
+         
           // position 설정
           if ( QC_IS_NULL_NAME( $<userNObjName>4->userName ) == ID_TRUE )
           {
@@ -22364,7 +23336,7 @@ merge_statement
                                 $<mergeParseTree>$->target->SFWGH->from->tableRef->position,
                                 $<partitionRef>5->position );
           }
-          
+
           $<mergeParseTree>$->target->SFWGH->from->tableRef->view = NULL;
           $<mergeParseTree>$->target->SFWGH->from->tableRef->tableInfo = NULL;
           $<mergeParseTree>$->target->SFWGH->from->tableRef->tableAccessHints = NULL;
@@ -22372,8 +23344,7 @@ merge_statement
           
           $<mergeParseTree>$->target->SFWGH->where = NULL;
           $<mergeParseTree>$->target->SFWGH->startPos = $<position>1;
-          $<mergeParseTree>$->target->outerSFWGH = $<mergeParseTree>$->source->SFWGH;
-          $<mergeParseTree>$->target->SFWGH->outerQuery = $<mergeParseTree>$->source->SFWGH;          
+          $<mergeParseTree>$->target->SFWGH->outerQuery = $<mergeParseTree>$->source->SFWGH;
           
           /* hints 2 */
           $<mergeParseTree>$->target->SFWGH->hints = $<hints>2;
@@ -22388,7 +23359,7 @@ merge_statement
           /* on clause 10 */
           $<mergeParseTree>$->onExpr = $<expression>10[0];
           
-          /* merge actions (UPDATE/INSERT) 11 */
+          /* merge actions (UPDATE/DELETE/INSERT) 11 */
           if ( ( $<mergeActions>11.updateParseTree == NULL ) &&
                ( $<mergeActions>11.insertParseTree == NULL ) &&
                ( $<mergeActions>11.insertNoRowsParseTree == NULL ) )
@@ -22398,9 +23369,15 @@ merge_statement
               IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
               YYABORT;
           }
-          
+
           $<mergeParseTree>$->updateParseTree = $<mergeActions>11.updateParseTree;
+          $<mergeParseTree>$->whereForUpdate = $<mergeActions>11.whereForUpdate;
+          
+          $<mergeParseTree>$->deleteParseTree = $<mergeActions>11.deleteParseTree;
+          $<mergeParseTree>$->whereForDelete = $<mergeActions>11.whereForDelete;
+          
           $<mergeParseTree>$->insertParseTree = $<mergeActions>11.insertParseTree;
+          $<mergeParseTree>$->whereForInsert = $<mergeActions>11.whereForInsert;
 
           // BUG-37535
           $<mergeParseTree>$->insertNoRowsParseTree = $<mergeActions>11.insertNoRowsParseTree;
@@ -22447,12 +23424,18 @@ merge_actions_list
           
           if ( $<mergeActions>2.updateParseTree != NULL )
           {
+              $<mergeActions>$.whereForUpdate  = $<mergeActions>2.whereForUpdate;
               $<mergeActions>$.updateParseTree = $<mergeActions>2.updateParseTree;
+              
+              $<mergeActions>$.whereForDelete  = $<mergeActions>2.whereForDelete;
+              $<mergeActions>$.deleteParseTree = $<mergeActions>2.deleteParseTree;
           }
           
           if ( $<mergeActions>2.insertParseTree != NULL )
           {
+              $<mergeActions>$.whereForInsert  = $<mergeActions>2.whereForInsert;
               $<mergeActions>$.insertParseTree = $<mergeActions>2.insertParseTree;
+
           }
           
           if ( $<mergeActions>2.insertNoRowsParseTree != NULL )
@@ -22514,7 +23497,17 @@ merge_actions
                   sqlInfo.fini();
                   YYABORT;
               }
-
+              
+              if ( $<mergeActions>$.whereForInsert != NULL )
+              { // syntax error
+                  sqlInfo.setSourceInfo(STATEMENT, & $<position>1 );
+                  sqlInfo.init(MEMORY);
+                  IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                          sqlInfo.getErrMessage()));
+                  sqlInfo.fini();
+                  YYABORT;
+              }
+              
               // empty용 insert로 변경한다.
               $<mergeActions>$.insertNoRowsParseTree = $<mergeActions>$.insertParseTree;
               $<mergeActions>$.insertParseTree = NULL;
@@ -22597,7 +23590,8 @@ when_condition
     ;
 
 then_action
-    : TR_UPDATE TR_SET assignment_commalist opt_limit_clause
+    : TR_UPDATE TR_SET assignment_commalist opt_where_clause opt_limit_clause
+      opt_delete_where_clause
       {
           QMM_INIT_MERGE_ACTIONS(&$<mergeActions>$);
           
@@ -22611,11 +23605,16 @@ then_action
           $<mergeActions>$.updateParseTree->values = $<setClause>3.values;
           $<mergeActions>$.updateParseTree->subqueries = $<setClause>3.subqueries;
           $<mergeActions>$.updateParseTree->lists = $<setClause>3.lists;
+          // BUG-46174
+          $<mergeActions>$.updateParseTree->spVariable = NULL;
           
           $<mergeActions>$.updateParseTree->valueIdx = QCP_GET_TEMPLATE_SMI_VALUE_INDEX();
           
-          /* limit clause 4 */
-          $<mergeActions>$.updateParseTree->limit = $<limit>4;
+          /* where clause 4 */
+          $<mergeActions>$.whereForUpdate = $<expression>4[0];
+          
+          /* limit clause 5 */
+          $<mergeActions>$.updateParseTree->limit = $<limit>5;
           
           /* etc */
           $<mergeActions>$.updateParseTree->returnInto = NULL;
@@ -22632,9 +23631,14 @@ then_action
           $<mergeActions>$.updateParseTree->common.validate = qmv::validateUpdate;
           $<mergeActions>$.updateParseTree->common.optimize = qmo::optimizeUpdate;
           $<mergeActions>$.updateParseTree->common.execute  = qmx::executeUpdate;
+          
+          /* delete parse tree 6 */
+          $<mergeActions>$.deleteParseTree = $<mergeActions>6.deleteParseTree; 
+          $<mergeActions>$.whereForDelete = $<mergeActions>6.whereForDelete;
       }
     | TR_INSERT opt_table_column_commalist
       TR_VALUES TS_OPENING_PARENTHESIS insert_atom_commalist TS_CLOSING_PARENTHESIS
+      opt_where_clause
       {
           QMM_INIT_MERGE_ACTIONS(&$<mergeActions>$);
           
@@ -22655,12 +23659,17 @@ then_action
     
           /* column names 2 */
           $<mergeActions>$.insertParseTree->columns = $<columnDef>2;
-
+        
           /* column values 5 */
           QCP_STRUCT_ALLOC($<mergeActions>$.insertParseTree->rows, qmmMultiRows);
           $<mergeActions>$.insertParseTree->rows->values       = $<valueNode>5;
           $<mergeActions>$.insertParseTree->rows->next         = NULL;
-
+          // BUG-46174
+          $<mergeActions>$.insertParseTree->spVariable         = NULL;
+          
+          /* where 7 */
+          $<mergeActions>$.whereForInsert = $<expression>7[0];
+        
           /* some initializations */
           $<mergeActions>$.insertParseTree->returnInto = NULL;
           $<mergeActions>$.insertParseTree->outerQuerySet = NULL;
@@ -22672,11 +23681,11 @@ then_action
 
           /* PROJ-1090 Function-based Index */
           $<mergeActions>$.insertParseTree->defaultTableRef = NULL;
-          $<mergeActions>$.insertParseTree->defaultExprColumns = NULL;
+          $<mergeActions>$.insertParseTree->defaultExprColumns = NULL; 
 
           // BUG-43063 insert nowait
           $<mergeActions>$.insertParseTree->lockWaitMicroSec = ID_ULONG_MAX;
-          
+         
           // BUG-36596 multi-table insert
           $<mergeActions>$.insertParseTree->next = NULL;
           
@@ -22685,6 +23694,36 @@ then_action
           $<mergeActions>$.insertParseTree->common.validate = qmv::validateInsertValues;
           $<mergeActions>$.insertParseTree->common.optimize = qmo::optimizeInsert;
           $<mergeActions>$.insertParseTree->common.execute  = qmx::executeInsertValues;
+      }
+    ;
+
+opt_delete_where_clause
+    : /* empty */
+      {
+          QMM_INIT_MERGE_ACTIONS(&$<mergeActions>$);
+      }
+    | TR_DELETE opt_where_clause opt_limit_clause
+      {
+          QMM_INIT_MERGE_ACTIONS(&$<mergeActions>$);
+          
+          /* init deleteParseTree */
+          QCP_STRUCT_ALLOC($<mergeActions>$.deleteParseTree, qmmDelParseTree);
+          QC_SET_INIT_PARSE_TREE($<mergeActions>$.deleteParseTree, $<position>1);
+        
+          /* where clause 2 */
+          $<mergeActions>$.whereForDelete = $<expression>2[0];
+        
+          /* limit clause 3 */
+          $<mergeActions>$.deleteParseTree->limit = $<limit>3;
+        
+          /* some initializations */
+          $<mergeActions>$.deleteParseTree->returnInto = NULL;
+        
+          /* function pointers */
+          $<mergeActions>$.deleteParseTree->common.parse    = qmv::parseDelete;
+          $<mergeActions>$.deleteParseTree->common.validate = qmv::validateDelete;
+          $<mergeActions>$.deleteParseTree->common.optimize = qmo::optimizeDelete;
+          $<mergeActions>$.deleteParseTree->common.execute  = qmx::executeDelete;
       }
     ;
 
@@ -23621,7 +24660,7 @@ sel_from_table_single_reference
           qcuSqlSourceInfo   sqlInfo;
           qcStatement      * sStatement = NULL;
 
-          if ( qcg::isShardCoordinator(STATEMENT) == ID_TRUE )
+          if ( sdi::isShardCoordinator(STATEMENT) == ID_TRUE )
           {
               QCP_STRUCT_ALLOC($<from>$, qmsFrom);
               QCP_SET_INIT_QMS_FROM($<from>$);
@@ -24912,7 +25951,7 @@ group_concatenation_element
     ;
 
 normal_rollup_cube_clause
-    : arithmetic_expression
+    : arithmetic_expression opt_with_rollup
       {
           QCP_STRUCT_ALLOC($<concatElement>$, qmsConcatElement);
 
@@ -24920,7 +25959,12 @@ normal_rollup_cube_clause
           $<concatElement>$->arithmeticOrList = $<expression>1[0];
           $<concatElement>$->next             = NULL;
           $<concatElement>$->arguments        = NULL;
-          
+         
+          if ( $<boolType>2 == ID_TRUE )
+          {
+              $<concatElement>$->type = QMS_GROUPBY_WITH_ROLLUP;
+          }
+
           SET_POSITION( $<concatElement>$->position, $<expression>1[0]->position );
       }
     | TR_ROLLUP TS_OPENING_PARENTHESIS rollup_cube_argument_list TS_CLOSING_PARENTHESIS
@@ -24946,6 +25990,17 @@ normal_rollup_cube_clause
           
           SET_POSITION( $<concatElement>$->position, $<position>1 );
           QCP_ADJUST_POSITION( $<concatElement>$, $<position>4 );
+      }
+    ;
+
+opt_with_rollup
+    : /* empty */
+      {
+          $<boolType>$ = ID_FALSE;
+      }
+      | TC_WITH_ROLLUP
+      {
+          $<boolType>$ = ID_TRUE;
       }
     ;
 
@@ -25240,9 +26295,10 @@ limit_clause
     ;
 
 limit_values
-    : limit_values TS_COMMA limit_value
+    : limit_values TS_COMMA expression 
       {
-          qcuSqlSourceInfo    sqlInfo;
+          SLong            sValue;
+          qcuSqlSourceInfo sqlInfo;
 
           $<limit>$ = $<limit>1;
 
@@ -25257,15 +26313,106 @@ limit_values
           }
 
           $<limit>$->start = $<limit>$->count;
-          $<limit>$->count = $<limitValue>3;
+
+          if ( ($<limit>$->start.hostBindNode == NULL) &&
+               ($<limit>$->start.constant == 0) )
+          {
+              IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_LIMIT_VALUE,
+                                      sqlInfo.getErrMessage()));
+              YYABORT;
+          }
+
+          if ( qtc::getBigint( QTEXT, &sValue, &($<expression>3[0]->position) ) != IDE_SUCCESS )
+          {
+              $<limit>$->count.constant = QMS_LIMIT_UNKNOWN;
+              $<limit>$->count.hostBindNode = $<expression>3[0];
+          }
+          else
+          {
+              if ( sValue < 0 )
+              {
+                  IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_LIMIT_VALUE,
+                                          sqlInfo.getErrMessage()));
+                  YYABORT;
+              }
+
+              $<limit>$->count.constant = sValue;
+              $<limit>$->count.hostBindNode = NULL;
+          }
+
+          SET_EMPTY_POSITION( $<limit>$->limitPos );
+
           $<limit>$->flag = 2;  // limit value의 갯수
       }
-    | limit_value
+    | limit_values TI_NONQUOTED_IDENTIFIER expression 
       {
+          SLong            sValue;
+          qcuSqlSourceInfo sqlInfo;
+
+          $<limit>$ = $<limit>1;
+
+          if ( ($<limit>$->flag != 1) ||
+               (idlOS::strMatch(
+                "OFFSET", 6,
+                QTEXT+$<position>2.offset, $<position>2.size) != 0) )
+               
+          {
+              sqlInfo.setSourceInfo(STATEMENT, & $<position>2 );
+              sqlInfo.init(MEMORY);
+              IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX,
+                                      sqlInfo.getErrMessage()));
+              sqlInfo.fini();
+              YYABORT;
+          }
+
+          if ( qtc::getBigint( QTEXT, &sValue, &($<expression>3[0]->position) ) != IDE_SUCCESS )
+          {
+              $<limit>$->start.constant = QMS_LIMIT_UNKNOWN;
+              $<limit>$->start.hostBindNode = $<expression>3[0];
+          }
+          else
+          {
+              if ( sValue <= 0 )
+              {
+                  IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_LIMIT_VALUE,
+                                          sqlInfo.getErrMessage()));
+                  YYABORT;
+              }
+
+              $<limit>$->start.constant = sValue;
+              $<limit>$->start.hostBindNode = NULL;
+          }
+
+          SET_EMPTY_POSITION( $<limit>$->limitPos );
+
+          $<limit>$->flag = 2;  // limit value의 갯수
+      }
+    | expression 
+      {
+          SLong sValue;
+
           QCP_STRUCT_ALLOC($<limit>$, qmsLimit);
+
           $<limit>$->start.constant = 1;
           $<limit>$->start.hostBindNode = NULL;
-          $<limit>$->count = $<limitValue>1;
+
+          if ( qtc::getBigint( QTEXT, &sValue, &($<expression>1[0]->position) ) != IDE_SUCCESS )
+          {
+              $<limit>$->count.constant = QMS_LIMIT_UNKNOWN;
+              $<limit>$->count.hostBindNode = $<expression>1[0];
+          }
+          else
+          {
+              if ( sValue < 0 )
+              {
+                  IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_LIMIT_VALUE));
+                  YYABORT;
+              }
+
+              $<limit>$->count.constant = sValue;
+              $<limit>$->count.hostBindNode = NULL;
+          }
+
           $<limit>$->flag  = 1;  // limit value의 갯수
           SET_EMPTY_POSITION( $<limit>$->limitPos );
       }
@@ -25553,7 +26700,7 @@ opt_nulls_mode
  * LOCK TABLE
  ****************************************/
 lock_table_statement
-    : TA_LOCK TR_TABLE user_object_name
+    : TA_LOCK TR_TABLE user_object_name opt_partition_name
       TR_IN table_lock_mode TO_MODE opt_wait_clause opt_until_next_ddl_clause
       {
           QCP_STRUCT_ALLOC($<lockParseTree>$, qmmLockParseTree);
@@ -25564,11 +26711,22 @@ lock_table_statement
           SET_POSITION($<lockParseTree>$->tableName,
                        $<userNObjName>3->objectName);
 
-          $<lockParseTree>$->tableLockMode    = $<tableLockMode>5;
-          $<lockParseTree>$->lockWaitMicroSec = $<uLongVal>7;
+          /* BUG-46273 Lock Partition */
+          if ( $<partitionRef>4 != NULL )
+          {
+              SET_POSITION( $<lockParseTree>$->partitionName,
+                            $<partitionRef>4->partitionName );
+          }
+          else
+          {
+              SET_EMPTY_POSITION( $<lockParseTree>$->partitionName );
+          }
+
+          $<lockParseTree>$->tableLockMode    = $<tableLockMode>6;
+          $<lockParseTree>$->lockWaitMicroSec = $<uLongVal>8;
 
           /* BUG-42853 LOCK TABLE에 UNTIL NEXT DDL 기능 추가 */
-          $<lockParseTree>$->untilNextDDL     = $<boolType>8;
+          $<lockParseTree>$->untilNextDDL     = $<boolType>9;
 
           // function pointer
           $<lockParseTree>$->common.parse    = qcc::parse;
@@ -31554,31 +32712,11 @@ SP_variable_name_ignore_hostvar
           $<expression>$[1] = $<expression>1[1];
       }
     // PROJ-1888에서 추가한 것과 동일하게 추가함.
-    | TI_HOSTVARIABLE
+    | host_variable
       {
-          qcuSqlSourceInfo    sqlInfo;
-
-          idlOS::strUpper( QTEXT + $<position>1.offset, $<position>1.size );
-          
-          if ($<position>1.size + 1 > QC_MAX_OBJECT_NAME_LEN)
-          {
-              sqlInfo.setSourceInfo(STATEMENT, & $<position>1 );
-              sqlInfo.init(MEMORY);
-              IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_MAX_NAME_LENGTH_OVERFLOW,
-                                      sqlInfo.getErrMessage() ));
-              sqlInfo.fini();
-              YYABORT;
-          }
-
-          $<position>1.offset += 1;
-          $<position>1.size -= 1;
-
-          QCP_TEST( qtc::makeColumn( STATEMENT, $<expression>$,
-                                     NULL,
-                                     NULL,
-                                     &$<position>1,
-                                     NULL )
-                    != IDE_SUCCESS );
+          QCP_TEST( qtc::makeVariable( STATEMENT, $<expression>$,
+                                       &($<position>1) )
+                                       != IDE_SUCCESS );
       }
     ;
 
@@ -41587,94 +42725,109 @@ trigger_event_clause
 
 // BUG-27835 다중 trigger event에 대해 parsing은 가능하나 실제 처리는
 // 구현되지 않았으므로 다중 trigger event의 parser도 주석처리 함
+// BUG-46074 Multiple trigger event
 trigger_event_type_list
-    :/* trigger_event_type_list TR_OR TR_DELETE
+    : trigger_event_type_list TR_OR TR_DELETE
       {
           qdnTriggerEventTypeList *sLastEvent;
           qdnTriggerEventTypeList *sCurrEvent;
-          QCP_STRUCT_ALLOC( sCurrEvent, qdnTriggerEventTypeList );
-          sCurrEvent->eventType = QCM_TRIGGER_EVENT_DELETE;
-          sCurrEvent->updateColumns = NULL;
-          sCurrEvent->next = NULL;
+
           // check duplicated event
+          // BUG-46074 PSM Trigger with multiple triggering events
           for (sLastEvent = $<spTriggerEventTypeList>$;
                sLastEvent != NULL;
                sLastEvent = sLastEvent->next)
           {
               if (sLastEvent->eventType == QCM_TRIGGER_EVENT_DELETE)
               {
-                  //raise error!
-                  IDE_SET(ideSetErrorCode(qpERR_ABORT_INVALID_TRIGGER_TYPE));
-                  YYABORT;
+                  break;
               }
           }
 
           // connect
-          sLastEvent = $<spTriggerEventTypeList>$;
-          while (sLastEvent->next != NULL)
+          if ( sLastEvent == NULL )
           {
-              sLastEvent = sLastEvent->next;
+              QCP_STRUCT_ALLOC( sCurrEvent, qdnTriggerEventTypeList );
+              sCurrEvent->eventType = QCM_TRIGGER_EVENT_DELETE;
+              sCurrEvent->updateColumns = NULL;
+              sCurrEvent->next = NULL;
+
+              sLastEvent = $<spTriggerEventTypeList>$;
+              while (sLastEvent->next != NULL)
+              {
+                  sLastEvent = sLastEvent->next;
+              }
+              sLastEvent->next = sCurrEvent;
           }
-          sLastEvent->next = sCurrEvent;
       }
     | trigger_event_type_list TR_OR TR_INSERT
       {
           qdnTriggerEventTypeList *sLastEvent;
           qdnTriggerEventTypeList *sCurrEvent;
-          QCP_STRUCT_ALLOC( sCurrEvent, qdnTriggerEventTypeList );
-          sCurrEvent->eventType = QCM_TRIGGER_EVENT_INSERT;
-          sCurrEvent->updateColumns = NULL;
-          sCurrEvent->next = NULL;
+
           // check duplicated event
+          // BUG-46074 PSM Trigger with multiple triggering events
           for (sLastEvent = $<spTriggerEventTypeList>$;
                sLastEvent != NULL;
                sLastEvent = sLastEvent->next)
           {
               if (sLastEvent->eventType == QCM_TRIGGER_EVENT_INSERT)
               {
-                  //raise error!
-                  IDE_SET(ideSetErrorCode(qpERR_ABORT_INVALID_TRIGGER_TYPE));
-                  YYABORT;
+                  break;
               }
           }
 
           // connect
-          sLastEvent = $<spTriggerEventTypeList>$;
-          while (sLastEvent->next != NULL)
+          if ( sLastEvent == NULL )
           {
-              sLastEvent = sLastEvent->next;
+              QCP_STRUCT_ALLOC( sCurrEvent, qdnTriggerEventTypeList );
+              sCurrEvent->eventType = QCM_TRIGGER_EVENT_INSERT;
+              sCurrEvent->updateColumns = NULL;
+              sCurrEvent->next = NULL;
+
+              sLastEvent = $<spTriggerEventTypeList>$;
+              while (sLastEvent->next != NULL)
+              {
+                  sLastEvent = sLastEvent->next;
+              }
+              sLastEvent->next = sCurrEvent;
           }
-          sLastEvent->next = sCurrEvent;
       }
     | trigger_event_type_list TR_OR TR_UPDATE trigger_event_columns
       {
           qdnTriggerEventTypeList *sLastEvent;
           qdnTriggerEventTypeList *sCurrEvent;
-          QCP_STRUCT_ALLOC( sCurrEvent, qdnTriggerEventTypeList );
-          sCurrEvent->eventType = QCM_TRIGGER_EVENT_UPDATE;
-          sCurrEvent->updateColumns = $<columnDef>4;
-          sCurrEvent->next = NULL;
+
           // check duplicated event
+          // BUG-46074 PSM Trigger with multiple triggering events
           for (sLastEvent = $<spTriggerEventTypeList>$;
                sLastEvent != NULL;
                sLastEvent = sLastEvent->next)
           {
               if (sLastEvent->eventType == QCM_TRIGGER_EVENT_UPDATE)
               {
-                  IDE_SET(ideSetErrorCode(qpERR_ABORT_INVALID_TRIGGER_TYPE));
-                  YYABORT;
+                  sLastEvent->updateColumns = $<columnDef>4;
+                  break;
               }
           }
 
           // connect
-          sLastEvent = $<spTriggerEventTypeList>$;
-          while (sLastEvent->next != NULL)
+          if ( sLastEvent == NULL )
           {
-              sLastEvent = sLastEvent->next;
+              QCP_STRUCT_ALLOC( sCurrEvent, qdnTriggerEventTypeList );
+              sCurrEvent->eventType = QCM_TRIGGER_EVENT_UPDATE;
+              sCurrEvent->updateColumns = $<columnDef>4;
+              sCurrEvent->next = NULL;
+
+              sLastEvent = $<spTriggerEventTypeList>$;
+              while (sLastEvent->next != NULL)
+              {
+                  sLastEvent = sLastEvent->next;
+              }
+              sLastEvent->next = sCurrEvent;
           }
-          sLastEvent->next = sCurrEvent;
       }
-    |*/ TR_INSERT
+    | TR_INSERT
       {
           QCP_STRUCT_ALLOC( $<spTriggerEventTypeList>$,
                             qdnTriggerEventTypeList );

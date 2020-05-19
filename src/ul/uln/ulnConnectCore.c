@@ -90,7 +90,8 @@ static ACI_RC ulnDrvConnReceivePropertySetRes(ulnFnContext *aFnContext, ulnPtCon
     //statement 일수 있다.
     ULN_FNCONTEXT_GET_DBC(aFnContext,sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * 타임아웃 세팅
@@ -108,6 +109,11 @@ static ACI_RC ulnDrvConnReceivePropertySetRes(ulnFnContext *aFnContext, ulnPtCon
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -125,7 +131,8 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     //statement 일수 있다.
     ULN_FNCONTEXT_GET_DBC(aFnContext,sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     acpSnprintf(sClientType,
                     ACI_SIZEOF(sClientType),
@@ -156,12 +163,63 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
 
     /* PROJ-2660 */
     /* ULN_PROPERTY_SHARD_PIN */
-    if ( sDbc->mShardDbcCxt.mShardPin > 0 )
+    if ( sDbc->mShardDbcCxt.mShardPin != ULSD_SHARD_PIN_INVALID )
     {
         ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
                                           aPtContext,
                                           ULN_PROPERTY_SHARD_PIN,
                                           (void*)sDbc->mShardDbcCxt.mShardPin) != ACI_SUCCESS);
+
+        ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
+                       "%-18s| ShardPin send to node: ["ULSD_SHARD_PIN_FORMAT_STR"]",
+                       "ulnDrvConnInitialPropertySet", ULSD_SHARD_PIN_FORMAT_ARG( sDbc->mShardDbcCxt.mShardPin ) );
+    }
+
+    /* BUG-46090 Meta Node SMN 전파 */
+    /* ULN_PROPERTY_SHARD_META_NUMBER */
+    if ( sDbc->mShardDbcCxt.mShardMetaNumber != 0 )
+    {
+        ACI_TEST( ulnWritePropertySetV2REQ( aFnContext,
+                                            aPtContext,
+                                            ULN_PROPERTY_SHARD_META_NUMBER,
+                                            (void *)sDbc->mShardDbcCxt.mShardMetaNumber )
+                  != ACI_SUCCESS );
+
+        ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
+                       "%-18s| ShardMetaNumber send to node: [%"ACI_UINT64_FMT"]",
+                       "ulnDrvConnInitialPropertySet", sDbc->mShardDbcCxt.mShardMetaNumber );
+    }
+
+    /* BUG-46092 bug fix for Transaction Level */
+    /* ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL */
+    if ( sDbc->mShardDbcCxt.mShardTransactionLevel != ULN_SHARD_TX_MULTI_NODE )
+    {
+        ACI_TEST( ulnWritePropertySetV2REQ( aFnContext,
+                                            aPtContext,
+                                            ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL,
+                                            (void *)((acp_ulong_t)sDbc->mShardDbcCxt.mShardTransactionLevel) )
+                  != ACI_SUCCESS );
+
+        ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
+                       "%-18s| ShardTransactionLevel send to node: [%"ACI_UINT64_FMT"]",
+                       "ulnDrvConnInitialPropertySet", sDbc->mShardDbcCxt.mShardTransactionLevel );
+    }
+
+    /* BUG-45707 */
+    if ( sDbc->mShardDbcCxt.mShardClient > 0 )
+    {
+        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
+                                          aPtContext,
+                                          ULN_PROPERTY_SHARD_CLIENT,
+                                          (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardClient) != ACI_SUCCESS);
+    }
+
+    if ( sDbc->mShardDbcCxt.mShardSessionType > 0 )
+    {
+        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
+                                          aPtContext,
+                                          ULN_PROPERTY_SHARD_SESSION_TYPE,
+                                          (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardSessionType) != ACI_SUCCESS);
     }
 
     /*
@@ -540,6 +598,11 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -576,7 +639,8 @@ static ACI_RC ulnDrvConnSendConnectReq(ulnFnContext *aFnContext, ulnPtContext *a
     //statement 일수 있다.
     ULN_FNCONTEXT_GET_DBC(aFnContext,sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sDbmsName = ulnDbcGetCurrentCatalog(sDbc);
     sUserName = ulnDbcGetUserName(sDbc);
@@ -616,6 +680,11 @@ static ACI_RC ulnDrvConnSendConnectReq(ulnFnContext *aFnContext, ulnPtContext *a
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     if( (sState == 0) && (cmiGetLinkImpl(sCtx) == CMN_LINK_IMPL_IPCDA) )
@@ -841,11 +910,11 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
              *
              * connection string 에 port no 가 없을 때,
              *
-             * 환경변수 ALTIBASE_PORT_NO 가 세팅되지 않았을 때 에러를 내고,
-             *                              세팅되어 있으면 그 값으로 한다.
+             * 환경변수 ALTIBASE_SSL_PORT_NO 가 세팅되지 않았을 때 에러를 내고,
+             *                                  세팅되어 있으면 그 값으로 한다.
              */
-            ACI_TEST_RAISE(acpEnvGet("ALTIBASE_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
-                           LABEL_PORT_NO_NOT_SET);
+            ACI_TEST_RAISE(acpEnvGet("ALTIBASE_SSL_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
+                           LABEL_SSL_PORT_NO_NOT_SET);
 
             /*
              * 32 비트 int 의 최대값 : 4294967295 : 10자리
@@ -853,12 +922,12 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
             ACI_TEST_RAISE(ulnDrvConnStrToInt(sPortNoEnvValue,
                                               acpCStrLen(sPortNoEnvValue, 10),
                                               &sPortNumber) != ACI_SUCCESS,
-                           LABEL_INVALID_PORT_NO);
+                           LABEL_INVALID_SSL_PORT_NO);
 
             ulnDbcSetPortNumber(sDbc, sPortNumber);
 
             /*
-             * PORT_NO 가 연결 스트링에 없을 때 ALTIBASE_PORT_NO 환경변수를 확인하여서
+             * PORT_NO 가 연결 스트링에 없을 때 ALTIBASE_SSL_PORT_NO 환경변수를 확인하여서
              * 있을 경우 SQL_SUCCESS_WITH_INFO 가 아닌 SQL_SUCCESS 를 리턴하고 정상동작해야 한다고
              * 한다.
              */
@@ -934,26 +1003,27 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
 
     return ACI_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_INVALID_PORT_NO)
+    ACI_EXCEPTION(LABEL_INVALID_SSL_PORT_NO)
     {
         /*
          * SQLSTATE 는 뭘로 할까 _--
          */
-        ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_PORT_NO, sPortNoEnvValue);
+        ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_SSL_PORT_NO, sPortNoEnvValue);
     }
 
-    ACI_EXCEPTION(LABEL_PORT_NO_NOT_SET)
+    ACI_EXCEPTION(LABEL_SSL_PORT_NO_NOT_SET)
     {
         /*
          * BUGBUG : 에러코드
          */
-        ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_PORT_NO_NOT_SET);
+        ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_SSL_PORT_NO_NOT_SET);
     }
 
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
 }
+
 static ACI_RC ulnDrvConnOrganizeConnectArgUnix(ulnFnContext *aFnContext)
 {
     acp_char_t *sHome;
@@ -1121,6 +1191,157 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIPCDA(ulnFnContext *aFnContext)
     return ACI_FAILURE;
 }
 
+/* PROJ-2681 */
+static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
+{
+    ulnFailoverServerInfo *sServer         = NULL;
+    ulnDbc                *sDbc            = aFnContext->mHandle.mDbc;
+    /* proj-1538 ipv6: 127.0.0.1 -> localhost */
+    acp_char_t            *sLocalHost      = (acp_char_t *)"localhost";
+    acp_sint32_t           sPortNumber     = 0;
+    acp_char_t            *sPortNoEnvValue = NULL;
+
+    /*
+     * Hostname 세팅
+     */
+    if (sDbc->mAlternateServers == NULL)
+    {
+        if (ulnDbcGetDsnString(sDbc) == NULL)
+        {
+            /*
+             * Note : 어차피 idlOS::malloc 안하고, uluMemory 의 alloc 이므로 나중에
+             *        DBC 가 destroy 될 때 메모리도 함께 해제 된다.
+             *        따라서, DBC 를 destroy 할 때 mDSNString 을 따로 free 해 줄 필요 없다.
+             *        즉, Constant string 을 가리키는 포인터가 들어가도 안전하다.
+             */
+            (void)ulnSetConnAttrById(aFnContext,
+                                     ULN_CONN_ATTR_DSN,
+                                     sLocalHost,
+                                     acpCStrLen(sLocalHost, ACP_SINT32_MAX));
+
+            /*
+             * 01S02
+             *
+             * Note : DSN 이 connection string 에 없을 때 SQL_SUCCESS_WITH_INFO 가 아니라
+             *        SQL_SUCCESS 를 리턴해야 한다고 함.
+             *        왜 그런지는 잘 모르겠으나 아무튼, 그렇게 해야 한다고 함.
+             *        그래서 아래의 문장 주석처리함.
+             */
+            // ulnError(aFnContext, ulERR_IGNORE_TCP_HOSTNAME_NOT_SET);
+        }
+
+        if (ulnDbcGetPortNumber(sDbc) == 0)
+        {
+            sPortNoEnvValue = NULL;
+
+            /*
+             * port number 가 아직 0 이라는 말은 connection string 에 port no 가
+             * 세팅되지 않았다는 이야기이다.
+             *
+             * connection string 에 port no 가 없을 때,
+             *
+             * 환경변수 ALTIBASE_PORT_NO 가 세팅되지 않았을 때 에러를 내고,
+             *                              세팅되어 있으면 그 값으로 한다.
+             */
+            ACI_TEST_RAISE(acpEnvGet("ALTIBASE_IB_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
+                           LABEL_PORT_NO_NOT_SET);
+
+            /*
+             * 32 비트 int 의 최대값 : 4294967295 : 10자리
+             */
+            ACI_TEST_RAISE(ulnDrvConnStrToInt(sPortNoEnvValue,
+                                              acpCStrLen(sPortNoEnvValue, 10),
+                                              &sPortNumber) != ACI_SUCCESS,
+                           LABEL_INVALID_PORT_NO);
+
+            (void)ulnDbcSetPortNumber(sDbc, sPortNumber);
+
+            /*
+             * PORT_NO 가 연결 스트링에 없을 때 ALTIBASE_PORT_NO 환경변수를 확인하여서
+             * 있을 경우 SQL_SUCCESS_WITH_INFO 가 아닌 SQL_SUCCESS 를 리턴하고 정상동작해야 한다고
+             * 한다.
+             */
+            // ulnError(aFnContext, ulERR_IGNORE_PORT_NO_NOT_SET, sPortNumber);
+        }
+
+        /* ------------------------------------------------
+         * SQLCLI에서는 DSN을 Host의 주소 즉, IP Address로 사용하고,
+         *
+         * ODBC에서는 "Server"를 Ip Address로 사용한다.
+         * 이러한 혼란을 검증하고, 제대로 동작하는 것을
+         * 보장하기 위해,
+         *  1. HostName을 우선 검사한다.
+         *  2. 만일 이 값이 NULL이라면, SQLCLI라는 의미이므로,
+         *     Dsn의 String을 사용한다. 이 String에는 반드시 Ip Address가
+         *     들어 있을 것이다.
+         *  3. 만일 이 값이 NULL이 아니라면,
+         *     이 프로그램은 ODBC일 경우이므로 (ProfileString에 의해 설정)
+         *     이 값을 접속시 사용한다.
+         *
+         *  sqlcli에서 사용자가 DSN=abcd;ServerName=192.168.3.1 이렇게 줬을 경우에도
+         *  위의 로직을 통해 접속이 성공할 수 있다.
+         *  odbc 에서는 언제나 ProfileString에서 설정되므로 문제가 없다.
+         * ----------------------------------------------*/
+
+        if (ulnDbcGetHostNameString(sDbc) == NULL)
+        {
+            ulnDbcGetConnectArg(sDbc)->mIB.mAddr = ulnDbcGetDsnString(sDbc);
+        }
+        else
+        {
+            ulnDbcGetConnectArg(sDbc)->mIB.mAddr = ulnDbcGetHostNameString(sDbc);
+        }
+
+        ulnDbcGetConnectArg(sDbc)->mIB.mPort = ulnDbcGetPortNumber(sDbc);
+    }
+    else
+    {
+        //PROJ-1645 UL-FailOver.
+        sServer = ulnDbcGetCurrentServer(sDbc);
+
+        ulnDbcGetConnectArg(sDbc)->mIB.mAddr = sServer->mHost;
+        ulnDbcGetConnectArg(sDbc)->mIB.mPort = sServer->mPort;
+    }
+    /* proj-1538 ipv6 */
+    ulnDbcGetConnectArg(sDbc)->mIB.mPreferIPv6 = (sDbc->mAttrPreferIPv6 == ACP_TRUE)? 1: 0;
+
+    //fix BUG-26048 Embeded에서 ConnType=5만 주었을때
+    //  SYSDBA접속이 안됨.
+    if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID)
+    {
+        (void)ulnDbcSetConnType(sDbc, ULN_CONNTYPE_IB);
+    }
+
+    /* BUG-44271 */
+    ulnDbcGetConnectArg(sDbc)->mIB.mBindAddr = ulnDbcGetSockBindAddr(sDbc);
+
+    /* for rsocket option */
+    ulnDbcGetConnectArg(sDbc)->mIB.mLatency = ulnDbcGetIBLatency(sDbc);
+    ulnDbcGetConnectArg(sDbc)->mIB.mConChkSpin = ulnDbcGetIBConChkSpin(sDbc);
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_INVALID_PORT_NO)
+    {
+        /*
+         * SQLSTATE 는 뭘로 할까 _--
+         */
+        (void)ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_IB_PORT_NO, sPortNoEnvValue);
+    }
+
+    ACI_EXCEPTION(LABEL_PORT_NO_NOT_SET)
+    {
+        /*
+         * BUGBUG : 에러코드
+         */
+        (void)ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_IB_PORT_NO_NOT_SET);
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
 /*
  * BUGBUG : ulnFnContext 만 받으면 함수의 의미가 약간 불명확해지는데.. 일단 그대로 두자.
  */
@@ -1134,11 +1355,13 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
     acp_sint32_t  sPortNumber = 0;
 
     if ((ulnDbcGetCmiLinkImpl(sDbc) == CMI_LINK_IMPL_TCP) ||
+        (ulnDbcGetCmiLinkImpl(sDbc) == CMI_LINK_IMPL_SSL) ||
+        (ulnDbcGetCmiLinkImpl(sDbc) == CMI_LINK_IMPL_IB) ||
         (ulnDbcGetCmiLinkImpl(sDbc) == CMI_LINK_IMPL_INVALID))
     {
-        if (acpEnvGet("ALTIBASE___SSL_TEST", &sValue) == ACP_RC_SUCCESS)
+        if (acpEnvGet("ALTIBASE_CONNTYPE_FORCE_FOR_TEST", &sValue) == ACP_RC_SUCCESS)
         {    
-            if (acpCStrCmp(sValue, "true", 4) == 0)
+            if (acpCStrCmp(sValue, "SSL", 3) == 0)
             {
                 ACI_TEST_RAISE(ulnDbcSetCmiLinkImpl(sDbc, CMI_LINK_IMPL_SSL) != ACI_SUCCESS, 
                                LABEL_NOT_SUPPORTED_LINK);
@@ -1146,6 +1369,29 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
                 ulnDbcSetConnType(sDbc, ULN_CONNTYPE_SSL);
 
                 ACI_TEST_RAISE(acpEnvGet("ALTIBASE_SSL_PORT_NO", &sValue) != ACP_RC_SUCCESS,
+                               LABEL_PORT_NO_NOT_SET);
+
+                ACI_TEST_RAISE(ulnDrvConnStrToInt(sValue,
+                                                  acpCStrLen(sValue, 10), 
+                                                  &sPortNumber) != ACI_SUCCESS,
+                               LABEL_INVALID_PORT_NO);
+
+                ulnDbcSetPortNumber(sDbc, sPortNumber);
+            }
+            else if (acpCStrCmp(sValue, "IB", 2) == 0)
+            {
+                ACI_TEST_RAISE(ulnDbcSetCmiLinkImpl(sDbc, CMI_LINK_IMPL_IB) != ACI_SUCCESS, 
+                               LABEL_NOT_SUPPORTED_LINK);
+
+                ulnDbcSetConnType(sDbc, ULN_CONNTYPE_IB);
+
+                if (ACP_RC_IS_SUCCESS(acpEnvGet("ALTIBASE_HOST_FORCE_FOR_TEST", &sValue)))
+                {
+                    (void)ulnDbcSetDsnString(sDbc, sValue, acpCStrLen(sValue, ACP_SINT32_MAX));
+                    (void)ulnDbcSetHostNameString(sDbc, sValue, acpCStrLen(sValue, ACP_SINT32_MAX));
+                }
+
+                ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpEnvGet("ALTIBASE_IB_PORT_NO", &sValue)),
                                LABEL_PORT_NO_NOT_SET);
 
                 ACI_TEST_RAISE(ulnDrvConnStrToInt(sValue,
@@ -1169,6 +1415,22 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
     {
         /* UNIX or IPC .. */
     }
+
+#ifdef COMPILE_SHARDCLI 
+    if ( ( acpEnvGet("ALTIBASE___IPCDA_TEST", &sValue) == ACP_RC_SUCCESS )
+         && ( acpCStrCmp( sValue, "true", 4 ) == 0 )
+         && ( *aFnContext->mHandle.mDbc->mShardDbcCxt.mShardTargetDataNodeName == '\0' ) )
+    {    
+        ACI_TEST_RAISE( ulnDbcSetCmiLinkImpl( sDbc, CMI_LINK_IMPL_IPCDA ) != ACI_SUCCESS, 
+                        LABEL_NOT_SUPPORTED_LINK);
+
+        ulnDbcSetConnType( sDbc, ULN_CONNTYPE_IPCDA );
+    }    
+    else 
+    {    
+        /* do nothing */
+    }  
+#endif
 #endif
 
     if (ulnDbcGetCmiLinkImpl(sDbc) == CMI_LINK_IMPL_INVALID)
@@ -1185,7 +1447,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
         // ulnError(aFnContext, ulERR_IGNORE_CONNTYPE_NOT_SET);
     }
 
-    switch(ulnDbcGetCmiLinkImpl(sDbc))
+    switch (ulnDbcGetCmiLinkImpl(sDbc))
     {
         case CMI_LINK_IMPL_TCP:
             ACI_TEST(ulnDrvConnOrganizeConnectArgTcp(aFnContext) != ACI_SUCCESS);
@@ -1205,6 +1467,11 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
         
         case CMI_LINK_IMPL_IPCDA:
             ACI_TEST(ulnDrvConnOrganizeConnectArgIPCDA(aFnContext) != ACI_SUCCESS);
+            break;
+
+        /* PROJ-2681 */
+        case CMI_LINK_IMPL_IB:
+            ACI_TEST(ulnDrvConnOrganizeConnectArgIB(aFnContext) != ACI_SUCCESS);
             break;
 
         default:

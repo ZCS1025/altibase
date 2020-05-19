@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmSlotList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmSlotList.h 84166 2018-10-15 07:54:37Z justin.kwon $
  ***********************************************************************/ 
 
 #ifndef _O_SMM_SLOT_LIST_H_
@@ -30,14 +30,22 @@
 class smmSlotList
 {
  public:
-    //fix BUG-23007
-    IDE_RC initialize( UInt aSlotSize,
-                       UInt         aMaximum = SMM_SLOT_LIST_MAXIMUM_DEFAULT,
-                       UInt         aCache   = SMM_SLOT_LIST_CACHE_DEFAULT,
-                       smmSlotList* aParent  = NULL );
-    
+
+    IDE_RC initialize( iduMemoryClientIndex aIndex,  
+                       const SChar        * aName,
+                       UInt                 aSlotSize,
+                       UInt                 aMaximum = SMM_SLOT_LIST_MAXIMUM_DEFAULT,
+                       UInt                 aCache   = SMM_SLOT_LIST_CACHE_DEFAULT );
+   
+    IDE_RC makeChild( UInt          aMaximum,
+                      UInt          aCache,
+                      smmSlotList * aChild );
+
     IDE_RC destroy( void );
     
+    IDE_RC freeSlots( UInt       aNumber,
+                      smmSlot  * aNodes );
+
     IDE_RC allocateSlots( UInt         aNumber,
                           smmSlot**    aSlots,
                           UInt         aFlag = SMM_SLOT_LIST_MUTEX_ACQUIRE );
@@ -51,12 +59,14 @@ class smmSlotList
     UInt testGetCount( void ) { return mNumber; }
 
     // BUG-18122 : MEM_BTREE_NODEPOOL performance view 추가
-    UInt getPageCount( void )      { return mPageCount;      }
+    UInt getAllocSlotCount( void ) { return mAllocSlotCount; }
     UInt getSlotPerPage( void )    { return mSlotPerPage;    }
     UInt getFreeSlotCount( void )  { return mNumber;         }
     UInt getSlotSize( void )       { return mSlotSize;       }
     ULong getTotalAllocReq( void ) { return mTotalAllocReq;  }
     ULong getTotalFreeReq( void )  { return mTotalFreeReq;   }
+
+    idBool isParent( void ) { return ( mParent == NULL ) ? ID_TRUE : ID_FALSE; }
 
     inline IDE_RC  lock() { return mMutex.lock( NULL ); }
     inline IDE_RC  unlock() { return mMutex.unlock(); }
@@ -67,12 +77,11 @@ private:
     UInt                   mMaximum;
     UInt                   mCache;
     UInt                   mNumber;
-    struct __smmTempPage__ mPagesBody;
-    smmTempPage*           mPages;
     smmSlot                mSlots;
     UInt                   mSlotSize;
     UInt                   mSlotPerPage;
-    UInt                   mPageCount;
+    UInt                   mAllocSlotCount;
+    iduMemPool             mMemPool;
 
     // BUG-18122 : MEM_BTREE_NODEPOOL performance view 추가
     ULong                  mTotalAllocReq;

@@ -251,16 +251,18 @@ SQLRETURN close_file(FILE *a_fp)
 #define IDE_FN "close_file()"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    IDE_TEST_RAISE( idlOS::fclose(a_fp) != 0, closeError );
-
-    a_fp = NULL;
+    /* BUG-45989 Avoid seg. fault due to insufficient file permission */
+    if (a_fp != NULL)
+    {
+        IDE_TEST_RAISE( idlOS::fclose(a_fp) != 0, closeError );
+    }
 
     return SQL_SUCCESS;
 
     IDE_EXCEPTION(closeError);
     {
-         uteSetErrorCode(&gErrorMgr,
-                        utERR_ABORT_openFileError,
+        uteSetErrorCode(&gErrorMgr,
+                        utERR_ABORT_closeFileError,
                         "sql file");
     }
     IDE_EXCEPTION_END;

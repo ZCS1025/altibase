@@ -39,16 +39,12 @@ public class TinyIntColumn extends AbstractColumn
 
     TinyIntColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.OTHER);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.NONE;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.OTHER };
     }
 
     public String getDBColumnTypeName()

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsx.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsx.h 85120 2019-04-02 01:27:30Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QSX_H_
@@ -181,6 +181,8 @@ public:
     static IDE_RC executeProcOrFunc(qcStatement * aStatement);
 
     static IDE_RC executePkgAssign( qcStatement * aQcStmt );
+
+    static IDE_RC executeAB(qcStatement * aQcStmt);
 
     static IDE_RC callProcWithNode (
                   qcStatement            * aStatement,

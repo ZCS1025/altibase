@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcgPlan.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcgPlan.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
  **********************************************************************/
 
 #include <qc.h>
@@ -29,6 +29,7 @@
 #include <qsxPkg.h>
 #include <mtuProperty.h>
 #include <qdpRole.h>
+#include <sdi.h>
 
 IDE_RC qcgPlan::allocAndInitPlanEnv( qcStatement * aStatement )
 {
@@ -707,17 +708,54 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
                                             optimizerSemiJoinRemove,
                                             QCU_OPTIMIZER_SEMI_JOIN_REMOVE );
                 break;
-            /* BUG-44710 */
-            case PLAN_PROPERTY_SHARD_LINKER_CHANGE_NUMBER:
-                QCG_REGISTER_PLAN_PROPERTY( mShardLinkerChangeNumberRef,
-                                            mShardLinkerChangeNumber,
-                                            qcg::getShardLinkerChangeNumber(aStatement) );
+            /* PROJ-2701 Sharding online data rebuild */
+            case PLAN_PROPERTY_SHARD_META_NUMBER_FOR_DATA:
+                QCG_REGISTER_PLAN_PROPERTY( mSMNForDataNodeRef,
+                                            mSMNForDataNode,
+                                            sdi::getSMNForDataNode() );
+                break;
+            /* PROJ-2701 Sharding online data rebuild */
+            case PLAN_PROPERTY_SHARD_META_NUMBER_FOR_SESSION:
+                QCG_REGISTER_PLAN_PROPERTY( mSMNForSessionRef,
+                                            mSMNForSession,
+                                            QCG_GET_SESSION_SHARD_META_NUMBER(aStatement) );
+                break;
+            /* PROJ-2701 Sharding online data rebuild */
+            case PLAN_PROPERTY_SHARD_IS_DATA_SESSION:
+                QCG_REGISTER_PLAN_PROPERTY( mIsShardDataSessionRef,
+                                            mIsShardDataSession,
+                                            QCG_GET_SESSION_IS_SHARD_DATA_SESSION(aStatement) );
                 break;
             /* PROJ-2687 */
             case PLAN_PROPERTY_SHARD_AGGREGATION_TRANSFORM_DISABLE:
                 QCG_REGISTER_PLAN_PROPERTY( mShardAggregationTransformDisableRef,
                                             mShardAggregationTransformDisable,
-                                            QCU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+                                            SDU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+                break;
+            // key preserved property
+            case PLAN_PROPERTY_KEY_PRESERVED_TABLE:
+                QCG_REGISTER_PLAN_PROPERTY( mKeyPreservedTableRef,
+                                            mKeyPreservedTable,
+                                            QCU_KEY_PRESERVED_TABLE );
+
+                break;
+            case PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY:
+                QCG_REGISTER_PLAN_PROPERTY( mUnnestCompatibilityRef,
+                                            mUnnestCompatibility,
+                                            QCU_OPTIMIZER_UNNEST_COMPATIBILITY );
+                break;
+
+            /* PROJ-2632 */
+            case PLAN_PROPERTY_SERIAL_EXECUTE_MODE:
+                QCG_REGISTER_PLAN_PROPERTY( mSerialExecuteModeRef,
+                                            mSerialExecuteMode,
+                                            QCG_GET_SERIAL_EXECUTE_MODE( aStatement ) );
+                break;
+            /* BUG-46932 */
+            case PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE:
+                QCG_REGISTER_PLAN_PROPERTY( mInverseJoinEnableRef,
+                                            mInverseJoinEnable,
+                                            QCU_OPTIMIZER_INVERSE_JOIN_ENABLE );
                 break;
             default:
                 IDE_DASSERT( 0 );
@@ -732,7 +770,9 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
 
 IDE_RC qcgPlan::registerPlanTable( qcStatement  * aStatement,
                                    void         * aTableHandle,
-                                   smSCN          aTableSCN )
+                                   smSCN          aTableSCN,
+                                   UInt           aTableOwnerID, /* BUG-45893 */
+                                   SChar        * aTableName )   /* BUG-45893 */
 {
 /***********************************************************************
  *
@@ -795,6 +835,27 @@ IDE_RC qcgPlan::registerPlanTable( qcStatement  * aStatement,
             sTable->tableHandle = aTableHandle;
             sTable->tableSCN    = aTableSCN;
             sTable->next        = sObject->tableList;
+
+            /* BUG-45893 */
+            if ( aTableOwnerID == QC_SYSTEM_USER_ID )
+            {
+                if ( ( idlOS::strlen( aTableName ) >= 4 ) &&
+                     ( idlOS::strMatch( aTableName,
+                                        4,
+                                        (SChar *)"DBA_",
+                                        4 ) == 0 ) )
+                {
+                    sTable->mIsDBAUser = ID_TRUE;
+                }
+                else
+                {
+                    sTable->mIsDBAUser = ID_FALSE;
+                }
+            }
+            else
+            {
+                sTable->mIsDBAUser = ID_FALSE;
+            }
 
             // 연결한다.
             sObject->tableList = sTable;
@@ -1326,7 +1387,7 @@ IDE_RC qcgPlan::registerPlanPrivTable( qcStatement         * aStatement,
             }
 
             sTablePriv->privilegeID = aPrivilegeID;
-            
+
             sTablePriv->next = sPrivilege->tableList;
             
             // 연결한다.
@@ -1857,15 +1918,44 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                optimizerSemiJoinRemove,
                                QCU_OPTIMIZER_SEMI_JOIN_REMOVE );
 
-    /* BUG-44710 */
-    QCG_MATCHED_PLAN_PROPERTY( mShardLinkerChangeNumberRef,
-                               mShardLinkerChangeNumber,
-                               qcg::getShardLinkerChangeNumber(aStatement) );
+    /* PROJ-2701 Sharding online data rebuild */
+    QCG_MATCHED_PLAN_PROPERTY( mSMNForDataNodeRef,
+                               mSMNForDataNode,
+                               sdi::getSMNForDataNode() );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    QCG_MATCHED_PLAN_PROPERTY( mSMNForSessionRef,
+                               mSMNForSession,
+                               QCG_GET_SESSION_SHARD_META_NUMBER(aStatement) );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    QCG_MATCHED_PLAN_PROPERTY( mIsShardDataSessionRef,
+                               mIsShardDataSession,
+                               QCG_GET_SESSION_IS_SHARD_DATA_SESSION(aStatement) );
 
     /* PROJ-2687 */
     QCG_MATCHED_PLAN_PROPERTY( mShardAggregationTransformDisableRef,
                                mShardAggregationTransformDisable,
-                               QCU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+                               SDU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+
+    // key preserved property
+    QCG_MATCHED_PLAN_PROPERTY( mKeyPreservedTableRef,
+                               mKeyPreservedTable,
+                               QCU_KEY_PRESERVED_TABLE );
+
+    QCG_MATCHED_PLAN_PROPERTY( mUnnestCompatibilityRef,
+                               mUnnestCompatibility,
+                               QCU_OPTIMIZER_UNNEST_COMPATIBILITY );
+
+    /* PROJ-2632 */
+    QCG_MATCHED_PLAN_PROPERTY( mSerialExecuteModeRef,
+                               mSerialExecuteMode,
+                               QCG_GET_SERIAL_EXECUTE_MODE( aStatement ) );
+
+    /* BUG-46932 */ 
+    QCG_MATCHED_PLAN_PROPERTY( mInverseJoinEnableRef,
+                               mInverseJoinEnable,
+                               QCU_OPTIMIZER_INVERSE_JOIN_ENABLE );
 
     ////////////////////////////////////////////////////////////////////
     // QCG_MATCHED_PLAN_PROPERTY 매크로로 체크할수 없는 경우
@@ -2337,15 +2427,44 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
                                optimizerSemiJoinRemove,
                                QCU_OPTIMIZER_SEMI_JOIN_REMOVE );
 
-    /* BUG-44710 */
-    QCG_REBUILD_PLAN_PROPERTY( mShardLinkerChangeNumberRef,
-                               mShardLinkerChangeNumber,
-                               qcg::getShardLinkerChangeNumber(aStatement) );
+    /* PROJ-2701 Sharding online data rebuild */
+    QCG_REBUILD_PLAN_PROPERTY( mSMNForDataNodeRef,
+                               mSMNForDataNode,
+                               sdi::getSMNForDataNode() );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    QCG_REBUILD_PLAN_PROPERTY( mSMNForSessionRef,
+                               mSMNForSession,
+                               QCG_GET_SESSION_SHARD_META_NUMBER(aStatement) );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    QCG_REBUILD_PLAN_PROPERTY( mIsShardDataSessionRef,
+                               mIsShardDataSession,
+                               QCG_GET_SESSION_IS_SHARD_DATA_SESSION(aStatement) );
 
     /* PROJ-2687 */
     QCG_REBUILD_PLAN_PROPERTY( mShardAggregationTransformDisableRef,
                                mShardAggregationTransformDisable,
-                               QCU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+                               SDU_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+
+    // key preserved property
+    QCG_REBUILD_PLAN_PROPERTY( mKeyPreservedTableRef,
+                               mKeyPreservedTable,
+                               QCU_KEY_PRESERVED_TABLE );
+
+    QCG_REBUILD_PLAN_PROPERTY( mUnnestCompatibilityRef,
+                               mUnnestCompatibility,
+                               QCU_OPTIMIZER_UNNEST_COMPATIBILITY );
+
+    /* PROJ-2632 */
+    QCG_REBUILD_PLAN_PROPERTY( mSerialExecuteModeRef,
+                               mSerialExecuteMode,
+                               QCG_GET_SERIAL_EXECUTE_MODE( aStatement ) );
+
+    /* BUG-46932 */ 
+    QCG_REBUILD_PLAN_PROPERTY( mInverseJoinEnableRef,
+                               mInverseJoinEnable,
+                               QCU_OPTIMIZER_INVERSE_JOIN_ENABLE );
 
     ////////////////////////////////////////////////////////////////////
     // QCG_REBUILD_PLAN_PROPERTY 매크로로 체크할수 없는 경우
@@ -2424,6 +2543,7 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
 }
 
 IDE_RC qcgPlan::validatePlanTable( qcgEnvTableList * aTableList,
+                                   UInt              aUserID, /* BUG-45893 */
                                    idBool          * aIsValid )
 {
 /***********************************************************************
@@ -2442,6 +2562,25 @@ IDE_RC qcgPlan::validatePlanTable( qcgEnvTableList * aTableList,
           sTable != NULL;
           sTable = sTable->next )
     {
+        /* BUG-45893 */
+        if ( sTable->mIsDBAUser == ID_TRUE )
+        {
+            if ( ( aUserID == QC_SYSTEM_USER_ID ) ||
+                 ( aUserID == QC_SYS_USER_ID ) )
+            {
+                sIsValid = ID_TRUE;
+            }
+            else
+            {
+                sIsValid = ID_FALSE;
+                break;
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
         // 삭제와 변경을 감지한다.
         if ( smiValidateObjects( sTable->tableHandle,
                                  sTable->tableSCN )
@@ -3669,3 +3808,4 @@ IDE_RC qcgPlan::isMatchedPlanBindInfo( qcStatement    * aStatement,
 
     return IDE_SUCCESS;
 }
+

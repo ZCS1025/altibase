@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgDef.h 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     Graph 공통 정보에 대한 자료 구조 정의
@@ -143,6 +143,10 @@
 #define QMG_PLAN_EXEC_REPEATED_TRUE          (0x00008000)
 #define QMG_PLAN_EXEC_REPEATED_FALSE         (0x00000000)
 
+/* PROJ-2509 Hierarchy Query Join */
+#define QMG_HIERARCHY_JOIN_MASK              (0x00010000)
+#define QMG_HIERARCHY_JOIN_TRUE              (0x00010000)
+#define QMG_HIERARCHY_JOIN_FALSE             (0x00000000)
 
 // Reserved Area
 // qmgGraph.flag

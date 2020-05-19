@@ -1120,7 +1120,7 @@ SQLRETURN  SQL_API SQLSetDescFieldW(SQLHDESC    DescriptorHandle,
      *     as appropriate.
      */
 
-    SQLRETURN     sRet;
+    SQLRETURN     sRet = SQL_ERROR; /* BUG-46052 codesonar Uninitialized Variable */
     ulnCharSet    sCharSet;
     acp_char_t   *sTemp = NULL;
     acp_sint32_t  sStep = 0;

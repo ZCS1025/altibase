@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmFixedMemoryMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmFixedMemoryMgr.cpp 84887 2019-02-14 10:13:01Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -795,11 +795,6 @@ IDE_RC smmFixedMemoryMgr::checkDBSignature(smmTBSNode * aTBSNode,
     smmMemBase      *sDiskMemBase;
     smmMemBase      *sSharedMemBase = aTBSNode->mMemBase;
     smmDatabaseFile *sFile;
-
-//      IDE_TEST(smmManager::getDatabaseFile(smmManager::getDbf(),
-//                                           aDbNumber,
-//                                           0,
-//                                           &sFile) != IDE_SUCCESS);
 
     IDE_TEST( smmManager::openAndGetDBFile( aTBSNode,
                                             aDbNumber,

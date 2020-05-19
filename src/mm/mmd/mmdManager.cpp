@@ -28,7 +28,7 @@ IDE_RC mmdManager::initialize()
 {
     mmdXid         *sXidObj = NULL;
     /* BUG-18981 */
-    ID_XID      sXid;
+    ID_XID          sXid;
     timeval         sTime;
     smiCommitState  sTxState;
     SInt            sSlotID = -1;
@@ -46,14 +46,13 @@ IDE_RC mmdManager::initialize()
 
         if (sTxState == SMX_XA_PREPARED)
         {
-            IDE_TEST(mmdXidManager::alloc(&sXidObj, &sXid, NULL)
-                    != IDE_SUCCESS);
+            IDE_TEST(mmdXidManager::alloc(&sXidObj, &sXid, NULL) != IDE_SUCCESS);
 
             sXidObj->lock();
 
             IDE_TEST(sXidObj->attachTrans(sSlotID) != IDE_SUCCESS);
-        /* fix BUG-35374 To improve scalability about XA, latch granularity of XID hash should be more better than now
-         that is to say , chanage the granularity from global to bucket level. */           
+            /* fix BUG-35374 To improve scalability about XA, latch granularity of XID hash should be more better than now
+               that is to say , chanage the granularity from global to bucket level. */
             IDE_TEST(mmdXidManager::add(sXidObj,mmdXidManager::getBucketPos(sXidObj->getXid())) != IDE_SUCCESS);
 
             sXidObj->unlock();

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgJoin.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgJoin.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
  *
  * Description :
  *     Join Graph를 위한 수행 함수
@@ -1697,6 +1697,9 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
                              &sFilter )
               != IDE_SUCCESS );
 
+    /* BUG-46800 */
+    moveConstantPred( aMyGraph, aIsInverse );
+
     //----------------------------
     // Top-down 초기화
     //----------------------------
@@ -1744,6 +1747,7 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
     // init right HASH
     //-----------------------
 
+    qmc::disableSealTrueFlag( sJOIN->resultDesc );
     IDE_TEST( qmoOneMtrPlan::initHASH(
                   aStatement,
                   aMyGraph->graph.myQuerySet,
@@ -1957,6 +1961,9 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
                              aMyGraph->nonJoinablePredicate,
                              &sFilter )
               != IDE_SUCCESS );
+
+    /* BUG-46800 */
+    moveConstantPred( aMyGraph, aIsInverse );
 
     //-----------------------------------------------------
     //          [JOIN]
@@ -4935,3 +4942,54 @@ IDE_RC qmgJoin::randomSelectJoinMethod ( qcStatement        * aStatement,
 
     return IDE_SUCCESS;
 }
+
+void qmgJoin::moveConstantPred( qmgJOIN * aMyGraph, idBool aIsInverse )
+{
+    qmoPredicate * sPredicate;
+    qmoPredicate * sPrev;
+
+    IDE_TEST_RAISE( ( aMyGraph->graph.left == NULL ) ||
+                    ( aMyGraph->graph.right == NULL ) ||
+                    ( aIsInverse == ID_FALSE ), normal_exit );
+
+    if ( aMyGraph->graph.left->type == QMG_SELECTION )
+    {
+        if ( aMyGraph->graph.left->left == NULL )
+        {
+            if ( aMyGraph->graph.left->constantPredicate != NULL )
+            {
+                if ( aMyGraph->graph.right->constantPredicate == NULL )
+                {
+                    aMyGraph->graph.right->constantPredicate = aMyGraph->graph.left->constantPredicate;
+                    aMyGraph->graph.left->constantPredicate = NULL;
+                }
+                else
+                {
+                    for ( sPredicate = aMyGraph->graph.right->constantPredicate;
+                          sPredicate != NULL;
+                          sPredicate = sPredicate->next )
+                    {
+                        sPrev = sPredicate;
+                    }
+                    sPrev->next = aMyGraph->graph.left->constantPredicate;
+                    aMyGraph->graph.left->constantPredicate = NULL;
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( normal_exit );
+}
+

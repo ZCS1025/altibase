@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmManager.h 80542 2017-07-19 08:01:20Z daramix $
+ * $Id: utmManager.h 83784 2018-08-23 05:59:35Z chkim $
  **********************************************************************/
 
 #ifndef _O_UTM_MANAGER_H_
@@ -40,6 +40,7 @@
 # define SQLBIGINT_EQ_SQLBIGINT(aSQLBIGINT1, aSQLBIGINT2) \
     ((aSQLBIGINT1) == (aSQLBIGINT2))
 # define SQLBIGINT_TO_SLONG(aSQLBIGINT) ((SLong)(aSQLBIGINT))
+# define SQLBIGINT_INIT_TO_ZERO ((SQLBIGINT)ID_LONG(0)) 
 #else
 # define SQLBIGINT_EQ_SQLBIGINT(aSQLBIGINT1, aSQLBIGINT2) \
     ((aSQLBIGINT1).hiword == (aSQLBIGINT2).hiword && \
@@ -47,6 +48,7 @@
 # define SQLBIGINT_TO_SLONG(aSQLBIGINT) \
     ((SLong)(aSQLBIGINT).hiword * ID_LONG(0x100000000)\
     + (SLong)(ULong)(aSQLBIGINT).loword)
+# define SQLBIGINT_INIT_TO_ZERO ({0, 0})
 #endif
 
 #define FORMOUT_SCRIPT ILO_PRODUCT_NAME" %s -u %s -p %s formout -f %s_%s.fmt -T %s\n"

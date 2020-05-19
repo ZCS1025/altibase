@@ -272,10 +272,6 @@ IDE_RC mmtServiceThread::prepareProtocol(cmiProtocolContext *aProtocolContext,
 
     IDE_TEST(sStatement->prepare(sQuery, sStatementStringLen) != IDE_SUCCESS);
 
-    /* bug-45569 ipcda에서는 queue를 지원하지 않는다. */
-    IDE_TEST_RAISE( (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
-                    (sStatement->getStmtType() == QCI_STMT_ENQUEUE || sStatement->getStmtType() == QCI_STMT_DEQUEUE ), ipcda_unsupported_queue);
-   
     return answerPrepareResult(aProtocolContext, sStatement);
 
     IDE_EXCEPTION(InvalidStatementState);
@@ -285,10 +281,6 @@ IDE_RC mmtServiceThread::prepareProtocol(cmiProtocolContext *aProtocolContext,
     IDE_EXCEPTION(NullQuery);
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_INSUFFICIENT_QUERY_ERROR));
-    }
-    IDE_EXCEPTION(ipcda_unsupported_queue)
-    {
-        IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_UNSUPPORTED_QUEUE));
     }
     IDE_EXCEPTION(cm_error);
     {
@@ -461,10 +453,6 @@ IDE_RC mmtServiceThread::prepareByCIDProtocol(cmiProtocolContext *aProtocolConte
 
     IDE_TEST(sStatement->prepare(sQuery, sStatementStringLen) != IDE_SUCCESS);
 
-    /* bug-45569 ipcda에서는 queue를 지원하지 않는다. */
-    IDE_TEST_RAISE( (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
-                    (sStatement->getStmtType() == QCI_STMT_ENQUEUE || sStatement->getStmtType() == QCI_STMT_DEQUEUE ), ipcda_unsupported_queue);
-
     return answerPrepareResult(aProtocolContext, sStatement);
 
     IDE_EXCEPTION(StmtNotFoundException);
@@ -478,10 +466,6 @@ IDE_RC mmtServiceThread::prepareByCIDProtocol(cmiProtocolContext *aProtocolConte
     IDE_EXCEPTION(NullQuery);
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_INSUFFICIENT_QUERY_ERROR));
-    }
-    IDE_EXCEPTION(ipcda_unsupported_queue)
-    {
-        IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_UNSUPPORTED_QUEUE));
     }
     IDE_EXCEPTION(cm_error);
     {
@@ -597,6 +581,21 @@ IDE_RC mmtServiceThread::freeProtocol(cmiProtocolContext *aProtocolContext,
                            sSession,
                            &sStatementID,
                            sThread) != IDE_SUCCESS);
+
+    /* BUG-46092 */
+    if ( sdi::isShardEnable() == ID_TRUE )
+    {
+        switch (sMode)
+        {
+            case CMP_DB_FREE_CLOSE:
+            case CMP_DB_FREE_DROP:
+                sStatement->freeAllRemoteStatement( sMode );
+                break;
+
+            default:
+                break;
+        }
+    }
 
     switch (sMode)
     {

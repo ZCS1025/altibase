@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmView.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmView.cpp 84200 2018-10-18 04:35:37Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -1208,6 +1208,10 @@ IDE_RC qcmView::recompileView(
     sCreateParseTree = (qdTableParseTree *)(sCreateStatement->myPlan->parseTree);
     sCreateParseTree->flag &= ~QDV_OPT_REPLACE_MASK;
     sCreateParseTree->flag |= QDV_OPT_REPLACE_TRUE;
+
+    // BUG-46498
+    QC_SHARED_TMPLATE(sCreateStatement)->flag &= ~QC_TMP_RECOMPILE_VIEW_MASK;
+    QC_SHARED_TMPLATE(sCreateStatement)->flag |=  QC_TMP_RECOMPILE_VIEW_TRUE;
 
     //---------------------------------------------------------------
     // validation

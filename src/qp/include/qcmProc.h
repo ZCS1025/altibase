@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmProc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmProc.h 84053 2018-09-20 09:40:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QCM_PROC_H_
@@ -217,7 +217,8 @@ public:
                   UInt             aRelatedUserID,
                   SChar          * aRelatedObjectName,
                   UInt             aRelatedObjectNameSize,
-                  qsObjectType     aRelatedObjectType);
+                  qsObjectType     aRelatedObjectType,
+                  idBool           aIsUseTx = ID_FALSE ); // BUG-46416
     
     static IDE_RC relRemoveAll(
                   qcStatement     * aStatement,

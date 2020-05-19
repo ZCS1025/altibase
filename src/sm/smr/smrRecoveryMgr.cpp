@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrRecoveryMgr.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smrRecoveryMgr.cpp 85249 2019-04-16 07:15:00Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -3690,6 +3690,8 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
     smLSN   sRedoLSN;
     smLSN   sSyncLstLSN;
 
+    smLSN   sDtxMinLSN; /* BUG-46754 */
+
     smLSN * sMediaRecoveryLSN;
 
     IDU_FIT_POINT( "1.BUG-42785@smrRecoveryMgr::checkpointInternal::sleep" );
@@ -3716,7 +3718,8 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
                                   &sRedoLSN,
                                   sDiskRedoLSN,
                                   sEndLSN,
-                                  &sBeginChkptLSN ) != IDE_SUCCESS );
+                                  &sBeginChkptLSN,
+                                  &sDtxMinLSN ) != IDE_SUCCESS );
 
     /* FIT/ART/sm/Bugs/BUG-13894/BUG-13894.sql */
     IDU_FIT_POINT( "1.BUG-13894@smrRecoveryMgr::checkpointInternal" );
@@ -3772,7 +3775,8 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
                                      &sEndChkptLSN,
                                      &sDiskRedoLSN,
                                      &sRedoLSN,
-                                     &sSyncLstLSN )
+                                     &sSyncLstLSN,
+                                     &sDtxMinLSN )
               != IDE_SUCCESS );
 
     /* BUG-43499
@@ -3863,7 +3867,8 @@ IDE_RC smrRecoveryMgr::writeBeginChkptLog( idvSQL* aStatistics,
                                            smLSN * aRedoLSN,
                                            smLSN   aDiskRedoLSN,
                                            smLSN   aEndLSN,
-                                           smLSN * aBeginChkptLSN )
+                                           smLSN * aBeginChkptLSN,
+                                           smLSN * aDtxMinLSN )
 {
     smrBeginChkptLog   sBeginChkptLog;
     smLSN              sBeginChkptLSN;
@@ -3910,6 +3915,7 @@ IDE_RC smrRecoveryMgr::writeBeginChkptLog( idvSQL* aStatistics,
                 aDiskRedoLSN.mOffset);
 
     * aBeginChkptLSN = sBeginChkptLSN ;
+    * aDtxMinLSN     = sBeginChkptLog.mDtxMinLSN;
 
     return IDE_SUCCESS;
 
@@ -4254,8 +4260,7 @@ IDE_RC smrRecoveryMgr::addTBSNodeToAnchor( sctTableSpaceNode*   aSpaceNode )
         // 디스크 테이블스페이스
         ((sddTableSpaceNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
     }
-    else if ( sctTableSpaceMgr::isVolatileTableSpace(aSpaceNode->mID)
-             == ID_TRUE )
+    else if ( sctTableSpaceMgr::isVolatileTableSpace(aSpaceNode->mID) == ID_TRUE )
     {
         IDE_ASSERT( ((svmTBSNode*)aSpaceNode)->mAnchorOffset
                     == SCT_UNSAVED_ATTRIBUTE_OFFSET );
@@ -5504,8 +5509,7 @@ IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
         IDE_ASSERT( (sCurrSpaceNode->mState & SMI_TBS_DROPPED)
                     != SMI_TBS_DROPPED );
 
-        if ( sctTableSpaceMgr::isTempTableSpace(sCurrSpaceNode->mID)
-             == ID_TRUE )
+        if ( sctTableSpaceMgr::isTempTableSpace(sCurrSpaceNode->mID) == ID_TRUE )
         {
             // 임시 테이블스페이스의 경우 체크하지 않는다.
             sCurrSpaceNode = sNextSpaceNode;
@@ -5522,37 +5526,28 @@ IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
             continue;
         }
 
-        if ( sctTableSpaceMgr::isMemTableSpace( sCurrSpaceNode->mID )
-             == ID_TRUE )
+        if ( sctTableSpaceMgr::isMemTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
         {
             // 메모리테이블스페이스의 경우
             IDE_TEST( smmTBSMediaRecovery::makeMediaRecoveryDBFList(
-                          sCurrSpaceNode,
-                          aRecoveryType,
-                          &sFailureChkptImgCount,
-                          &sFromMemRedoLSN,
-                          &sToMemRedoLSN )
+                                                            sCurrSpaceNode,
+                                                            aRecoveryType,
+                                                            &sFailureChkptImgCount,
+                                                            &sFromMemRedoLSN,
+                                                            &sToMemRedoLSN )
                       != IDE_SUCCESS );
         }
-        else if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID )
-                 == ID_TRUE )
+        else if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
         {
-            // 디스크테이블스페이스의 경우
-            IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace(
-                            sCurrSpaceNode->mID )
-                        == ID_TRUE );
-
-            IDE_TEST( sddDiskMgr::makeMediaRecoveryDBFList(
-                          NULL, /* idvSQL* */
-                          sCurrSpaceNode,
-                          aRecoveryType,
-                          &sFailureDBFCount,
-                          &sFromDiskRedoLSN,
-                          &sToDiskRedoLSN )
+            IDE_TEST( sddDiskMgr::makeMediaRecoveryDBFList( NULL, /* idvSQL* */
+                                                            sCurrSpaceNode,
+                                                            aRecoveryType,
+                                                            &sFailureDBFCount,
+                                                            &sFromDiskRedoLSN,
+                                                            &sToDiskRedoLSN )
                       != IDE_SUCCESS );
         }
-        else if ( sctTableSpaceMgr::isVolatileTableSpace( sCurrSpaceNode->mID )
-                 == ID_TRUE )
+        else if ( sctTableSpaceMgr::isVolatileTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
         {
             // Nothing to do...
             // volatile tablespace에 대해서는 아무 작업하지 않는다.
@@ -5678,16 +5673,14 @@ IDE_RC smrRecoveryMgr::getMaxMustRedoToLSN( idvSQL   * aStatistics,
         sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
                                             (void**)&sNextSpaceNode);
 
-        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID )
-            != ID_TRUE )
+        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) != ID_TRUE )
         {
             // 디스크테이블스페이스의 경우만 확인한다.
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
 
-        if ( sctTableSpaceMgr::isTempTableSpace(sCurrSpaceNode->mID)
-             == ID_TRUE )
+        if ( sctTableSpaceMgr::isTempTableSpace(sCurrSpaceNode->mID) == ID_TRUE )
         {
             // 임시 테이블스페이스의 경우 체크하지 않는다.
             sCurrSpaceNode = sNextSpaceNode;
@@ -5705,10 +5698,10 @@ IDE_RC smrRecoveryMgr::getMaxMustRedoToLSN( idvSQL   * aStatistics,
         }
 
         IDE_TEST( sddDiskMgr::getMustRedoToLSN(
-                      aStatistics,
-                      sCurrSpaceNode,
-                      &sMustRedoToLSN,
-                      &sDBFileName )
+                                  aStatistics,
+                                  sCurrSpaceNode,
+                                  &sMustRedoToLSN,
+                                  &sDBFileName )
                   != IDE_SUCCESS );
 
         if ( smrCompareLSN::isGT( &sMustRedoToLSN,
@@ -5945,11 +5938,23 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     switch ( aRecoveryType )
     {
         case SMI_RECOVER_COMPLETE:
-        case SMI_RECOVER_UNTILTIME:
             {
-                // 완전복구시 또는 타임베이스 불완전 복구시
+                // 완전복구시 시
                 // 로그디렉토리에 로그파일들의 유효성을 검사한다.
                 IDE_TEST( identifyLogFiles() != IDE_SUCCESS );
+                // 완전복구일경우 로그파일들의 유효성에서 실패하면 restart recovery 에서 에러를 출력하거나 
+                // 불완전 복구를 유도 한다. 
+                break;
+            }
+        case SMI_RECOVER_UNTILTIME:
+            {
+                // 타임베이스 불완전 복구시
+                // 로그디렉토리에 로그파일들의 유효성을 검사한다.
+                IDE_TEST( identifyLogFiles() != IDE_SUCCESS );
+
+                // 로그가 연속적이지 않을경우 UNTIL TIME 이 의도한대로 동작하지 않을수있다. 
+                // recovery 해서 로그 날리기 전에 에러를 발생시킨다. 
+                IDE_TEST_RAISE( mLogFileContinuity == ID_FALSE, err_log_consistency );
                 break;
             }
         case SMI_RECOVER_UNTILCANCEL:
@@ -6271,6 +6276,10 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( err_log_consistency )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_ERR_LOG_CONSISTENCY, mLostLogFile ) );
+    }
     IDE_EXCEPTION( err_secondary_buffer_service );
     {
         IDE_SET( ideSetErrorCode( 
@@ -7464,7 +7473,8 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
                                               smLSN   * aEndChkptLSN,
                                               smLSN   * aDiskRedoLSN,
                                               smLSN   * aRedoLSN,
-                                              smLSN   * aSyncLstLSN )
+                                              smLSN   * aSyncLstLSN,
+                                              smLSN   * aDtxMinLSN )
 {
     UInt        j = 0;
 
@@ -7610,6 +7620,9 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
         }
 
         sLstFileNo = ((aDiskRedoLSN->mFileNo > sLstFileNo)  ? sLstFileNo : aDiskRedoLSN->mFileNo);
+
+        /* BUG-46754 */
+        sLstFileNo = ( ( aDtxMinLSN->mFileNo > sLstFileNo ) ? sLstFileNo : aDtxMinLSN->mFileNo );
 
         if ( getArchiveMode() == SMI_LOG_ARCHIVE )
         {
@@ -10047,13 +10060,11 @@ IDE_RC smrRecoveryMgr::restoreDB4Level1( UInt            aRestoreStartSlotIdx,
         IDE_TEST( smriBackupInfoMgr::getBISlot( sSlotIdx, &sBISlot ) 
                   != IDE_SUCCESS );
 
-        if ( sctTableSpaceMgr::isMemTableSpace( sBISlot->mSpaceID ) 
-             == ID_TRUE )
+        if ( sctTableSpaceMgr::isMemTableSpace( sBISlot->mSpaceID ) == ID_TRUE )
         {
             IDE_TEST( restoreMemDataFile4Level1( sBISlot ) != IDE_SUCCESS );
         }
-        else if ( sctTableSpaceMgr::isDiskTableSpace( sBISlot->mSpaceID ) 
-                  == ID_TRUE )
+        else if ( sctTableSpaceMgr::isDiskTableSpace( sBISlot->mSpaceID ) == ID_TRUE )
         {
             IDE_TEST( restoreDiskDataFile4Level1( sBISlot ) != IDE_SUCCESS );
         }
@@ -10118,13 +10129,11 @@ IDE_RC smrRecoveryMgr::restoreTBS4Level1( scSpaceID aSpaceID,
 
         if ( sBISlot->mSpaceID == aSpaceID )
         {
-            if ( sctTableSpaceMgr::isMemTableSpace( sBISlot->mSpaceID ) 
-                 == ID_TRUE )
+            if ( sctTableSpaceMgr::isMemTableSpace( sBISlot->mSpaceID ) == ID_TRUE )
             {
                 IDE_TEST( restoreMemDataFile4Level1( sBISlot ) != IDE_SUCCESS );
             }
-            else if ( sctTableSpaceMgr::isDiskTableSpace( sBISlot->mSpaceID ) 
-                      == ID_TRUE )
+            else if ( sctTableSpaceMgr::isDiskTableSpace( sBISlot->mSpaceID ) == ID_TRUE )
             {
                 IDE_TEST( restoreDiskDataFile4Level1( sBISlot ) != IDE_SUCCESS );
             }

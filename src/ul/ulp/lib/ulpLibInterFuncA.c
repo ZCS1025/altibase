@@ -748,373 +748,331 @@ ACI_RC ulpRunDirectQuery ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *re
  * Implementation :
  *
  ***********************************************************************/
-    acp_sint32_t     i;
-    ulpLibConnNode  *sConnNode;
-    ulpLibStmtNode  *sStmtNode = NULL;
-    SQLRETURN        sSqlRes;
-    SQLHSTMT        *sHstmtPtr;
-    SQLHSTMT         sHstmt;
-    acp_bool_t       sIsSharedSTMT;
-    /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
-    /* SQLAllocStmt 여부에대한 정보저장.*/
-    acp_bool_t       sIsAllocNode;
-    acp_bool_t       sIsAllocStmt;
-    acp_bool_t       sIsLatched;
     ACP_UNUSED(reserved);
-
-    sIsSharedSTMT= ACP_FALSE;
-    sIsAllocNode = ACP_FALSE;
-    sIsAllocStmt = ACP_FALSE;
-    sIsLatched   = ACP_FALSE;
-    sHstmt       = SQL_NULL_HSTMT;
-
-    ULPGETCONNECTION(aConnName,sConnNode);
 
     ulpSetColRowSizeCore( aSqlstmt );
 
     /* FOR절 처리*/
     ACI_TEST( ulpAdjustArraySize(aSqlstmt) == ACI_FAILURE );
 
-    if ( ( ulpGetStmtOption( aSqlstmt,
-                             ULP_OPT_STMT_CACHE ) == ACP_TRUE ) &&
+    if ( ( ulpGetStmtOption( aSqlstmt, ULP_OPT_STMT_CACHE ) == ACP_TRUE ) &&
            ( aSqlstmt->stmttype  == S_DirectDML/*DML*/
            || aSqlstmt->stmttype == S_DirectSEL/*SELECT*/ 
            || aSqlstmt->stmttype == S_DirectPSM/*BUG-35519 PSM*/) )
     {
-        /** unnamed stmt. cache를 하겠다. **/
-        /* 1. unnamed cache list에 구문이 이미 존재하는지 검색한다.*/
-        sStmtNode = ulpLibStLookupUnnamedStmt( &(sConnNode->mUnnamedStmtCacheList)
-                                               , aSqlstmt->stmt );
-        if ( sStmtNode == NULL  )
-        {
-            /* 2.1 존재하지 않으면 stmt node를 새로 생성/설정 해준다.*/
-            sStmtNode = ulpLibStNewNode(aSqlstmt, NULL );
-            ACI_TEST(sStmtNode == NULL);
-            sIsAllocNode = ACP_TRUE;
-
-            /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
-            sHstmtPtr = &( sStmtNode -> mHstmt );
-
-            /* 새로 생성할 경우 AllocStmt, Prepare 수행.*/
-            sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
-
-            /* Do we have to check whether AllocStmt error is caused by
-            * "limit on the number of handles exceeded" ??? I dont think so. */
-
-            ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                            , ERR_CLI_ALLOC_STMT);
-
-            /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
-            sIsAllocStmt = ACP_TRUE;
-
-            /* ulpPrepareCore가 실패하면 이미 stmt는 drop된 상태다.*/
-            ACI_TEST_RAISE( ulpPrepareCore  ( sConnNode,
-                                              sStmtNode,
-                                              aSqlstmt -> stmt,
-                                              aSqlstmt -> sqlcaerr,
-                                              aSqlstmt -> sqlcodeerr,
-                                              aSqlstmt -> sqlstateerr )
-                            == ACI_FAILURE, ERR_PREPARE_CORE );
-
-            /* binding이나 setstmtattr 처리함.*/
-            if ( aSqlstmt -> numofhostvar > 0 )
-            {
-                ACI_TEST( ulpBindHostVarCore( sConnNode,
-                                              sStmtNode,
-                                              sHstmtPtr,
-                                              aSqlstmt,
-                                              aSqlstmt -> sqlcaerr,
-                                              aSqlstmt -> sqlcodeerr,
-                                              aSqlstmt -> sqlstateerr )
-                          == ACI_FAILURE );
-                if( aSqlstmt->stmttype != S_DirectSEL )
-                {
-                    ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
-                                                       sStmtNode,
-                                                       sHstmtPtr,
-                                                       aSqlstmt,
-                                                       aSqlstmt -> sqlcaerr,
-                                                       aSqlstmt -> sqlcodeerr,
-                                                       aSqlstmt -> sqlstateerr )
-                              == ACI_FAILURE );
-                }
-            }
-
-            /* 3. SQLExecute 수행.*/
-            ACI_TEST( ulpExecuteCore( sConnNode,
-                                      sStmtNode,
-                                      aSqlstmt,
-                                      sHstmtPtr )
-                      == ACI_FAILURE );
-
-            /* 4. SELECT일 경우 fetch 수행함.*/
-            if( aSqlstmt->stmttype == S_DirectSEL/*SELECT*/  )
-            {
-                ACI_TEST( ulpSetStmtAttrRowCore( sConnNode,
-                                                 sStmtNode,
-                                                 sHstmtPtr,
-                                                 aSqlstmt,
-                                                 aSqlstmt -> sqlcaerr,
-                                                 aSqlstmt -> sqlcodeerr,
-                                                 aSqlstmt -> sqlstateerr )
-                           == ACI_FAILURE );
-
-                /* BUG-28588 : 반복해서 null fetch 시 에러 메세지가 달라지는 문제. */
-                ACI_TEST_RAISE( ulpFetchCore( sConnNode,
-                                              sStmtNode,
-                                              sHstmtPtr,
-                                              aSqlstmt,
-                                              aSqlstmt -> sqlcaerr,
-                                              aSqlstmt -> sqlcodeerr,
-                                              aSqlstmt -> sqlstateerr ) == ACI_FAILURE,
-                                ERR_FETCH_CORE );
-
-                sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_CLOSE );
-
-                ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                                , ERR_CLI_FREE_STMT );
-
-                for( i = 0 ; aSqlstmt->numofhostvar > i ; i++ )
-                {
-                    if( ( (aSqlstmt->hostvalue[i].mType == H_VARCHAR) ||
-                          (aSqlstmt->hostvalue[i].mType == H_NVARCHAR)) &&
-                          (aSqlstmt->hostvalue[i].mVcInd != NULL) )
-                    {
-                        *(aSqlstmt->hostvalue[i].mVcInd) = *(aSqlstmt->hostvalue[i].mHostInd);
-                    }
-                }
-            }
-
-            /*5. add unnamed stmt list*/
-            ulpLibStAddUnnamedStmt( &(sConnNode->mUnnamedStmtCacheList),
-                                    sStmtNode );
-        }
-        else
-        {
-            sHstmtPtr = &(sStmtNode->mHstmt);
-
-            /* BUG-31467 : APRE should consider the thread safety of statement */
-            /* unnamed statement 끼리의 thread safety 고려 */
-            /* get write lock */
-            ACI_TEST_RAISE ( acpThrRwlockLockWrite( &(sStmtNode->mLatch) )
-                             != ACP_RC_SUCCESS, ERR_LATCH_WRITE );
-            sIsLatched = ACP_TRUE;
-
-            /* BUG-31405 : Failover성공후 Failure of finding statement 에러 발생. */
-            if ( (sConnNode->mFailoveredJustnow == ACP_TRUE) ||
-                 (sStmtNode->mNeedReprepare     == ACP_TRUE) )
-            {
-                // do prepare
-                ACI_TEST_RAISE( ulpPrepareCore  ( sConnNode,
-                                sStmtNode,
-                                aSqlstmt -> stmt,
-                                aSqlstmt -> sqlcaerr,
-                                aSqlstmt -> sqlcodeerr,
-                                aSqlstmt -> sqlstateerr )
-                        == ACI_FAILURE, ERR_PREPARE_CORE );
-
-                sStmtNode->mNeedReprepare = ACP_FALSE;
-            }
-
-            /* 2.2 존재하면 재활용, binding이나 setstmtattr이 필요할 경우 처리함.*/
-            if( ulpCheckNeedReBindAllCore( sStmtNode, aSqlstmt ) == ACP_TRUE )
-            {
-
-                ACI_TEST( ulpBindHostVarCore( sConnNode,
-                                              sStmtNode,
-                                              sHstmtPtr,
-                                              aSqlstmt,
-                                              aSqlstmt -> sqlcaerr,
-                                              aSqlstmt -> sqlcodeerr,
-                                              aSqlstmt -> sqlstateerr )
-                          == ACI_FAILURE );
-
-                if( (aSqlstmt->stmttype != S_DirectSEL) &&
-                    (ulpCheckNeedReSetStmtAttrCore( sStmtNode, aSqlstmt ) == ACP_TRUE) )
-                {
-
-                    ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
-                                                       sStmtNode,
-                                                       sHstmtPtr,
-                                                       aSqlstmt,
-                                                       aSqlstmt -> sqlcaerr,
-                                                       aSqlstmt -> sqlcodeerr,
-                                                       aSqlstmt -> sqlstateerr )
-                              == ACI_FAILURE );
-
-                }
-            }
-            else
-            {
-                /* BUG-29825 : The execution mode of a statement has been changed
-                   from non-array to array when record count is changed. */
-                /* Select 구문에서 SQL_ATTR_PARAM 속성을 변경할일은 없다.*/
-                if( aSqlstmt->stmttype != S_DirectSEL )
-                {
-                    /* FOR절, ATOMIC절 처리 고려.*/
-                    /* array size가 변경되거나 atomic 속성이 변경되었을경우 SetStmtAttr 재호출.*/
-                    if ( (aSqlstmt -> isarr   != sStmtNode -> mBindInfo.mIsArray)  ||
-                         (aSqlstmt -> arrsize != sStmtNode -> mBindInfo.mArraySize)||
-                         (aSqlstmt -> isatomic!= (acp_sint32_t)sStmtNode->mBindInfo.mIsAtomic)
-                       )
-                    {
-                        ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
-                                                           sStmtNode,
-                                                           sHstmtPtr,
-                                                           aSqlstmt,
-                                                           aSqlstmt -> sqlcaerr,
-                                                           aSqlstmt -> sqlcodeerr,
-                                                           aSqlstmt -> sqlstateerr )
-                                   == ACI_FAILURE );
-                    }
-                }
-            }
-
-            /* 3. SQLExecute 수행.*/
-            ACI_TEST( ulpExecuteCore( sConnNode,
-                                      sStmtNode,
-                                      aSqlstmt,
-                                      sHstmtPtr )
-                      == ACI_FAILURE );
-
-            /* 4. SELECT일 경우 fetch 수행함.*/
-            if( aSqlstmt->stmttype == S_DirectSEL/*SELECT*/  )
-            {
-                if (ulpCheckNeedReSetStmtAttrCore( sStmtNode, aSqlstmt ) == ACP_TRUE)
-                {
-
-                    ACI_TEST( ulpSetStmtAttrRowCore( sConnNode,
-                                                 sStmtNode,
-                                                 sHstmtPtr,
-                                                 aSqlstmt,
-                                                 aSqlstmt -> sqlcaerr,
-                                                 aSqlstmt -> sqlcodeerr,
-                                                 aSqlstmt -> sqlstateerr )
-                               == ACI_FAILURE );
-                }
-
-                /* BUG-28588 : 반복해서 null fetch 시 에러 메세지가 달라지는 문제. */
-                ACI_TEST_RAISE( ulpFetchCore( sConnNode,
-                                              sStmtNode,
-                                              sHstmtPtr,
-                                              aSqlstmt,
-                                              aSqlstmt -> sqlcaerr,
-                                              aSqlstmt -> sqlcodeerr,
-                                              aSqlstmt -> sqlstateerr ) == ACI_FAILURE,
-                                ERR_FETCH_CORE );
-
-                sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_CLOSE );
-
-                ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                                , ERR_CLI_FREE_STMT );
-
-                for( i = 0 ; aSqlstmt->numofhostvar > i ; i++ )
-                {
-                    if( ((aSqlstmt->hostvalue[i].mType == H_VARCHAR) ||
-                         (aSqlstmt->hostvalue[i].mType == H_NVARCHAR)) &&
-                         (aSqlstmt->hostvalue[i].mVcInd != NULL) )
-                    {
-                        *(aSqlstmt->hostvalue[i].mVcInd) = *(aSqlstmt->hostvalue[i].mHostInd);
-                    }
-                }
-            }
-
-            /* BUG-31467 : APRE should consider the thread safety of statement */
-            /* release write lock */
-            if( sIsLatched == ACP_TRUE )
-            {
-                ACI_TEST_RAISE ( acpThrRwlockUnlock( &(sStmtNode->mLatch) )
-                                 != ACP_RC_SUCCESS, ERR_LATCH_RELEASE );
-                sIsLatched = ACP_FALSE;
-            }
-        }
+        /* BUG-45779 stmt cache를 사용할 경우 */
+        ACI_TEST( ulpRunDirectQueryCache(aConnName, aSqlstmt) != ACI_SUCCESS );
     }
     else
     {
-        /** unnamed stmt. cache를 하지 않겠다. **/
+        /* BUG-45779 stmt cache를 사용하지 않을 경우 */
+        ACI_TEST( ulpRunDirectQueryUnCache(aConnName, aSqlstmt) != ACI_SUCCESS );
+    }
 
-        if( gUlpLibOption.mIsMultiThread == ACP_TRUE )
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+/* direct Query에서 stmtcache={on|off} 옵션이 on 일경우 동작한다.
+ * 현재 default on 으로 되어 있음.*/
+ACI_RC ulpRunDirectQueryCache(acp_char_t *aConnName, ulpSqlstmt *aSqlstmt)
+{
+    acp_sint32_t     i;
+    ulpLibConnNode  *sConnNode;
+    ulpLibStmtNode  *sStmtNode = NULL;
+    SQLRETURN        sSqlRes;
+    SQLHSTMT        *sHstmtPtr;
+    acp_bool_t       sIsSharedSTMT;
+    /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+    /* SQLAllocStmt 여부에대한 정보저장.*/
+    acp_bool_t       sIsAllocNode;
+    acp_bool_t       sIsAllocStmt;
+    acp_bool_t       sIsLatched;
+
+    acp_list_node_t     *sPSMMetaIterator;
+    acp_list_node_t     *sPSMMetaNodeNext;
+    ulpPSMArrDataInfo   *sUlpPSMArrDataInfo;
+
+    sIsSharedSTMT           = ACP_FALSE;
+    sIsAllocNode            = ACP_FALSE;
+    sIsAllocStmt            = ACP_FALSE;
+    sIsLatched              = ACP_FALSE;
+
+    ULPGETCONNECTION(aConnName, sConnNode);
+
+    /** unnamed stmt. cache를 하겠다. **/
+    /* 1. unnamed cache list에 구문이 이미 존재하는지 검색한다.*/
+    sStmtNode = ulpLibStLookupUnnamedStmt( &(sConnNode->mUnnamedStmtCacheList) ,aSqlstmt->stmt );
+    if ( sStmtNode == NULL  )
+    {
+        /* 2.1 존재하지 않으면 stmt node를 새로 생성/설정 해준다.*/
+        sStmtNode = ulpLibStNewNode(aSqlstmt, NULL );
+        ACI_TEST(sStmtNode == NULL);
+        sIsAllocNode = ACP_TRUE;
+
+        /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+        sHstmtPtr = &( sStmtNode -> mHstmt );
+
+        /* 새로 생성할 경우 AllocStmt, Prepare 수행.*/
+        sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
+
+        /* Do we have to check whether AllocStmt error is caused by
+        * "limit on the number of handles exceeded" ??? I dont think so. */
+
+        ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE) , ERR_CLI_ALLOC_STMT);
+
+        /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+        sIsAllocStmt = ACP_TRUE;
+
+        /* ulpPrepareCore가 실패하면 이미 stmt는 drop된 상태다.*/
+        ACI_TEST_RAISE( ulpPrepareCore  ( sConnNode,
+                                          sStmtNode,
+                                          aSqlstmt -> stmt,
+                                          aSqlstmt -> sqlcaerr,
+                                          aSqlstmt -> sqlcodeerr,
+                                          aSqlstmt -> sqlstateerr )
+                        == ACI_FAILURE, ERR_PREPARE_CORE );
+
+        /* BUG-45779 prepare뒤에 psm array type진행 여부를 체크한다. */
+        if( aSqlstmt->stmttype == S_DirectPSM )
         {
-            /* 1.1 mutithread 일경우 stmt 핸들 새로 할당.*/
-            sHstmtPtr = &( sHstmt );
-            sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
-
-            ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                            , ERR_CLI_ALLOC_STMT);
-
-            /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
-            sIsAllocStmt = ACP_TRUE;
-        }
-        else
-        {
-            /* 1.2 mutithread 가 아닐경우 연결노드의 stmt 핸들 사용.*/
-            sHstmtPtr = &( sConnNode -> mHstmt );
-            sIsSharedSTMT= ACP_TRUE;
+            ACI_TEST( ulpCheckPSMArray( sConnNode,
+                                        aSqlstmt,
+                                        &sStmtNode->mUlpPSMArrInfo.mIsPSMArray )
+                              == ACI_FAILURE );
         }
 
-        /* 2. host변수가 존재할 경우, binding & setstmtattr 처리함.*/
+        /* binding이나 setstmtattr 처리함.*/
         if ( aSqlstmt -> numofhostvar > 0 )
         {
             ACI_TEST( ulpBindHostVarCore( sConnNode,
-                                          NULL,
+                                          sStmtNode,
                                           sHstmtPtr,
                                           aSqlstmt,
                                           aSqlstmt -> sqlcaerr,
                                           aSqlstmt -> sqlcodeerr,
-                                          aSqlstmt -> sqlstateerr )
-                    == ACI_FAILURE );
-
-            /* BUG-29825 : The execution mode of a statement has been changed
-               from non-array to array when record count is changed. */
+                                          aSqlstmt -> sqlstateerr)
+                      == ACI_FAILURE );
             if( aSqlstmt->stmttype != S_DirectSEL )
             {
                 ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
-                                                   NULL,
+                                                   sStmtNode,
                                                    sHstmtPtr,
                                                    aSqlstmt,
                                                    aSqlstmt -> sqlcaerr,
                                                    aSqlstmt -> sqlcodeerr,
                                                    aSqlstmt -> sqlstateerr )
-                        == ACI_FAILURE );
+                          == ACI_FAILURE );
             }
         }
 
-        /* 4. SQLExecDirect 수행.*/
-        ACI_TEST( ulpExecDirectCore( sConnNode,
-                                     NULL,
-                                     aSqlstmt,
-                                     sHstmtPtr,
-                                     aSqlstmt -> stmt )
+        /* 3. SQLExecute 수행.*/
+        ACI_TEST( ulpExecuteCore( sConnNode,
+                                  sStmtNode,
+                                  aSqlstmt,
+                                  sHstmtPtr )
                   == ACI_FAILURE );
 
-        /* 5. SELECT일 경우 fetch 수행함.*/
+        /* 4. SELECT일 경우 fetch 수행함.*/
         if( aSqlstmt->stmttype == S_DirectSEL/*SELECT*/  )
         {
             ACI_TEST( ulpSetStmtAttrRowCore( sConnNode,
-                                             NULL,
+                                             sStmtNode,
                                              sHstmtPtr,
                                              aSqlstmt,
                                              aSqlstmt -> sqlcaerr,
                                              aSqlstmt -> sqlcodeerr,
                                              aSqlstmt -> sqlstateerr )
-                      == ACI_FAILURE );
+                       == ACI_FAILURE );
 
+            /* BUG-28588 : 반복해서 null fetch 시 에러 메세지가 달라지는 문제. */
             ACI_TEST_RAISE( ulpFetchCore( sConnNode,
-                                          NULL,
+                                          sStmtNode,
                                           sHstmtPtr,
                                           aSqlstmt,
                                           aSqlstmt -> sqlcaerr,
                                           aSqlstmt -> sqlcodeerr,
                                           aSqlstmt -> sqlstateerr ) == ACI_FAILURE,
-                            ERR_FETCH_CORE);
+                            ERR_FETCH_CORE );
 
             sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_CLOSE );
 
-            ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                            , ERR_CLI_FREE_STMT );
+            ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE), ERR_CLI_FREE_STMT );
 
-            /* varchar 를 호스트 변수로 사용하며 사용자가 indicator를 명시 해줬을경우,
-               fetch 수행후 indicator결과 값을 varchar.len 에 복사해 줘야함. */
+            for( i = 0 ; aSqlstmt->numofhostvar > i ; i++ )
+            {
+                if( ( (aSqlstmt->hostvalue[i].mType == H_VARCHAR) ||
+                      (aSqlstmt->hostvalue[i].mType == H_NVARCHAR)) &&
+                      (aSqlstmt->hostvalue[i].mVcInd != NULL) )
+                {
+                    *(aSqlstmt->hostvalue[i].mVcInd) = *(aSqlstmt->hostvalue[i].mHostInd);
+                }
+            }
+        }
+        else if( aSqlstmt->stmttype == S_DirectPSM )
+        {
+            /* BUG-45779 out paramter인 경우에만 Server로 부터 받은 데이터를 복사해준다. */
+            ACP_LIST_ITERATE_SAFE(&sStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList, sPSMMetaIterator, sPSMMetaNodeNext)
+            {
+                sUlpPSMArrDataInfo = (ulpPSMArrDataInfo *)sPSMMetaIterator->mObj;
+
+                if( sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT_4PSM ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_INOUT )
+                {
+                    ACI_TEST( ulpPSMArrayRead(aSqlstmt, sUlpPSMArrDataInfo->mUlpHostVar, sUlpPSMArrDataInfo->mData) != ACI_SUCCESS );
+                }
+            }
+
+            /* BUG-45779 out parameter인 경우에 데이터를 전부 copy한뒤에 null이 포함되어 있는지 확인한다. */
+            ACP_LIST_ITERATE_SAFE(&sStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList, sPSMMetaIterator, sPSMMetaNodeNext)
+            {
+                sUlpPSMArrDataInfo = (ulpPSMArrDataInfo *)sPSMMetaIterator->mObj;
+
+                if( sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT_4PSM ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_INOUT )
+                {
+                    ACI_TEST( ulpPSMArrayHasNullCheck(aSqlstmt, sUlpPSMArrDataInfo->mData) != ACI_SUCCESS );
+                }
+            }
+        }
+
+        /*5. add unnamed stmt list*/
+        ulpLibStAddUnnamedStmt( &(sConnNode->mUnnamedStmtCacheList),
+                                sStmtNode );
+    }
+    else
+    {
+        sHstmtPtr = &(sStmtNode->mHstmt);
+
+        /* BUG-31467 : APRE should consider the thread safety of statement */
+        /* unnamed statement 끼리의 thread safety 고려 */
+        /* get write lock */
+        ACI_TEST_RAISE ( acpThrRwlockLockWrite( &(sStmtNode->mLatch) ) != ACP_RC_SUCCESS, ERR_LATCH_WRITE );
+        sIsLatched = ACP_TRUE;
+
+        /* BUG-31405 : Failover성공후 Failure of finding statement 에러 발생. */
+        if ( (sConnNode->mFailoveredJustnow == ACP_TRUE) ||
+             (sStmtNode->mNeedReprepare     == ACP_TRUE) )
+        {
+            // do prepare
+            ACI_TEST_RAISE( ulpPrepareCore  ( sConnNode,
+                            sStmtNode,
+                            aSqlstmt -> stmt,
+                            aSqlstmt -> sqlcaerr,
+                            aSqlstmt -> sqlcodeerr,
+                            aSqlstmt -> sqlstateerr )
+                    == ACI_FAILURE, ERR_PREPARE_CORE );
+
+            sStmtNode->mNeedReprepare = ACP_FALSE;
+
+            /* BUG-45779 prepare뒤에 psm array type진행 여부를 체크한다. */
+            if( aSqlstmt->stmttype == S_DirectPSM )
+            {
+                ACI_TEST( ulpCheckPSMArray( sConnNode,
+                                            aSqlstmt,
+                                            &sStmtNode->mUlpPSMArrInfo.mIsPSMArray )
+                                  == ACI_FAILURE );
+            }
+        }
+
+        /* 2.2 존재하면 재활용, binding이나 setstmtattr이 필요할 경우 처리함.*/
+        if( ulpCheckNeedReBindAllCore( sStmtNode, aSqlstmt ) == ACP_TRUE )
+        {
+
+            ACI_TEST( ulpBindHostVarCore( sConnNode,
+                                          sStmtNode,
+                                          sHstmtPtr,
+                                          aSqlstmt,
+                                          aSqlstmt -> sqlcaerr,
+                                          aSqlstmt -> sqlcodeerr,
+                                          aSqlstmt -> sqlstateerr )
+                      == ACI_FAILURE );
+
+            if( (aSqlstmt->stmttype != S_DirectSEL) &&
+                (ulpCheckNeedReSetStmtAttrCore( sStmtNode, aSqlstmt ) == ACP_TRUE) )
+            {
+
+                ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
+                                                   sStmtNode,
+                                                   sHstmtPtr,
+                                                   aSqlstmt,
+                                                   aSqlstmt -> sqlcaerr,
+                                                   aSqlstmt -> sqlcodeerr,
+                                                   aSqlstmt -> sqlstateerr )
+                          == ACI_FAILURE );
+
+            }
+        }
+        else
+        {
+            /* BUG-29825 : The execution mode of a statement has been changed
+               from non-array to array when record count is changed. */
+            /* Select 구문에서 SQL_ATTR_PARAM 속성을 변경할일은 없다.*/
+            if( aSqlstmt->stmttype != S_DirectSEL )
+            {
+                /* FOR절, ATOMIC절 처리 고려.*/
+                /* array size가 변경되거나 atomic 속성이 변경되었을경우 SetStmtAttr 재호출.*/
+                if ( (aSqlstmt -> isarr   != sStmtNode -> mBindInfo.mIsArray)  ||
+                     (aSqlstmt -> arrsize != sStmtNode -> mBindInfo.mArraySize)||
+                     (aSqlstmt -> isatomic!= (acp_sint32_t)sStmtNode->mBindInfo.mIsAtomic)
+                   )
+                {
+                    ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
+                                                       sStmtNode,
+                                                       sHstmtPtr,
+                                                       aSqlstmt,
+                                                       aSqlstmt -> sqlcaerr,
+                                                       aSqlstmt -> sqlcodeerr,
+                                                       aSqlstmt -> sqlstateerr )
+                               == ACI_FAILURE );
+                }
+            }
+        }
+
+        /* BUG-45779 User Data Copy & Endian */
+
+        /* 3. SQLExecute 수행.*/
+        ACI_TEST( ulpExecuteCore( sConnNode,
+                                  sStmtNode,
+                                  aSqlstmt,
+                                  sHstmtPtr )
+                  == ACI_FAILURE );
+
+        /* 4. SELECT일 경우 fetch 수행함.*/
+        if( aSqlstmt->stmttype == S_DirectSEL/*SELECT*/  )
+        {
+            if (ulpCheckNeedReSetStmtAttrCore( sStmtNode, aSqlstmt ) == ACP_TRUE)
+            {
+
+                ACI_TEST( ulpSetStmtAttrRowCore( sConnNode,
+                                             sStmtNode,
+                                             sHstmtPtr,
+                                             aSqlstmt,
+                                             aSqlstmt -> sqlcaerr,
+                                             aSqlstmt -> sqlcodeerr,
+                                             aSqlstmt -> sqlstateerr )
+                           == ACI_FAILURE );
+            }
+
+            /* BUG-28588 : 반복해서 null fetch 시 에러 메세지가 달라지는 문제. */
+            ACI_TEST_RAISE( ulpFetchCore( sConnNode,
+                                          sStmtNode,
+                                          sHstmtPtr,
+                                          aSqlstmt,
+                                          aSqlstmt -> sqlcaerr,
+                                          aSqlstmt -> sqlcodeerr,
+                                          aSqlstmt -> sqlstateerr ) == ACI_FAILURE,
+                            ERR_FETCH_CORE );
+
+            sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_CLOSE );
+
+            ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE), ERR_CLI_FREE_STMT );
+
             for( i = 0 ; aSqlstmt->numofhostvar > i ; i++ )
             {
                 if( ((aSqlstmt->hostvalue[i].mType == H_VARCHAR) ||
@@ -1125,26 +1083,42 @@ ACI_RC ulpRunDirectQuery ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *re
                 }
             }
         }
+        else if( aSqlstmt->stmttype == S_DirectPSM )
+        {
+            /* BUG-45779 out paramter인 경우에만 Server로 부터 받은 데이터를 복사해준다. */
+            ACP_LIST_ITERATE_SAFE(&sStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList, sPSMMetaIterator, sPSMMetaNodeNext)
+            {
+                sUlpPSMArrDataInfo = (ulpPSMArrDataInfo *)sPSMMetaIterator->mObj;
 
-        /* 6. stmt 핸들 해제 */
-        sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_DROP );
-        ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                        , ERR_CLI_FREE_STMT );
-        /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
-        sIsAllocStmt = ACP_FALSE;
+                if( sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT_4PSM ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_INOUT )
+                {
+                    ACI_TEST( ulpPSMArrayRead(aSqlstmt, sUlpPSMArrDataInfo->mUlpHostVar, sUlpPSMArrDataInfo->mData) != ACI_SUCCESS );
+                }
+            }
 
-        if( sIsSharedSTMT == ACP_TRUE )
-        {   /*connection node의 공유 statement를 사용하는 경우라면 stmt 핸들을 DROP후 다시 할당받는다.*/
-            sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
-            ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
-                            , ERR_CLI_ALLOC_STMT);
+            /* BUG-45779 out parameter인 경우에 데이터를 전부 copy한뒤에 null이 포함되어 있는지 확인한다. */
+            ACP_LIST_ITERATE_SAFE(&sStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList, sPSMMetaIterator, sPSMMetaNodeNext)
+            {
+                sUlpPSMArrDataInfo = (ulpPSMArrDataInfo *)sPSMMetaIterator->mObj;
+
+                if( sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_OUT_4PSM ||
+                    sUlpPSMArrDataInfo->mUlpHostVar->mInOut == H_INOUT )
+                {
+                    ACI_TEST( ulpPSMArrayHasNullCheck(aSqlstmt, sUlpPSMArrDataInfo->mData) != ACI_SUCCESS );
+                }
+            }
         }
 
-        /* 7. ROLLBACK인 경우 추가 처리.*/
-        if( (aSqlstmt->stmttype == S_DirectRB) &&
-            (aSqlstmt->sqlinfo  == STMT_ROLLBACK_RELEASE /* ROLLBACK REALEASE 일경우 */) )
+        /* BUG-31467 : APRE should consider the thread safety of statement */
+        /* release write lock */
+        if( sIsLatched == ACP_TRUE )
         {
-            ulpDisconnect( aConnName, aSqlstmt, NULL );
+            ACI_TEST_RAISE ( acpThrRwlockUnlock( &(sStmtNode->mLatch) )
+                             != ACP_RC_SUCCESS, ERR_LATCH_RELEASE );
+            sIsLatched = ACP_FALSE;
         }
     }
 
@@ -1156,7 +1130,7 @@ ACI_RC ulpRunDirectQuery ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *re
         ulpSetErrorCode( &sErrorMgr,
                          ulpERR_ABORT_Conn_Not_Exist_Error,
                          ULPCHECKCONNECTIONNAME(aConnName) );
-                         
+
 
         ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
                                aSqlstmt->sqlcodeerr,
@@ -1262,6 +1236,200 @@ ACI_RC ulpRunDirectQuery ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *re
             acpMemFree( sStmtNode -> mExtraHostVarPtr );
         }
         acpMemFree( sStmtNode );
+    }
+
+    return ACI_FAILURE;
+}
+
+
+/** unnamed stmt. cache를 하지 않겠다. **/
+/* direct Query에서 stmtcache={on|off} 옵션이 off 일경우 동작한다.
+ * 현재 default on(하드코딩) 이므로 특별한 옵션 변경이 없다면 해당 로직은 돌아가지 않음.*/
+ACI_RC ulpRunDirectQueryUnCache(acp_char_t *aConnName, ulpSqlstmt *aSqlstmt)
+{
+    acp_sint32_t     i;
+    ulpLibConnNode  *sConnNode;
+    SQLRETURN        sSqlRes;
+    SQLHSTMT        *sHstmtPtr;
+    SQLHSTMT         sHstmt;
+    acp_bool_t       sIsSharedSTMT;
+    /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+    /* SQLAllocStmt 여부에대한 정보저장.*/
+    acp_bool_t       sIsAllocStmt;
+
+    sIsSharedSTMT           = ACP_FALSE;
+    sIsAllocStmt            = ACP_FALSE;
+    sHstmt                  = SQL_NULL_HSTMT;
+
+    ULPGETCONNECTION(aConnName,sConnNode);
+
+    if( gUlpLibOption.mIsMultiThread == ACP_TRUE )
+    {
+        /* 1.1 mutithread 일경우 stmt 핸들 새로 할당.*/
+        sHstmtPtr = &( sHstmt );
+        sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
+
+        ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
+                        , ERR_CLI_ALLOC_STMT);
+
+        /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+        sIsAllocStmt = ACP_TRUE;
+    }
+    else
+    {
+        /* 1.2 mutithread 가 아닐경우 연결노드의 stmt 핸들 사용.*/
+        sHstmtPtr = &( sConnNode -> mHstmt );
+        sIsSharedSTMT= ACP_TRUE;
+    }
+
+    /* 2. host변수가 존재할 경우, binding & setstmtattr 처리함.*/
+    if ( aSqlstmt -> numofhostvar > 0 )
+    {
+        ACI_TEST( ulpBindHostVarCore( sConnNode,
+                                      NULL,
+                                      sHstmtPtr,
+                                      aSqlstmt,
+                                      aSqlstmt -> sqlcaerr,
+                                      aSqlstmt -> sqlcodeerr,
+                                      aSqlstmt -> sqlstateerr )
+                == ACI_FAILURE );
+
+        /* BUG-29825 : The execution mode of a statement has been changed
+           from non-array to array when record count is changed. */
+        if( aSqlstmt->stmttype != S_DirectSEL )
+        {
+            ACI_TEST( ulpSetStmtAttrParamCore( sConnNode,
+                                               NULL,
+                                               sHstmtPtr,
+                                               aSqlstmt,
+                                               aSqlstmt -> sqlcaerr,
+                                               aSqlstmt -> sqlcodeerr,
+                                               aSqlstmt -> sqlstateerr )
+                    == ACI_FAILURE );
+        }
+    }
+
+    /* 4. SQLExecDirect 수행.*/
+    ACI_TEST( ulpExecDirectCore( sConnNode,
+                                 NULL,
+                                 aSqlstmt,
+                                 sHstmtPtr,
+                                 aSqlstmt -> stmt )
+              == ACI_FAILURE );
+
+    /* 5. SELECT일 경우 fetch 수행함.*/
+    if( aSqlstmt->stmttype == S_DirectSEL/*SELECT*/  )
+    {
+        ACI_TEST( ulpSetStmtAttrRowCore( sConnNode,
+                                         NULL,
+                                         sHstmtPtr,
+                                         aSqlstmt,
+                                         aSqlstmt -> sqlcaerr,
+                                         aSqlstmt -> sqlcodeerr,
+                                         aSqlstmt -> sqlstateerr )
+                  == ACI_FAILURE );
+
+        ACI_TEST_RAISE( ulpFetchCore( sConnNode,
+                                      NULL,
+                                      sHstmtPtr,
+                                      aSqlstmt,
+                                      aSqlstmt -> sqlcaerr,
+                                      aSqlstmt -> sqlcodeerr,
+                                      aSqlstmt -> sqlstateerr ) == ACI_FAILURE,
+                        ERR_FETCH_CORE);
+
+        sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_CLOSE );
+
+        ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
+                        , ERR_CLI_FREE_STMT );
+
+        /* varchar 를 호스트 변수로 사용하며 사용자가 indicator를 명시 해줬을경우,
+           fetch 수행후 indicator결과 값을 varchar.len 에 복사해 줘야함. */
+        for( i = 0 ; aSqlstmt->numofhostvar > i ; i++ )
+        {
+            if( ((aSqlstmt->hostvalue[i].mType == H_VARCHAR) ||
+                 (aSqlstmt->hostvalue[i].mType == H_NVARCHAR)) &&
+                 (aSqlstmt->hostvalue[i].mVcInd != NULL) )
+            {
+                *(aSqlstmt->hostvalue[i].mVcInd) = *(aSqlstmt->hostvalue[i].mHostInd);
+            }
+        }
+    }
+
+    /* 6. stmt 핸들 해제 */
+    sSqlRes = SQLFreeStmt( *sHstmtPtr, SQL_DROP );
+    ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
+                    , ERR_CLI_FREE_STMT );
+    /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+    sIsAllocStmt = ACP_FALSE;
+
+    if( sIsSharedSTMT == ACP_TRUE )
+    {   /*connection node의 공유 statement를 사용하는 경우라면 stmt 핸들을 DROP후 다시 할당받는다.*/
+        sSqlRes = SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
+        ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
+                        , ERR_CLI_ALLOC_STMT);
+    }
+
+    /* 7. ROLLBACK인 경우 추가 처리.*/
+    if( (aSqlstmt->stmttype == S_DirectRB) &&
+        (aSqlstmt->sqlinfo  == STMT_ROLLBACK_RELEASE /* ROLLBACK REALEASE 일경우 */) )
+    {
+        ulpDisconnect( aConnName, aSqlstmt, NULL );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION ( ERR_NO_CONN );
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr,
+                         ulpERR_ABORT_Conn_Not_Exist_Error,
+                         ULPCHECKCONNECTIONNAME(aConnName) );
+
+
+        ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
+                               aSqlstmt->sqlcodeerr,
+                               aSqlstmt->sqlstateerr,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               SQL_INVALID_HANDLE,
+                               ulpGetErrorSTATE(&sErrorMgr) );
+
+    }
+    ACI_EXCEPTION ( ERR_CLI_ALLOC_STMT );
+    {
+        ulpSetErrorInfo4CLI( sConnNode,
+                             SQL_NULL_HSTMT,
+                             SQL_ERROR,
+                             aSqlstmt->sqlcaerr,
+                             aSqlstmt->sqlcodeerr,
+                             aSqlstmt->sqlstateerr,
+                             ERR_TYPE2 );
+    }
+    ACI_EXCEPTION ( ERR_CLI_FREE_STMT );
+    {
+      ulpSetErrorInfo4CLI( sConnNode,
+                           *sHstmtPtr,
+                           SQL_ERROR,
+                           aSqlstmt->sqlcaerr,
+                           aSqlstmt->sqlcodeerr,
+                           aSqlstmt->sqlstateerr,
+                           ERR_TYPE2 );
+    }
+    /* BUG-28588 : 반복해서 null fetch 시 에러 메세지가 달라지는 문제. */
+    ACI_EXCEPTION ( ERR_FETCH_CORE );
+    {
+        SQLFreeStmt( *sHstmtPtr, SQL_CLOSE );
+    }
+    ACI_EXCEPTION_END;
+
+    /* BUG-28392 : direct 내장sql dml구문 반복 실패시 메모리 누수발생. */
+    if ( sIsAllocStmt == ACP_TRUE || sIsSharedSTMT == ACP_TRUE )
+    {
+        SQLFreeStmt( *sHstmtPtr, SQL_DROP );
+        if( sIsSharedSTMT == ACP_TRUE )
+        {   /*connection node의 공유 statement를 사용하는 경우라면 stmt 핸들을 DROP후 다시 할당받는다.*/
+            SQLAllocStmt( sConnNode -> mHdbc, sHstmtPtr );
+        }
     }
 
     return ACI_FAILURE;

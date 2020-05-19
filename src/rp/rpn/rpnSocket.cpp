@@ -296,3 +296,25 @@ IDE_RC rpnSocketGetOpt( rpnSocket   * aSocket,
 
     return IDE_FAILURE;
 }
+
+idBool rpnSocketIsConnecting( UInt  aErrorNumber )
+{
+    idBool  sIsConnecting = ID_FALSE;
+
+    switch ( aErrorNumber )
+    {
+        case ACP_RC_EAGAIN:
+        case ACP_RC_EALREADY:
+        case ACP_RC_EINPROGRESS:
+        case ACP_RC_ETIMEDOUT:
+            sIsConnecting = ID_TRUE;
+            break;
+
+        default:
+            sIsConnecting = ID_FALSE;
+            break;
+    }
+
+    return sIsConnecting;
+}
+

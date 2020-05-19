@@ -39,8 +39,9 @@ IDE_RC sdbMPRMgr::initializeStatic()
             SD_PAGE_SIZE,                          /* align byte  */
             ID_FALSE,							   /* ForcePooling */
             ID_TRUE,							   /* GarbageCollection */
-            ID_TRUE)							   /* HWCacheLine */
-        != IDE_SUCCESS);
+            ID_TRUE,                               /* HWCacheLine */
+            IDU_MEMPOOL_TYPE_LEGACY                /* mempool type */) 
+           != IDE_SUCCESS);			
 
     return IDE_SUCCESS;
 

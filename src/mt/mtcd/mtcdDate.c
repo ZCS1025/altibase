@@ -5324,6 +5324,78 @@ mtdDateInterfaceToChar( mtdDateType*  aDate,
                 sLength--;
                 break;
 
+            case MTD_DATE_FORMAT_IYYY :   /* BUG-46727 TO_CHAR()에 IYYY 추가 */
+                if ( sIsFillMode == ACP_FALSE )
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%04"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) );
+                }
+                else
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) );
+                }
+                sLength = acpCStrLen( (acp_char_t *) sString, ACP_UINT32_MAX );
+                break;
+
+            case MTD_DATE_FORMAT_IYY :   /* BUG-46727 TO_CHAR()에 IYY 추가 */
+                if ( sIsFillMode == ACP_FALSE )
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%03"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) % 1000 );
+                }
+                else
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) % 1000 );
+                }
+                sLength = acpCStrLen( (acp_char_t *) sString, ACP_UINT32_MAX );
+                break;
+
+            case MTD_DATE_FORMAT_IY :   /* BUG-46727 TO_CHAR()에 IY 추가 */
+                if ( sIsFillMode == ACP_FALSE )
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%02"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) % 100 );
+                }
+                else
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) % 100 );
+                }
+                sLength = acpCStrLen( (acp_char_t *) sString, ACP_UINT32_MAX );
+                break;
+
+            case MTD_DATE_FORMAT_I :   /* BUG-46727 TO_CHAR()에 I 추가 */
+                if ( sIsFillMode == ACP_FALSE )
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%01"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) % 10 );
+                }
+                else
+                {
+                    acpSnprintf( (acp_char_t *) sString,
+                                 sStringMaxLen,
+                                 "%"ACI_INT32_FMT,
+                                 mtcYearForStandard( sYear, sMonth, sDay ) % 10 );
+                }
+                sLength = acpCStrLen( (acp_char_t *) sString, ACP_UINT32_MAX );
+                break;
+
             default:
                 sFormatLen = ACP_MIN( MTC_TO_CHAR_MAX_PRECISION,
                                       aFormatLen - ( sFormat - aFormat ) );

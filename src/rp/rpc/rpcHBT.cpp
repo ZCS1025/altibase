@@ -16,7 +16,7 @@
  
 
 /*****************************************************************************
- * $Id: rpcHBT.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpcHBT.cpp 84296 2018-11-07 05:34:09Z donghyun1 $
  ****************************************************************************/
 
 #include <ide.h>
@@ -246,11 +246,13 @@ void rpcHBT::run()
     IDE_RC             sRC = IDE_FAILURE;
     SInt               sTimeoutSec = 0;
     UInt               sSpendTimeoutSec = 0;
-    PDL_Time_Value     checkTime;
+    PDL_Time_Value     sCheckTime;
+    PDL_Time_Value     sSleepTime;
 
     IDE_ASSERT(lock() == IDE_SUCCESS);
 
-    checkTime.initialize();
+    sCheckTime.initialize();
+    sSleepTime.initialize();
 
     while(mKillFlag != ID_TRUE)
     {
@@ -262,16 +264,16 @@ void rpcHBT::run()
         if ( sTimeoutSec > 0 )
         {
             /* do nothing */
-
         }
         else
         {
             sTimeoutSec = 1;
         }
 
-        checkTime.set( idlOS::time() + sTimeoutSec );
+        sSleepTime.set( sTimeoutSec );
+        sCheckTime = idlOS::gettimeofday() + sSleepTime;
 
-        sRC = mCond.timedwait(&mMutex, &checkTime, IDU_IGNORE_TIMEDOUT);
+        sRC = mCond.timedwait( &mMutex, &sCheckTime, IDU_IGNORE_TIMEDOUT );
         /* ------------------------------------------------
          *  위의 결과는 두가지의 동작에 의해 결정
          *  1. timeout 상황
@@ -324,6 +326,7 @@ void rpcHBT::initHostRsc( rpcHostRsc * aRsc,
 
     idlOS::strcpy(aRsc->mHostIP, aIP);
     aRsc->mPort      = aPort;
+    aRsc->mErrorNumber = 0;
 
     IDU_LIST_INIT_OBJ( &(aRsc->mNode), aRsc );
 }
@@ -575,6 +578,16 @@ void rpcHBT::initializeHostRscList( void )
         }
         else
         {
+            sRsc->mErrorNumber = errno;
+
+            IDE_ERRLOG( IDE_RP_0 );
+            ideLog::log( IDE_RP_0, RP_TRC_HBT_ERR_SOCKET_OPEN_FAIL,
+                         sRsc->mHostIP,
+                         (UInt)sRsc->mPort,
+                         (UInt)sRsc->mRefCount,
+                         (UInt)sRsc->mStatus,
+                         sRsc->mWaterMark );
+
             sRsc->mStatus = RP_HOST_STATUS_INIT_ERROR;
         }
     }
@@ -601,13 +614,19 @@ void rpcHBT::connectFromHostRsc( rpcHostRsc * aRsc )
         }
         else
         {
-            rpnSocketFinalize( &(aRsc->mSocket) );
-            aRsc->mStatus = RP_HOST_STATUS_ERROR;
-            ideLog::log( IDE_RP_1, RP_TRC_HBT_ERR_FAULT_DETECTED,
+            aRsc->mErrorNumber = errno;
+
+            IDE_ERRLOG( IDE_RP_0 );
+            ideLog::log( IDE_RP_0, RP_TRC_HBT_ERR_FAULT_DETECTED,
                          aRsc->mHostIP,
                          (UInt)aRsc->mPort,
                          (UInt)aRsc->mRefCount,
-                         (UInt)aRsc->mStatus );
+                         (UInt)aRsc->mStatus,
+                         aRsc->mWaterMark );
+
+            aRsc->mStatus = RP_HOST_STATUS_ERROR;
+
+            rpnSocketFinalize( &(aRsc->mSocket) );
         }
     }
 }
@@ -652,18 +671,21 @@ void rpcHBT::checkFaultFromHostRscList( void )
                 break;
 
             case RP_HOST_STATUS_CONNECTING:
-                (void)rpnPollRemoveSocket( &mPoll,
-                                           &(sRsc->mSocket) );
+                rpnPollRemoveSocket( &mPoll,
+                                     &(sRsc->mSocket) );
                 /* fall through */
             case RP_HOST_STATUS_INIT:
                 rpnSocketFinalize( &(sRsc->mSocket) );
-                /* fall through */
-                ideLog::log( IDE_RP_1, RP_TRC_HBT_ERR_FAULT_DETECTED,
+                ideLog::log( IDE_RP_0, RP_TRC_HBT_ERR_FAULT_DETECTED,
                              sRsc->mHostIP,
                              (UInt)sRsc->mPort,
                              (UInt)sRsc->mRefCount,
-                             (UInt)sRsc->mStatus );
+                             (UInt)sRsc->mStatus,
+                             sRsc->mWaterMark );
 
+                sRsc->mStatus = RP_HOST_STATUS_ERROR;
+
+                /* fall through */
             case RP_HOST_STATUS_ERROR:
                 sRsc->mWaterMark++;
                 break;
@@ -673,14 +695,16 @@ void rpcHBT::checkFaultFromHostRscList( void )
                 break;
         }
 
-        if ( sRsc->mWaterMark >= RPU_REPLICATION_HBT_DETECT_HIGHWATER_MARK )
+        if ( ( sRsc->mWaterMark >= RPU_REPLICATION_HBT_DETECT_HIGHWATER_MARK ) &&
+             ( sRsc->mWaterMark != 0 ) )
         {
             sRsc->mFault = ID_TRUE;
-            ideLog::log( IDE_RP_1, RP_TRC_HBT_NTC_HOST_STATUS,
+            ideLog::log( IDE_RP_0, RP_TRC_HBT_NTC_HOST_STATUS,
                          sRsc->mHostIP,
                          (UInt)sRsc->mPort,
                          (UInt)sRsc->mRefCount,
                          (UInt)sRsc->mStatus,
+                         sRsc->mErrorNumber,
                          "Fault Detected" );
         }
         else
@@ -710,6 +734,24 @@ static IDE_RC rpnPollInCallback( rpnPoll   * aPoll,
                           &sErrorLength )
          == IDE_SUCCESS )
     {
+        if ( ( sErrorNumber != 0 ) &&
+             ( rpnSocketIsConnecting( sErrorNumber ) == ID_FALSE ) )
+        {
+            ideLog::log( IDE_RP_0, RP_TRC_HBT_ERR_PRECD_GET_SOCKOPT, sErrorNumber );
+        }
+        else
+        {
+            /* do nothing */
+        }
+    }
+    else
+    {
+        sErrorNumber = errno;
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+
+    if ( rpnSocketIsConnecting( sErrorNumber ) == ID_FALSE )
+    {
         if ( sErrorNumber == 0 )
         {
             sRsc->mStatus = RP_HOST_STATUS_CONNECTED;
@@ -718,34 +760,29 @@ static IDE_RC rpnPollInCallback( rpnPoll   * aPoll,
                          sRsc->mHostIP,
                          (UInt)sRsc->mPort,
                          (UInt)sRsc->mRefCount,
-                         (UInt)sRsc->mStatus);
-
+                         (UInt)sRsc->mStatus );
         }
         else
         {
-            sRsc->mStatus = RP_HOST_STATUS_ERROR;
-
-            ideLog::log( IDE_RP_1, RP_TRC_HBT_ERR_FAULT_DETECTED,
+            sRsc->mErrorNumber = sErrorNumber;
+            ideLog::log( IDE_RP_0, RP_TRC_HBT_ERR_FAULT_DETECTED,
                          sRsc->mHostIP,
                          (UInt)sRsc->mPort,
                          (UInt)sRsc->mRefCount,
-                         (UInt)sRsc->mStatus );
+                         (UInt)sRsc->mStatus,
+                         sRsc->mWaterMark );
+
+            sRsc->mStatus = RP_HOST_STATUS_ERROR;
         }
+
+        rpnPollRemoveSocket( aPoll,
+                             &(sRsc->mSocket) );
+        rpnSocketFinalize( &(sRsc->mSocket) );
     }
     else
     {
-        sRsc->mStatus = RP_HOST_STATUS_ERROR;
-
-        ideLog::log( IDE_RP_1, RP_TRC_HBT_ERR_FAULT_DETECTED,
-                     sRsc->mHostIP,
-                     (UInt)sRsc->mPort,
-                     (UInt)sRsc->mRefCount,
-                     (UInt)sRsc->mStatus );
+        /* do nothing */
     }
-
-    (void)rpnPollRemoveSocket( aPoll,
-                               &(sRsc->mSocket) );
-    rpnSocketFinalize( &(sRsc->mSocket) );
 
     return IDE_SUCCESS;
 }
@@ -787,17 +824,30 @@ void rpcHBT::detectConnectionEvent( UInt          aTimeoutSec,
                                     UInt        * aSpentTimeSec )
 {
     UInt         sSpentTimeSec = 0;
+    time_t       sStartTimeSec = 0;
+    time_t       sEndTimeSec = 0;
+
+    sStartTimeSec = idlOS::time();
     
     while ( ( rpnPollGetCount( &mPoll ) != 0 ) &&
             ( sSpentTimeSec < aTimeoutSec ) &&
             ( mKillFlag != ID_TRUE ) )
     {
-        
+
         (void)rpnPollDispatch( &mPoll,
                                1000,
                                &rpnPollInCallback );
-       
-        sSpentTimeSec++;
+
+        sEndTimeSec = idlOS::time();
+        
+        if ( sStartTimeSec == -1 || sEndTimeSec == -1 )
+        {
+            sSpentTimeSec = sSpentTimeSec + 1;
+        }
+        else
+        {
+            sSpentTimeSec = sEndTimeSec - sStartTimeSec;
+        }
     }
 
     *aSpentTimeSec = sSpentTimeSec;

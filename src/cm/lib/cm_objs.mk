@@ -25,13 +25,16 @@ CMM_CLIENT_SRCS = $(CM_DIR)/cmm/cmmSession.c
 
 
 CMN_SRCS        = $(CM_DIR)/cmn/cmnSock.cpp                     \
+                  $(CM_DIR)/cmn/cmnSockIB.cpp                   \
                   $(CM_DIR)/cmn/cmnLink.cpp                     \
                   $(CM_DIR)/cmn/cmnOpenssl.cpp                  \
+                  $(CM_DIR)/cmn/cmnIB.c                         \
                   $(CM_DIR)/cmn/cmnLinkListenTCP.cpp            \
                   $(CM_DIR)/cmn/cmnLinkListenSSL.cpp            \
                   $(CM_DIR)/cmn/cmnLinkListenUNIX.cpp           \
                   $(CM_DIR)/cmn/cmnLinkListenIPC.cpp            \
                   $(CM_DIR)/cmn/cmnLinkListenIPCDA.cpp          \
+                  $(CM_DIR)/cmn/cmnLinkListenIB.cpp             \
                   $(CM_DIR)/cmn/cmnLinkPeer.cpp                 \
                   $(CM_DIR)/cmn/cmnLinkPeerDUMMY.cpp            \
                   $(CM_DIR)/cmn/cmnLinkPeerTCP.cpp              \
@@ -39,29 +42,36 @@ CMN_SRCS        = $(CM_DIR)/cmn/cmnSock.cpp                     \
                   $(CM_DIR)/cmn/cmnLinkPeerUNIX.cpp             \
                   $(CM_DIR)/cmn/cmnLinkPeerIPC.cpp              \
                   $(CM_DIR)/cmn/cmnLinkPeerIPCDA.cpp            \
+                  $(CM_DIR)/cmn/cmnLinkPeerIB.cpp               \
                   $(CM_DIR)/cmn/cmnDispatcher.cpp               \
                   $(CM_DIR)/cmn/cmnDispatcherIPC.cpp            \
                   $(CM_DIR)/cmn/cmnDispatcherIPCDA.cpp          \
                   $(CM_DIR)/cmn/cmnDispatcherSOCK-SELECT.cpp    \
                   $(CM_DIR)/cmn/cmnDispatcherSOCK-POLL.cpp      \
-                  $(CM_DIR)/cmn/cmnDispatcherSOCK-EPOLL.cpp
+                  $(CM_DIR)/cmn/cmnDispatcherSOCK-EPOLL.cpp     \
+                  $(CM_DIR)/cmn/cmnDispatcherIB.cpp
 
 
 CMN_CLIENT_SRCS = $(CM_DIR)/cmn/cmnSock.c                   \
+                  $(CM_DIR)/cmn/cmnSockIB.c                 \
                   $(CM_DIR)/cmn/cmnLink.c                   \
                   $(CM_DIR)/cmn/cmnOpenssl.c                \
+                  $(CM_DIR)/cmn/cmnIB.c                     \
                   $(CM_DIR)/cmn/cmnLinkListenTCP.c          \
                   $(CM_DIR)/cmn/cmnLinkListenUNIX.c         \
+                  $(CM_DIR)/cmn/cmnLinkListenIB.c           \
                   $(CM_DIR)/cmn/cmnLinkPeer.c               \
                   $(CM_DIR)/cmn/cmnLinkPeerTCP.c            \
                   $(CM_DIR)/cmn/cmnLinkPeerSSL.c            \
                   $(CM_DIR)/cmn/cmnLinkPeerUNIX.c           \
                   $(CM_DIR)/cmn/cmnLinkPeerIPC.c            \
                   $(CM_DIR)/cmn/cmnLinkPeerIPCDA.c          \
+                  $(CM_DIR)/cmn/cmnLinkPeerIB.c             \
                   $(CM_DIR)/cmn/cmnDispatcher.c             \
                   $(CM_DIR)/cmn/cmnDispatcherIPC.c          \
                   $(CM_DIR)/cmn/cmnDispatcherIPCDA.c        \
-                  $(CM_DIR)/cmn/cmnDispatcherSOCK.c
+                  $(CM_DIR)/cmn/cmnDispatcherSOCK.c         \
+                  $(CM_DIR)/cmn/cmnDispatcherIB.c
 
 
 CMP_SRCS        = $(CM_DIR)/cmp/cmpHeader.cpp               \
@@ -124,5 +134,5 @@ CM_SRCS         = $(CMB_SRCS) $(CMI_SRCS) $(CMM_SRCS) $(CMN_SRCS) $(CMP_SRCS) $(
 
 CM_CLIEINT_SRCS = $(CMB_CLIENT_SRCS) $(CMI_CLIENT_SRCS) $(CMM_CLIENT_SRCS) $(CMN_CLIENT_SRCS) $(CMP_CLIENT_SRCS) $(CMT_CLIENT_SRCS) $(CMU_CLIENT_SRCS) $(CMX_CLIENT_SRCS)
 
-CM_OBJS         = $(CM_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT))
-CM_SHOBJS       = $(CM_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_shobj.$(OBJEXT))
+CM_OBJS         = $(patsubst $(DEV_DIR)/%, $(TARGET_DIR)/%.$(OBJEXT),       $(basename $(CM_SRCS)))
+CM_SHOBJS       = $(patsubst $(DEV_DIR)/%, $(TARGET_DIR)/%_shobj.$(OBJEXT), $(basename $(CM_SRCS)))

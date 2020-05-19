@@ -17,6 +17,10 @@ ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
                                       void               *aServiceSession,
                                       void               *aUserContext);
 
+/* BUG-45967 Data Node의 Shard Session 정리 */
+ACI_RC ulsdCallbackShardPrepareResultInternal( void        * aUserContext,
+                                               acp_uint8_t   aReadOnly );
+
 ACI_RC ulsdCallbackShardEndPendingTxResult(cmiProtocolContext *aProtocolContext,
                                            cmiProtocol        *aProtocol,
                                            void               *aServiceSession,

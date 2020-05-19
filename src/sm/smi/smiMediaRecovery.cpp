@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiMediaRecovery.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiMediaRecovery.cpp 84434 2018-11-27 00:10:34Z emlee $
  **********************************************************************/
 /**********************************************************************
  * FILE DESCRIPTION : smiMediaRecovery.cpp                            *
@@ -324,11 +324,10 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     sNumberStr[ SM_MAX_FILE_NAME ] = '\0';
 
-    IDE_TEST_RAISE(
-        smuUtility::isDigitForString(
-            &sNumberStr[0],
-            sStrLength - (UInt)(sChrPtr2 - sFileName) ) == ID_FALSE,
-        err_not_found_tablespace_by_name );
+    IDE_TEST_RAISE( smuUtility::isDigitForString(
+                           &sNumberStr[0],
+                           sStrLength - (UInt)(sChrPtr2 - sFileName) ) == ID_FALSE,
+                    err_not_found_tablespace_by_name );
 
     sFileNum = (UInt)idlOS::atoi( sNumberStr );
 
@@ -340,29 +339,27 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
     IDE_TEST_RAISE( sSpaceNode == NULL, err_not_found_tablespace_by_name );
 
     // 메모리테이블스페이스인지 확인 => 에러 : 파일없음
-    IDE_TEST_RAISE( sctTableSpaceMgr::isMemTableSpace( sSpaceNode->mID )
-                    != ID_TRUE,
+    IDE_TEST_RAISE( sctTableSpaceMgr::isMemTableSpace( sSpaceNode->mID ) != ID_TRUE,
                     err_not_found_tablespace_by_name );
 
     // 핑퐁번호 확인 => 에러 : 파일 없음
     IDE_TEST_RAISE( sPingPongNum >= SMM_PINGPONG_COUNT,
-            err_not_exist_datafile );
+                    err_not_exist_datafile );
 
     for ( sLoop = 0 ; sLoop < SMM_PINGPONG_COUNT ; sLoop ++ )
     {
         // CREATE LSN 확인 => 에러 : 파일 없음
         IDE_TEST( smmManager::getDBFile( (smmTBSNode*)sSpaceNode,
-                                                sLoop,
-                                                sFileNum,
-                                                SMM_GETDBFILEOP_NONE,
-                                                &sDatabaseFile[sLoop] )
+                                         sLoop,
+                                         sFileNum,
+                                         SMM_GETDBFILEOP_NONE,
+                                         &sDatabaseFile[sLoop] )
                   != IDE_SUCCESS );
 
         sDatabaseFile[sLoop]->getChkptImageHdr( &sChkptImageHdr );
 
-        IDE_TEST_RAISE(
-           sDatabaseFile[sLoop]->checkValuesOfDBFHdr( &sChkptImageHdr ),
-           err_not_exist_datafile );
+        IDE_TEST_RAISE( sDatabaseFile[sLoop]->checkValuesOfDBFHdr( &sChkptImageHdr ),
+                        err_not_exist_datafile );
 
         // [6] 데이타파일이 존재하는지 검사한다.
         IDE_TEST( smmDatabaseFile::makeDBDirForCreate(
@@ -380,13 +377,12 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
         // [7] 기존 경로에 데이타파일이 이미 존재하는지 검사
         IDE_TEST_RAISE( idf::access( sFullPath, F_OK ) == 0,
-                err_already_exist_datafile );
+                        err_already_exist_datafile );
     }
 
     // STABLE DB 확인 => 에러 : STABLE한 파일명 입력 요구
-    IDE_TEST_RAISE( sPingPongNum !=
-            smmManager::getCurrentDB( (smmTBSNode*)sSpaceNode ),
-            err_input_unstable_chkpt_image );
+    IDE_TEST_RAISE( sPingPongNum != smmManager::getCurrentDB( (smmTBSNode*)sSpaceNode ),
+                    err_input_unstable_chkpt_image );
 
     // [8] 이전 파일로 동일한 정보를가지고, Empty 데이타파일을
     // 생성한다. 데이타파일의 헤더는 RedoLSN만 모두 INIT으로
@@ -468,21 +464,18 @@ IDE_RC smiMediaRecovery::createChkptImage( SChar * aFileName )
 
     IDE_EXCEPTION( err_startup_phase );
     {
-        IDE_SET(ideSetErrorCode(
-                    smERR_ABORT_MediaRecoDataFile,
-                    "ALTER DATABASE CRAEATE CHECKPOINT IMAGE") );
+        IDE_SET(ideSetErrorCode( smERR_ABORT_MediaRecoDataFile,
+                                 "ALTER DATABASE CRAEATE CHECKPOINT IMAGE") );
     }
     IDE_EXCEPTION( err_invalie_filespec_format );
     {
-        IDE_SET( ideSetErrorCode(
-                    smERR_ABORT_INVALID_CIMAGE_FILESPEC_FORMAT,
-                    sFileName ) );
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INVALID_CIMAGE_FILESPEC_FORMAT,
+                                  sFileName ) );
     }
     IDE_EXCEPTION( err_not_found_tablespace_by_name );
     {
-        IDE_SET( ideSetErrorCode(
-                    smERR_ABORT_NotFoundTableSpaceNodeByName,
-                    sSpaceName ) );
+        IDE_SET( ideSetErrorCode( smERR_ABORT_NotFoundTableSpaceNodeByName,
+                                  sSpaceName ) );
     }
     IDE_EXCEPTION( err_already_exist_datafile );
     {

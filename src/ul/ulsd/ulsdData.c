@@ -76,9 +76,31 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
                                 ulvSLen       aBufferLength,
                                 ulvSLen      *aStrLenOrIndPtr)
 {
+    acp_list_node_t       * sNode       = NULL;
+    acp_list_node_t       * sNext       = NULL;
+    ulsdBindParameterInfo * sObj        = NULL;
+    ulsdBindParameterInfo * sNewObj     = NULL;
+
     SQLRETURN           sRet = SQL_ERROR;
     ulnFnContext        sFnContext;
     acp_uint16_t        i;
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACI_TEST_RAISE( acpMemAlloc( (void **) & sNewObj,
+                                 ACI_SIZEOF( ulsdBindParameterInfo ) )
+                    != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+    sNewObj->mParameterNumber   = aParamNumber;
+    sNewObj->mInputOutputType   = aInputOutputType;
+    sNewObj->mValueType         = aValueType;
+    sNewObj->mParameterType     = aParamType;
+    sNewObj->mColumnSize        = aColumnSize;
+    sNewObj->mDecimalDigits     = aDecimalDigits;
+    sNewObj->mParameterValuePtr = aParamValuePtr;
+    sNewObj->mBufferLength      = aBufferLength;
+    sNewObj->mStrLenOrIndPtr    = aStrLenOrIndPtr;
+
+    acpListInitObj( & sNewObj->mListNode, (void *)sNewObj );
 
     for ( i = 0; i < aShard->mNodeCount; i++ )
     {
@@ -117,7 +139,26 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
 
     SHARD_LOG("(Bind Parameter) ParamNum=%d, MetaStmt\n", aParamNumber);
 
-    return sRet;
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mBindParameterList, sNode, sNext )
+    {
+        sObj = (ulsdBindParameterInfo *)sNode->mObj;
+        if ( sObj->mParameterNumber == aParamNumber )
+        {
+            acpListDeleteNode( sNode );
+            acpMemFree( sNode->mObj );
+            break;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    acpListAppendNode( & aStmt->mShardStmtCxt.mBindParameterList,
+                       & sNewObj->mListNode );
+
+    return SQL_SUCCESS;
 
     ACI_EXCEPTION(LABEL_NODE_BINDPARAMETER_FAIL)
     {
@@ -128,6 +169,69 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
                                   (ulnObject *)aStmt->mShardStmtCxt.mShardNodeStmt[i],
                                   aShard->mNodeInfo[i],
                                   "Bind Parameter");
+    }
+    ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_BINDPARAMETER, aStmt, ULN_OBJ_TYPE_STMT );
+
+        ulnError( & sFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "NodeBindParameter",
+                  "Memory allocation error." );
+
+        sRet = ULN_FNCONTEXT_GET_RC( & sFnContext );
+    }
+    ACI_EXCEPTION_END;
+
+    if ( sNewObj != NULL )
+    {
+        acpMemFree( sNewObj );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sRet;
+}
+
+SQLRETURN ulsdNodeBindParameterOnNode( ulnFnContext    * aFnContext,
+                                       ulsdStmtContext * aMetaShardStmtCxt,
+                                       ulnStmt         * aDataStmt,
+                                       ulsdNodeInfo    * aNodeInfo )
+{
+    acp_list_node_t       * sNode = NULL;
+    ulsdBindParameterInfo * sBind = NULL;
+    SQLRETURN               sRet  = SQL_ERROR;
+
+    ACP_LIST_ITERATE( & aMetaShardStmtCxt->mBindParameterList, sNode )
+    {
+        sBind = (ulsdBindParameterInfo *)sNode->mObj;
+
+        sRet = ulnBindParameter( aDataStmt,
+                                 sBind->mParameterNumber,
+                                 NULL,
+                                 sBind->mInputOutputType,
+                                 sBind->mValueType,
+                                 sBind->mParameterType,
+                                 sBind->mColumnSize,
+                                 sBind->mDecimalDigits,
+                                 sBind->mParameterValuePtr,
+                                 sBind->mBufferLength,
+                                 sBind->mStrLenOrIndPtr );
+
+        ACI_TEST_RAISE( sRet != SQL_SUCCESS, LABEL_NODE_BINDPARAMETER_FAIL );
+    }
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_NODE_BINDPARAMETER_FAIL )
+    {
+        ulsdNativeErrorToUlnError( aFnContext,
+                                   SQL_HANDLE_STMT,
+                                   (ulnObject *)aDataStmt,
+                                   aNodeInfo,
+                                   "Bind Parameter" );
     }
     ACI_EXCEPTION_END;
 
@@ -463,7 +567,7 @@ SQLRETURN ulsdMtdModuleById(ulnStmt       *aMetaStmt,
 }
 
 SQLRETURN ulsdConvertNodeIdToNodeDbcIndex(ulnStmt          *aMetaStmt,
-                                          acp_uint16_t      aNodeId,
+                                          acp_uint32_t      aNodeId,
                                           acp_uint16_t     *aNodeDbcIndex,
                                           acp_uint16_t      aFuncId)
 {
@@ -506,9 +610,27 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
                           ulvSLen       aBufferLength,
                           ulvSLen      *aStrLenOrIndPtr)
 {
+    acp_list_node_t   * sNode       = NULL;
+    acp_list_node_t   * sNext       = NULL;
+    ulsdBindColInfo   * sObj        = NULL;
+    ulsdBindColInfo   * sNewObj     = NULL;
+
     SQLRETURN           sRet = SQL_ERROR;
     ulnFnContext        sFnContext;
     acp_uint16_t        i;
+
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACI_TEST_RAISE( acpMemAlloc( (void **) & sNewObj,
+                                 ACI_SIZEOF( ulsdBindColInfo ) )
+                    != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+    sNewObj->mColumnNumber   = aColumnNumber;
+    sNewObj->mTargetType     = aTargetType;
+    sNewObj->mTargetValuePtr = aTargetValuePtr;
+    sNewObj->mBufferLength   = aBufferLength;
+    sNewObj->mStrLenOrIndPtr = aStrLenOrIndPtr;
+
+    acpListInitObj( & sNewObj->mListNode, (void *)sNewObj );
 
     for ( i = 0; i < aShard->mNodeCount; i++ )
     {
@@ -537,7 +659,26 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
 
     SHARD_LOG("(Bind Col) ColNum=%d, MetaStmt\n", aColumnNumber);
 
-    return sRet;
+    /* BUG-46257 shardcli에서 Node 추가/제거 지원 */
+    ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mBindColList, sNode, sNext )
+    {
+        sObj = (ulsdBindColInfo *)sNode->mObj;
+        if ( sObj->mColumnNumber == aColumnNumber )
+        {
+            acpListDeleteNode( sNode );
+            acpMemFree( sNode->mObj );
+            break;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    acpListAppendNode( & aStmt->mShardStmtCxt.mBindColList,
+                       & sNewObj->mListNode );
+
+    return SQL_SUCCESS;
 
     ACI_EXCEPTION(LABEL_NODE_BINDCOL_FAIL)
     {
@@ -548,6 +689,64 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
                                   (ulnObject *)aStmt->mShardStmtCxt.mShardNodeStmt[i],
                                   aShard->mNodeInfo[i],
                                   "Bind Col");
+    }
+    ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_BINDCOL, aStmt, ULN_OBJ_TYPE_STMT );
+
+        ulnError( & sFnContext,
+                  ulERR_ABORT_SHARD_ERROR,
+                  "NodeBindCol",
+                  "Memory allocation error." );
+
+        sRet = ULN_FNCONTEXT_GET_RC( & sFnContext );
+    }
+    ACI_EXCEPTION_END;
+
+    if ( sNewObj != NULL )
+    {
+        acpMemFree( sNewObj );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sRet;
+}
+
+SQLRETURN ulsdNodeBindColOnNode( ulnFnContext    * aFnContext,
+                                 ulsdStmtContext * aMetaShardStmtCxt,
+                                 ulnStmt         * aDataStmt,
+                                 ulsdNodeInfo    * aNodeInfo )
+{
+    acp_list_node_t       * sNode = NULL;
+    ulsdBindColInfo       * sBind = NULL;
+    SQLRETURN               sRet  = SQL_ERROR;
+
+    ACP_LIST_ITERATE( & aMetaShardStmtCxt->mBindColList, sNode )
+    {
+        sBind = (ulsdBindColInfo *)sNode->mObj;
+
+        sRet = ulnBindCol( aDataStmt,
+                           sBind->mColumnNumber,
+                           sBind->mTargetType,
+                           sBind->mTargetValuePtr,
+                           sBind->mBufferLength,
+                           sBind->mStrLenOrIndPtr );
+
+        ACI_TEST_RAISE( sRet != SQL_SUCCESS, LABEL_NODE_BINDCOL_FAIL );
+    }
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_NODE_BINDCOL_FAIL )
+    {
+        ulsdNativeErrorToUlnError( aFnContext,
+                                   SQL_HANDLE_STMT,
+                                   (ulnObject *)aDataStmt,
+                                   aNodeInfo,
+                                   "Bind Col" );
     }
     ACI_EXCEPTION_END;
 
@@ -564,9 +763,7 @@ void ulsdGetTouchedAllNodeList(ulsdDbc      *aShard,
 
     for ( i = 0; i < aShard->mNodeCount; i++ )
     {
-        /* Pass checking node that already closed on execute time */
-        if ( ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE ) &&
-             ( aShard->mNodeInfo[i]->mClosedOnExecute == ACP_FALSE ) )
+        if ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE )
         {
             aNodeArr[j] = i;
             j++;
@@ -579,9 +776,7 @@ void ulsdGetTouchedAllNodeList(ulsdDbc      *aShard,
 
     for ( i = 0; i < aShard->mNodeCount; i++ )
     {
-        /* Pass checking node that already closed on execute time */
-        if ( ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE ) &&
-             ( aShard->mNodeInfo[i]->mClosedOnExecute == ACP_FALSE ) )
+        if ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE )
         {
             /* Nothing to do. */
         }
@@ -595,4 +790,14 @@ void ulsdGetTouchedAllNodeList(ulsdDbc      *aShard,
     ACE_ASSERT(aShard->mNodeCount == j);
 
     *aNodeCount = j;
+}
+
+void ulsdSetTouchedToAllNodes( ulsdDbc * aShard )
+{
+    acp_uint16_t  i = 0;
+
+    for ( i = 0; i < aShard->mNodeCount; i++ )
+    {
+        aShard->mNodeInfo[i]->mTouched = ACP_TRUE;
+    }
 }

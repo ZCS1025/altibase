@@ -52,6 +52,9 @@ IDE_RC cmnDispatcherAddLinkIPCDA(cmnDispatcher *aDispatcher, cmnLink *aLink)
     cmnDispatcherIPCDA  *sDispatcher = (cmnDispatcherIPCDA *)aDispatcher;
     PDL_SOCKET         sHandle;
 
+    /* Dispatcher에서 사용할 수 있는 Link Impl인지 검사 (PROJ-2681) */
+    IDE_TEST_RAISE(cmiDispatcherImplForLink(aLink) != aDispatcher->mImpl, InvalidLinkImpl);
+
     /* Dispatcher의 Link List에 추가 */
     IDE_TEST(cmnDispatcherAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
@@ -69,7 +72,13 @@ IDE_RC cmnDispatcherAddLinkIPCDA(cmnDispatcher *aDispatcher, cmnLink *aLink)
     FD_SET(sHandle, &sDispatcher->mFdSet);
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION(InvalidLinkImpl)
+    {
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_INVALID_LINK_IMPL));
+    }
     IDE_EXCEPTION_END;
+
     return IDE_FAILURE;
 }
 

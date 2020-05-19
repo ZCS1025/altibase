@@ -33,6 +33,10 @@ SQLRETURN resultTopViewProcQuery( SChar * aUserName,
 
 SQLRETURN resultViewProcQuery( FILE * aViewProcFp,
                                FILE * aRefreshMViewFp,
-                               SInt   aObjId );
+                               SLong  aObjId );
+
+/* BUG-46295 */
+void appendTerminator( FILE  *aViewProcFp,
+                       SInt   aObjType );
 
 #endif /* _O_UTM_VIEW_PROC_H_ */

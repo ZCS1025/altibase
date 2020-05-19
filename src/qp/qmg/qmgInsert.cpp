@@ -370,6 +370,7 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     qmmValueNode    * sValueNode;
     qmmMultiRows    * sMultiRows;
     qmoINSTInfo       sINSTInfo;
+    qmncINST        * sINST;
 
     IDU_FIT_POINT_FATAL( "qmgInsert::makePlan::__FT__" );
 
@@ -535,6 +536,23 @@ qmgInsert::makePlan( qcStatement     * aStatement,
                                           sMyGraph->tableRef )
               != IDE_SUCCESS );
 
+    if ( sMyGraph->tableRef->partitionSummary != NULL )
+    {
+        if ( sMyGraph->tableRef->partitionSummary->diskPartitionCount > 0 )
+        {
+            sINST = (qmncINST *)sPlan;
+            sINST->isSimple = ID_FALSE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     /* PROJ-2464 hybrid partitioned table 지원
      *  APPEND Hint는 Partitioned Table에 상관없이 Disk Partition이 있는 경우에만 지원한다.
      */
@@ -543,7 +561,7 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-    
+
     return IDE_FAILURE;
 }
 

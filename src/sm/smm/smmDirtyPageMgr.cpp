@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDirtyPageMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmDirtyPageMgr.cpp 84383 2018-11-20 04:18:42Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -156,7 +156,6 @@ IDE_RC smmDirtyPageMgr::insDirtyPage( scPageID aPageID )
 
     IDE_DASSERT( smmManager::isValidSpaceID( mSpaceID ) == ID_TRUE );
     IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace( mSpaceID ) == ID_TRUE );
-    
     IDE_DASSERT( smmManager::isValidPageID( mSpaceID, aPageID ) == ID_TRUE );
     
     IDL_MEM_BARRIER; 

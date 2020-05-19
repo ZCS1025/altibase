@@ -20,6 +20,7 @@
 #include <mmcDef.h>
 #include <mmcPCB.h>
 #include <mmcPlanCache.h>
+#include <mmErrorCode.h>
 
 UInt   mmcSQLTextHash::mBucketCnt;
 mmcSQLTextHashBucket*  mmcSQLTextHash::mBucketTable;
@@ -287,6 +288,74 @@ void  mmcSQLTextHash::getCacheHitCount(ULong *aHitCount)
     }//for
 }
 
+
+/**
+ * BUG-46158 PLAN_CACHE_KEEP
+ *
+ * @aSQLTextID : Keep/Unkeep 대상이 되는 SQLTextID
+ * @aPlanKeep  : MMC_PCO_PLAN_CACHE_KEEP, MMC_PCO_PLAN_CACHE_UNKEEP
+ *
+ * Keep된 Plan은 Victim으로 선정되지 않는다. 그래서 Plancache내에 계속 유지된다.
+ * KEEP_PLAN은 Rebuild를 방지하는 힌트이며 PLAN_CACHE_KEEP과 혼동되지 않아야 한다.
+ */
+IDE_RC mmcSQLTextHash::planCacheKeep(idvSQL              *aStatistics,
+                                     SChar               *aSQLTextID,
+                                     mmcPCOPlanCacheKeep  aPlanCacheKeep)
+{
+    UInt          sBucket = 0;
+    SInt          sSQLTextIDLen = idlOS::strlen(aSQLTextID);
+    iduListNode  *sIterator = NULL;
+    mmcParentPCO *sParentPCO = NULL;
+    idBool        sFound = ID_FALSE;
+    SInt          i = 0;
+
+    /* SQLTextID = BucketIndex(%0*d)|Id(%d) */
+    IDE_TEST_RAISE(sSQLTextIDLen < (MMC_SQL_CACHE_TEXT_ID_BUCKET_DIGIT + 1), INVALID_SQL_TEXT_ID);
+    for (i = 0; i < sSQLTextIDLen; i++)
+    {
+        IDE_TEST_RAISE((aSQLTextID[i] < '0') || (aSQLTextID[i] > '9'), INVALID_SQL_TEXT_ID);
+
+        if (i < MMC_SQL_CACHE_TEXT_ID_BUCKET_DIGIT)
+        {
+            sBucket *= 10;
+            sBucket += (aSQLTextID[i] - '0');
+        }
+    }
+    IDE_TEST_RAISE(sBucket >= mBucketCnt, NOT_FOUND_SQL_TEXT_ID);
+
+    /* 동일한 SQLTextID의 PCO를 찾아서 aPlanKeep을 설정해 준다. */ 
+    latchBucketAsShared(aStatistics, sBucket);
+    IDU_LIST_ITERATE(&mBucketTable[sBucket].mChain, sIterator)
+    {
+        sParentPCO = (mmcParentPCO *)sIterator->mObj;
+
+        if (idlOS::strcmp(aSQLTextID, sParentPCO->mSQLTextId) == 0)
+        {
+            sParentPCO->setPlanCacheKeep(aPlanCacheKeep);
+            sFound = ID_TRUE;
+            break;
+        }
+    }
+    releaseBucketLatch(sBucket);
+
+    IDE_TEST_RAISE(sFound != ID_TRUE, NOT_FOUND_SQL_TEXT_ID);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(INVALID_SQL_TEXT_ID)
+    {
+        IDE_SET(ideSetErrorCode(mmERR_ABORT_PLAN_CACHE_INVALID_SQL_TEXT_ID, aSQLTextID));
+    }
+    IDE_EXCEPTION(NOT_FOUND_SQL_TEXT_ID)
+    {
+        IDE_SET(ideSetErrorCode(mmERR_ABORT_PLAN_CACHE_NOT_FOUND_SQL_TEXT_ID, aSQLTextID));
+    }
+    IDE_EXCEPTION_END; 
+
+    return IDE_FAILURE;
+}
+
+
 IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCacheSQLText(idvSQL               * /* aStatistics */,
                                                           void                 *aHeader,
                                                           void                 */*aDummyObj*/,
@@ -303,12 +372,13 @@ IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCacheSQLText(idvSQL               *
         IDU_LIST_ITERATE(&(mBucketTable[i].mChain),sIterator)   
         {
             sParentPCO = (mmcParentPCO*)sIterator->mObj;
-            idlOS::memcpy( sParentInfo.mSQLTextIdString,
-                           sParentPCO->mSQLTextIdString,
+            idlOS::memcpy( sParentInfo.mSQLTextId,
+                           sParentPCO->mSQLTextId,
                            ID_SIZEOF(SChar) * MMC_SQL_CACHE_TEXT_ID_LEN );
             sParentInfo.mSQLString4SoftPrepare = sParentPCO->mSQLString4SoftPrepare;
             sParentInfo.mChildCreateCnt        = sParentPCO->mChildCreateCnt;
             sParentInfo.mChildCnt              = sParentPCO->mChildCnt;
+            sParentInfo.mPlanCacheKeep         = sParentPCO->getPlanCacheKeep();  /* BUG-46158 */
             IDE_TEST( iduFixedTable::buildRecord(aHeader,aMemory,(void*)&sParentInfo)
               != IDE_SUCCESS);
         }//IDU_LIST
@@ -329,7 +399,7 @@ static iduFixedTableColDesc gSQLPlanCacheSQLTextColDesc[]=
 {
     {
         (SChar *)"SQL_TEXT_ID",
-        offsetof(mmcParentPCOInfo4PerfV,mSQLTextIdString),
+        offsetof(mmcParentPCOInfo4PerfV,mSQLTextId),
         MMC_SQL_CACHE_TEXT_ID_LEN,
         IDU_FT_TYPE_VARCHAR,
         NULL,
@@ -343,7 +413,6 @@ static iduFixedTableColDesc gSQLPlanCacheSQLTextColDesc[]=
         NULL,
         0, 0, NULL // for internal use
     },
-    
     {
         (SChar *)"CHILD_PCO_COUNT",
         offsetof(mmcParentPCOInfo4PerfV,mChildCnt),
@@ -360,8 +429,15 @@ static iduFixedTableColDesc gSQLPlanCacheSQLTextColDesc[]=
         NULL,
         0, 0, NULL // for internal use
     },
-    
-     {
+    {
+        (SChar *)"PLAN_CACHE_KEEP",
+        offsetof(mmcParentPCOInfo4PerfV, mPlanCacheKeep),
+        IDU_FT_SIZEOF(mmcParentPCOInfo4PerfV, mPlanCacheKeep),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
         NULL,
         0,
         0,
@@ -399,6 +475,7 @@ IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCachePCO(idvSQL               * /* 
     iduList                *sChildPCOList;
     mmcChildPCOPlanState    sPlanState;    
     mmcChildPCOInfo4PerfV   sChildInfo;
+    UInt                    sFrequency;
     
     for(i = 0; i < mBucketCnt ; i++)
     {
@@ -417,7 +494,7 @@ IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCachePCO(idvSQL               * /* 
                     sChildPCO->getPlanState(&sPlanState);
                     if(sPlanState == MMC_CHILD_PCO_PLAN_IS_READY)
                     {
-                        sChildInfo.mSQLTextIdStr = sChildPCO->mSQLTextIdStr;
+                        sChildInfo.mSQLTextId    = sChildPCO->mSQLTextId;
                         sChildInfo.mChildID      = sChildPCO->mChildID;
                         sChildInfo.mCreateReason = sChildPCO->mCreateReason;
                         sChildInfo.mRebuildedCnt = sChildPCO->mRebuildedCnt;
@@ -425,6 +502,10 @@ IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCachePCO(idvSQL               * /* 
                         sChildInfo.mHitCntPtr    = sChildPCO->mHitCntPtr;
                         //fix BUG-31169,The LRU  region of a PCO has better to be showed in  V$SQL_PLAN_CACHE_PCO
                         sPCB->getLRURegion((idvSQL*)NULL,&(sChildInfo.mLruRegion));
+                        /* BUG-46158 */
+                        sChildInfo.mPlanSize = sChildPCO->getSize();
+                        sPCB->getFixCountFrequency((idvSQL*)NULL, &sChildInfo.mFixCount, &sFrequency);
+                        sChildInfo.mPlanCacheKeep = sParentPCO->getPlanCacheKeep();
                         IDE_TEST( iduFixedTable::buildRecord(aHeader,aMemory,(void*)&sChildInfo)
                                   != IDE_SUCCESS);
                     }
@@ -440,7 +521,7 @@ IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCachePCO(idvSQL               * /* 
                     sChildPCO->getPlanState(&sPlanState);
                     if(sPlanState == MMC_CHILD_PCO_PLAN_IS_UNUSED)
                     {
-                        sChildInfo.mSQLTextIdStr = sChildPCO->mSQLTextIdStr;
+                        sChildInfo.mSQLTextId    = sChildPCO->mSQLTextId;
                         sChildInfo.mChildID      = sChildPCO->mChildID;
                         sChildInfo.mCreateReason = sChildPCO->mCreateReason;
                         sChildInfo.mRebuildedCnt = sChildPCO->mRebuildedCnt;
@@ -448,6 +529,10 @@ IDE_RC  mmcSQLTextHash::buildRecordForSQLPlanCachePCO(idvSQL               * /* 
                         sChildInfo.mHitCntPtr    = sChildPCO->mHitCntPtr;
                         //fix BUG-31169,The LRU  region of a PCO has better to be showed in  V$SQL_PLAN_CACHE_PCO
                         sPCB->getLRURegion((idvSQL*)NULL,&(sChildInfo.mLruRegion));
+                        /* BUG-46158 */
+                        sChildInfo.mPlanSize = sChildPCO->getSize();
+                        sPCB->getFixCountFrequency((idvSQL*)NULL, &sChildInfo.mFixCount, &sFrequency);
+                        sChildInfo.mPlanCacheKeep = MMC_PCO_PLAN_CACHE_UNKEEP;
                         IDE_TEST( iduFixedTable::buildRecord(aHeader,aMemory,(void*)&sChildInfo)
                                   != IDE_SUCCESS);
                     }
@@ -473,7 +558,7 @@ static iduFixedTableColDesc gSQLPlanCacheSQLPCOColDesc[]=
 {
     {
         (SChar *)"SQL_TEXT_ID",
-        offsetof(mmcChildPCOInfo4PerfV,mSQLTextIdStr),
+        offsetof(mmcChildPCOInfo4PerfV,mSQLTextId),
         MMC_SQL_CACHE_TEXT_ID_LEN,
         IDU_FT_TYPE_VARCHAR| IDU_FT_TYPE_POINTER,
         NULL,
@@ -531,7 +616,30 @@ static iduFixedTableColDesc gSQLPlanCacheSQLPCOColDesc[]=
         NULL,
         0, 0, NULL // for internal use
     },
-    
+    {
+        (SChar *)"PLAN_SIZE",
+        offsetof(mmcChildPCOInfo4PerfV, mPlanSize),
+        IDU_FT_SIZEOF(mmcChildPCOInfo4PerfV, mPlanSize),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"FIX_COUNT",
+        offsetof(mmcChildPCOInfo4PerfV, mFixCount),
+        IDU_FT_SIZEOF(mmcChildPCOInfo4PerfV, mFixCount),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar *)"PLAN_CACHE_KEEP",
+        offsetof(mmcChildPCOInfo4PerfV, mPlanCacheKeep),
+        IDU_FT_SIZEOF(mmcChildPCOInfo4PerfV, mPlanCacheKeep),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
     {
         NULL,
         0,

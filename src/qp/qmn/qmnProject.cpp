@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnProject.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnProject.cpp 83391 2018-07-02 01:55:50Z donovan.seo $
  *
  * Description :
  *     PROJ(PROJection) Node
@@ -749,18 +749,25 @@ qmnPROJ::doItTopProject( qcTemplate * aTemplate,
             if (sLobCacheThreshold > 0)
             {
                 sLobSize = 0;
-                (void)smiLob::getLength( *(smLobLocator*)sValue,
-                                         &sLobSize,
-                                         &sIsNullLob );
-
-                /* 임계치내에 해당하면 LOBData 사이즈도 더해 준다 */
-                if (sLobSize <= sLobCacheThreshold)
+                if ( *(smLobLocator*)sValue != MTD_LOCATOR_NULL )
                 {
-                    sDataPlan->tupleOffset += sLobSize;
+                    (void)smiLob::getLength( *(smLobLocator*)sValue,
+                                             &sLobSize,
+                                             &sIsNullLob );
+
+                    /* 임계치내에 해당하면 LOBData 사이즈도 더해 준다 */
+                    if (sLobSize <= sLobCacheThreshold)
+                    {
+                        sDataPlan->tupleOffset += sLobSize;
+                    }
+                    else
+                    {
+                        /* Nothing */
+                    }
                 }
                 else
                 {
-                    /* Nothing */
+                    /* Nothing to do */
                 }
             }
             else

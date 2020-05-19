@@ -30,24 +30,24 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
 SQLRETURN searchObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
-                              SInt   aObjId );
+                              SLong  aObjId );
 
 SQLRETURN checkObjPrivQuery( FILE  *aFp,
-                              SInt   aObjType, 
-                              SInt   aUserId, 
-                              SInt   aObjId,
+                             SInt   aObjType, 
+                             SInt   aUserId, 
+                             SLong  aObjId,
                              SInt   aPrivId) ;
 
 SQLRETURN relateObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
-                              SInt   aObjId,
+                              SLong   aObjId,
                               SInt   aPrivId );
 
 SQLRETURN recCycleObjPrivQuery( FILE *aFp,
                            SInt   aObjType, 
                            SInt   aUserId, 
-                           SInt   aObjId, 
+                           SLong   aObjId, 
                                 SInt   aPrivId);
 
 SQLRETURN resultObjPrivQuery( FILE *aFp,
@@ -55,7 +55,7 @@ SQLRETURN resultObjPrivQuery( FILE *aFp,
                               SInt  aGranteeId, 
                               SInt  aUserId,
                               SInt  aPrivId,
-                              SInt  aObjId, 
+                              SLong  aObjId, 
                               SInt  aObjType );
 
 #endif /* _O_UTM_OBJ_PRIV_H_ */

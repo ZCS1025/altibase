@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLSpool.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLSpool.h 82438 2018-03-11 23:49:11Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLSPOOL_H_
@@ -30,12 +30,14 @@ public:
     ~iSQLSpool();
 
     idBool IsSpoolOn()      { return m_bSpoolOn; }
+    idBool IsSpoolOut();
     IDE_RC SetSpoolFile(SChar *a_FileName);
     IDE_RC SpoolOff();
     void   Print();
     void   PrintPrompt();
     void   PrintOutFile();
     void   PrintCommand();
+    void   PrintCommand2(idBool aDisplayOut, idBool aSpoolOut);
     void   PrintWithDouble(SInt *aPos);
     void   PrintWithFloat(SInt *aPos);
     void   Resize(UInt aSize);

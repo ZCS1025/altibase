@@ -103,8 +103,7 @@ IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
 
     sActBackupArgs = (sctActBackupArgs*)aActionArg;
 
-    if ( sctTableSpaceMgr::isMemTableSpace( aSpaceNode->mID )
-         == ID_TRUE )
+    if ( sctTableSpaceMgr::isMemTableSpace( aSpaceNode->mID ) == ID_TRUE )
     {
     recheck_status:
 
@@ -170,7 +169,7 @@ IDE_RC smmTBSMediaRecovery::doActOnlineBackup(
     }
     else
     {
-        // 메모리 테이블스페이스의 백업은 본 함수에서 처리하지 않는다.
+        // 디스크 테이블스페이스의 백업은 본 함수에서 처리하지 않는다.
         // NOTHING TO DO..
     }
 
@@ -265,11 +264,11 @@ IDE_RC smmTBSMediaRecovery::flushRedoLSN4AllDBF( smmTBSNode * aSpaceNode )
             {
                 // sync할 dbf 노드에 checkpoint 정보 설정
                 sDatabaseFile->setChkptImageHdr(
-                    sctTableSpaceMgr::getMemRedoLSN(),
-                    NULL,     // aMemCreateLSN
-                    NULL,     // aSpaceID
-                    NULL,     // aSmVersion
-                    NULL );   // aDataFileDescSlotID
+                                    sctTableSpaceMgr::getMemRedoLSN(),
+                                    NULL,     // aMemCreateLSN
+                                    NULL,     // aSpaceID
+                                    NULL,     // aSmVersion
+                                    NULL );   // aDataFileDescSlotID
 
                 IDE_ASSERT( sDatabaseFile->flushDBFileHdr()
                             == IDE_SUCCESS );
@@ -410,8 +409,7 @@ IDE_RC smmTBSMediaRecovery::setCreateLSN4NewDBFiles(
     // 데이타파일의 런타임 헤더에 CreateLSN 설정
     for ( sWhichDB = 0; sWhichDB < SMM_PINGPONG_COUNT; sWhichDB ++ )
     {
-        sCurrentDBFileNum =
-            aSpaceNode->mMemBase->mDBFileCount[ sWhichDB ];
+        sCurrentDBFileNum = aSpaceNode->mMemBase->mDBFileCount[ sWhichDB ];
 
         IDE_TEST( smmManager::getDBFile( aSpaceNode,
                                          sWhichDB,
@@ -865,49 +863,49 @@ IDE_RC smmTBSMediaRecovery::makeMediaRecoveryDBFList( sctTableSpaceNode * aTBSNo
     return IDE_FAILURE;
 }
 
-/*
-   테이블스페이스의 N번째 데이타파일의 PageID 구간 반환
-
-   [IN] aTBSNode - 테이블스페이스 노드
-   [IN] aFileNum - 데이타파일 번호
-   [OUT] aFstPageID - 첫번째 Page ID
-   [OUT] aLstPageID - 마지막 Page ID
-
-*/
-void smmTBSMediaRecovery::getPageRangeOfNthFile( smmTBSNode * aTBSNode,
-                                                 UInt         aFileNum,
-                                                 scPageID   * aFstPageID,
-                                                 scPageID   * aLstPageID )
-{
-    scPageID  sFstPageID;
-    scPageID  sLstPageID;
-    UInt      sPageCountPerFile;
-    UInt      sFileNum;
-
-    IDE_DASSERT( aTBSNode   != NULL );
-    IDE_DASSERT( aFstPageID != NULL );
-    IDE_DASSERT( aLstPageID != NULL );
-
-    sLstPageID        = 0;
-    sFstPageID        = 0;
-    sPageCountPerFile = 0;
-
-    for ( sFileNum = 0; sFileNum <= aFileNum; sFileNum ++ )
-    {
-        sFstPageID += sPageCountPerFile;
-
-        // 이 파일에 기록할 수 있는 Page의 수
-        sPageCountPerFile = smmManager::getPageCountPerFile( aTBSNode,
-                                                             sFileNum );
-
-        sLstPageID = sFstPageID + sPageCountPerFile - 1;
-    }
-
-    *aFstPageID = sFstPageID;
-    *aLstPageID = sLstPageID;
-
-    return;
-}
+///*
+//   테이블스페이스의 N번째 데이타파일의 PageID 구간 반환
+//
+//   [IN] aTBSNode - 테이블스페이스 노드
+//   [IN] aFileNum - 데이타파일 번호
+//   [OUT] aFstPageID - 첫번째 Page ID
+//   [OUT] aLstPageID - 마지막 Page ID
+//
+//*/
+//void smmTBSMediaRecovery::getPageRangeOfNthFile( smmTBSNode * aTBSNode,
+//                                                 UInt         aFileNum,
+//                                                 scPageID   * aFstPageID,
+//                                                 scPageID   * aLstPageID )
+//{
+//    scPageID  sFstPageID;
+//    scPageID  sLstPageID;
+//    UInt      sPageCountPerFile;
+//    UInt      sFileNum;
+//
+//    IDE_DASSERT( aTBSNode   != NULL );
+//    IDE_DASSERT( aFstPageID != NULL );
+//    IDE_DASSERT( aLstPageID != NULL );
+//
+//    sLstPageID        = 0;
+//    sFstPageID        = 0;
+//    sPageCountPerFile = 0;
+//
+//    for ( sFileNum = 0; sFileNum <= aFileNum; sFileNum ++ )
+//    {
+//        sFstPageID += sPageCountPerFile;
+//
+//        // 이 파일에 기록할 수 있는 Page의 수
+//        sPageCountPerFile = smmManager::getPageCountPerFile( aTBSNode,
+//                                                             sFileNum );
+//
+//        sLstPageID = sFstPageID + sPageCountPerFile - 1;
+//    }
+//
+//    *aFstPageID = sFstPageID;
+//    *aLstPageID = sLstPageID;
+//
+//    return;
+//}
 
 /*
   미디어오류로 인해 미디어복구를 진행한 메모리 데이타파일들을

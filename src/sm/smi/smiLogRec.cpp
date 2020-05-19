@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smiLogRec.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiLogRec.cpp 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -655,6 +655,13 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
                                mLogPtr + ID_SIZEOF(smiLogHdr),
                                sTableMetaLogSize );
                 mLogType = SMI_LT_TABLE_META;
+                break;
+
+            case SMR_LT_DDL_QUERY_STRING :
+                idlOS::memcpy( (SChar*)&( mLogUnion.mDDLStmtMeta ),
+                               mLogPtr + ID_SIZEOF(smiLogHdr),
+                               ID_SIZEOF(smrDDLStmtMeta) );
+                mLogType = SMI_LT_DDL_QUERY_STRING;
                 break;
 
             default:
@@ -3596,6 +3603,13 @@ idBool smiLogRec::needReplicationByType( void  * aLogHeadPtr,
             mLogType = SMI_LT_TABLE_META;
             break;
 
+        case SMR_LT_DDL_QUERY_STRING :
+            idlOS::memcpy( (SChar*)&(mLogUnion.mDDLStmtMeta),
+                           mLogPtr + ID_SIZEOF(smiLogHdr),
+                           ID_SIZEOF(smrDDLStmtMeta) );
+            mLogType = SMI_LT_DDL_QUERY_STRING;
+            break;
+
         default:
             mLogType = SMI_LT_NULL;
             break;
@@ -3617,8 +3631,8 @@ UInt smiLogRec::getTblMetaLogBodySize()
     UInt sSize = getLogSize() - (SMR_LOGREC_SIZE(smrTableMetaLog)
                                  + ID_SIZEOF(smrLogTail));
 
-    IDE_DASSERT(getLogSize() > (SMR_LOGREC_SIZE(smrTableMetaLog)
-                                + ID_SIZEOF(smrLogTail)));
+    IDE_DASSERT( getLogSize() >= ( SMR_LOGREC_SIZE( smrTableMetaLog )
+                                   + ID_SIZEOF( smrLogTail ) ) );
 
     return sSize;
 };
@@ -3637,6 +3651,27 @@ void * smiLogRec::getTblMetaLogBodyPtr()
 smiTableMeta * smiLogRec::getTblMeta()
 {
     return (smiTableMeta *)&mLogUnion.mTableMetaLog.mTableMeta;
+}
+
+UInt smiLogRec::getDDLStmtMetaLogBodySize()
+{
+    UInt sSize = getLogSize() - ( ID_SIZEOF(smrLogHead) + ID_SIZEOF( smrDDLStmtMeta )
+                                 + ID_SIZEOF(smrLogTail));
+
+    IDE_DASSERT( getLogSize() > ( ID_SIZEOF(smrLogHead) + ID_SIZEOF( smrDDLStmtMeta )
+                                  + ID_SIZEOF( smrLogTail ) ) );
+
+    return sSize;
+}
+
+void * smiLogRec::getDDLStmtMetaLogBodyPtr()
+{
+    return (void *)( mLogPtr + ID_SIZEOF(smrLogHead) + ID_SIZEOF(smrDDLStmtMeta) );
+}
+
+smiDDLStmtMeta * smiLogRec::getDDLStmtMeta()
+{
+    return (smiDDLStmtMeta *)&mLogUnion.mDDLStmtMeta;
 }
 
 /*******************************************************************************
@@ -4292,6 +4327,10 @@ smiLogType smiLogRec::getLogTypeFromLogHdr( smiLogHdr    * aLogHead )
 
         case SMR_LT_TABLE_META :    // Table Meta Log Record
             sLogType = SMI_LT_TABLE_META;
+            break;
+
+        case SMR_LT_DDL_QUERY_STRING :
+            sLogType = SMI_LT_DDL_QUERY_STRING;
             break;
 
         default:

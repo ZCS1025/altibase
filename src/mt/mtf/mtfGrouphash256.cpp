@@ -84,6 +84,7 @@ const mtcExecute mtfExecute = {
     mtfGrouphash256Finalize,
     mtfGrouphash256Calculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

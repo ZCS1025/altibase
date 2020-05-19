@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: svnpModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: svnpModule.cpp 82916 2018-04-26 06:29:17Z seulki $
  ******************************************************************************/
 
 #include <ide.h>
@@ -1405,7 +1405,7 @@ static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
                                            (void**)&sRow )
                     == IDE_SUCCESS );
 
-        if( smnManager::checkSCN( (smiIterator*)aIterator, sRow )
+        if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, NULL )
             == ID_TRUE )
         {
             *aRow = sRow;

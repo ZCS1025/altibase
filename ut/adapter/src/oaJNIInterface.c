@@ -184,6 +184,27 @@ oaJNIMethodDesc gJNIMethodDesc[] =
     },
     {
         NULL, NULL,
+        (acp_char_t *)"java/sql/Connection",
+        (acp_char_t *)"createStatement", 
+        (acp_char_t *)"()Ljava/sql/Statement;",
+        ACP_FALSE
+    },
+    {
+        NULL, NULL,
+        (acp_char_t *)"java/sql/Statement",
+        (acp_char_t *)"execute", 
+        (acp_char_t *)"(Ljava/lang/String;)Z",
+        ACP_FALSE
+    },
+    {
+        NULL, NULL,
+        (acp_char_t *)"java/sql/Statement",
+        (acp_char_t *)"close", 
+        (acp_char_t *)"()V",
+        ACP_FALSE
+    },    
+    {
+        NULL, NULL,
         (acp_char_t *)"java/nio/charset/Charset",
         (acp_char_t *)"forName", 
         (acp_char_t *)"(Ljava/lang/String;)Ljava/nio/charset/Charset;",
@@ -208,6 +229,13 @@ oaJNIMethodDesc gJNIMethodDesc[] =
         (acp_char_t *)"java/sql/BatchUpdateException",
         (acp_char_t *)"getUpdateCounts", 
         (acp_char_t *)"()[I",
+        ACP_FALSE
+    },
+    {
+        NULL, NULL,
+        (acp_char_t *)"java/sql/SQLException",
+        (acp_char_t *)"getSQLState", 
+        (acp_char_t *)"()Ljava/lang/String;",
         ACP_FALSE
     },
 };
@@ -240,8 +268,10 @@ static void oaJNILogMessage( oaJNIInterfaceHandle * aHandle,
         /* Nothing to do */
     }
 
+    aHandle->mThrowable = aThrowable;
+    
     if ( aThrowable != NULL ) 
-    {
+    {    
         if ( aHandle->mConflictLoggingLevel >= 1 )
         {
             oaLogMessage( OAM_MSG_JNI_EXCEPTION, aFunctionName );
@@ -279,6 +309,74 @@ static void oaJNILogMessage( oaJNIInterfaceHandle * aHandle,
     (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
 
     return ;
+}
+
+acp_bool_t oaJNIIsSkipList( oaJNIInterfaceHandle * aHandle )
+{
+    acp_bool_t      sIsSkipException = ACP_FALSE;
+    acp_char_t        * sSQLState        = NULL;
+    jstring         sSQLStateString = NULL; 
+    acp_list_node_t   * sIterator        = NULL;
+    acp_list_t        * sListHead        = &(aHandle->mSkipErrorList);
+
+    ACE_ASSERT( ( *(aHandle->mEnv) )->PushLocalFrame( aHandle->mEnv, MAX_LOCAL_FRAME_SIZE ) >= 0 );
+
+    ACP_STR_DECLARE_DYNAMIC( sSQLStateMessage );
+    ACP_STR_INIT_DYNAMIC( sSQLStateMessage, 32, 32 );
+    
+    if ( aHandle->mThrowable != NULL )
+    {
+        if ( (*(aHandle->mEnv))->IsInstanceOf( aHandle->mEnv, 
+                                               (jobject)aHandle->mThrowable, 
+                                               oaJNIGetClass( JNI_METHOD_SQLEXCEPTION_GETSQLSTATE ) )
+             == JNI_TRUE )
+        {
+            sSQLStateString = ( *(aHandle->mEnv) )->CallObjectMethod( aHandle->mEnv, 
+                                                                      aHandle->mThrowable, 
+                                                                      oaJNIGetMethodID( JNI_METHOD_SQLEXCEPTION_GETSQLSTATE ) );
+
+            sSQLState =  (acp_char_t *)( *(aHandle->mEnv) )->GetStringUTFChars( aHandle->mEnv,
+                                                                                sSQLStateString,
+                                                                                NULL /* IsCopy */ );
+
+            ACP_LIST_ITERATE(sListHead, sIterator)
+            {
+                 if ( acpCStrCmp( (acp_char_t *)sIterator->mObj,
+                                  sSQLState,
+                                  SQLSTATE_STR_LEN ) == 0 )
+                 {
+                     sIsSkipException = ACP_TRUE;
+                     break;
+                 }
+                 else
+                 {
+                     /* Nothing to do */
+                 }
+            }
+
+            if ( acpStrCpyFormat( &sSQLStateMessage, "SQLState : %s", sSQLState ) == ACP_RC_SUCCESS )
+            {
+                oaLogMessage( OAM_MSG_DUMP_LOG, acpStrGetBuffer(&sSQLStateMessage) );
+            }
+            else
+            {
+                oaLogMessage( OAM_MSG_DUMP_LOG, sSQLState );
+            }
+        } 
+        else
+        {
+            /* Nothing to do */
+        }
+
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+    
+    return sIsSkipException;
 }
 
 static ace_rc_t oaJNIGetCreatedJavaVM( oaContext * aContext, oaJNIInterfaceHandle * aHandle )
@@ -400,28 +498,35 @@ static ace_rc_t oaJNIGetCreatedJavaVM( oaContext * aContext, oaJNIInterfaceHandl
 static ace_rc_t oaJNIMethodInitialize( oaContext * aContext, oaJNIInterfaceHandle * aHandle )
 {
     acp_sint32_t i = 0;
-    
+
     for ( i = 0 ; i < JNI_METHOD_MAX ; i++ )
     {
         gJNIMethodDesc[i].mClass = ( *(aHandle->mEnv) )->FindClass( aHandle->mEnv, gJNIMethodDesc[i].mClassName );
         ACE_TEST_RAISE( gJNIMethodDesc[i].mClass == NULL, ERR_NOT_FOUND_CLASS );
-        
-        if ( gJNIMethodDesc[i].mIsStatic == ACP_TRUE )
+
+        if ( gJNIMethodDesc[i].mMethodName != NULL )
         {
-            gJNIMethodDesc[i].mMethodID = ( *(aHandle->mEnv) )->GetStaticMethodID( aHandle->mEnv, 
-                                                                                   gJNIMethodDesc[i].mClass, 
-                                                                                   gJNIMethodDesc[i].mMethodName,
-                                                                                   gJNIMethodDesc[i].mSig );
+            if ( gJNIMethodDesc[i].mIsStatic == ACP_TRUE )
+            {
+                gJNIMethodDesc[i].mMethodID = ( *(aHandle->mEnv) )->GetStaticMethodID( aHandle->mEnv,
+                                                                                       gJNIMethodDesc[i].mClass,
+                                                                                       gJNIMethodDesc[i].mMethodName,
+                                                                                       gJNIMethodDesc[i].mSig );
+            }
+            else
+            {
+                gJNIMethodDesc[i].mMethodID = ( *(aHandle->mEnv) )->GetMethodID( aHandle->mEnv,
+                                                                                 gJNIMethodDesc[i].mClass,
+                                                                                 gJNIMethodDesc[i].mMethodName,
+                                                                                 gJNIMethodDesc[i].mSig );
+            }
+
+            ACE_TEST_RAISE( gJNIMethodDesc[i].mMethodID == NULL, ERR_NOT_FOUND_METHOD );
         }
         else
         {
-            gJNIMethodDesc[i].mMethodID = ( *(aHandle->mEnv) )->GetMethodID( aHandle->mEnv, 
-                                                                             gJNIMethodDesc[i].mClass, 
-                                                                             gJNIMethodDesc[i].mMethodName,
-                                                                             gJNIMethodDesc[i].mSig );
+            /* Nothing to do */
         }
-        
-        ACE_TEST_RAISE( gJNIMethodDesc[i].mMethodID == NULL, ERR_NOT_FOUND_METHOD );
     }
 
     return ACE_RC_SUCCESS;
@@ -660,7 +765,7 @@ static ace_rc_t oaJNISetAutoCommit( oaContext * aContext, oaJNIInterfaceHandle *
 
    return ACE_RC_SUCCESS;
 
-   ACE_EXCEPTION( ERR_EXCEPTION)
+   ACE_EXCEPTION( ERR_EXCEPTION )
    {
        oaJNILogMessage( aHandle,
                         sThrowable,
@@ -1220,7 +1325,7 @@ ace_rc_t oaJNIConnectionCommit( oaContext * aContext, oaJNIInterfaceHandle * aHa
 
     return ACE_RC_SUCCESS;
  
-    ACE_EXCEPTION( ERR_EXCEPTION)
+    ACE_EXCEPTION( ERR_EXCEPTION )
     {
         oaJNILogMessage( aHandle, 
                          sThrowable,
@@ -1249,7 +1354,7 @@ ace_rc_t oaJNIConnectionRollback( oaContext * aContext, oaJNIInterfaceHandle * a
  
     return ACE_RC_SUCCESS;
  
-    ACE_EXCEPTION( ERR_EXCEPTION)
+    ACE_EXCEPTION( ERR_EXCEPTION )
     {
         oaJNILogMessage( aHandle, 
                          sThrowable,
@@ -1319,4 +1424,109 @@ void oaJNIReleaseDMLStatusArray( oaJNIInterfaceHandle * aHandle, jint * aParamSt
         /* Nothing to do */
     }
         
+}
+
+ace_rc_t oaJNICreateStatement( oaContext            * aContext, 
+                               oaJNIInterfaceHandle * aHandle )  
+{
+    jthrowable  sThrowable       = NULL;
+    jobject     sStatement       = NULL;
+    
+    ACE_ASSERT( ( *(aHandle->mEnv) )->PushLocalFrame( aHandle->mEnv, MAX_LOCAL_FRAME_SIZE ) >= 0 );
+    
+    sStatement = ( *(aHandle->mEnv) )->CallObjectMethod( aHandle->mEnv,
+                                                                  aHandle->mConnectionObject,
+                                                                  oaJNIGetMethodID( JNI_METHOD_CONNECTION_CREATESTATEMENT ) );
+    ACE_TEST_RAISE( sStatement == NULL, ERR_EXCEPTION );
+
+    aHandle->mStatement = ( *(aHandle->mEnv) )->NewGlobalRef( aHandle->mEnv,
+                                                              sStatement );
+    
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+    
+    return ACE_RC_SUCCESS;
+ 
+    ACE_EXCEPTION( ERR_EXCEPTION )
+    {
+        oaJNILogMessage( aHandle, 
+                         sThrowable,
+                         "oaJNICreateStatement" );
+    }
+    ACE_EXCEPTION_END;
+
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+
+    return ACE_RC_FAILURE;
+}
+
+ace_rc_t oaJNIStatementClose( oaContext            * aContext, 
+                              oaJNIInterfaceHandle * aHandle )  
+{
+    jthrowable  sThrowable       = NULL;
+    
+    ACE_ASSERT( ( *(aHandle->mEnv) )->PushLocalFrame( aHandle->mEnv, MAX_LOCAL_FRAME_SIZE ) >= 0 );
+    
+    ( *(aHandle->mEnv) )->CallVoidMethod( aHandle->mEnv,
+                                          aHandle->mStatement,
+                                          oaJNIGetMethodID( JNI_METHOD_STATEMENT_CLOSE ) );
+    sThrowable =  ( *(aHandle->mEnv) )->ExceptionOccurred( aHandle->mEnv );
+    ACE_TEST_RAISE( sThrowable != NULL, ERR_EXCEPTION );
+    
+    ( *(aHandle->mEnv) )->DeleteGlobalRef( aHandle->mEnv, aHandle->mStatement );
+    aHandle->mStatement = NULL;
+    
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+    
+    return ACE_RC_SUCCESS;
+ 
+    ACE_EXCEPTION( ERR_EXCEPTION )
+    {
+        oaJNILogMessage( aHandle, 
+                         sThrowable,
+                         "oaJNIStatementClose" );
+    }
+    ACE_EXCEPTION_END;
+
+    ( *(aHandle->mEnv) )->DeleteGlobalRef( aHandle->mEnv, aHandle->mStatement );
+    aHandle->mStatement = NULL;
+    
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+
+    return ACE_RC_FAILURE;
+}
+
+ace_rc_t oaJNIStmtExecute( oaContext            * aContext, 
+                           oaJNIInterfaceHandle * aHandle,
+                           acp_str_t            * aQueryStr )  
+{
+    jstring     sQueryStr        = NULL;
+    jthrowable  sThrowable       = NULL;
+    
+    ACE_ASSERT( ( *(aHandle->mEnv) )->PushLocalFrame( aHandle->mEnv, MAX_LOCAL_FRAME_SIZE ) >= 0 );
+    
+    sQueryStr = ( *(aHandle->mEnv) )->NewStringUTF( aHandle->mEnv, (char *)acpStrGetBuffer(aQueryStr) );
+    ACE_TEST_RAISE( sQueryStr == NULL, ERR_EXCEPTION );
+    
+    (void)( *(aHandle->mEnv) )->CallBooleanMethod( aHandle->mEnv, 
+                                                   aHandle->mStatement,
+                                                   oaJNIGetMethodID( JNI_METHOD_STATEMENT_EXECUTE ),
+                                                   sQueryStr);
+    sThrowable =  ( *(aHandle->mEnv) )->ExceptionOccurred( aHandle->mEnv );
+    ACE_TEST_RAISE( sThrowable != NULL, ERR_EXCEPTION );
+    
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+    
+    return ACE_RC_SUCCESS;
+ 
+    ACE_EXCEPTION( ERR_EXCEPTION )
+    {
+        oaJNILogMessage( aHandle, 
+                         sThrowable,
+                         "oaJNIStmtExecute" );
+    }
+    ACE_EXCEPTION_END;
+
+    (void)( *(aHandle->mEnv) )->PopLocalFrame( aHandle->mEnv, NULL );
+
+    return ACE_RC_FAILURE;
 }

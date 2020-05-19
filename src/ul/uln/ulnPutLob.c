@@ -55,7 +55,8 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
 
     ULN_FNCONTEXT_GET_DBC(&sFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ULN_FLAG_UP(sNeedExit);
 
@@ -163,6 +164,11 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_NULL)
     {
         /* HY009 : invalid use of null pointer */

@@ -23,6 +23,7 @@ public class BinaryColumn extends CommonBinaryColumn
     BinaryColumn()
     {
         super(LENGTH_SIZE_BINARY);
+        addMappedJdbcTypeSet(AltibaseTypes.GEOMETRY);
     }
 
     public int getDBColumnType()
@@ -30,11 +31,6 @@ public class BinaryColumn extends CommonBinaryColumn
         return ColumnTypes.BINARY;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.GEOMETRY };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "BINARY";

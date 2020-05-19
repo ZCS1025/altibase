@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddDiskMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddDiskMgr.cpp 84383 2018-11-20 04:18:42Z emlee $
  *
  * Description :
  *
@@ -1248,8 +1248,7 @@ IDE_RC sddDiskMgr::removeTableSpace( idvSQL            *aStatistics,
     sctPendingOp     *  sPendingOp;
 
     IDE_DASSERT( aTrans != NULL );
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
     IDE_DASSERT( aTouchMode != SMI_EACH_BYMODE );
 
     IDE_TEST( sctTableSpaceMgr::lock( aStatistics )
@@ -2088,8 +2087,7 @@ IDE_RC sddDiskMgr::endBackupDiskTBS(idvSQL*      aStatistics,
     sddTableSpaceNode*  sSpaceNode;
     UInt                i;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID ) == ID_TRUE );
 
     sLockedMgr = ID_FALSE;
 
@@ -2196,8 +2194,7 @@ IDE_RC sddDiskMgr::write4DPath( idvSQL      * aStatistics,
     sddDataFileNode*   sFileNode;
     UInt               sState = 0;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
     IDE_DASSERT( aBuffer != NULL );
 
     sFileNode      = NULL;
@@ -2447,12 +2444,11 @@ IDE_RC sddDiskMgr::doActUpdateAllDBFHdrInChkpt(
 
     while ( 1 )
     {
-        if ( (sctTableSpaceMgr::isDiskTableSpace(
-                                aSpaceNode->mID ) != ID_TRUE) ||
-             (sctTableSpaceMgr::isTempTableSpace(
-                                aSpaceNode->mID ) == ID_TRUE) )
+        if ( (sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) != ID_TRUE) ||
+             (sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) == ID_TRUE) )
         {
             // 디스크테이블스페이스가 아닌경우 갱신하지 않음.
+            // 임시 테이블스페이스의 경우 갱신하지 않음.
             break;
         }
 
@@ -2652,8 +2648,7 @@ IDE_RC sddDiskMgr::createDataFiles( idvSQL           * aStatistics,
     SChar             * sExistFileName  = NULL;
 
     IDE_DASSERT( aTrans != NULL );
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
     IDE_DASSERT( aDataFileAttr != NULL );
     IDE_DASSERT( (aTouchMode == SMI_ALL_NOTOUCH) ||
                  (aTouchMode == SMI_EACH_BYMODE) );
@@ -3433,7 +3428,6 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
                          idvSQL              * aStatistics,
                          void                * aTrans,
                          scSpaceID             aTableSpaceID,
-                         ULong                 aNeededPageCnt,
                          sddDataFileNode     * aFileNode )
 {
     UInt                sTransStatus;
@@ -3444,12 +3438,8 @@ IDE_RC sddDiskMgr::extendDataFileFEBT(
     smLSN               sLsnNTA;
     UInt                sPreparedIO;
 
-    IDE_ASSERT( aFileNode != NULL );
-
-    IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
-
-    IDE_ASSERT( aNeededPageCnt > 0 );
+    IDE_DASSERT( aFileNode != NULL );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
 
     sPreparedIO   = 0;
     sTryAutoExtend = ID_FALSE;
@@ -3700,12 +3690,11 @@ IDE_RC sddDiskMgr::alterResizeFEBT(
 
     //현재 파일의 크기는 aFileNode->mCurrSize 로 알수있다.
 
-    IDE_ASSERT( aTrans        != NULL );
-    IDE_ASSERT( aDataFileName != NULL );
-    IDE_ASSERT( aSizeWanted > 0 );
-    IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                == ID_TRUE );
-    IDE_ASSERT( aFileNode != NULL);
+    IDE_DASSERT( aTrans        != NULL );
+    IDE_DASSERT( aDataFileName != NULL );
+    IDE_DASSERT( aSizeWanted > 0 );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
+    IDE_DASSERT( aFileNode != NULL);
 
     sPreparedIO     = 0;
     sResizePageSize = 0;
@@ -4086,10 +4075,9 @@ IDE_RC sddDiskMgr::alterAutoExtendFEBT(
 
     UInt               sState = 0;
 
-    IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
-    IDE_ASSERT( aDataFileName != NULL );
-    IDE_ASSERT( aFileNode != NULL );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
+    IDE_DASSERT( aDataFileName != NULL );
+    IDE_DASSERT( aFileNode != NULL );
 
     IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
     sState = 1;
@@ -4220,8 +4208,7 @@ IDE_RC sddDiskMgr::alterDataFileName( idvSQL*     aStatistics,
     SChar              sValidOldDataFileName[SM_MAX_FILE_NAME + 1];
     UInt               sNameLen;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
     IDE_DASSERT( aNewFileName != NULL );
     IDE_DASSERT( aOldFileName != NULL );
 
@@ -4305,9 +4292,7 @@ IDE_RC sddDiskMgr::getTotalPageCountOfTBS( idvSQL  *  aStatistics,
     UInt               sState = 0;
     sddTableSpaceNode* sSpaceNode;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
-
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
     IDE_DASSERT( aTotalPageCount != NULL );
 
     sSpaceNode = NULL;
@@ -4351,8 +4336,7 @@ IDE_RC sddDiskMgr::getExtentAnTotalPageCnt( idvSQL  *  aStatistics,
     UInt               sState = 0;
     sddTableSpaceNode* sSpaceNode;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE );
     IDE_DASSERT( aTotalPageCount != NULL );
 
     sSpaceNode = NULL;
@@ -4401,8 +4385,7 @@ IDE_RC sddDiskMgr::existDataFile( idvSQL*   aStatistics,
     sddDataFileNode*   sFileNode;
     SChar              sValidName[SM_MAX_FILE_NAME];
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aID ) == ID_TRUE );
     IDE_DASSERT( aName != NULL );
 
     sNameLength = 0;
@@ -4804,8 +4787,7 @@ IDE_RC  sddDiskMgr::getDataFileIDByPageID( idvSQL *         aStatistics,
     sddTableSpaceNode * sSpaceNode;
     sddDataFileNode   * sFileNode;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID ) == ID_TRUE );
 
     IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
     sState = 1;
@@ -5436,8 +5418,7 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
 
     while ( 1 )
     {
-        if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
-             != ID_TRUE )
+        if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) != ID_TRUE )
         {
             // 디스크 테이블스페이스가 아닌 경우 체크하지 않는다.
             break;
@@ -5479,10 +5460,23 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
                 // 디스크 임시 테이블스페이스인 경우 다시 만들면 된다.
                 // 체크포인트 등 다른 이유로(운영중에) 호출되면I 기존과 동일하게 에러 올림
                 if ( ( smiGetStartupPhase() < SMI_STARTUP_SERVICE ) &&
-                     ( sctTableSpaceMgr::isTempTableSpace(
-                                         sSpaceNode->mHeader.mID ) == ID_TRUE ) )
+                     ( sctTableSpaceMgr::isTempTableSpace(sSpaceNode->mHeader.mID) == ID_TRUE ) )
                 {
-                    IDE_TEST( sddDataFile::reuse( aStatistics, sFileNode ) != IDE_SUCCESS )
+                    if ( sFileNode->mCurrSize > sFileNode->mInitSize )
+                    {
+                        sddDataFile::setCurrSize( sFileNode, sFileNode->mInitSize);
+                    }
+                    else
+                    {
+                        /* nothing to do */
+                    }
+
+                    IDE_TEST( sddDataFile::reuse( aStatistics, sFileNode ) != IDE_SUCCESS );
+
+                    /* loganchor flush */
+                    IDE_TEST( smLayerCallback::updateDBFNodeAndFlush( sFileNode )
+                              != IDE_SUCCESS );
+
                 }
                 else
                 {
@@ -5501,8 +5495,7 @@ IDE_RC sddDiskMgr::doActIdentifyAllDBFiles(
                 continue;
             }
 
-            if ( sctTableSpaceMgr::isTempTableSpace(
-                                     sSpaceNode->mHeader.mID ) == ID_TRUE )
+            if ( sctTableSpaceMgr::isTempTableSpace( sSpaceNode->mHeader.mID ) == ID_TRUE )
             {
                 // 디스크 임시 테이블스페이스인 경우 데이타파일이
                 // 존재하는지 확인만 한다.
@@ -5839,8 +5832,7 @@ IDE_RC  sddDiskMgr::getPageRangeInFileByID( idvSQL          * aStatistics,
     UInt                sState = 0;
     sddTableSpaceNode * sSpaceNode;
 
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceID ) == ID_TRUE );
     IDE_DASSERT( aFstPageID != NULL );
     IDE_DASSERT( aLstPageID != NULL );
 

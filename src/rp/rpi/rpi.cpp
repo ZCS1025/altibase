@@ -16,12 +16,18 @@
  
 
 /***********************************************************************
- * $Id: rpi.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpi.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
 #include <smi.h>
 #include <rpi.h>
+
+#include <rpcManager.h>
+#include <rpdMeta.h>
+#include <rpcValidate.h>
+#include <rpcExecute.h>
+#include <rpdCatalog.h>
 
 IDE_RC
 rpi::initREPLICATION()
@@ -118,6 +124,11 @@ IDE_RC rpi::alterReplicationSetGrouping( void * aQcStatement )
     return rpcManager::alterReplicationSetGrouping( aQcStatement );
 }
 
+IDE_RC rpi::alterReplicationSetDDLReplicate( void * aQcStatement )
+{
+    return rpcManager::alterReplicationSetDDLReplicate( aQcStatement );
+}
+
 IDE_RC
 rpi::dropReplication( void * aQcStatement )
 {
@@ -159,12 +170,14 @@ rpi::startSenderThread(smiStatement  * aSmiStmt,
 IDE_RC
 rpi::stopSenderThread(smiStatement * aSmiStmt,
                       SChar        * aReplName,
-                      idvSQL       * aStatistics)
+                      idvSQL       * aStatistics,
+                      idBool         aIsImmediate )
 {
-    return rpcManager::stopSenderThread(aSmiStmt,
+    return rpcManager::stopSenderThread( aSmiStmt,
                                          aReplName,
                                          ID_FALSE,
-                                         aStatistics);
+                                         aStatistics,
+                                         aIsImmediate );
 }
 
 IDE_RC rpi::resetReplication(smiStatement * aSmiStmt,
@@ -257,3 +270,184 @@ qciManageReplicationCallback rpi::getReplicationManageCallback( )
 {
     return rpcManager::mCallback;
 };
+
+IDE_RC rpi::ddlSyncBegin( qciStatement  * aQciStatement, 
+                          smiStatement  * aSmiStatement )
+{
+    smiTrans     * sDDLTrans     = NULL;
+    UInt           sStmtFlag     = 0;
+    idBool         sIsStmtBegin  = ID_TRUE;
+    idBool         sSwapSmiStmt  = ID_FALSE;
+    smiStatement * sSmiStatementOrig = NULL;
+
+    IDE_TEST_CONT( qciMisc::isDDLSync( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+    IDE_TEST_CONT( qciMisc::isReplicableDDL( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+
+    qciMisc::getSmiStmt( aQciStatement, &sSmiStatementOrig );
+    qciMisc::setSmiStmt( aQciStatement, aSmiStatement );
+    sSwapSmiStmt = ID_TRUE;
+
+    sDDLTrans    = aSmiStatement->getTrans();
+    sStmtFlag    = aSmiStatement->mFlag;
+
+    IDE_TEST( aSmiStatement->end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsStmtBegin = ID_FALSE;
+
+    IDE_TEST( rpcManager::ddlSyncBegin( aQciStatement ) != IDE_SUCCESS );
+
+    sIsStmtBegin = ID_TRUE;
+    IDE_ASSERT( aSmiStatement->begin( sDDLTrans->getStatistics(),
+                                      sDDLTrans->getStatement(),
+                                      sStmtFlag )
+                == IDE_SUCCESS );
+
+    qciMisc::setSmiStmt( aQciStatement, sSmiStatementOrig );
+    sSwapSmiStmt = ID_FALSE;
+
+    RP_LABEL( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsStmtBegin != ID_TRUE )
+    {
+        sIsStmtBegin = ID_TRUE;
+        IDE_ASSERT( aSmiStatement->begin( sDDLTrans->getStatistics(),
+                                          sDDLTrans->getStatement(),
+                                          sStmtFlag )
+                    == IDE_SUCCESS );
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    if ( sSwapSmiStmt == ID_TRUE )
+    {
+        qciMisc::setSmiStmt( aQciStatement, sSmiStatementOrig );
+        sSwapSmiStmt = ID_FALSE;
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpi::ddlSyncEnd( qciStatement * aQciStatement,
+                        smiStatement * aSmiStatement )
+{
+    idBool         sIsStmtBegin  = ID_TRUE;
+    smiTrans     * sDDLTrans     = NULL;
+    UInt           sStmtFlag     = 0;
+    idBool         sSwapSmiStmt  = ID_FALSE;
+    smiStatement * sSmiStatementOrig = NULL;
+
+    IDE_TEST_CONT( qciMisc::isDDLSync( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+    IDE_TEST_CONT( qciMisc::isReplicableDDL( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+
+    qciMisc::getSmiStmt( aQciStatement, &sSmiStatementOrig );
+    qciMisc::setSmiStmt( aQciStatement, aSmiStatement );
+    sSwapSmiStmt = ID_TRUE;
+
+    sDDLTrans    = aSmiStatement->getTrans();
+    sStmtFlag    = aSmiStatement->mFlag;
+
+    IDE_TEST( aSmiStatement->end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsStmtBegin = ID_FALSE;
+
+    IDE_TEST( rpcManager::ddlSyncEnd( sDDLTrans ) != IDE_SUCCESS );
+
+    sIsStmtBegin = ID_TRUE;
+    IDE_ASSERT( aSmiStatement->begin( sDDLTrans->getStatistics(),
+                                      sDDLTrans->getStatement(),
+                                      sStmtFlag )
+                == IDE_SUCCESS );
+
+    qciMisc::setSmiStmt( aQciStatement, sSmiStatementOrig );
+    sSwapSmiStmt = ID_FALSE;
+
+    RP_LABEL( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsStmtBegin != ID_TRUE )
+    {
+        sIsStmtBegin = ID_TRUE;
+        IDE_ASSERT( aSmiStatement->begin( sDDLTrans->getStatistics(),
+                                          sDDLTrans->getStatement(),
+                                          sStmtFlag )
+                    == IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_ASSERT( aSmiStatement->end( SMI_STATEMENT_RESULT_FAILURE ) == IDE_SUCCESS );
+        sIsStmtBegin = ID_FALSE;
+
+        rpcManager::ddlSyncException( sDDLTrans ); 
+
+        sIsStmtBegin = ID_TRUE;
+        IDE_ASSERT( aSmiStatement->begin( sDDLTrans->getStatistics(),
+                                          sDDLTrans->getStatement(),
+                                          sStmtFlag )
+                    == IDE_SUCCESS );
+    }
+
+    if ( sSwapSmiStmt == ID_TRUE )
+    {
+        qciMisc::setSmiStmt( aQciStatement, sSmiStatementOrig );
+        sSwapSmiStmt = ID_FALSE;
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+
+}
+
+void rpi::ddlSyncException( qciStatement * aQciStatement, 
+                            smiStatement * aSmiStatement )
+
+{
+    smiTrans     * sDDLTrans     = NULL;
+    UInt           sStmtFlag     = 0;
+    smiStatement * sSmiStatementOrig = NULL;
+
+    IDE_TEST_CONT( qciMisc::isDDLSync( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+    IDE_TEST_CONT( qciMisc::isReplicableDDL( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+
+    qciMisc::getSmiStmt( aQciStatement, &sSmiStatementOrig );
+    qciMisc::setSmiStmt( aQciStatement, aSmiStatement );
+
+    sDDLTrans    = aSmiStatement->getTrans();
+    sStmtFlag    = aSmiStatement->mFlag;
+
+    IDE_ASSERT( aSmiStatement->end( SMI_STATEMENT_RESULT_FAILURE ) == IDE_SUCCESS );
+
+    rpcManager::ddlSyncException( sDDLTrans );
+
+    IDE_ASSERT( aSmiStatement->begin( sDDLTrans->getStatistics(),
+                                      sDDLTrans->getStatement(),
+                                      sStmtFlag )
+                == IDE_SUCCESS );
+
+    qciMisc::setSmiStmt( aQciStatement, sSmiStatementOrig );
+
+    RP_LABEL( NORMAL_EXIT );
+}
+
+

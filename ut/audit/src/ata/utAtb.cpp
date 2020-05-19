@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtb.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utAtb.cpp 82790 2018-04-15 23:41:55Z bethy $
  ******************************************************************************/
 
 #include <utAtb.h>
@@ -41,9 +41,13 @@
             case SQL_CLOB:
                      type = SQL_C_CHAR;
                      break;
+
+            /* BUG-45958 Need to support BIT/VARBIT type */
             case SQL_BIT:
-                     type = SQL_C_BIT;
+            case SQL_VARBIT:
+                     type = SQL_C_BINARY;
                      break;
+
             case SQL_TINYINT:
                      type = SQL_C_STINYINT;
                      break;

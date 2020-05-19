@@ -106,6 +106,10 @@ typedef struct cmnOpensslFuncs
     void                (*X509_free)(const X509 *aCert);
 
     void                (*SSL_COMP_free_compression_methods)(void);
+
+    /* BUG-46352 Output OpenSSL version */
+    const SChar*        (*SSLeay_version)(SInt aType);
+    const SChar         **SSL_version_str;
 } cmnOpensslFuncs;
 
 #define ALTIBASE_OPENSSL_LIB_NAME "ssl"

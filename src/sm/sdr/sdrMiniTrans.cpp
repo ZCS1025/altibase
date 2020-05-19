@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdrMiniTrans.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdrMiniTrans.cpp 84383 2018-11-20 04:18:42Z emlee $
  *
  * Description :
  *
@@ -970,7 +970,6 @@ IDE_RC sdrMiniTrans::initLogRec( sdrMtx*        aMtx,
 
     IDE_DASSERT( validate(aMtx) == ID_TRUE );
     IDE_DASSERT( getLogMode(aMtx) == SDR_MTX_LOGGING );
-
     IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace(SC_MAKE_SPACE(aWriteGRID))
                  == ID_TRUE );
 
@@ -980,17 +979,17 @@ IDE_RC sdrMiniTrans::initLogRec( sdrMtx*        aMtx,
 
     sSpaceID = SC_MAKE_SPACE(aWriteGRID);
 
-    if (aMtx->mLogCnt == 0)
+    if ( aMtx->mLogCnt == 0 )
     {
         aMtx->mAccSpaceID = sSpaceID;
     }
     else
     {
-        if (sSpaceID != SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO)
+        // undo 가 확실하면 굳이 확인하지 말자. 성능 문제도 있고..
+        if ( sctTableSpaceMgr::isUndoTableSpace( sSpaceID ) == ID_FALSE )
         {
-            IDE_ASSERT(
-             (sctTableSpaceMgr::isDiskTableSpace(sSpaceID) == ID_TRUE ) &&
-             (sctTableSpaceMgr::isDiskTableSpace(aMtx->mAccSpaceID) == ID_TRUE));
+            IDE_ASSERT( sSpaceID == aMtx->mAccSpaceID );
+            IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace(sSpaceID) == ID_TRUE ); 
         }
     }
 

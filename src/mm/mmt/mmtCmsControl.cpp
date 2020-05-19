@@ -74,6 +74,93 @@ static IDE_RC answerTransactionResult(cmiProtocolContext *aProtocolContext)
     return IDE_FAILURE;
 }
 
+/* BUG-46785 Shard statement partial rollback */
+static IDE_RC answerSetSavepointResult( cmiProtocolContext *aProtocolContext )
+{
+    cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
+    CMI_WRITE_CHECK( aProtocolContext, 1 );
+    sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    CMI_WOP( aProtocolContext, CMP_OP_DB_SetSavepointResult );
+
+    /* PROJ-2616 */
+    MMT_IPCDA_INCREASE_DATA_COUNT( aProtocolContext );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    /* BUG-44124 ipcda 모드 사용 중 hang - iloader 컬럼이 많은 테이블 */
+    if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
+        ( cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA ) )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE ) );
+    }
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46785 Shard statement partial rollback */
+static IDE_RC answerRollbackToSavepointResult( cmiProtocolContext *aProtocolContext )
+{
+    cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
+    CMI_WRITE_CHECK( aProtocolContext, 1 );
+    sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    CMI_WOP( aProtocolContext, CMP_OP_DB_RollbackToSavepointResult );
+
+    /* PROJ-2616 */
+    MMT_IPCDA_INCREASE_DATA_COUNT( aProtocolContext );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    /* BUG-44124 ipcda 모드 사용 중 hang - iloader 컬럼이 많은 테이블 */
+    if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
+        ( cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA ) )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE ) );
+    }
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46785 Shard statement partial rollback */
+static IDE_RC answerSetTransactionBrokenResult( cmiProtocolContext  * aProtocolContext )
+{
+    cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
+    CMI_WRITE_CHECK( aProtocolContext, 1 );
+    sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
+
+    CMI_WOP( aProtocolContext, CMP_OP_DB_ShardStmtPartialRollbackResult );
+
+    /* PROJ-2616 */
+    MMT_IPCDA_INCREASE_DATA_COUNT( aProtocolContext );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    /* BUG-44124 ipcda 모드 사용 중 hang - iloader 컬럼이 많은 테이블 */
+    if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
+        ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
+    {
+        IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_FAILURE;
+}
 
 IDE_RC mmtServiceThread::cancelProtocol(cmiProtocolContext *aProtocolContext,
                                         cmiProtocol        *,
@@ -181,6 +268,9 @@ IDE_RC mmtServiceThread::transactionProtocol(cmiProtocolContext *aProtocolContex
             break;
     }
 
+    /* BUG-45967 Data Node의 Shard Session 정리 */
+    IDE_TEST( sSession->checkSMNForDataNode( "TransactionResult" ) != IDE_SUCCESS );
+
     return answerTransactionResult(aProtocolContext);
 
     IDE_EXCEPTION(DCLNotAllowedError);
@@ -196,4 +286,150 @@ IDE_RC mmtServiceThread::transactionProtocol(cmiProtocolContext *aProtocolContex
     return sThread->answerErrorResult(aProtocolContext,
                                       CMI_PROTOCOL_OPERATION(DB, Transaction),
                                       0);
+}
+
+/* BUG-46785 Shard statement partial rollback */
+IDE_RC mmtServiceThread::setSavepointProtocol( cmiProtocolContext   *aProtocolContext,
+                                               cmiProtocol          *,
+                                               void                 *aSessionOwner,
+                                               void                 *aUserContext )
+{
+
+    mmcTask             *sTask = (mmcTask *)aSessionOwner;
+    mmtServiceThread    *sThread = (mmtServiceThread *)aUserContext;
+    mmcSession          *sSession;
+    SChar                sSavepointName[SMI_MAX_SVPNAME_SIZE] = { 0, };
+    UInt                 sSavepointNameLength = 0;
+
+    CMI_RD4( aProtocolContext, &sSavepointNameLength );
+
+    CMI_RCP( aProtocolContext, sSavepointName, sSavepointNameLength );
+
+    IDE_CLEAR();
+
+    IDE_TEST( findSession(sTask, &sSession, sThread) != IDE_SUCCESS );
+
+    IDE_TEST( checkSessionState(sSession, MMC_SESSION_STATE_SERVICE) != IDE_SUCCESS );
+
+    /* BUG-20832 */
+    IDE_TEST_RAISE( sSession->getXaAssocState() != MMD_XA_ASSOC_STATE_NOTASSOCIATED,
+                    DCLNotAllowedError );
+
+    IDE_TEST( sSession->savepoint( sSavepointName, ID_FALSE ) != IDE_SUCCESS );
+
+    return answerSetSavepointResult( aProtocolContext );
+
+    IDE_EXCEPTION(DCLNotAllowedError);
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_NOT_ALLOWED_DCL ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return sThread->answerErrorResult( aProtocolContext,
+                                       CMI_PROTOCOL_OPERATION( DB, SetSavepoint ),
+                                       0 );
+}
+
+/* BUG-46785 Shard statement partial rollback */
+IDE_RC mmtServiceThread::rollbackToSavepointProtocol( cmiProtocolContext   *aProtocolContext,
+                                                      cmiProtocol          *,
+                                                      void                 *aSessionOwner,
+                                                      void                 *aUserContext )
+{
+
+    mmcTask             *sTask = (mmcTask *)aSessionOwner;
+    mmtServiceThread    *sThread = (mmtServiceThread *)aUserContext;
+    mmcSession          *sSession;
+    SChar                sSavepointName[1024] = { 0, };
+    UInt                 sSavepointNameLength = 0;
+
+    CMI_RD4( aProtocolContext, &sSavepointNameLength );
+
+    CMI_RCP( aProtocolContext, sSavepointName, sSavepointNameLength );
+
+    IDE_CLEAR();
+
+    IDE_TEST( findSession(sTask, &sSession, sThread) != IDE_SUCCESS );
+
+    IDE_TEST( checkSessionState(sSession, MMC_SESSION_STATE_SERVICE) != IDE_SUCCESS );
+
+    /* BUG-20832 */
+    IDE_TEST_RAISE( sSession->getXaAssocState() != MMD_XA_ASSOC_STATE_NOTASSOCIATED,
+                    DCLNotAllowedError );
+
+    IDE_TEST( sSession->rollback( sSavepointName, ID_FALSE ) != IDE_SUCCESS );
+
+    return answerRollbackToSavepointResult( aProtocolContext );
+
+    IDE_EXCEPTION( DCLNotAllowedError );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_NOT_ALLOWED_DCL ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return sThread->answerErrorResult( aProtocolContext,
+                                       CMI_PROTOCOL_OPERATION( DB, RollbackToSavepoint ),
+                                       0 );
+}
+
+/* BUG-46785 Shard statement partial rollback */
+IDE_RC mmtServiceThread::shardNodeReport( cmiProtocolContext *aProtocolContext,
+                                          cmiProtocol        *,
+                                          void               *aSessionOwner,
+                                          void               *aUserContext )
+{
+    mmcTask             *sTask = (mmcTask *)aSessionOwner;
+    mmtServiceThread    *sThread = (mmtServiceThread *)aUserContext;
+    mmcSession          *sSession;
+    UInt                 sType;
+    UInt                 sNodeId;
+    UChar                sDestination;
+
+    CMI_RD4( aProtocolContext, &sType );
+
+    switch( sType )
+    {
+        case CMP_DB_SHARD_NODE_CONNECTION_REPORT:
+            CMI_RD4( aProtocolContext, &sNodeId );
+            CMI_RD1( aProtocolContext, sDestination );
+            break;
+
+        case CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT:
+        default:
+            break;
+    }
+
+    IDE_TEST( findSession( sTask, &sSession, sThread ) != IDE_SUCCESS );
+
+    IDE_TEST( checkSessionState( sSession, MMC_SESSION_STATE_SERVICE ) != IDE_SUCCESS) ;
+
+    switch( sType )
+    {
+        case CMP_DB_SHARD_NODE_CONNECTION_REPORT:
+            IDE_TEST( sSession->shardNodeConnectionReport( sNodeId,
+                                                           sDestination )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT:
+            IDE_TEST( sSession->shardNodeTransactionBrokenReport() != IDE_SUCCESS );
+            break;
+
+        default:
+            IDE_RAISE( InvalidType );
+            break;
+    }
+
+    return answerSetTransactionBrokenResult( aProtocolContext );
+
+    IDE_EXCEPTION( InvalidType )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG,
+                                  "Report type is invalid" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return sThread->answerErrorResult( aProtocolContext,
+                                       CMI_PROTOCOL_OPERATION( DB, ShardNodeReport ),
+                                       0 );
 }

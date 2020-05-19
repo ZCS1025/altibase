@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnAggregation.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnAggregation.cpp 85262 2019-04-17 01:37:36Z andrew.shin $
  *
  * Description :
  *     AGGR(AGGRegation) Node
@@ -394,6 +394,10 @@ qmnAGGR::doItAggregation( qcTemplate * aTemplate,
     IDE_TEST( finiAggregation( aTemplate, sDataPlan )
               != IDE_SUCCESS );
 
+    /* BUG-46906 */
+    IDE_TEST( setTupleSet( aTemplate, sDataPlan )
+                  != IDE_SUCCESS );
+
     *aFlag = QMC_ROW_DATA_EXIST;
 
     // 최종적으로 Data 없음을 리턴하기 위함
@@ -478,9 +482,19 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
             //--------------------------------
 
             sDataPlan->doIt = qmnAGGR::doItLast;
+
+            /* BUG-46906 */
+            // 현재 Group에 대한 마무리 수행
+            IDE_TEST( finiAggregation( aTemplate, sDataPlan )
+                      != IDE_SUCCESS );
         }
         else
         {
+            /* BUG-46906 */
+            // 현재 Group에 대한 마무리 수행
+            IDE_TEST( finiAggregation( aTemplate, sDataPlan )
+                      != IDE_SUCCESS );
+
             //--------------------------------
             // 다른 Group이 올라온 경우
             //--------------------------------
@@ -496,8 +510,8 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
             sDataPlan->doIt = qmnAGGR::doItNext;
         }
 
-        // 현재 Group에 대한 마무리 수행
-        IDE_TEST( finiAggregation( aTemplate, sDataPlan )
+        /* BUG-46906 */
+        IDE_TEST( setTupleSet( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
         *aFlag = QMC_ROW_DATA_EXIST;
@@ -575,9 +589,19 @@ qmnAGGR::doItNext( qcTemplate * aTemplate,
     {
         // 더 이상 Record가 없는 경우
         sDataPlan->doIt = qmnAGGR::doItLast;
+
+        /* BUG-46906 */
+        // 현재 Group에 대한 마무리 수행
+        IDE_TEST( finiAggregation( aTemplate, sDataPlan )
+                  != IDE_SUCCESS );
     }
     else
     {
+        /* BUG-46906 */
+        // 현재 Group에 대한 마무리 수행
+        IDE_TEST( finiAggregation( aTemplate, sDataPlan )
+                  != IDE_SUCCESS );
+
         // 다른 Group이 존재하는 경우
         // 다른 Group에 대한 초기화를 수행한다.
 
@@ -589,8 +613,8 @@ qmnAGGR::doItNext( qcTemplate * aTemplate,
         sDataPlan->plan.myTuple->row = sDataPlan->mtrRow[sDataPlan->mtrRowIdx % 2];
     }
 
-    // 현재 Group에 대한 마무리 수행
-    IDE_TEST( finiAggregation( aTemplate, sDataPlan )
+    /* BUG-46906 */
+    IDE_TEST( setTupleSet( aTemplate, sDataPlan )
               != IDE_SUCCESS );
 
     *aFlag = QMC_ROW_DATA_EXIST;
@@ -1547,9 +1571,6 @@ qmnAGGR::finiAggregation( qcTemplate * aTemplate,
         IDE_TEST( qtc::finalize( sAggrNode->dstNode, aTemplate )
                   != IDE_SUCCESS );
     }
-
-    IDE_TEST( setTupleSet( aTemplate, aDataPlan )
-              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 

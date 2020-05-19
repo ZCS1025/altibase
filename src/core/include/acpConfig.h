@@ -56,7 +56,27 @@
 #include <dbghelp.h>
 #include <shlobj.h>
 #else
+
+/* before modifying, check acpConfig.h ,Basic_Types.h, and OS.h 
+ (BUG-45623,BUG-46609)*/
+#ifndef FD_SETSIZE_NOT_REDEFINED 
+
+#define FD_SETSIZE_NOT_REDEFINED 
+#if defined(ALTI_CFG_OS_HPUX)
+#  undef  FD_SETSIZE
+#  define FD_SETSIZE 65536     
+#elif defined(ALTI_CFG_OS_AIX)
+#  if  defined(_H_SELECT)
+#    error  select_h_is_already_included
+#  endif
+#  undef  FD_SETSIZE
+#  define FD_SETSIZE 65536    
+#endif
+
+#endif /* #ifndef FD_SETSIZE_NOT_REDEFINED  */
+
 #include <pthread.h>
+
 #endif
 
 #include <assert.h>

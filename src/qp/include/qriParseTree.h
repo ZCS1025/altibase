@@ -42,6 +42,7 @@ typedef struct qriParseTree
     idBool                replModeSelected;   // BUG-17616
     SInt                  parallelFactor;
     RP_SENDER_TYPE        startType;
+    idBool                isImmediateStop;
     SInt                  startOption;        // BUG-18714
     ULong                 startSN;
     SInt                  role;
@@ -69,6 +70,7 @@ typedef struct qriParseTree
     _dst_->replItems       = NULL;                      \
     _dst_->parallelFactor  = 1;                         \
     _dst_->startType       = RP_NORMAL;                 \
+    _dst_->isImmediateStop = ID_FALSE;                  \
     _dst_->startOption     = RP_START_OPTION_NONE;      \
     _dst_->replMode        = RP_LAZY_MODE;              \
     _dst_->ncharList       = NULL;                      \
@@ -82,11 +84,18 @@ typedef struct qriSessionParseTree
 
 typedef struct qriReplHost
 {
-    qciNamePosition        hostIp;
-    UInt                   portNumber;
+    qciNamePosition         hostIp;
+    UInt                    portNumber;
+    struct qriReplConnOpt * connOpt;
 
-    struct qriReplHost   * next;
+    struct qriReplHost    * next;
 } qriReplHost;
+
+typedef struct qriReplConnOpt
+{
+    RP_SOCKET_TYPE          connType;
+    rpIBLatency             ibLatency;
+} qriReplConnOpt;
 
 /* PROJ-1915 : replication reption 확장  for off-line replication */
 typedef struct qriReplDirPath

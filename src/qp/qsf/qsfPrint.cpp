@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfPrint.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsfPrint.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -70,6 +70,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_SpPrint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -155,10 +156,17 @@ IDE_RC qsfCalculate_SpPrint(
     {
         if ( (QC_SMI_STMT(sStatement))->isDummy() == ID_TRUE )
         {
-            IDE_TEST( QCG_SESSION_PRINT_TO_CLIENT( sStatement,
-                                                   sPrintString->value,
-                                                   sPrintString->length )
-                      != IDE_SUCCESS );
+            if ( QCG_GET_SESSION_PRINT_OUT_ENABLE( sStatement ) == 1 )
+            {
+                IDE_TEST( QCG_SESSION_PRINT_TO_CLIENT( sStatement,
+                                                       sPrintString->value,
+                                                       sPrintString->length )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // nothing to do
+            }
         }
         else
         {
@@ -187,7 +195,7 @@ IDE_RC qsfCalculate_SpPrint(
             }
         }
     }
-        
+            
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

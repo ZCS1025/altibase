@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaDeleteThread.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smaDeleteThread.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -533,11 +533,11 @@ IDE_RC smaDeleteThread::deleteInstantly( smaInstantAgingFilter * aAgingFilter )
       수 있기 때문에 별도의 Transaction으로 처리한다.
     */
 
-    IDE_TEST(mTrans->begin( NULL,
-                            ( SMI_TRANSACTION_REPL_NONE |
-                              SMI_COMMIT_WRITE_NOWAIT ),
-                            SMX_NOT_REPL_TX_ID )
-             != IDE_SUCCESS);
+    IDE_ASSERT( mTrans->begin( NULL,
+                               ( SMI_TRANSACTION_REPL_NONE |
+                                 SMI_COMMIT_WRITE_NOWAIT ),
+                               SMX_NOT_REPL_TX_ID )
+               == IDE_SUCCESS);
 
     /* Transaction의 RSGroupID를 0으로 설정한다.
      * 0번 PageList에 페이지를 반납하게 된다. */

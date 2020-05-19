@@ -84,6 +84,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfCrossesCalculate,
     NULL,
+    mtx::calculateNA,
     stfCrossesEstimateRange,
     stfCrossesExtractRange
 };

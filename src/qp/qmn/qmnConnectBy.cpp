@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnConnectBy.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnConnectBy.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -78,16 +78,15 @@ IDE_RC qmnCNBY::makeSortTemp( qcTemplate * aTemplate,
         if ( sSearchRow != NULL )
         {
             aDataPlan->childTuple->row = sSearchRow;
-            
             IDE_TEST( setBaseTupleSet( aTemplate,
                                        aDataPlan,
                                        sSearchRow )
                       != IDE_SUCCESS );
-            
+
             IDE_TEST( qmcSortTemp::alloc( aDataPlan->sortMTR,
                                           &aDataPlan->sortTuple->row )
                       != IDE_SUCCESS );
-            
+
             for ( sNode = aDataPlan->mtrNode;
                   sNode != NULL;
                   sNode = sNode->next )
@@ -191,16 +190,6 @@ IDE_RC qmnCNBY::setCurrentRow( qcTemplate * aTemplate,
 
     aDataPlan->plan.myTuple->row = sStack->items[sIndex].rowPtr;
 
-    IDE_TEST( setBaseTupleSet( aTemplate,
-                               aDataPlan,
-                               aDataPlan->plan.myTuple->row )
-              != IDE_SUCCESS );
-    
-    IDE_TEST( copyTupleSet( aTemplate,
-                            aCodePlan,
-                            aDataPlan->plan.myTuple )
-              != IDE_SUCCESS );
-    
     *aDataPlan->levelPtr    = sStack->items[sIndex].level;
     aDataPlan->firstStack->currentLevel = *aDataPlan->levelPtr;
 
@@ -257,6 +246,16 @@ IDE_RC qmnCNBY::setCurrentRow( qcTemplate * aTemplate,
             }
         }
     }
+
+    IDE_TEST( setBaseTupleSet( aTemplate,
+                               aDataPlan,
+                               aDataPlan->plan.myTuple->row )
+              != IDE_SUCCESS );
+
+    IDE_TEST( copyTupleSet( aTemplate,
+                            aCodePlan,
+                            aDataPlan->plan.myTuple )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -356,7 +355,7 @@ IDE_RC qmnCNBY::doItFirst( qcTemplate * aTemplate,
                                 sCodePlan,
                                 sDataPlan->plan.myTuple )
                   != IDE_SUCCESS );
-        
+
         IDE_TEST( copyTupleSet( aTemplate,
                                 sCodePlan,
                                 sDataPlan->priorTuple )
@@ -511,7 +510,15 @@ IDE_RC qmnCNBY::init( qcTemplate * aTemplate,
     if ( (*sDataPlan->flag & QMND_CNBY_INIT_DONE_MASK)
          == QMND_CNBY_INIT_DONE_FALSE )
     {
-        IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
+        if ( ( sCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+             == QMNC_CNBY_JOIN_FALSE )
+        {
+            IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( firstInitForJoin( aTemplate, sCodePlan, sDataPlan ) != IDE_SUCCESS );
+        }
     }
     else
     {
@@ -554,29 +561,46 @@ IDE_RC qmnCNBY::init( qcTemplate * aTemplate,
         *sDataPlan->flag &= ~QMND_CNBY_ALL_FALSE_MASK;
         *sDataPlan->flag |= QMND_CNBY_ALL_FALSE_FALSE;
 
-        if ( ( sCodePlan->flag & QMNC_CNBY_CHILD_VIEW_MASK )
-             == QMNC_CNBY_CHILD_VIEW_TRUE )
+        if ( ( sCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+             == QMNC_CNBY_JOIN_FALSE )
         {
-            sDataPlan->doIt = qmnCNBY::doItFirst;
-        }
-        else
-        {
-            if ( ( sCodePlan->flag & QMNC_CNBY_FROM_DUAL_MASK )
-                   == QMNC_CNBY_FROM_DUAL_TRUE )
+            if ( ( sCodePlan->flag & QMNC_CNBY_CHILD_VIEW_MASK )
+                 == QMNC_CNBY_CHILD_VIEW_TRUE )
             {
-                sDataPlan->doIt = qmnCNBY::doItFirstDual;
+                sDataPlan->doIt = qmnCNBY::doItFirst;
             }
             else
             {
-                if ( ( sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
-                       == QMN_PLAN_STORAGE_DISK )
+                if ( ( sCodePlan->flag & QMNC_CNBY_FROM_DUAL_MASK )
+                       == QMNC_CNBY_FROM_DUAL_TRUE )
                 {
-                    sDataPlan->doIt = qmnCNBY::doItFirstTableDisk;
+                    sDataPlan->doIt = qmnCNBY::doItFirstDual;
                 }
                 else
                 {
-                    sDataPlan->doIt = qmnCNBY::doItFirstTable;
+                    if ( ( sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
+                           == QMN_PLAN_STORAGE_DISK )
+                    {
+                        sDataPlan->doIt = qmnCNBY::doItFirstTableDisk;
+                    }
+                    else
+                    {
+                        sDataPlan->doIt = qmnCNBY::doItFirstTable;
+                    }
                 }
+            }
+        }
+        else
+        {
+            if ( ( ( sCodePlan->flag & QMNC_CNBY_SIBLINGS_MASK )
+                   == QMNC_CNBY_SIBLINGS_FALSE ) &&
+                 ( sCodePlan->connectByKeyRange != NULL ) )
+            {
+                sDataPlan->doIt = qmnCNBY::doItFirstJoin;
+            }
+            else
+            {
+                sDataPlan->doIt = qmnCNBY::doItFirst;
             }
         }
     }
@@ -875,10 +899,16 @@ IDE_RC qmnCNBY::searchSequnceRow( qcTemplate  * aTemplate,
                                   qmnCNBYItem * aOldItem,
                                   qmnCNBYItem * aNewItem )
 {
-    void   * sSearchRow = NULL;
-    idBool   sJudge     = ID_FALSE;
-    idBool   sLoop      = ID_FALSE;
-    idBool   sIsAllSame = ID_FALSE;
+    void      * sSearchRow = NULL;
+    idBool      sJudge     = ID_FALSE;
+    idBool      sLoop      = ID_FALSE;
+    idBool      sIsAllSame = ID_TRUE;
+    qtcNode   * sNode      = NULL;
+    mtcColumn * sColumn    = NULL;
+    void      * sRow1      = NULL;
+    void      * sRow2      = NULL;
+    UInt        sRow1Size  = 0;
+    UInt        sRow2Size  = 0;
 
     aNewItem->rowPtr = NULL;
 
@@ -980,13 +1010,51 @@ IDE_RC qmnCNBY::searchSequnceRow( qcTemplate  * aTemplate,
                  == QMNC_CNBY_IGNORE_LOOP_TRUE ) )
         {
             sIsAllSame = ID_TRUE;
-            /* 5. Compare Prior Row and Search Row Column */
-            IDE_TEST( qmnCMTR::comparePriorNode( aTemplate,
-                                                 aCodePlan->plan.left,
-                                                 aDataPlan->priorTuple->row,
-                                                 aDataPlan->plan.myTuple->row,
-                                                 &sIsAllSame )
-                       != IDE_SUCCESS );
+            if ( ( aCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+                 == QMNC_CNBY_JOIN_FALSE )
+            {
+                /* 5. Compare Prior Row and Search Row Column */
+                IDE_TEST( qmnCMTR::comparePriorNode( aTemplate,
+                                                     aCodePlan->plan.left,
+                                                     aDataPlan->priorTuple->row,
+                                                     aDataPlan->plan.myTuple->row,
+                                                     &sIsAllSame)
+                           != IDE_SUCCESS );
+            }
+            else
+            {
+                for ( sNode = aCodePlan->priorNode;
+                      sNode != NULL;
+                      sNode = (qtcNode *)sNode->node.next )
+                {
+                    sColumn = &aTemplate->tmplate.rows[sNode->node.table].columns[sNode->node.column];
+
+                    sRow1 = (void *)mtc::value( sColumn, aDataPlan->priorTuple->row, MTD_OFFSET_USE );
+                    sRow2 = (void *)mtc::value( sColumn, aDataPlan->plan.myTuple->row, MTD_OFFSET_USE );
+
+                    sRow1Size = sColumn->module->actualSize( sColumn, sRow1 );
+                    sRow2Size = sColumn->module->actualSize( sColumn, sRow2 );
+                    if ( sRow1Size == sRow2Size )
+                    {
+                        if ( idlOS::memcmp( sRow1, sRow2, sRow1Size )
+                             == 0 )
+                        {
+                            /* Nothing to do */
+                        }
+                        else
+                        {
+                            sIsAllSame = ID_FALSE;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        sIsAllSame = ID_FALSE;
+                        break;
+                    }
+                }
+            }
+
             if ( sIsAllSame == ID_TRUE )
             {
                 sJudge = ID_FALSE;
@@ -1067,6 +1135,12 @@ IDE_RC qmnCNBY::searchKeyRangeRow( qcTemplate  * aTemplate,
     idBool      sLoop      = ID_FALSE;
     idBool      sNextRow   = ID_FALSE;
     idBool      sIsAllSame = ID_FALSE;
+    void      * sRow1      = NULL;
+    void      * sRow2      = NULL;
+    UInt        sRow1Size  = 0;
+    UInt        sRow2Size  = 0;
+    qtcNode   * sNode      = NULL;
+    mtcColumn * sColumn    = NULL;
 
     aNewItem->rowPtr = NULL;
 
@@ -1137,13 +1211,51 @@ IDE_RC qmnCNBY::searchKeyRangeRow( qcTemplate  * aTemplate,
                == QMNC_CNBY_IGNORE_LOOP_TRUE ) )
         {
             sIsAllSame = ID_TRUE;
-            /* 5. Compare Prior Row and Search Row Column */
-            IDE_TEST( qmnCMTR::comparePriorNode( aTemplate,
-                                                 aCodePlan->plan.left,
-                                                 aDataPlan->priorTuple->row,
-                                                 aDataPlan->plan.myTuple->row,
-                                                 &sIsAllSame)
-                      != IDE_SUCCESS );
+            if ( ( aCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+                 == QMNC_CNBY_JOIN_FALSE )
+            {
+                /* 5. Compare Prior Row and Search Row Column */
+                IDE_TEST( qmnCMTR::comparePriorNode( aTemplate,
+                                                     aCodePlan->plan.left,
+                                                     aDataPlan->priorTuple->row,
+                                                     aDataPlan->plan.myTuple->row,
+                                                     &sIsAllSame )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                for ( sNode = aCodePlan->priorNode;
+                      sNode != NULL;
+                      sNode = (qtcNode *)sNode->node.next )
+                {
+                    sColumn = &aTemplate->tmplate.rows[sNode->node.table].columns[sNode->node.column];
+
+                    sRow1 = (void *)mtc::value( sColumn, aDataPlan->priorTuple->row, MTD_OFFSET_USE );
+                    sRow2 = (void *)mtc::value( sColumn, aDataPlan->plan.myTuple->row, MTD_OFFSET_USE );
+
+                    sRow1Size = sColumn->module->actualSize( sColumn, sRow1 );
+                    sRow2Size = sColumn->module->actualSize( sColumn, sRow2 );
+                    if ( sRow1Size == sRow2Size )
+                    {
+                        if ( idlOS::memcmp( sRow1, sRow2, sRow1Size )
+                             == 0 )
+                        {
+                            /* Nothing to do */
+                        }
+                        else
+                        {
+                            sIsAllSame = ID_FALSE;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        sIsAllSame = ID_FALSE;
+                        break;
+                    }
+                }
+            }
+
             if ( sIsAllSame == ID_TRUE )
             {
                 sNextRow = ID_TRUE;
@@ -2249,59 +2361,69 @@ IDE_RC qmnCNBY::getNullRow( qcTemplate * aTemplate,
 
     sMemory = aTemplate->stmt->qmxMem;
 
-    if ( ( aCodePlan->flag & QMNC_CNBY_CHILD_VIEW_MASK )
-         == QMNC_CNBY_CHILD_VIEW_TRUE )
+    if ( ( aCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+         == QMNC_CNBY_JOIN_FALSE )
     {
-        /* Row Size 획득 */
-        IDE_TEST( qmnCMTR::getNullRowSize( aTemplate,
-                                           aCodePlan->plan.left,
-                                           &sNullRowSize )
-                  != IDE_SUCCESS );
-
-        IDE_TEST_RAISE( sNullRowSize <= 0, ERR_WRONG_ROW_SIZE );
-
-        // Null Row를 위한 공간 할당
-        IDU_LIMITPOINT("qmnCNBY::getNullRow::malloc");
-        IDE_TEST( sMemory->cralloc( sNullRowSize,
-                                    &aDataPlan->nullRow )
-                  != IDE_SUCCESS);
-
-        IDE_TEST( qmnCMTR::getNullRow( aTemplate,
-                                       aCodePlan->plan.left,
-                                       aDataPlan->nullRow )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        if ( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
-             == QMN_PLAN_STORAGE_DISK )
+        if ( ( aCodePlan->flag & QMNC_CNBY_CHILD_VIEW_MASK )
+             == QMNC_CNBY_CHILD_VIEW_TRUE )
         {
-            IDE_TEST_RAISE( aDataPlan->priorTuple->rowOffset <= 0, ERR_WRONG_ROW_SIZE );
+            /* Row Size 획득 */
+            IDE_TEST( qmnCMTR::getNullRowSize( aTemplate,
+                                               aCodePlan->plan.left,
+                                               &sNullRowSize )
+                      != IDE_SUCCESS );
 
-            IDU_FIT_POINT( "qmnCNBY::getNullRow::cralloc::aDataPlan->nullRow",
-                           idERR_ABORT_InsufficientMemory );
-            IDE_TEST( sMemory->cralloc( aDataPlan->priorTuple->rowOffset,
+            IDE_TEST_RAISE( sNullRowSize <= 0, ERR_WRONG_ROW_SIZE );
+
+            // Null Row를 위한 공간 할당
+            IDU_LIMITPOINT("qmnCNBY::getNullRow::malloc");
+            IDE_TEST( sMemory->cralloc( sNullRowSize,
                                         &aDataPlan->nullRow )
                       != IDE_SUCCESS);
-            IDE_TEST( qmn::makeNullRow( aDataPlan->priorTuple,
-                                        aDataPlan->nullRow )
-                      != IDE_SUCCESS );
-            SMI_MAKE_VIRTUAL_NULL_GRID( aDataPlan->mNullRID );
 
-            IDU_FIT_POINT( "qmnCNBY::getNullRow::cralloc::aDataPlan->prevPriorRow",
-                           idERR_ABORT_InsufficientMemory );
-            IDE_TEST( sMemory->cralloc( aDataPlan->priorTuple->rowOffset,
-                                        &aDataPlan->prevPriorRow )
-                      != IDE_SUCCESS);
-            SMI_MAKE_VIRTUAL_NULL_GRID( aDataPlan->mPrevPriorRID );
+            IDE_TEST( qmnCMTR::getNullRow( aTemplate,
+                                           aCodePlan->plan.left,
+                                           aDataPlan->nullRow )
+                      != IDE_SUCCESS );
         }
         else
         {
-            IDE_TEST( smiGetTableNullRow( aCodePlan->mTableHandle,
-                                          (void **) &aDataPlan->nullRow,
-                                          &aDataPlan->mNullRID )
-                      != IDE_SUCCESS );
+            if ( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
+                 == QMN_PLAN_STORAGE_DISK )
+            {
+                IDE_TEST_RAISE( aDataPlan->priorTuple->rowOffset <= 0, ERR_WRONG_ROW_SIZE );
+
+                IDU_FIT_POINT( "qmnCNBY::getNullRow::cralloc::aDataPlan->nullRow",
+                               idERR_ABORT_InsufficientMemory );
+                IDE_TEST( sMemory->cralloc( aDataPlan->priorTuple->rowOffset,
+                                            &aDataPlan->nullRow )
+                          != IDE_SUCCESS);
+                IDE_TEST( qmn::makeNullRow( aDataPlan->priorTuple,
+                                            aDataPlan->nullRow )
+                          != IDE_SUCCESS );
+                SMI_MAKE_VIRTUAL_NULL_GRID( aDataPlan->mNullRID );
+
+                IDU_FIT_POINT( "qmnCNBY::getNullRow::cralloc::aDataPlan->prevPriorRow",
+                               idERR_ABORT_InsufficientMemory );
+                IDE_TEST( sMemory->cralloc( aDataPlan->priorTuple->rowOffset,
+                                            &aDataPlan->prevPriorRow )
+                          != IDE_SUCCESS);
+                SMI_MAKE_VIRTUAL_NULL_GRID( aDataPlan->mPrevPriorRID );
+            }
+            else
+            {
+                IDE_TEST( smiGetTableNullRow( aCodePlan->mTableHandle,
+                                              (void **) &aDataPlan->nullRow,
+                                              &aDataPlan->mNullRID )
+                          != IDE_SUCCESS );
+            }
         }
+    }
+    else
+    {
+        IDE_TEST( qmcSortTemp::getNullRow( aDataPlan->baseMTR,
+                                           &aDataPlan->nullRow )
+                  != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
@@ -2439,10 +2561,34 @@ IDE_RC qmnCNBY::printPlan( qcTemplate   * aTemplate,
     if ( ( QCU_TRCLOG_DETAIL_MTRNODE == 1 ) &&
          ( sCodePlan->connectByKeyRange != NULL ) )
     {
+        if ( sCodePlan->sortNode != NULL )
+        {
+            qmn::printMTRinfo( aString,
+                               aDepth,
+                               sCodePlan->sortNode,
+                               "sortNode",
+                               sCodePlan->myRowID,
+                               sCodePlan->sortRowID,
+                               ID_USHORT_MAX );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( ( QCU_TRCLOG_DETAIL_MTRNODE == 1 ) &&
+         ( ( sCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+           == QMNC_CNBY_JOIN_TRUE ) )
+    {
         qmn::printMTRinfo( aString,
                            aDepth,
-                           sCodePlan->sortNode,
-                           "sortNode",
+                           sCodePlan->mBaseMtrNode,
+                           "mBaseMtrNode",
                            sCodePlan->myRowID,
                            sCodePlan->sortRowID,
                            ID_USHORT_MAX );
@@ -2838,37 +2984,45 @@ IDE_RC qmnCNBY::copyTupleSet( qcTemplate * aTemplate,
                               qmncCNBY   * aCodePlan,
                               mtcTuple   * aDstTuple )
 {
-    mtcTuple   * sCMTRTuple;
+    mtcTuple   * sCMTRTuple = NULL;
     mtcColumn  * sMyColumn;
     mtcColumn  * sCMTRColumn;
     UInt         i;
 
-    IDE_TEST( qmnCMTR::getTuple( aTemplate,
-                                 aCodePlan->plan.left,
-                                 & sCMTRTuple )
-              != IDE_SUCCESS );
-
-    sMyColumn = aDstTuple->columns;
-    sCMTRColumn = sCMTRTuple->columns;
-    for ( i = 0; i < sCMTRTuple->columnCount; i++, sMyColumn++, sCMTRColumn++ )
+    if ( ( aCodePlan->flag & QMNC_CNBY_JOIN_MASK )
+         == QMNC_CNBY_JOIN_FALSE )
     {
-        if ( SMI_COLUMN_TYPE_IS_TEMP( sMyColumn->column.flag ) == ID_TRUE )
-        {
-            IDE_DASSERT( sCMTRColumn->module->actualSize(
-                             sCMTRColumn,
-                             sCMTRColumn->column.value )
-                         <= sCMTRColumn->column.size );
+        IDE_TEST( qmnCMTR::getTuple( aTemplate,
+                                     aCodePlan->plan.left,
+                                     & sCMTRTuple )
+                  != IDE_SUCCESS );
 
-            idlOS::memcpy( (SChar*)sMyColumn->column.value,
-                           (SChar*)sCMTRColumn->column.value,
-                           sCMTRColumn->module->actualSize(
-                               sCMTRColumn,
-                               sCMTRColumn->column.value ) );
-        }
-        else
+        sMyColumn = aDstTuple->columns;
+        sCMTRColumn = sCMTRTuple->columns;
+        for ( i = 0; i < sCMTRTuple->columnCount; i++, sMyColumn++, sCMTRColumn++ )
         {
-            // Nothing to do.
+            if ( SMI_COLUMN_TYPE_IS_TEMP( sMyColumn->column.flag ) == ID_TRUE )
+            {
+                IDE_DASSERT( sCMTRColumn->module->actualSize(
+                                 sCMTRColumn,
+                                 sCMTRColumn->column.value )
+                             <= sCMTRColumn->column.size );
+
+                idlOS::memcpy( (SChar*)sMyColumn->column.value,
+                               (SChar*)sCMTRColumn->column.value,
+                               sCMTRColumn->module->actualSize(
+                                   sCMTRColumn,
+                                   sCMTRColumn->column.value ) );
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
@@ -3656,7 +3810,7 @@ IDE_RC qmnCNBY::searchNextLevelDataTable( qcTemplate  * aTemplate,
                                      aDataPlan ) != IDE_SUCCESS );
 
     sStack = aDataPlan->lastStack;
-    sItem = &sStack->items[sStack->nextPos];
+    sItem  = &sStack->items[sStack->nextPos];
 
     if ( sItem->mCursor == NULL )
     {
@@ -3972,6 +4126,10 @@ IDE_RC qmnCNBY::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.filterCallBack  = &aDataPlan->mCallBack;
     sPredicateInfo.callBackDataAnd = &aDataPlan->mCallBackDataAnd;
     sPredicateInfo.callBackData    = aDataPlan->mCallBackData;
+
+    /* PROJ-2632 */
+    sPredicateInfo.mSerialFilterInfo  = NULL;
+    sPredicateInfo.mSerialExecuteData = NULL;
 
     //-------------------------------------
     // Key Range, Key Filter, Filter의 생성
@@ -5555,6 +5713,958 @@ IDE_RC qmnCNBY::pushStackTableDisk( qcTemplate  * aTemplate,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnCNBY::firstInitForJoin( qcTemplate * aTemplate,
+                                  qmncCNBY   * aCodePlan,
+                                  qmndCNBY   * aDataPlan )
+{
+    iduMemory  * sMemory   = NULL;
+    qmcMtrNode * sTmp      = NULL;
+    qmdMtrNode * sNode     = NULL;
+    qmdMtrNode * sSortNode = NULL;
+    qmdMtrNode * sBaseNode = NULL;
+    qmdMtrNode * sPrev     = NULL;
+    idBool       sFind     = ID_FALSE;
+    mtcTuple   * sTuple    = NULL;
+    qmcRowFlag   sRowFlag  = QMC_ROW_INITIALIZE;
+    void       * sRow      = NULL;
+    SInt         i         = 0;
+
+    sMemory = aTemplate->stmt->qmxMem;
+
+    aDataPlan->plan.myTuple = &aTemplate->tmplate.rows[aCodePlan->myRowID];
+    aDataPlan->childTuple   = &aTemplate->tmplate.rows[aCodePlan->baseRowID];
+    aDataPlan->priorTuple   = &aTemplate->tmplate.rows[aCodePlan->priorRowID];
+    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->levelRowID];
+    aDataPlan->levelPtr     = (SLong *)sTuple->row;
+    aDataPlan->levelValue   = *(aDataPlan->levelPtr);
+    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->isLeafRowID];
+    aDataPlan->isLeafPtr    = (SLong *)sTuple->row;
+    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->stackRowID];
+    aDataPlan->stackPtr     = (SLong *)sTuple->row;
+
+    if ( aCodePlan->rownumFilter != NULL )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->rownumRowID];
+        aDataPlan->rownumPtr    = (SLong *)sTuple->row;
+        aDataPlan->rownumValue  = *(aDataPlan->rownumPtr);
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    aDataPlan->startWithPos = 0;
+    aDataPlan->mKeyRange     = NULL;
+    aDataPlan->mKeyFilter    = NULL;
+
+    IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
+                               & aTemplate->tmplate,
+                               aCodePlan->myRowID )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
+                               & aTemplate->tmplate,
+                               aCodePlan->priorRowID )
+              != IDE_SUCCESS );
+
+    /* 4. CNBY Stack alloc */
+    IDU_FIT_POINT( "qmnCNBY::firstInitForJoin::cralloc::aDataPlan->firstStack",
+                   idERR_ABORT_InsufficientMemory );
+    IDE_TEST( sMemory->cralloc( ID_SIZEOF( qmnCNBYStack),
+                                (void **)&(aDataPlan->firstStack ) )
+              != IDE_SUCCESS );
+
+    aDataPlan->firstStack->nextPos = 0;
+    aDataPlan->firstStack->myRowID   = aCodePlan->myRowID;
+    aDataPlan->firstStack->baseRowID = aCodePlan->baseRowID;
+    aDataPlan->firstStack->baseMTR   = aDataPlan->baseMTR;
+    aDataPlan->lastStack = aDataPlan->firstStack;
+
+    SMI_CURSOR_PROP_INIT( &(aDataPlan->mCursorProperty), NULL, NULL );
+    aDataPlan->mCursorProperty.mParallelReadProperties.mThreadCnt = 1;
+    aDataPlan->mCursorProperty.mParallelReadProperties.mThreadID  = 1;
+    aDataPlan->mCursorProperty.mStatistics = aTemplate->stmt->mStatistics;
+
+    aDataPlan->mBaseMtrNode = (qmdMtrNode *)( aTemplate->tmplate.data +
+                                              aCodePlan->mtrNodeOffset );
+    /* 4.1 Set Connect By Stack Address */
+    *aDataPlan->stackPtr = (SLong)(aDataPlan->firstStack);
+
+    aDataPlan->baseMTR = (qmcdSortTemp *)( aTemplate->tmplate.data +
+                                           aCodePlan->mBaseSortMTROffset );
+    IDE_TEST( qmc::linkMtrNode( aCodePlan->mBaseMtrNode, aDataPlan->mBaseMtrNode )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qmc::initMtrNode( aTemplate,
+                                aDataPlan->mBaseMtrNode,
+                                0 )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qmc::refineOffsets( aDataPlan->mBaseMtrNode, (UInt)QMC_MEMSORT_TEMPHEADER_SIZE )
+              != IDE_SUCCESS );
+
+    if ( aCodePlan->baseSortNode != NULL )
+    {
+        sBaseNode = ( qmdMtrNode * )( aTemplate->tmplate.data +
+                                      aCodePlan->baseSortOffset );
+        sSortNode = sBaseNode;
+        for ( sTmp = aCodePlan->baseSortNode;
+              sTmp != NULL;
+              sTmp = sTmp->next )
+        {
+            for ( sNode = aDataPlan->mBaseMtrNode;
+                  sNode != NULL;
+                  sNode = sNode->next )
+            {
+                if ( ( sTmp->srcNode == sNode->srcNode ) &&
+                     ( sTmp->dstNode == sNode->dstNode ) )
+                {
+                    *sSortNode = *sNode;
+                    sSortNode->next = NULL;
+                    sSortNode->flag &= ~QMC_MTR_SORT_ORDER_MASK;
+
+                    if ( (sTmp->flag & QMC_MTR_SORT_ORDER_MASK)
+                         == QMC_MTR_SORT_ASCENDING)
+                    {
+                        sSortNode->flag |= QMC_MTR_SORT_ASCENDING;
+                    }
+                    else
+                    {
+                        sSortNode->flag |= QMC_MTR_SORT_DESCENDING;
+                    }
+
+                    IDE_TEST(qmc::setCompareFunction( sSortNode )
+                             != IDE_SUCCESS );
+                    sFind = ID_TRUE;
+
+                    sPrev = sSortNode;
+
+                    if ( sTmp->next != NULL )
+                    {
+                        sSortNode++;
+                        sPrev->next = sSortNode;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    for ( i = 0; i < aTemplate->tmplate.rows[aCodePlan->priorRowID].columnCount; i++ )
+    {
+        aTemplate->tmplate.rows[aCodePlan->priorRowID].columns[i].column.offset =
+            aTemplate->tmplate.rows[aCodePlan->myRowID].columns[i].column.offset;
+    }
+
+    IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
+                               &aTemplate->tmplate,
+                               aDataPlan->mBaseMtrNode->dstNode->node.table )
+              != IDE_SUCCESS );
+
+    /* Temp Table의 초기화 */
+    IDE_TEST( qmcSortTemp::init( aDataPlan->baseMTR,
+                                 aTemplate,
+                                 ID_UINT_MAX,
+                                 aDataPlan->mBaseMtrNode,
+                                 sBaseNode,
+                                 0,
+                                 QMCD_SORT_TMP_STORAGE_MEMORY )
+              != IDE_SUCCESS );
+
+    IDE_TEST( getNullRow( aTemplate, aCodePlan, aDataPlan )
+              != IDE_SUCCESS );
+
+    IDE_TEST( aCodePlan->plan.left->init( aTemplate,
+                                          aCodePlan->plan.left )
+              != IDE_SUCCESS);
+
+    // doIt left child
+    IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
+                                          aCodePlan->plan.left,
+                                          &sRowFlag )
+              != IDE_SUCCESS );
+
+    while ( ( sRowFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
+    {
+        sRow = aDataPlan->mBaseMtrNode->dstTuple->row;
+        IDE_TEST( qmcSortTemp::alloc( aDataPlan->baseMTR,
+                                      &sRow )
+                  != IDE_SUCCESS );
+
+        for ( sNode = aDataPlan->mBaseMtrNode;
+              sNode != NULL;
+              sNode = sNode->next )
+        {
+            IDE_TEST( sNode->func.setMtr( aTemplate,
+                                          sNode,
+                                          sRow )
+                      != IDE_SUCCESS );
+        }
+        // Temp Table에 삽입
+        IDE_TEST( qmcSortTemp::addRow( aDataPlan->baseMTR,
+                                       sRow )
+                  != IDE_SUCCESS );
+
+        // Left Child의 수행
+        IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
+                                              aCodePlan->plan.left,
+                                              &sRowFlag )
+                  != IDE_SUCCESS );
+    }
+
+    if ( sFind == ID_TRUE )
+    {
+        IDE_TEST( qmcSortTemp::sort( aDataPlan->baseMTR )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( ( aCodePlan->connectByKeyRange != NULL ) &&
+         ( ( aCodePlan->flag & QMNC_CNBY_SIBLINGS_MASK )
+           == QMNC_CNBY_SIBLINGS_TRUE ) )
+    {
+        aDataPlan->sortTuple = &aTemplate->tmplate.rows[aCodePlan->sortRowID];
+
+        aDataPlan->mtrNode = (qmdMtrNode *)( aTemplate->tmplate.data +
+                                             aCodePlan->mSortNodeOffset );
+        aDataPlan->sortMTR = (qmcdSortTemp *)( aTemplate->tmplate.data +
+                                               aCodePlan->sortMTROffset );
+
+        IDE_TEST( initSortMtrNode( aTemplate,
+                                   aCodePlan,
+                                   aCodePlan->sortNode,
+                                   aDataPlan->mtrNode )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( makeSortTemp( aTemplate,
+                                aDataPlan )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    *aDataPlan->flag &= ~QMND_CNBY_INIT_DONE_MASK;
+    *aDataPlan->flag |= QMND_CNBY_INIT_DONE_TRUE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnCNBY::doItFirstJoin( qcTemplate * aTemplate,
+                               qmnPlan    * aPlan,
+                               qmcRowFlag * aFlag )
+{
+    SInt        sCount     = 0;
+    idBool      sJudge     = ID_FALSE;
+    idBool      sExist     = ID_FALSE;
+    void      * sSearchRow = NULL;
+    qmncCNBY  * sCodePlan  = (qmncCNBY *)aPlan;
+    qmndCNBY  * sDataPlan  = (qmndCNBY *)( aTemplate->tmplate.data +
+                                           aPlan->offset );
+    qmnCNBYItem sReturnItem;
+    qtcNode   * sFilters[START_WITH_MAX];
+    SInt        i = 0;
+
+    IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
+              != IDE_SUCCESS );
+    IDE_TEST( initCNBYItem( &sReturnItem) != IDE_SUCCESS );
+
+    *aFlag = QMC_ROW_DATA_NONE;
+
+    sFilters[START_WITH_FILTER]   = sCodePlan->startWithFilter;
+    sFilters[START_WITH_SUBQUERY] = sCodePlan->startWithSubquery;
+    sFilters[START_WITH_NNF]      = sCodePlan->startWithNNF;
+
+    do
+    {
+        sJudge  = ID_FALSE;
+
+        if ( sDataPlan->startWithPos == 0 )
+        {
+            IDE_TEST( qmcSortTemp::getFirstSequence( sDataPlan->baseMTR,
+                                                     &sSearchRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            if ( sCount == 0 )
+            {
+                IDE_TEST( qmcSortTemp::restoreCursor( sDataPlan->baseMTR,
+                                                      &sDataPlan->lastStack->items[0].pos )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            IDE_TEST( qmcSortTemp::getNextSequence( sDataPlan->baseMTR,
+                                                    &sSearchRow )
+                      != IDE_SUCCESS );
+        }
+
+        IDE_TEST_CONT( sSearchRow == NULL, NORMAL_EXIT );
+
+        sDataPlan->plan.myTuple->row = sSearchRow;
+        sDataPlan->priorTuple->row = sSearchRow;
+        sDataPlan->startWithPos++;
+        sCount++;
+
+        IDE_TEST( setBaseTupleSet( aTemplate,
+                                   sDataPlan,
+                                   sDataPlan->plan.myTuple->row )
+                  != IDE_SUCCESS );
+
+        for ( i = 0 ; i < START_WITH_MAX; i++ )
+        {
+            sJudge = ID_TRUE;
+            if ( sFilters[i] != NULL )
+            {
+                if ( i == START_WITH_SUBQUERY )
+                {
+                    sDataPlan->plan.myTuple->modify++;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                IDE_TEST( qtc::judge( &sJudge,
+                                      sFilters[i],
+                                      aTemplate )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            if ( sJudge == ID_FALSE )
+            {
+                break;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    } while ( sJudge == ID_FALSE );
+
+    *aFlag = QMC_ROW_DATA_EXIST;
+    sDataPlan->levelValue = 1;
+    *sDataPlan->levelPtr = 1;
+
+    /* 4. STORE STACK */
+    IDE_TEST( qmcSortTemp::storeCursor( sDataPlan->baseMTR,
+                                        &sDataPlan->lastStack->items[0].pos)
+              != IDE_SUCCESS );
+
+    IDE_TEST( initCNBYItem( &sDataPlan->lastStack->items[0])
+              != IDE_SUCCESS );
+    sDataPlan->lastStack->items[0].rowPtr = sSearchRow;
+    sDataPlan->lastStack->nextPos = 1;
+
+    /* 5. Check CONNECT BY CONSTANT FILTER */
+    if ( sCodePlan->connectByConstant != NULL )
+    {
+        IDE_TEST( qtc::judge( &sJudge,
+                              sCodePlan->connectByConstant,
+                              aTemplate )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        sJudge = ID_TRUE;
+    }
+
+    /* 6. Search Next Level Data */
+    if ( sJudge == ID_TRUE )
+    {
+        IDE_TEST( searchNextLevelDataForJoin( aTemplate,
+                                              sCodePlan,
+                                              sDataPlan,
+                                              &sReturnItem,
+                                              &sExist )
+                  != IDE_SUCCESS );
+        if ( sExist == ID_TRUE )
+        {
+            *sDataPlan->isLeafPtr = 0;
+            IDE_TEST( setCurrentRow( aTemplate,
+                                     sCodePlan,
+                                     sDataPlan,
+                                     2 )
+                      != IDE_SUCCESS );
+            sDataPlan->doIt = qmnCNBY::doItNextJoin;
+        }
+        else
+        {
+            *sDataPlan->isLeafPtr = 1;
+            IDE_TEST( setCurrentRow( aTemplate,
+                                     sCodePlan,
+                                     sDataPlan,
+                                     1 )
+                      != IDE_SUCCESS );
+            sDataPlan->doIt = qmnCNBY::doItFirstJoin;
+        }
+    }
+    else
+    {
+        *sDataPlan->isLeafPtr = 1;
+        sDataPlan->doIt = qmnCNBY::doItFirstJoin;
+    }
+    sDataPlan->plan.myTuple->modify++;
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT )
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnCNBY::doItNextJoin( qcTemplate * aTemplate,
+                              qmnPlan    * aPlan,
+                              qmcRowFlag * aFlag )
+{
+    qmncCNBY      * sCodePlan   = NULL;
+    qmndCNBY      * sDataPlan   = NULL;
+    qmnCNBYStack  * sStack      = NULL;
+    idBool          sIsRow      = ID_FALSE;
+    idBool          sBreak      = ID_FALSE;
+    qmnCNBYItem     sNewItem;
+
+    sCodePlan = (qmncCNBY *)aPlan;
+    sDataPlan = (qmndCNBY *)( aTemplate->tmplate.data + aPlan->offset );
+    sStack    = sDataPlan->lastStack;
+
+    /* 1. Set qmcRowFlag */
+    *aFlag = QMC_ROW_DATA_EXIST;
+    IDE_TEST( initCNBYItem( &sNewItem) != IDE_SUCCESS );
+
+    /* 2. Set PriorTupe Row Previous */
+    sDataPlan->priorTuple->row = sDataPlan->prevPriorRow;
+
+    IDE_TEST( setBaseTupleSet( aTemplate,
+                               sDataPlan,
+                               sDataPlan->priorTuple->row )
+              != IDE_SUCCESS );
+
+    /* 3. Search Next Level Data */
+    if ( *sDataPlan->isLeafPtr == 0 )
+    {
+        IDE_TEST( searchNextLevelDataForJoin( aTemplate,
+                                              sCodePlan,
+                                              sDataPlan,
+                                              &sNewItem,
+                                              &sIsRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sIsRow == ID_FALSE )
+    {
+        /* 4. Set isLeafPtr and Set CurrentRow Previous */
+        if ( *sDataPlan->isLeafPtr == 0 )
+        {
+            *sDataPlan->isLeafPtr = 1;
+            IDE_TEST( setCurrentRow( aTemplate,
+                                     sCodePlan,
+                                     sDataPlan,
+                                     1 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* 5. Search Sibling Data */
+            while ( sDataPlan->levelValue > 1 )
+            {
+                sBreak = ID_FALSE;
+                IDE_TEST( searchSiblingDataForJoin( aTemplate,
+                                                    sCodePlan,
+                                                    sDataPlan,
+                                                    &sBreak )
+                          != IDE_SUCCESS );
+                if ( sBreak == ID_TRUE )
+                {
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+        }
+
+        if ( sDataPlan->levelValue <= 1 )
+        {
+            /* 6. finished hierarchy data new start */
+            for ( sStack = sDataPlan->firstStack;
+                  sStack != NULL;
+                  sStack = sStack->next )
+            {
+                sStack->nextPos = 0;
+            }
+            IDE_TEST( doItFirstJoin( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
+        }
+        else
+        {
+            sDataPlan->plan.myTuple->modify++;
+        }
+    }
+    else
+    {
+        /* 7. Set Current Row */
+        IDE_TEST( setCurrentRow( aTemplate,
+                                 sCodePlan,
+                                 sDataPlan,
+                                 2 )
+                  != IDE_SUCCESS );
+        sDataPlan->plan.myTuple->modify++;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnCNBY::searchNextLevelDataForJoin( qcTemplate  * aTemplate,
+                                            qmncCNBY    * aCodePlan,
+                                            qmndCNBY    * aDataPlan,
+                                            qmnCNBYItem * aItem,
+                                            idBool      * aExist )
+{
+    idBool sCheck = ID_FALSE;
+    idBool sExist = ID_FALSE;
+
+    /* 1. Test Level Filter */
+    if ( aCodePlan->levelFilter != NULL )
+    {
+        *aDataPlan->levelPtr = ( aDataPlan->levelValue + 1 );
+        IDE_TEST( qtc::judge( &sCheck,
+                              aCodePlan->levelFilter,
+                              aTemplate )
+                  != IDE_SUCCESS );
+        IDE_TEST_CONT( sCheck == ID_FALSE, NORMAL_EXIT );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* BUG-39434 The connect by need rownum pseudo column.
+     * Next Level을 찾을 때에는 Rownum을 하나 증가시켜 검사해야한다.
+     * 왜냐하면 항상 isLeaf 검사로 다음 하위 가 있는지 검사하기 때문이다
+     * 그래서 rownum 을 하나 증가시켜서 검사해야한다.
+     */
+    if ( aCodePlan->rownumFilter != NULL )
+    {
+        aDataPlan->rownumValue = *(aDataPlan->rownumPtr);
+        aDataPlan->rownumValue++;
+        *aDataPlan->rownumPtr = aDataPlan->rownumValue;
+
+        if ( qtc::judge( &sCheck, aCodePlan->rownumFilter, aTemplate )
+             != IDE_SUCCESS )
+        {
+            aDataPlan->rownumValue--;
+            *aDataPlan->rownumPtr = aDataPlan->rownumValue;
+            IDE_TEST( 1 );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        aDataPlan->rownumValue--;
+        *aDataPlan->rownumPtr = aDataPlan->rownumValue;
+
+        IDE_TEST_CONT( sCheck == ID_FALSE, NORMAL_EXIT );
+    }
+    else
+    {
+        sCheck = ID_TRUE;
+    }
+
+    /* 2. Search Key Range Row */
+    IDE_TEST( searchKeyRangeRowForJoin( aTemplate,
+                                        aCodePlan,
+                                        aDataPlan,
+                                        NULL,
+                                        aItem )
+              != IDE_SUCCESS );
+
+    /* 3. Push Stack */
+    if ( aItem->rowPtr != NULL )
+    {
+        aItem->level = ++aDataPlan->levelValue;
+        IDE_TEST( pushStack( aTemplate,
+                             aCodePlan,
+                             aDataPlan,
+                             aItem )
+                  != IDE_SUCCESS );
+        sExist = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT )
+
+    *aExist = sExist;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnCNBY::searchSiblingDataForJoin( qcTemplate * aTemplate,
+                                          qmncCNBY   * aCodePlan,
+                                          qmndCNBY   * aDataPlan,
+                                          idBool     * aBreak )
+{
+    qmnCNBYStack  * sStack      = NULL;
+    qmnCNBYStack  * sPriorStack = NULL;
+    qmnCNBYItem   * sItem       = NULL;
+    idBool          sIsRow      = ID_FALSE;
+    idBool          sCheck      = ID_FALSE;
+    UInt            sPriorPos   = 0;
+    qmnCNBYItem     sNewItem;
+
+    IDE_TEST( initCNBYItem( &sNewItem) != IDE_SUCCESS );
+
+    sStack = aDataPlan->lastStack;
+
+    if ( sStack->nextPos == 0 )
+    {
+        sStack = sStack->prev;
+        aDataPlan->lastStack = sStack;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 1. nextPos는 항상 다음 Stack을 가르키므로 이를 감소 시켜놓는다. */
+    --sStack->nextPos;
+
+    if ( sStack->nextPos <= 0 )
+    {
+        sPriorStack = sStack->prev;
+    }
+    else
+    {
+        sPriorStack = sStack;
+    }
+
+    --aDataPlan->levelValue;
+
+    /* 2. Set Prior Row  */
+    sPriorPos = sPriorStack->nextPos - 1;
+    aDataPlan->priorTuple->row = sPriorStack->items[sPriorPos].rowPtr;
+
+    IDE_TEST( setBaseTupleSet( aTemplate,
+                               aDataPlan,
+                               aDataPlan->priorTuple->row )
+              != IDE_SUCCESS );
+
+    /* 3. Set Current CNBY Info */
+    sItem = &sStack->items[sStack->nextPos];
+
+    IDE_TEST( searchKeyRangeRowForJoin( aTemplate,
+                                        aCodePlan,
+                                        aDataPlan,
+                                        sItem,
+                                        &sNewItem )
+              != IDE_SUCCESS );
+
+    /* 5. Push Siblings Data and Search Next level */
+    if ( sNewItem.rowPtr != NULL )
+    {
+        /* BUG-39434 The connect by need rownum pseudo column.
+         * Siblings 를 찾을 때는 스택에 넣기 전에 rownum을 검사해야한다.
+         */
+        if ( aCodePlan->rownumFilter != NULL )
+        {
+            IDE_TEST( qtc::judge( &sCheck,
+                                  aCodePlan->rownumFilter,
+                                  aTemplate )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            sCheck = ID_TRUE;
+        }
+
+        if ( sCheck == ID_TRUE )
+        {
+            sNewItem.level = ++aDataPlan->levelValue;
+            IDE_TEST( pushStack( aTemplate,
+                                 aCodePlan,
+                                 aDataPlan,
+                                 &sNewItem )
+                      != IDE_SUCCESS );
+            IDE_TEST( searchNextLevelDataForJoin( aTemplate,
+                                                  aCodePlan,
+                                                  aDataPlan,
+                                                  &sNewItem,
+                                                  &sIsRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+        if ( sIsRow == ID_TRUE )
+        {
+            *aDataPlan->isLeafPtr = 0;
+            IDE_TEST( setCurrentRow( aTemplate,
+                                     aCodePlan,
+                                     aDataPlan,
+                                     2 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            *aDataPlan->isLeafPtr = 1;
+            IDE_TEST( setCurrentRow( aTemplate,
+                                     aCodePlan,
+                                     aDataPlan,
+                                     1 )
+                      != IDE_SUCCESS );
+        }
+        *aBreak = ID_TRUE;
+    }
+    else
+    {
+        /* 6. isLeafPtr set 1 */
+        if ( *aDataPlan->isLeafPtr == 0 )
+        {
+            *aDataPlan->isLeafPtr = 1;
+            IDE_TEST( setCurrentRow( aTemplate,
+                                     aCodePlan,
+                                     aDataPlan,
+                                     0 )
+                      != IDE_SUCCESS );
+            *aBreak = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnCNBY::searchKeyRangeRowForJoin( qcTemplate  * aTemplate,
+                                          qmncCNBY    * aCodePlan,
+                                          qmndCNBY    * aDataPlan,
+                                          qmnCNBYItem * aOldItem,
+                                          qmnCNBYItem * aNewItem )
+{
+    void      * sSearchRow = NULL;
+    void      * sPrevRow   = NULL;
+    idBool      sJudge     = ID_FALSE;
+    idBool      sLoop      = ID_FALSE;
+    idBool      sNextRow   = ID_FALSE;
+    idBool      sIsAllSame = ID_TRUE;
+    void      * sRow1      = NULL;
+    void      * sRow2      = NULL;
+    UInt        sRow1Size  = 0;
+    UInt        sRow2Size  = 0;
+    qtcNode   * sNode      = NULL;
+    mtcColumn * sColumn    = NULL;
+
+    aNewItem->rowPtr = NULL;
+
+    if ( aOldItem == NULL )
+    {
+        /* 1. Get First Range Row */
+        IDE_TEST( qmcSortTemp::getFirstRange( aDataPlan->baseMTR,
+                                              aCodePlan->connectByKeyRange,
+                                              &sSearchRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* 2. Restore Position and Get Next Row */
+        IDE_TEST( qmcSortTemp::setLastKey( aDataPlan->baseMTR,
+                                           aOldItem->lastKey )
+                  != IDE_SUCCESS );
+        IDE_TEST( qmcSortTemp::restoreCursor( aDataPlan->baseMTR,
+                                              &aOldItem->pos )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmcSortTemp::getNextRange( aDataPlan->baseMTR,
+                                             &sSearchRow )
+                  != IDE_SUCCESS );
+    }
+
+    while ( sSearchRow != NULL )
+    {
+        /* 비정상 종료 검사 */
+        IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
+                  != IDE_SUCCESS );
+
+        sPrevRow = aDataPlan->plan.myTuple->row;
+
+        aDataPlan->plan.myTuple->row = sSearchRow;
+
+        IDE_TEST( setBaseTupleSet( aTemplate,
+                                   aDataPlan,
+                                   aDataPlan->plan.myTuple->row )
+                  != IDE_SUCCESS );
+
+        /* 4. Judge Connect By Filter */
+        IDE_TEST( qtc::judge( &sJudge,
+                              aCodePlan->connectByFilter,
+                              aTemplate )
+                  != IDE_SUCCESS );
+        if ( sJudge == ID_FALSE )
+        {
+            sNextRow = ID_TRUE;
+        }
+        else
+        {
+            sNextRow = ID_FALSE;
+        }
+
+        if ( ( sJudge == ID_TRUE ) &&
+             ( ( aCodePlan->flag & QMNC_CNBY_IGNORE_LOOP_MASK )
+               == QMNC_CNBY_IGNORE_LOOP_TRUE ) )
+        {
+            sIsAllSame = ID_TRUE;
+            for ( sNode = aCodePlan->priorNode;
+                  sNode != NULL;
+                  sNode = (qtcNode *)sNode->node.next )
+            {
+                sColumn = &aTemplate->tmplate.rows[sNode->node.table].columns[sNode->node.column];
+
+                sRow1 = (void *)mtc::value( sColumn, aDataPlan->priorTuple->row, MTD_OFFSET_USE );
+                sRow2 = (void *)mtc::value( sColumn, aDataPlan->plan.myTuple->row, MTD_OFFSET_USE );
+
+                sRow1Size = sColumn->module->actualSize( sColumn, sRow1 );
+                sRow2Size = sColumn->module->actualSize( sColumn, sRow2 );
+                if ( sRow1Size == sRow2Size )
+                {
+                    if ( idlOS::memcmp( sRow1, sRow2, sRow1Size )
+                         == 0 )
+                    {
+                        /* Nothing to do */
+                    }
+                    else
+                    {
+                        sIsAllSame = ID_FALSE;
+                        break;
+                    }
+                }
+                else
+                {
+                    sIsAllSame = ID_FALSE;
+                    break;
+                }
+            }
+
+            if ( sIsAllSame == ID_TRUE )
+            {
+                sNextRow = ID_TRUE;
+                sJudge = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( sJudge == ID_TRUE )
+        {
+            /* 6. Check HIER LOOP */
+            IDE_TEST( checkLoop( aCodePlan,
+                                 aDataPlan,
+                                 aDataPlan->plan.myTuple->row,
+                                 &sLoop )
+                      != IDE_SUCCESS );
+
+            /* 7. Store Position and lastKey and Row Pointer */
+            if ( sLoop == ID_FALSE )
+            {
+                IDE_TEST( qmcSortTemp::storeCursor( aDataPlan->baseMTR,
+                                                    &aNewItem->pos )
+                          != IDE_SUCCESS );
+                IDE_TEST( qmcSortTemp::getLastKey( aDataPlan->baseMTR,
+                                                   &aNewItem->lastKey )
+                          != IDE_SUCCESS );
+                aNewItem->rowPtr = aDataPlan->plan.myTuple->row;
+            }
+            else
+            {
+                sNextRow = ID_TRUE;
+            }
+        }
+        else
+        {
+            aDataPlan->plan.myTuple->row = sPrevRow;
+
+            IDE_TEST( setBaseTupleSet( aTemplate,
+                                       aDataPlan,
+                                       aDataPlan->plan.myTuple->row )
+                      != IDE_SUCCESS );
+        }
+
+        /* 8. Search Next Row Pointer */
+        if ( sNextRow == ID_TRUE )
+        {
+            IDE_TEST( qmcSortTemp::getNextRange( aDataPlan->baseMTR,
+                                                 &sSearchRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            sSearchRow = NULL;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END
 
     return IDE_FAILURE;
 }

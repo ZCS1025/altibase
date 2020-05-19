@@ -17,4 +17,14 @@
 #ifndef _O_ULSD_ERROR_H_
 #define _O_ULSD_ERROR_H_ 1
 
+void ulsdNativeErrorToUlnError( ulnFnContext       *aFnContext,
+                                acp_sint16_t        aHandleType,
+                                ulnObject          *aErrorRaiseObject,
+                                ulsdNodeInfo       *aNodeInfo,
+                                acp_char_t         *aOperation );
+
+void ulsdErrorHandleShardingError( ulnFnContext * aFnContext );
+
+void ulsdErrorCheckAndAlignDataNode( ulnFnContext * aFnContext );
+
 #endif /* _O_ULSD_ERROR_H_ */

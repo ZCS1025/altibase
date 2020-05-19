@@ -76,8 +76,6 @@ public:
 
     static UInt getDblinkRecoveryMaxLogfile( void );
 
-    static UInt getDblinkRmAbortEnable( void );
-
 private:
 
     static UInt mDblinkEnable;
@@ -97,8 +95,6 @@ private:
     static UInt mDblinkRemoteTableBufferSize;
 
     static UInt mDblinkRecoveryMaxLogfile;
-
-    static UInt mDblinkRmAbortEnable;
 
     static IDE_RC notifyDBLINK_GLOBAL_TRANSACTION_LEVEL( idvSQL* /* aStatistics */,
                                                          SChar *aName,
@@ -124,11 +120,6 @@ private:
                                                      void  *aNewValue,
                                                      void  *aArg );
 
-    static IDE_RC notifyDBLINK_RM_ABORT_ENABLE( idvSQL *  /* aStatistics */,
-                                                SChar  * aName,
-                                                void   * aOldValue,
-                                                void   * aNewValue,
-                                                void   * aArg );
 };
 #endif /* ALTIBASE_PRODUCT_XDB */
 

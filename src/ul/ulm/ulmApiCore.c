@@ -178,7 +178,9 @@ ulmResourceManager  gResourceManager[ULM_MAX_QUERY_COUNT] =
     // active 세션들의 current sql text 들을 조회
     // ULM_SQL_TEXT
     { SQL_NULL_HSTMT, NULL, NULL, 0,
-      "SELECT A.ID, B.ID, B.QUERY, B.QUERY_START_TIME, B.EXECUTE_FLAG "
+      "SELECT A.ID, B.ID, B.QUERY, B.QUERY_START_TIME, B.EXECUTE_FLAG, B.SQL_CACHE_TEXT_ID, "
+      "B.PARSE_TIME, B.SOFT_PREPARE_TIME, B.LAST_QUERY_START_TIME, B.EXECUTE_TIME, B.FETCH_TIME, "
+      "B.FETCH_START_TIME, B.TOTAL_TIME, B.VALIDATE_TIME, B.OPTIMIZE_TIME "
       "FROM X$SESSION A, X$STATEMENT B "
       "WHERE A.TASK_STATE = 2 AND A.ID = B.SESSION_ID "
       "AND A.CURRENT_STMT_ID = B.ID",
@@ -189,7 +191,9 @@ ulmResourceManager  gResourceManager[ULM_MAX_QUERY_COUNT] =
     // 기존의 단일 sql text 조회 기능을 유지하기 위해 새로 추가
     // ULM_SQL_TEXT_BY_STMT_ID
     { SQL_NULL_HSTMT, NULL, NULL, 0,
-      "SELECT SESSION_ID, ID, QUERY, QUERY_START_TIME, EXECUTE_FLAG "
+      "SELECT SESSION_ID, ID, QUERY, QUERY_START_TIME, EXECUTE_FLAG, SQL_CACHE_TEXT_ID, "
+      "PARSE_TIME, SOFT_PREPARE_TIME, LAST_QUERY_START_TIME, EXECUTE_TIME, FETCH_TIME, "
+      "FETCH_START_TIME, TOTAL_TIME, VALIDATE_TIME, OPTIMIZE_TIME "
       "FROM X$STATEMENT "
       "WHERE ID = ?",
       ulmBindColOfSqlText, ulmCopyOfSqlText
@@ -686,13 +690,47 @@ acp_rc_t ulmBindColOfSqlText( void )
     ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 2, SQL_C_SLONG, &sPtr->mStmtID, 0, NULL )
               != SQL_SUCCESS );
 
-    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 3, SQL_C_CHAR, sPtr->mSqlText, ACI_SIZEOF( sPtr->mSqlText ), &( sPtr->mSqlTextLength ) )
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 3, SQL_C_CHAR, sPtr->mSqlText,
+                          ACI_SIZEOF( sPtr->mSqlText ), &( sPtr->mSqlTextLength ) )
               != SQL_SUCCESS );
 	
     ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 4, SQL_C_ULONG, &sPtr->mQueryStartTime, 0, NULL )
               != SQL_SUCCESS );
 
     ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 5, SQL_C_ULONG, &sPtr->mExecuteFlag, 0, NULL )
+              != SQL_SUCCESS );
+
+    /* BUG-45924 */
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 6, SQL_C_CHAR, sPtr->mSqlCacheTextID,
+                          ACI_SIZEOF( sPtr->mSqlCacheTextID ), &( sPtr->mLengthOrInd[0] ) )
+              != SQL_SUCCESS );
+
+    /* BUG-46436 */
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 7, SQL_C_UBIGINT, &sPtr->mParseTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 8, SQL_C_UBIGINT, &sPtr->mSoftPrepareTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 9, SQL_C_ULONG, &sPtr->mLastQueryStartTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 10, SQL_C_UBIGINT, &sPtr->mExecuteTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 11, SQL_C_UBIGINT, &sPtr->mFetchTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 12, SQL_C_ULONG, &sPtr->mFetchStartTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 13, SQL_C_UBIGINT, &sPtr->mTotalTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 14, SQL_C_UBIGINT, &sPtr->mValidateTime, 0, NULL )
+              != SQL_SUCCESS );
+
+    ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 15, SQL_C_UBIGINT, &sPtr->mOptimizeTime, 0, NULL )
               != SQL_SUCCESS );
 
     return ACI_SUCCESS;
@@ -823,13 +861,9 @@ void ulmCopyOfVSession( acp_uint32_t aPos )
             sDest->mClientAppInfo[0] = 0x00;
         }
         // For FAILOVER_SOURCE
-        else if ( sSrc->mLengthOrInd[39] == SQL_NULL_DATA )
+        if ( sSrc->mLengthOrInd[39] == SQL_NULL_DATA )
         {
             sDest->mFailoverSource[0] = 0x00;
-        }
-        else
-        {
-            /* Do nothing */
         }
 
         sSrc++;
@@ -963,6 +997,12 @@ void ulmCopyOfSqlText( acp_uint32_t aPos )
         if( sSrc->mSqlTextLength != SQL_NULL_DATA ) /* BUG-41825 */
         {
             acpMemCpy( sDest, sSrc, sSize );
+
+            /* BUG-45924 */
+            if (sSrc->mLengthOrInd[0] == SQL_NULL_DATA)
+            {
+                sDest->mSqlCacheTextID[0] = '\0';
+            }
         }
         // if query is null. null인 경우가 있는지는 모르겠음
         else
@@ -974,6 +1014,17 @@ void ulmCopyOfSqlText( acp_uint32_t aPos )
             /* BUG-41825 */
             sDest->mQueryStartTime = sSrc->mQueryStartTime;
             sDest->mExecuteFlag = sSrc->mExecuteFlag;
+            sDest->mSqlCacheTextID[0] = '\0';
+            /* BUG-46436 */
+            sDest->mParseTime = sSrc->mParseTime;
+            sDest->mSoftPrepareTime = sSrc->mSoftPrepareTime;
+            sDest->mLastQueryStartTime = sSrc->mLastQueryStartTime;
+            sDest->mExecuteTime = sSrc->mExecuteTime;
+            sDest->mFetchTime = sSrc->mFetchTime;
+            sDest->mFetchStartTime = sSrc->mFetchStartTime;
+            sDest->mTotalTime = sSrc->mTotalTime;
+            sDest->mValidateTime = sSrc->mValidateTime;
+            sDest->mOptimizeTime = sSrc->mOptimizeTime;
         }
 
         sSrc++;

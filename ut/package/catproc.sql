@@ -23,6 +23,7 @@ START ?/packages/dbms_concurrent_exec.sql
 START ?/packages/dbms_recyclebin.sql
 START ?/packages/dbms_utility.sql
 START ?/packages/dbms_shard.sql
+START ?/packages/dbms_sql_plan_cache.sql
 
 START ?/packages/dbms_application_info.plb
 START ?/packages/dbms_lock.plb
@@ -35,6 +36,7 @@ START ?/packages/dbms_concurrent_exec.plb
 START ?/packages/dbms_recyclebin.plb
 START ?/packages/dbms_utility.plb
 START ?/packages/dbms_shard.plb
+START ?/packages/dbms_sql_plan_cache.plb
 
 -- utility package
 START ?/packages/utl_file.sql
@@ -42,12 +44,16 @@ START ?/packages/utl_raw.sql
 START ?/packages/utl_tcp.sql
 START ?/packages/utl_smtp.sql
 START ?/packages/utl_copyswap.sql
+START ?/packages/utl_shard_online_rebuild.sql
 
 START ?/packages/utl_file.plb
 START ?/packages/utl_raw.plb
 START ?/packages/utl_tcp.plb
 START ?/packages/utl_smtp.plb
 START ?/packages/utl_copyswap.plb
+START ?/packages/utl_shard_online_rebuild.plb
 
 -- STANDARD package
 START ?/packages/standard.sql
+START ?/packages/dbms_standard.sql
+START ?/packages/dbms_standard.plb

@@ -1,0 +1,4 @@
+1     # unique constraint (string.string) violated
+54    # resource busy and acquire with NOWAIT specified or timeout expired 
+24381 # error(s) in array DML
+30006 # resource busy; acquire with WAIT timeout expired

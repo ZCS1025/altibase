@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoad.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iloLoad.cpp 84157 2018-10-14 23:36:20Z bethy $
  **********************************************************************/
 
 #include <ilo.h>
@@ -531,7 +531,7 @@ SInt iloLoad::ExecuteDeleteStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
     
-    idlOS::sprintf(sTmpQuery , SQL_HEADER"DELETE FROM %s ",
+    idlOS::sprintf(sTmpQuery , SHARD_LOADER_SQL_PREFIX"DELETE FROM %s ",
                    aTableInfo->GetTableName());
     m_pISPApi->clearQueryString();
     
@@ -566,7 +566,7 @@ SInt iloLoad::ExecuteTruncateStmt( ALTIBASE_ILOADER_HANDLE aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
-    idlOS::sprintf(sTmpQuery , SQL_HEADER"TRUNCATE TABLE %s ",
+    idlOS::sprintf(sTmpQuery , SHARD_LOADER_SQL_PREFIX"TRUNCATE TABLE %s ",
                    aTableInfo->GetTableName());
     m_pISPApi->clearQueryString();
     
@@ -603,7 +603,7 @@ SInt iloLoad::ExecuteParallelStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
-    idlOS::sprintf(sTmpQuery ,SQL_HEADER"ALTER SESSION SET PARALLEL_DML_MODE=1");
+    idlOS::sprintf(sTmpQuery ,SHARD_LOADER_SQL_PREFIX"ALTER SESSION SET PARALLEL_DML_MODE=1");
     aISPApi->clearQueryString();
     
     IDE_TEST(aISPApi->appendQueryString(sTmpQuery) == SQL_FALSE);
@@ -653,11 +653,11 @@ SInt iloLoad::ExecuteAlterStmt( ALTIBASE_ILOADER_HANDLE  aHandle,
     
     if( aIsLog == SQL_TRUE )    //No-Logging Mode로 변경해야 할 경우
     {
-        idlOS::sprintf(sTmpQuery ,SQL_HEADER"ALTER TABLE %s NOLOGGING", aTableInfo->GetTableName());
+        idlOS::sprintf(sTmpQuery ,SHARD_LOADER_SQL_PREFIX"ALTER TABLE %s NOLOGGING", aTableInfo->GetTableName());
     }
     else                        //Logging Mode로 변경해야할 경우
     {
-        idlOS::sprintf(sTmpQuery ,SQL_HEADER"ALTER TABLE %s LOGGING", aTableInfo->GetTableName());
+        idlOS::sprintf(sTmpQuery ,SHARD_LOADER_SQL_PREFIX"ALTER TABLE %s LOGGING", aTableInfo->GetTableName());
     }
     
     m_pISPApi->clearQueryString();
@@ -862,13 +862,14 @@ SInt iloLoad::BindParameter( ALTIBASE_ILOADER_HANDLE  aHandle,
             sBufLen = (SInt)aTableInfo->mAttrCValEltLen[i];
             break;
         case ISP_ATTR_DOUBLE:
+            /* BUG-46485 SQL_C_DOUBLE -> SQL_C_CHAR */
             sInOutType = SQL_PARAM_INPUT;
-            sValType = SQL_C_DOUBLE;
+            sValType = SQL_C_CHAR;
             sSQLType = SQL_DOUBLE;
             sColSize = 0; /* Ignored */
             sDecimalDigits = 0; /* Ignored */
-            sParamValPtr = aTableInfo->GetAttrVal(i);
-            sBufLen = (SInt)aTableInfo->mAttrValEltLen[i];
+            sParamValPtr = aTableInfo->GetAttrCVal(i);
+            sBufLen = (SInt)aTableInfo->mAttrCValEltLen[i];
             break;
         case ISP_ATTR_NUMERIC_LONG:
         case ISP_ATTR_NUMERIC_DOUBLE:
@@ -1065,7 +1066,7 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
     // BUG-18803 readsize 옵션 추가
     sReadTmp = (SChar*)idlOS::malloc((m_pProgOption->mReadSzie) * 2 );
-    IDE_TEST_RAISE(sReadTmp == NULL, NO_MEMORY);
+    IDE_TEST_RAISE((sReadTmp == NULL), NO_MEMORY);
     sLOBColExist = IsLOBColExist( sHandle, &m_pTableInfo[0] );
 
     while(1)
@@ -1113,23 +1114,18 @@ void iloLoad::ReadFileToBuff( ALTIBASE_ILOADER_HANDLE aHandle )
     IDE_EXCEPTION(NO_MEMORY); 
     {
         // insert 쓰레드가 종료할수 있게 EOF 를 설정한다.
-        if(sReadTmp == NULL)
-        {
-            m_DataFile.SetEOF( sHandle, ILO_TRUE );
-            uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_memory_error, __FILE__, __LINE__);
-            PRINT_ERROR_CODE(sHandle->mErrorMgr);
-        }
-        else
-        {
-            // BUG-35544 [ux] [XDB] codesonar warning at ux Warning  228464.2258047
-            idlOS::free(sReadTmp);
-        }
+        m_DataFile.SetEOF( sHandle, ILO_TRUE );
+        uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_memory_error, __FILE__, __LINE__);
+        PRINT_ERROR_CODE(sHandle->mErrorMgr);
     }
     IDE_EXCEPTION_END;
 
     return;
 }
 
+/* BUG-46486 Improve lock wait
+ * 레코드 단위 락킹에서 array 단위 락킹으로 변경
+ */
 /* PROJ-1714
  * 원형 버퍼를 읽고, Parsing후에 Table에 INSERT 한다.
  */
@@ -1137,7 +1133,7 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 {
     SInt    sRet = READ_SUCCESS;
     SInt    sExecFlag;
-    SInt    sLoadCount;
+    SLong   sExecCount = 0;
     iloBool sDryrun;
         
     iloaderHandle *sHandle = (iloaderHandle *) aHandle;
@@ -1153,11 +1149,6 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
     while(sRet != END_OF_FILE)
     {
-        if (sData.mRealCount == sData.mArrayCount)
-        {
-            sData.mRealCount = 0;
-        }
-        
         if ( sHandle->mProgOption->mGetTotalRowCount != ILO_TRUE )
         {
             // BUG-24879 errors 옵션 지원
@@ -1176,7 +1167,7 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
             }
         }
         
-        sRet = ReadOneRecord( &sData ); 
+        sRet = ReadRecord( &sData ); 
 
         IDE_TEST_CONT( sHandle->mProgOption->mGetTotalRowCount == ILO_TRUE,
                        TOTAL_COUNT_CODE );
@@ -1185,40 +1176,8 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
         if (sRet != END_OF_FILE)
         {
-            sData.mTotal++;
-
-            //진행 상황 표시
-            // BUG-27938: 중간에 continue, break를 하는 경우가 있으므로 여기서 찍어줘야한다.
-            if ( sHandle->mUseApi != SQL_TRUE )
-            {
-                sLoadCount = (mLoadCount += 1);
-                if ((sLoadCount % 100) == 0)
-                {
-                    PrintProgress( sHandle, sLoadCount );
-                }
-            }
-
             // bug-18707     
-            Sleep(sData.mLoad);
-
-            if (sRet == READ_ERROR)
-            {
-                LogError(&sData, sData.mRealCount);
-                continue;
-            }
-
-            // BUG-24890 error 가 발생하면 sRealCount를 증가하면 안된다.
-            // sRealCount 는 array 의 갯수이다. 따라서 잘못된 메모리를 읽게된다.
-            sData.mRealCount++;
-
-            if (( sHandle->mUseApi == SQL_TRUE ) && 
-                ( sHandle->mLogCallback != NULL ))
-            {
-                if (Callback4Api(&sData) != IDE_SUCCESS)
-                {
-                    break;
-                }
-            }
+            Sleep(&sData);
         }
 
         sExecFlag = (sData.mRealCount == sData.mArrayCount) ||
@@ -1238,6 +1197,8 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
             BREAK_OR_CONTINUE;
 
             IDE_EXCEPTION_CONT(EXECUTE_CODE);
+
+            sExecCount++;
 
             //INSERT SQL EXECUTE
             (void)ExecuteInsertSQL(&sData);
@@ -1265,7 +1226,7 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
 
         //Commit 처리
         if ((m_pProgOption->m_CommitUnit >= 1) &&
-            ((sData.mLoad % (m_pProgOption->m_CommitUnit * sData.mArrayCount)) == 0))
+            (sExecCount == m_pProgOption->m_CommitUnit))
         {
             /* BUG-43388 in -dry-run */
             if ( IDL_LIKELY_TRUE( sDryrun == ILO_FALSE ) )
@@ -1276,12 +1237,11 @@ void iloLoad::InsertFromBuff( ALTIBASE_ILOADER_HANDLE aHandle )
             {
                 (void)Commit4Dryrun(&sData);
             }
+            sExecCount = 0;
         }
 
         IDE_EXCEPTION_CONT(TOTAL_COUNT_CODE);
 
-        //ETC
-        sData.mLoad++;
     }//End of while
 
     /* BUG-43388 in -dry-run */
@@ -1364,37 +1324,5 @@ IDE_RC iloLoad::DisconnectDBForUpload(iloSQLApi *aISPApi)
     aISPApi->Close();
 
     return IDE_SUCCESS;
-}
-
-void iloLoad::PrintProgress( ALTIBASE_ILOADER_HANDLE aHandle,
-                             SInt aLoadCount )
-{
-    SChar sTableName[MAX_OBJNAME_LEN];
-
-    iloaderHandle *sHandle = (iloaderHandle *) aHandle;
-    
-    if ((aLoadCount % 5000) == 0)
-    {
-       /* BUG-32114 aexport must support the import/export of partition tables.
-        * ILOADER IN/OUT TABLE NAME이 PARTITION 일경우 PARTITION NAME으로 변경 */
-        if( sHandle->mProgOption->mPartition == ILO_TRUE )
-        {
-            idlOS::printf("\n%d record load(%s / %s)\n\n", 
-                    aLoadCount,
-                    m_pTableInfo[0].GetTransTableName(sTableName,(UInt)MAX_OBJNAME_LEN),
-                    sHandle->mParser.mPartitionName );
-        }
-        else
-        {
-            idlOS::printf("\n%d record load(%s)\n\n", 
-                    aLoadCount,
-                    m_pTableInfo[0].GetTransTableName(sTableName,(UInt)MAX_OBJNAME_LEN));
-        }
-    }
-    else
-    {
-        putchar('.');
-    }
-    idlOS::fflush(stdout);
 }
 

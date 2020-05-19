@@ -16,7 +16,7 @@
  
 
 /***********************************************************************/
-/* $Id: qdq.cpp 82075 2018-01-17 06:39:52Z jina.kim $ */
+/* $Id: qdq.cpp 82844 2018-04-19 00:41:18Z andrew.shin $ */
 /**********************************************************************/
 
 #include <idl.h>
@@ -495,3 +495,259 @@ IDE_RC qdq::executeStop(qcStatement * /*aStatement*/)
 
 #undef IDE_FN
 }
+
+/* BUG-45921 */
+IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
+{
+    qcuSqlSourceInfo           sqlInfo;
+    qdQueueSequenceParseTree * sParseTree;
+    SLong                      sRowCount;
+
+    sParseTree = (qdQueueSequenceParseTree *)aStatement->myPlan->parseTree;
+
+    /* BUG-30059 */
+    if ( qdbCommon::containDollarInName( &( sParseTree->mQueueName ) ) == ID_TRUE )
+    {
+        sqlInfo.setSourceInfo( aStatement, &( sParseTree->mQueueName ) );
+
+        IDE_RAISE( CANT_USE_RESERVED_WORD );
+    }
+
+    /* QUEUE 확인 */
+    IDE_TEST_RAISE( qdbCommon::checkTableInfo( aStatement,
+                                               sParseTree->mUserName,
+                                               sParseTree->mQueueName,
+                                               &( sParseTree->mUserID ),
+                                               &( sParseTree->mTableInfo ),
+                                               &( sParseTree->mTableHandle ),
+                                               &( sParseTree->mTableSCN ) )
+                    != IDE_SUCCESS,
+                    ERR_NOT_FOUND_QUEUE );
+
+    /* LOCK( IS ) */
+    IDE_TEST( qcm::lockTableForDDLValidation( aStatement,
+                                              sParseTree->mTableHandle,
+                                              sParseTree->mTableSCN )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sParseTree->mTableInfo->tableType != QCM_QUEUE_TABLE,
+                    ERR_NOT_FOUND_QUEUE );
+
+    /* 데이터 확인 */
+    IDE_TEST( smiStatistics::getTableStatNumRow( (void*) sParseTree->mTableInfo->tableHandle,
+                                                 ID_TRUE, /* CurrentValue */
+                                                 QC_SMI_STMT( aStatement )->getTrans(),
+                                                 &( sRowCount ) )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCount != 0, ERR_NOT_EMPTY_QUEUE );
+
+    /* SEQUENCE 확인 */
+    IDE_TEST_RAISE( checkQueueSequenceInfo( aStatement,
+                                            sParseTree->mUserID,
+                                            sParseTree->mQueueName,
+                                            &( sParseTree->mQueueSequenceInfo ),
+                                            &( sParseTree->mQueueSequenceHandle ) )
+                    != IDE_SUCCESS,
+                    ERR_META_CRASH );
+
+    IDE_TEST_RAISE( sParseTree->mQueueSequenceInfo.sequenceType != QCM_QUEUE_SEQUENCE,
+                    ERR_META_CRASH );
+
+    /* 권한 검사 1 */
+    if ( QCG_GET_SESSION_USER_ID( aStatement ) != QC_SYSTEM_USER_ID )
+    {
+        /* META */
+        IDE_TEST_RAISE( sParseTree->mUserID == QC_SYSTEM_USER_ID,
+                        ERR_NOT_ALTER_META );
+    }
+    else
+    {
+        if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+             == QC_SESSION_ALTER_META_DISABLE )
+        {
+            IDE_RAISE( ERR_NOT_ALTER_META );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    /* 권한 검사 2 */
+    IDE_TEST( qdpRole::checkDDLAlterTablePriv( aStatement,
+                                               sParseTree->mTableInfo )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qdpRole::checkDDLAlterSequencePriv( aStatement,
+                                                  &( sParseTree->mQueueSequenceInfo ) )
+              != IDE_SUCCESS );
+
+    /* Replication 검사 */
+    IDE_TEST_RAISE( sParseTree->mTableInfo->replicationCount > 0,
+                    ERR_UNSUPPORTED );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FOUND_QUEUE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDQ_NOT_FOUND_QUEUE ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EMPTY_QUEUE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDQ_NOT_EMPTY_QUEUE ) );
+    }
+    IDE_EXCEPTION( ERR_META_CRASH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCM_META_CRASH ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_ALTER_META )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDD_NO_DROP_META_TABLE ) );
+    }
+    IDE_EXCEPTION( ERR_UNSUPPORTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NOT_SUPPORT_REPLICATION_DDL ) );
+    }
+    IDE_EXCEPTION( CANT_USE_RESERVED_WORD )
+    {
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_RESERVED_WORD_IN_OBJECT_NAME,
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdq::executeAlterQueueSequence( qcStatement * aStatement )
+{
+    qdQueueSequenceParseTree * sParseTree;
+
+    sParseTree = (qdQueueSequenceParseTree *)aStatement->myPlan->parseTree;
+
+    IDE_TEST( qcm::validateAndLockTable( aStatement,
+                                         sParseTree->mTableHandle,
+                                         sParseTree->mTableSCN,
+                                         SMI_TABLE_LOCK_X )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiTable::resetSequence( QC_SMI_STMT( aStatement ),
+                                       sParseTree->mQueueSequenceHandle )
+             != IDE_SUCCESS );
+
+    IDE_TEST( updateQueueSequenceFromMeta( aStatement,
+                                           sParseTree->mUserID,
+                                           sParseTree->mQueueName,
+                                           sParseTree->mQueueSequenceInfo.sequenceID,
+                                           smiGetTableId( sParseTree->mQueueSequenceHandle ),
+                                           0,
+                                           1 ) /* PROJ-1071 default parallel degree = 1 */
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdq::checkQueueSequenceInfo( qcStatement      * aStatement,
+                                    UInt               aUserID,
+                                    qcNamePosition     aQueueName,
+                                    qcmSequenceInfo  * aQueueSequenceInfo,
+                                    void            ** aQueueSequenceHandle )
+{
+    SChar sQueueName[QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar sQueueSequenceName[QC_MAX_SEQ_NAME_LEN + 1];
+
+    /* Queue Sequence 이름 생성 */
+    QC_STR_COPY( sQueueName, aQueueName );
+
+    idlOS::snprintf( sQueueSequenceName,
+                     ID_SIZEOF( sQueueSequenceName ),
+                    "%s_NEXT_MSG_ID",
+                    sQueueName );
+
+    /* Queue Sequence 찾기 */
+    IDE_TEST( qcm::getSequenceInfoByName( QC_SMI_STMT( aStatement ),
+                                          aUserID,
+                                          (UChar*) sQueueSequenceName,
+                                          idlOS::strlen( sQueueSequenceName ),
+                                          aQueueSequenceInfo,
+                                          aQueueSequenceHandle )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdq::updateQueueSequenceFromMeta( qcStatement    * aStatement,
+                                         UInt             aUserID,
+                                         qcNamePosition   aQueueNamePos,
+                                         UInt             aQueueSequenceID,
+                                         smOID            aQueueSequenceOID,
+                                         SInt             aColumnCount,
+                                         UInt             aParallelDegree )
+{
+    SChar  * sSqlStr;
+    vSLong   sRowCnt;
+    SChar    sQueueName[QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar    sQueueSequenceName[QC_MAX_SEQ_NAME_LEN + 1];
+
+    /* Queue Sequence 이름 생성 */
+    QC_STR_COPY( sQueueName, aQueueNamePos );
+
+    idlOS::snprintf( sQueueSequenceName,
+                     ID_SIZEOF( sQueueSequenceName ),
+                    "%s_NEXT_MSG_ID",
+                    sQueueName );
+
+    IDU_FIT_POINT( "qdq::updateQueueSequenceFromMeta::alloc::sSqlStr",
+                   idERR_ABORT_InsufficientMemory );
+
+    IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
+                                      SChar,
+                                      QD_MAX_SQL_LENGTH,
+                                      & sSqlStr )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr,
+                     QD_MAX_SQL_LENGTH,
+                     "UPDATE SYS_TABLES_ "
+                     "SET USER_ID = INTEGER'%"ID_INT32_FMT"', "
+                     "TABLE_NAME = '%s', "
+                     "TABLE_OID = BIGINT'%"ID_INT64_FMT"', "
+                     "COLUMN_COUNT = INTEGER'%"ID_INT32_FMT"', "
+                     "PARALLEL_DEGREE = INTEGER'%"ID_INT32_FMT"', "
+                     "LAST_DDL_TIME = SYSDATE "  // fix BUG-14394
+                     "WHERE TABLE_ID = INTEGER'%"ID_INT32_FMT"'",
+                     aUserID,
+                     sQueueSequenceName,
+                     (ULong)aQueueSequenceOID,
+                     aColumnCount,
+                     aParallelDegree,
+                     aQueueSequenceID );
+
+    IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                 sSqlStr,
+                                 & sRowCnt )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCnt != 1, ERR_META_CRASH );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_META_CRASH )
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QCM_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

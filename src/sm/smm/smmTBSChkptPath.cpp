@@ -158,9 +158,7 @@ IDE_RC smmTBSChkptPath::makeChkptPathNode( scSpaceID           aSpaceID,
     UInt                sState = 0;
     smmChkptPathNode  * sCPathNode;
     
-    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace( aSpaceID )
-                 == ID_TRUE );
-    
+    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace( aSpaceID ) == ID_TRUE );
     IDE_DASSERT( aChkptPath != NULL );
 
     /* smmTBSChkptPath_makeChkptPathNode_calloc_CPathNode.tc */

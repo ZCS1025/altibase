@@ -51,7 +51,7 @@ static IDE_RC sdfConvertArrayToRangeInfo( SChar          * aCondition,
 static IDE_RC sdfFindAndAddDataNode( SChar        * aCondition,
                                      sdpjString   * aString,
                                      sdiNodeInfo  * aNodeInfo,
-                                     UShort       * aNodeId );
+                                     UInt         * aNodeId );
 
 static IDE_RC sdfSetSplitMethod( SChar            aSplitMethodText,
                                  sdiSplitMethod * aSplitMethod );
@@ -87,6 +87,7 @@ static const mtcExecute sdfExecute = {
     mtf::calculateNA,
     sdfCalculate_ShardCondition,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -170,10 +171,18 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
+    /* BUG-45718
+     * ( ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT ) +
+     * ( ID_SIZEOF(sdiValueInfo) * 2 )
+     * 추가
+     */
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
                                      1,
-                                     ID_SIZEOF(sdiAnalyzeInfo) + ID_SIZEOF(sdiNodeInfo),
+                                     ID_SIZEOF(sdiAnalyzeInfo) +
+                                     ( ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT ) +
+                                     ( ID_SIZEOF(sdiValueInfo) * 2 ) +
+                                     ID_SIZEOF(sdiNodeInfo),
                                      0 )
               != IDE_SUCCESS );
 
@@ -241,6 +250,9 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
     mtdCharType      * sResult;
     mtdBinaryType    * sBinary;
     sdiAnalyzeInfo   * sAnalyzeInfo;
+    sdiRange         * sRanges;
+    sdiValueInfo     * sValue;
+    sdiValueInfo     * sSubValue;
     sdiNodeInfo      * sNodeInfo;
     sdiNode          * sNode;
     mtdBinaryType    * sParserBuffer;
@@ -292,7 +304,24 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
         sBinary = (mtdBinaryType*)
             ((UChar*)aTemplate->rows[aNode->table].row + sColumn[1].column.offset);
         sAnalyzeInfo = (sdiAnalyzeInfo*)sBinary->mValue;
-        sNodeInfo = (sdiNodeInfo*)(sBinary->mValue + ID_SIZEOF(sdiAnalyzeInfo));
+
+        /* BUG-45718 */
+        sRanges = (sdiRange*)(sBinary->mValue + ID_SIZEOF(sdiAnalyzeInfo));
+        sAnalyzeInfo->mRangeInfo.mRanges = sRanges;
+        sValue = (sdiValueInfo*)(sBinary->mValue +
+                                 ID_SIZEOF(sdiAnalyzeInfo) +
+                                 (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT));
+        sAnalyzeInfo->mValue = sValue;
+        sSubValue = (sdiValueInfo*)(sBinary->mValue +
+                                    ID_SIZEOF(sdiAnalyzeInfo) +
+                                    (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT) +
+                                    ID_SIZEOF(sdiValueInfo));
+        sAnalyzeInfo->mSubValue = sSubValue;
+
+        sNodeInfo = (sdiNodeInfo*)(sBinary->mValue +
+                                   ID_SIZEOF(sdiAnalyzeInfo) +
+                                   (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT) +
+                                   (ID_SIZEOF(sdiValueInfo) * 2));
 
         sParserBuffer = (mtdBinaryType*)
             ((UChar*)aTemplate->rows[aNode->table].row + sColumn[2].column.offset);
@@ -437,7 +466,7 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
             else
             {
                 if ( ( sExecDefaultNode == ID_TRUE ) &&
-                     ( sAnalyzeInfo->mDefaultNodeId != ID_USHORT_MAX ) )
+                     ( sAnalyzeInfo->mDefaultNodeId != ID_UINT_MAX ) )
                 {
                     sNodeId = sAnalyzeInfo->mDefaultNodeId;
                     IDE_DASSERT( sNodeId < sNodeInfo->mCount );
@@ -486,16 +515,16 @@ IDE_RC sdfConvertObjectToAnalyzeInfo( SChar           * aCondition,
     aAnalyzeInfo->mIsCanMerge       = ID_TRUE;
     aAnalyzeInfo->mSplitMethod      = SDI_SPLIT_NONE;
     aAnalyzeInfo->mKeyDataType      = aKeyModule->id;
-    aAnalyzeInfo->mSubKeyExists     = 0;
+    aAnalyzeInfo->mSubKeyExists     = ID_FALSE;
     aAnalyzeInfo->mSubValueCount    = 0;
     aAnalyzeInfo->mSubSplitMethod   = SDI_SPLIT_NONE;
     aAnalyzeInfo->mSubKeyDataType   = ID_UINT_MAX;
-    aAnalyzeInfo->mDefaultNodeId    = ID_USHORT_MAX;
+    aAnalyzeInfo->mDefaultNodeId    = ID_UINT_MAX;
     aAnalyzeInfo->mRangeInfo.mCount = 0;
 
     if ( aSubKeyModule != NULL )
     {
-        aAnalyzeInfo->mSubKeyExists   = 1;
+        aAnalyzeInfo->mSubKeyExists   = ID_TRUE;
         aAnalyzeInfo->mSubKeyDataType = aSubKeyModule->id;
     }
     else
@@ -656,7 +685,7 @@ IDE_RC sdfConvertObjectToAnalyzeInfo( SChar           * aCondition,
     // sort range info
     IDE_TEST( sdm::shardRangeSort( aAnalyzeInfo->mSplitMethod,
                                    aAnalyzeInfo->mKeyDataType,
-                                   ( (aAnalyzeInfo->mSubKeyExists == 1) ? ID_TRUE : ID_FALSE ),
+                                   aAnalyzeInfo->mSubKeyExists,
                                    aAnalyzeInfo->mSubSplitMethod,
                                    aAnalyzeInfo->mSubKeyDataType,
                                    &(aAnalyzeInfo->mRangeInfo) )
@@ -696,7 +725,7 @@ IDE_RC sdfConvertArrayToRangeInfo( SChar          * aCondition,
 
         // init
         sValueCount = 0;
-        sRangeInfo->mRanges[sRangeInfo->mCount].mNodeId = ID_USHORT_MAX;
+        sRangeInfo->mRanges[sRangeInfo->mCount].mNodeId = ID_UINT_MAX;
 
         for ( sObject = sArray->mValue.mValue.mObject;
               sObject != NULL;
@@ -830,7 +859,7 @@ IDE_RC sdfConvertArrayToRangeInfo( SChar          * aCondition,
 
         // check node
         sErrMsg = (SChar*)"range node is not defined";
-        IDE_TEST_RAISE( sRangeInfo->mRanges[sRangeInfo->mCount].mNodeId == ID_USHORT_MAX,
+        IDE_TEST_RAISE( sRangeInfo->mRanges[sRangeInfo->mCount].mNodeId == ID_UINT_MAX,
                         ERR_CONVERT );
 
         sRangeInfo->mCount++;
@@ -849,10 +878,10 @@ IDE_RC sdfConvertArrayToRangeInfo( SChar          * aCondition,
 IDE_RC sdfFindAndAddDataNode( SChar        * aCondition,
                               sdpjString   * aString,
                               sdiNodeInfo  * aNodeInfo,
-                              UShort       * aNodeId )
+                              UInt         * aNodeId )
 {
     sdiNode   * sNode;
-    UShort      sNodeId = ID_USHORT_MAX;
+    UInt        sNodeId = ID_UINT_MAX;
     SChar     * sErrMsg = (SChar*)"";
     UInt        i;
 
@@ -874,7 +903,7 @@ IDE_RC sdfFindAndAddDataNode( SChar        * aCondition,
         }
     }
 
-    if ( sNodeId == ID_USHORT_MAX )
+    if ( sNodeId == ID_UINT_MAX )
     {
         // add node
         sErrMsg = (SChar*)"node infomation is too large";

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderMisc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSenderMisc.cpp 83321 2018-06-21 07:03:04Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -53,14 +53,25 @@ idBool rpxSender::isYou(const SChar* aRepName )
 /*
  *
  */
-void rpxSender::getNetworkAddress( SChar ** aMyIP,
-                                   SInt * aMyPort,
-                                   SChar ** aPeerIP,
-                                   SInt * aPeerPort )
+void rpxSender::getLocalAddress( SChar ** aMyIP,
+                                 SInt * aMyPort )
 {
     *aMyIP = mMessenger.mLocalIP;
     *aMyPort = mMessenger.mLocalPort;
+}
 
+void rpxSender::getRemoteAddress( SChar ** aPeerIP,
+                                  SInt   * aPeerPort )
+{
     *aPeerIP = mMessenger.mRemoteIP;
     *aPeerPort = mMessenger.mRemotePort;
+}
+
+void rpxSender::getRemoteAddressForIB( SChar      ** aPeerIP,
+                                       SInt        * aPeerPort,
+                                       rpIBLatency * aIBLatency )
+{
+    *aPeerIP    = mMessenger.mRemoteIP;
+    *aPeerPort  = mMessenger.mRemotePort;
+    *aIBLatency = mMessenger.mIBLatency;
 }

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: ilo.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: ilo.h 83627 2018-08-06 10:11:18Z lswhh $
  **********************************************************************/
 
 #ifndef _O_ILO_H_
@@ -26,6 +26,7 @@
 #include <ide.h>
 #include <sqlcli.h>
 #include <ulo.h>
+#include <ulsdShardLoader.h>
 
 #include <ute.h>
 #include <uttMemory.h>
@@ -45,12 +46,6 @@
 #include <iloDownLoad.h>
 #include <iloApi.h>
 #include <utString.h>
-
-#ifdef COMPILE_SHARDCLI
-#define SQL_HEADER "node[data] "
-#else /* COMPILE_SHARDCLI */
-#define SQL_HEADER ""
-#endif /* COMPILE_SHARDCLI */
 
 #ifdef VC_WIN32
 inline void changeSeparator(const char *aFileName, char *aNewFileName)

@@ -31,6 +31,10 @@ is -f schema/schema.sql
 is -f schema/schema.sql
 ./psm2 | tee -a run.out                         
 is -f schema/schema.sql
+./psm3 | tee -a run.out                         
+is -f schema/schema.sql
+./psm4 | tee -a run.out                         
+is -f schema/schema.sql
 ./date | tee -a run.out   
 is -f schema/schema.sql
 ./varchar | tee -a run.out   

@@ -152,7 +152,7 @@ public:
     static UInt mMaxOpenFDCount4File;
 
     // sdb
-    static UInt mValidateBuffer;
+    //static UInt mValidateBuffer;
     static UInt mUseDWBuffer;
 
     static UInt mBulkIOPageCnt4DPInsert;
@@ -184,8 +184,8 @@ public:
     static UInt mBufferIOBufferSize;
     static ULong mBufferAreaSize;
     static ULong mBufferAreaChunkSize;
-    static UInt mBufferPinningCount;
-    static UInt mBufferPinningHistoryCount;
+    //static UInt mBufferPinningCount;
+    //static UInt mBufferPinningHistoryCount;
     static UInt mDefaultFlusherWaitSec;
     static UInt mMaxFlusherWaitSec;
     static ULong mCheckpointFlushCount;
@@ -385,7 +385,7 @@ public:
     static UInt   mZeroSizeLogFileAutoDelete;
     static UInt   mLogFilePrepareCount;
     static UInt   mLogFilePreCreateInterval;
-    static UInt   mMaxKeepLogFile;
+    //static UInt   mMaxKeepLogFile;
     static UInt   mShmDBKey;
     static UInt   mShmPageCountPerKey;
 
@@ -495,7 +495,7 @@ public:
     static UInt mParallelLoadFactor;
     static UInt mIteratorMemoryParallelFactor;
     static UInt mMMDBDefIdxType;
-    static UInt mIndexStatParallelFactor;
+    //static UInt mIndexStatParallelFactor;
     // PROJ-1629 : Run의 크기
     static ULong mMemoryIndexBuildRunSize;
     // PROJ-1629 : Merge Run의 갯수
@@ -1234,6 +1234,13 @@ private:
                                            void  * /*aOldValue*/,
                                            void  *aNewValue,
                                            void  * /*aArg*/);
+        
+    //BUG-45598 CHECKSUM_METHOD 콜백 등록
+    static IDE_RC callbackSMChecksumMethod(idvSQL * /*aStatistics*/,
+                                           SChar * /*aName*/,
+                                           void  * /*aOldValue*/,
+                                           void  *aNewValue,
+                                           void  * /*aArg*/);
 
     static IDE_RC callbackSMChecksumDisable( idvSQL * /*aStatistics*/,
                                              SChar * /*aName*/,
@@ -1433,11 +1440,11 @@ private:
         void  *aNewValue,
         void  * /*aArg*/);
 
-    static IDE_RC callbackTssCntPctToBufferPool( idvSQL * /*aStatistics*/,
-                                                 SChar * /*aName*/,
-                                                 void  * /*aOldValue*/,
-                                                 void  * aNewValue,
-                                                 void  * /*aArg*/);
+//    static IDE_RC callbackTssCntPctToBufferPool( idvSQL * /*aStatistics*/,
+//                                                 SChar * /*aName*/,
+//                                                 void  * /*aOldValue*/,
+//                                                 void  * aNewValue,
+//                                                 void  * /*aArg*/);
 
     static IDE_RC callbackShmPageCountPerKey( idvSQL * /*aStatistics*/,
                                               SChar * /*aName*/,
@@ -1683,10 +1690,10 @@ public:
         return mDWDir[aIndex];
     }
 
-    static UInt getValidateBuffer()
-    {
-        return mValidateBuffer;
-    }
+//    static UInt getValidateBuffer()
+//    {
+//        return mValidateBuffer;
+//    }
 
     static idBool getUseDWBuffer()
     {
@@ -1788,15 +1795,15 @@ public:
         return mBufferAreaChunkSize;
     }
 
-    static UInt getBufferPinningCount()
-    {
-        return mBufferPinningCount;
-    }
+//    static UInt getBufferPinningCount()
+//    {
+//        return mBufferPinningCount;
+//    }
 
-    static UInt getBufferPinningHistoryCount()
-    {
-        return mBufferPinningHistoryCount;
-    }
+//    static UInt getBufferPinningHistoryCount()
+//    {
+//        return mBufferPinningHistoryCount;
+//    }
 
     static UInt getDefaultFlusherWaitSec()
     {
@@ -2373,10 +2380,10 @@ public:
         return mLogFilePreCreateInterval;
     }
 
-    static UInt getMaxKeepLogFile()
-    {
-        return mMaxKeepLogFile;
-    }
+//    static UInt getMaxKeepLogFile()
+//    {
+//        return mMaxKeepLogFile;
+//    }
 
 
     static UInt getShmDBKey()
@@ -2721,10 +2728,10 @@ public:
         return mIteratorMemoryParallelFactor;
     }
 
-    static UInt getIndexStatParallelFactor()
-    {
-        return mIndexStatParallelFactor;
-    }
+//    static UInt getIndexStatParallelFactor()
+//    {
+//        return mIndexStatParallelFactor;
+//    }
 
     static ULong getMemoryIndexBuildRunSize()
     {

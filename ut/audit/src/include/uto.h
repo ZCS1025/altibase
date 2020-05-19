@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: uto.h 81253 2017-10-10 06:12:54Z bethy $
+ * $Id: uto.h 82688 2018-04-03 05:57:13Z bethy $
  ******************************************************************************/
 #ifndef _UTO_H_
 #define _UTO_H_ 1
@@ -179,8 +179,8 @@ public:
                       metaColumns *);// Metadata
 
     IDE_RC bind(Row*);               // bind Row to DML
-    IDE_RC execute ();               // execute sequence of Operators
-    IDE_RC lobAtToAt (Query *, Query *, SChar *);
+    IDE_RC execute (bool);           // execute sequence of Operators
+    IDE_RC lobAtToAt (Query *, Query *, SChar *, SChar *);
     
     inline const SChar * getType() { return mType; };
     inline const SChar * error () { return (mQuery)?mQuery->error():""; }
@@ -202,6 +202,9 @@ private:
 #ifdef DEBUG
     void log4Bind(SChar *aQueryType, UShort aColumNumber, Field *aField);
 #endif
+
+    /* BUG-45909 Improve LOB Processing */
+    IDE_RC putLob();
 };
 
 class utScanner: public Object

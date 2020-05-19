@@ -69,8 +69,9 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfDecryptCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA,
+    mtk::extractRangeNA
 };
 
 IDE_RC mtfDecryptEstimate( mtcNode*     aNode,

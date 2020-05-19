@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTransMgr.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smxTransMgr.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -926,7 +926,10 @@ void smxTransMgr::addActiveTrans( void  * aTrans,
             IDE_ASSERT(sCurTrans->mStatus == SMX_TX_END);
             sCurTrans->init(aTID);
 
-            sCurTrans->begin( NULL, aFlag, SMX_NOT_REPL_TX_ID );
+            IDE_ASSERT( sCurTrans->begin( NULL,
+                                          aFlag,
+                                          SMX_NOT_REPL_TX_ID )
+                        == IDE_SUCCESS );
 
             sCurTrans->setLstUndoNxtLSN( *aCurLSN );
             sCurTrans->mIsFirstLog = ID_FALSE;
@@ -1205,7 +1208,8 @@ IDE_RC smxTransMgr::abortAllActiveTrans()
     while ( sTrans != &mActiveTrans )
     {
         IDE_TEST( sTrans->freeOIDList() != IDE_SUCCESS );
-        IDE_TEST( sTrans->abort() != IDE_SUCCESS );
+        IDE_TEST( sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                                 NULL      /* aLegacyTrans */ ) != IDE_SUCCESS );
         sTrans = sTrans->mNxtAT;
     }
 

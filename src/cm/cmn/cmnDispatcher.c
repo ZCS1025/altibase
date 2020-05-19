@@ -36,6 +36,9 @@ static ACI_RC (*gCmnDispatcherWaitLinkClient[CMN_DISPATCHER_IMPL_MAX])(cmnLink *
 #else
     cmnDispatcherWaitLinkIPCDA,
 #endif
+
+    /* PROJ-2681 */
+    cmnDispatcherWaitLinkIB
 };
 
 
@@ -57,6 +60,10 @@ acp_bool_t cmnDispatcherIsSupportedImpl(cmnDispatcherImpl aImpl)
         case CMN_DISPATCHER_IMPL_IPCDA:
             return ACP_TRUE;
 #endif
+
+        /* PROJ-2681 */
+        case CMN_DISPATCHER_IMPL_IB:
+            return ACP_TRUE;
 
         default:
             break;
@@ -88,6 +95,10 @@ cmnDispatcherImpl cmnDispatcherImplForLinkImpl(cmnLinkImpl aLinkImpl)
         case CMN_LINK_IMPL_SSL:
             return CMN_DISPATCHER_IMPL_SOCK;
 
+        /* PROJ-2681 */
+        case CMN_LINK_IMPL_IB:
+            return CMN_DISPATCHER_IMPL_IB;
+
         default:
             break;
     }
@@ -111,7 +122,7 @@ ACI_RC cmnDispatcherWaitLink(cmnLink *aLink, cmiDirection aDirection, acp_time_t
      * Dispatcher Impl 범위 검사
      */
     ACE_ASSERT((acp_sint32_t)sImpl >= CMN_DISPATCHER_IMPL_BASE);
-    ACE_ASSERT(sImpl <  CMN_DISPATCHER_IMPL_MAX);
+    ACE_ASSERT(sImpl < CMN_DISPATCHER_IMPL_MAX);
 
     /*
      * WaitLink 함수 호출
@@ -119,6 +130,8 @@ ACI_RC cmnDispatcherWaitLink(cmnLink *aLink, cmiDirection aDirection, acp_time_t
     ACI_TEST(gCmnDispatcherWaitLinkClient[sImpl](aLink, aDirection, aTimeout) != ACI_SUCCESS);
 
     return ACI_SUCCESS;
+
     ACI_EXCEPTION_END;
+
     return ACI_FAILURE;
 }

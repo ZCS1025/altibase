@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idxLocalSock.cpp 79746 2017-04-18 02:15:59Z yoonhee.kim $
+ * $Id: idxLocalSock.cpp 83415 2018-07-04 04:47:30Z kclee $
  **********************************************************************/
 
 #include <idx.h>
@@ -586,7 +586,8 @@ IDE_RC idxLocalSock::connect( IDX_LOCALSOCK * aSock,
 
     idlOS::memset( &sAddr, 0, ID_SIZEOF( sAddr ) );
     sAddr.sun_family  = AF_UNIX;
-    idlOS::strcpy( (SChar*)sAddr.sun_path, aPath );
+    idlOS::strncpy( (SChar*)sAddr.sun_path, aPath, ID_SIZEOF(sAddr.sun_path) - 1 ); 
+    sAddr.sun_path[ID_SIZEOF(sAddr.sun_path) - 1] = 0; 
 
     sSockRet = idlOS::connect( *aSock,
                                (struct sockaddr *)&sAddr,

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvQuerySet.h 82157 2018-01-31 01:09:11Z donovan.seo $
+ * $Id: qmvQuerySet.h 84835 2019-01-30 01:06:28Z donovan.seo $
  **********************************************************************/
 
 #ifndef _Q_QMV_QUERY_SET_H_
@@ -155,6 +155,12 @@ public:
         qcStatement * aStatement,
         qmsTarget   * aTarget );
 
+    static IDE_RC searchHostVarAndAddCastOper(
+        qcStatement   * aStatement,
+        qtcNode       * aNode,
+        qtcNode      ** aNewNode,
+        idBool          aContainRootsNext );
+
 private:
     static IDE_RC validateGroupOneColumn(
         qcStatement     * aStatement,
@@ -279,12 +285,6 @@ private:
         qcStatement  * aStatement,
         qmsTarget    * aTarget );
 
-    static IDE_RC searchHostVarAndAddCastOper(
-        qcStatement   * aStatement,
-        qtcNode       * aNode,
-        qtcNode      ** aNewNode,
-        idBool          aContainRootsNext );
-    
     // PROJ-1789 Scrollable Updatable Cursor
     static IDE_RC setTargetColumnInfo(qcStatement* aStatement,
                                       qmsTarget  * aTarget);

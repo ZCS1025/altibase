@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utScanner.cpp 81253 2017-10-10 06:12:54Z bethy $
+ * $Id: utScanner.cpp 82975 2018-05-04 03:50:15Z bethy $
  ******************************************************************************/
 #include <mtcl.h>
 #include <uto.h>
@@ -58,27 +58,35 @@ compare_t utScanner::compare()
     {
         s = mRowB->getField(i);
 
-        /* BUG-40205
-         * lob 타입은 f->mValue에 데이터를 가져오지 않기 때문에 비교가 의미없음
-         * 즉, 항상 같음으로 검사되기 때문에 건너뛰도록 수정.
+        /* BUG-45909 Improve LOB Processing, Step1
+         *   FileMode에서만 건너뛰는 것 유지
          */
         if((f->getSQLType() == SQL_BLOB) || (f->getSQLType() == SQL_CLOB))
         {
-            isLob = true;
-            continue;
-        }
-
-        // BUG-17167
-        if((mConnA->getDbType() == DBA_ATB) && (mConnB->getDbType() == DBA_ATB))
-        {
-            IDE_TEST_RAISE(f->comparePhysical(s, sUseFraction) != true, diff_column);
+            if ( mIsFileMode == true )
+            {
+                isLob = true;
+            }
+            else
+            {
+                IDE_TEST_RAISE(f->compareLob(s) != true, diff_column);
+            }
         }
         else
         {
-            IDE_TEST_RAISE(f->compareLogical(s, sUseFraction) != 0, diff_column);
+            // BUG-17167
+            if((mConnA->getDbType() == DBA_ATB) && (mConnB->getDbType() == DBA_ATB))
+            {
+                IDE_TEST_RAISE(f->comparePhysical(s, sUseFraction) != true, diff_column);
+            }
+            else
+            {
+                IDE_TEST_RAISE(f->compareLogical(s, sUseFraction) != 0, diff_column);
+            }
         }
     }
 
+    /* BUG-45909 Improve LOB Processing */
     /* 
      * BUG-32566
      *
@@ -89,7 +97,7 @@ compare_t utScanner::compare()
      *    mSI, mSD 등을 사용할 수 있도록 수정.
      *    lobAtToAt 함수는 static 으로 바꾸는 것이 나을 듯 하지만 다음에..
      */
-    if(isLob == true)// && mMI != NULL)
+    if ( isLob == true )
     {
         if (mMI != NULL)
         {
@@ -110,17 +118,17 @@ compare_t utScanner::compare()
         IDE_TEST_CONT(sLobQuery == NULL, skip_compare_lob);
 
         mSelectA->lobCompareMode = true;
-        sLobQuery->lobAtToAt(mSelectA, mSelectB, (SChar *)mTableNameB);
+        sLobQuery->lobAtToAt(mSelectA, mSelectB,
+                             (SChar *)mTableNameA, (SChar *)mTableNameB);
         mSelectA->lobCompareMode = false;
         IDE_TEST_RAISE(((mSelectA->getLobDiffCol() != NULL) ||
-                        (mSelectB->getLobDiffCol() != NULL)), diff_column);
+                        (mSelectB->getLobDiffCol() != NULL)),
+                       diff_lob_column);
+
         /* TASK-4212: audit툴의 대용량 처리시 개선 */
         // lob 이 포함되어있는 row를 비교하면, 비교한뒤 comit해버림.
-        if ( mIsFileMode == true )
-        {
-            IDE_TEST( mConnA->commit() != IDE_SUCCESS);
-            IDE_TEST( mConnB->commit() != IDE_SUCCESS);
-        }
+        mConnA->commit();
+        mConnB->commit();
     }
 
     IDE_EXCEPTION_CONT( skip_compare_lob );
@@ -130,16 +138,21 @@ compare_t utScanner::compare()
     IDE_EXCEPTION( diff_column );
     {
         sCmp = CMP_CL;
+        diffColumn.name = f->getName();
+
 /// idlOS::printf("CL.diff->%s[%d].%s\n",mTableName, mRows, f->getName());
     }
     IDE_EXCEPTION( diff_primary_key );
     {
         sCmp = (c > 0 )?CMP_PKA:CMP_PKB;
+        diffColumn.name = f->getName();
+
 ///idlOS::printf("%s.diff->%s[%d].%s\n",( (c > 0 )?"CMP_PKA":"CMP_PKB" )
 ///      ,mTableName, mRows, f->getName());
     }
-    IDE_EXCEPTION_END;
+    IDE_EXCEPTION( diff_lob_column );
     {
+        sCmp = CMP_CL;
         if(mSelectA->getLobDiffCol() != NULL)
         {
             diffColumn.name = mSelectA->getLobDiffCol();
@@ -148,12 +161,16 @@ compare_t utScanner::compare()
         {
             diffColumn.name = mSelectB->getLobDiffCol();
         }
-        else
-        {
-            diffColumn.name = f->getName();
-        }
-        ++mDiffCount;
+        mSelectA->setLobDiffCol(NULL);
+        mSelectB->setLobDiffCol(NULL);
+
+        mConnA->commit();
+        mConnB->commit();
     }
+    IDE_EXCEPTION_END;
+
+    ++mDiffCount;
+
     return sCmp;
 }
 
@@ -576,7 +593,7 @@ IDE_RC utScanner::exec(dmlQuery * aQ)
     
     if(aQ != NULL)
     {
-        if(aQ->execute() != IDE_SUCCESS)
+        if(aQ->execute(mIsFileMode) != IDE_SUCCESS)
         {
             if(flog != NULL)
             {
@@ -586,7 +603,7 @@ IDE_RC utScanner::exec(dmlQuery * aQ)
             return IDE_FAILURE;
         }
 
-        if(mMeta->getCLSize(true))
+        if(mIsFileMode == true && mMeta->getCLSize(true))
         {
             sType = aQ->getType();
 
@@ -595,11 +612,13 @@ IDE_RC utScanner::exec(dmlQuery * aQ)
             {
                 if(sType[0] == 'M')
                 {
-                    aQ->lobAtToAt(mSelectB, mSelectA, (SChar *)mTableNameB);
+                    aQ->lobAtToAt(mSelectB, mSelectA,
+                                  (SChar *)mTableNameB, (SChar *)mTableNameA);
                 }
                 else if(sType[0] == 'S')
                 {
-                    aQ->lobAtToAt(mSelectA, mSelectB, (SChar *)mTableNameB);
+                    aQ->lobAtToAt(mSelectA, mSelectB,
+                                  (SChar *)mTableNameA, (SChar *)mTableNameB);
                 }
                 else
                 {
@@ -1001,6 +1020,7 @@ void *utScanner::utaFileModeWrite( void *aFileArg )
                                 case SQL_CHAR:
                                 case SQL_VARCHAR:
                                 case SQL_BIT:
+                                case SQL_VARBIT:
                                 case SQL_TINYINT:
                                 case SQL_SMALLINT:
                                 case SQL_INTEGER:
@@ -1487,11 +1507,6 @@ IDE_RC utScanner::finalize()
     {
         delete mSD;
         mSD = NULL;
-    }
-    if( mMI != NULL )
-    {
-        delete mMI;
-        mMI = NULL;
     }
     if( mMI != NULL )
     {

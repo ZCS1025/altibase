@@ -119,9 +119,7 @@ void       *cmnLinkPeerGetUserPtr(cmnLinkPeer *aLink);
 void        cmnLinkPeerSetUserPtr(cmnLinkPeer *aLink, void *aUserPtr);
 
 /*PROJ-2616*/
-void        cmnLinkPeerFinalizeSvrWriteIPCDA(void *aCtx);
 IDE_RC      cmnLinkPeerInitSvrWriteIPCDA(void *aCtx);
-void        cmnLinkPeerFinalizeSvrReadIPCDA(void *aCtx);
 IDE_RC      cmnLinkPeerInitIPCDA(void *aCtx,UInt aSessionID);
 
 #endif

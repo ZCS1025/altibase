@@ -42,20 +42,21 @@ IDE_RC rpxSenderApply::initialize(rpxSender        *aSender,
                                   rpnMessenger    * aMessenger,
                                   rpdMeta          *aMeta,
                                   void             *aRsc,
-                                  idBool           *aNetworkError,
+                                  idBool           *aRetryError,
                                   idBool           *aApplyFaultFlag,
                                   idBool           *aSenderStopFlag,
                                   idBool            aIsSupportRecovery,
                                   RP_SENDER_TYPE   *aSenderType,
                                   UInt              aParallelID,
-                                  RP_SENDER_STATUS *aStatus)
+                                  RP_SENDER_STATUS *aStatus,
+                                  RP_SOCKET_TYPE    aSocketType)
 {
 	smLSN sTempLSN;
 
     IDE_ASSERT(aSenderInfo != NULL);
     IDE_ASSERT(aMessenger != NULL);
     IDE_ASSERT(aMeta != NULL);
-    IDE_ASSERT(aNetworkError != NULL);
+    IDE_ASSERT(aRetryError != NULL);
     IDE_ASSERT(aApplyFaultFlag != NULL);
     IDE_ASSERT(aSenderStopFlag != NULL);
     IDE_ASSERT(aSenderType != NULL);
@@ -66,7 +67,7 @@ IDE_RC rpxSenderApply::initialize(rpxSender        *aSender,
     mMessenger         = aMessenger;
     mMeta              = aMeta;
     mRsc               = aRsc;
-    mNetworkError      = aNetworkError;
+    mRetryError        = aRetryError;
     mApplyFaultFlag    = aApplyFaultFlag;
     *mApplyFaultFlag   = ID_FALSE;
     mSenderStopFlag    = aSenderStopFlag;
@@ -76,6 +77,7 @@ IDE_RC rpxSenderApply::initialize(rpxSender        *aSender,
     mIsSuspended       = ID_FALSE;
     mOpStatistics      = aOpStatistics;
     mStatSession       = aStatSession;
+    mSocketType        = aSocketType;
 
     /* PROJ-1915 */
     mSenderType        = aSenderType;
@@ -98,8 +100,10 @@ IDE_RC rpxSenderApply::initialize(rpxSender        *aSender,
         mEagerUpdatedRestartSNGap = 0;
     }
 
-    if((mMeta->mReplication.mRole != RP_ROLE_ANALYSIS) &&   // PROJ-1537
-       (*mSenderType != RP_OFFLINE))                        // PROJ-1915
+    if ( ( mMeta->mReplication.mRole != RP_ROLE_ANALYSIS ) &&   // PROJ-1537
+         ( mMeta->mReplication.mRole != RP_ROLE_ANALYSIS_PROPAGATION ) &&
+         ( *mSenderType != RP_OFFLINE ) &&                        // PROJ-1915
+         ( mSocketType != RP_SOCKET_TYPE_IB ) )
     {
         IDE_ASSERT(aRsc != NULL);
     }
@@ -127,9 +131,6 @@ void rpxSenderApply::shutdown()
 
 void rpxSenderApply::destroy()
 {
-    //wait 중인 Service thread가 없어야 함
-    IDE_ASSERT(mSenderInfo->getMinWaitSN() == SM_SN_NULL);
-
     (void)idlOS::memset(&mReceivedAck, 0, ID_SIZEOF(rpXLogAck));
 
     *mApplyFaultFlag = ID_FALSE;
@@ -174,8 +175,9 @@ IDE_RC rpxSenderApply::initializeThread()
                                              8,                        //align byte(default)
                                              ID_FALSE,				   //ForcePooling
                                              ID_TRUE,				   //GarbageCollection
-                                             ID_TRUE )                 //HWCacheLine
-                  != IDE_SUCCESS );
+                                             ID_TRUE,                  /* HWCacheLine */
+                                             IDU_MEMPOOL_TYPE_LEGACY   /* mempool type */ ) 
+                 != IDE_SUCCESS);			
     }
     else
     {
@@ -284,6 +286,11 @@ IDE_RC rpxSenderApply::updateXSN(smSN aSN)
     // no commit log occurred
     //----------------------------------------------------------------//
     IDE_TEST_CONT((aSN == SM_SN_NULL) || (aSN == 0), NORMAL_EXIT);
+
+    /* DDL Sync 의 경우 DDL 중 일부 SYS_REPLICATIONS_ 를 업데이트 하는 경우가 있다.
+     * 만약 DDL 트랜잭션보다 먼저 updateXSN 으로 SYS_REPLICATIONS_ 를 수정할 경우
+     * DDL Sync 가 실패하게 되어 DDL Sync 가 완료된 이후에 업데이트 한다. */
+    IDE_TEST_CONT( mSenderInfo->getSkipUpdateXSN() == ID_TRUE, NORMAL_EXIT );
 
     /* Eager 의 경우 mUpdatedRestartSNGap 이 설정된다.
      * Remote 에서 commit 이 완료 되었지만 해당 로그가 디스크에 아직
@@ -413,6 +420,9 @@ void rpxSenderApply::run()
     smSN   sRestartSN       = SM_SN_NULL;
     IDE_RC sRC;
     idBool sIsOfflineStatusFound = ID_FALSE;
+    PDL_Time_Value sSleepTv;
+
+    sSleepTv.initialize( 0, RPU_SENDER_SLEEP_TIME );
 
     RP_CREATE_FLAG_VARIABLE(IDV_OPTM_INDEX_RP_S_RECV_ACK);
     RP_CREATE_FLAG_VARIABLE(IDV_OPTM_INDEX_RP_S_SET_ACKEDVALUE);
@@ -562,20 +572,21 @@ void rpxSenderApply::run()
         /* PROJ-1442 Replication Online 중 DDL 허용
          * Handshake 중에는 Sender Apply를 중지한다.
          */
-        if(mReceivedAck.mAckType == RP_X_HANDSHAKE_READY)
+        if ( ( mReceivedAck.mAckType == RP_X_HANDSHAKE_ACK ) ||
+             ( mReceivedAck.mAckType == RP_X_DDL_REPLICATE_HANDSHAKE_ACK ) )
         {
             mIsSuspended = ID_TRUE;
 
             while((mIsSuspended   == ID_TRUE) &&
                   (mExitFlag      != ID_TRUE) &&
-                  (*mNetworkError != ID_TRUE) &&
+                  (*mRetryError != ID_TRUE) &&
                   // BUG-24290 [RP] DDL로 인해 SenderApply가 대기 중일 때
                   //     Sender를 STOP시키면, SenderApply의 대기를 풀어야 합니다
                   (*mSenderStopFlag != ID_TRUE))
             {
                 IDE_TEST( checkHBT() != IDE_SUCCESS );
 
-                idlOS::thr_yield();
+                idlOS::sleep( sSleepTv );
             }
         }
     }
@@ -592,14 +603,14 @@ void rpxSenderApply::run()
 
     IDE_EXCEPTION(ERR_RECV_ACK);
     {
-        *mNetworkError = ID_TRUE;
+        *mRetryError = ID_TRUE;
         mSenderInfo->deActivate();
         mSenderInfo->signalToAllServiceThr(ID_TRUE, SM_NULL_TID );
     }
     IDE_EXCEPTION(ERR_RECV_ACK_TIMEOUT);
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_TIMEOUT_EXCEED));
-        *mNetworkError = ID_TRUE;
+        *mRetryError = ID_TRUE;
         mSenderInfo->deActivate();
         mSenderInfo->signalToAllServiceThr(ID_TRUE, SM_NULL_TID );
     }
@@ -697,8 +708,10 @@ void rpxSenderApply::getMinRestartSNFromAllApply( smSN* aRestartSN )
 
 IDE_RC rpxSenderApply::checkHBT( void )
 {
-    if ( (mMeta->mReplication.mRole != RP_ROLE_ANALYSIS ) &&   // PROJ-1537
-         (*mSenderType != RP_OFFLINE) )                        // PROJ-1915
+    if ( ( mMeta->mReplication.mRole != RP_ROLE_ANALYSIS ) &&   // PROJ-1537
+         ( mMeta->mReplication.mRole != RP_ROLE_ANALYSIS_PROPAGATION ) &&
+         ( *mSenderType != RP_OFFLINE ) &&                        // PROJ-1915
+         ( mSocketType != RP_SOCKET_TYPE_IB ) )
     {
         IDU_FIT_POINT( "rpxSenderApply::checkHBT::SLEEP::rpcHBT::checkFault" );
         IDE_TEST_RAISE( rpcHBT::checkFault(mRsc) == ID_TRUE,
@@ -713,8 +726,8 @@ IDE_RC rpxSenderApply::checkHBT( void )
 
     IDE_EXCEPTION(ERR_NETWORK);
     {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_RECV_ERROR ) );
-        *mNetworkError = ID_TRUE;
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ) );
+        *mRetryError = ID_TRUE;
         mSenderInfo->deActivate();
         mSenderInfo->signalToAllServiceThr( ID_TRUE, SM_NULL_TID );
     }

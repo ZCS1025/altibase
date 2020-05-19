@@ -88,9 +88,13 @@ qmgMerge::init( qcStatement  * aStatement,
 
     // 최상위 graph인 merge graph에 parse tree 정보를 설정
     sMyGraph->updateStatement = sParseTree->updateStatement;
+    sMyGraph->deleteStatement = sParseTree->deleteStatement;
     sMyGraph->insertStatement = sParseTree->insertStatement;
     sMyGraph->insertNoRowsStatement = sParseTree->insertNoRowsStatement;
 
+    // 최상위 graph인 merge graph에 insert where 정보를 설정
+    sMyGraph->whereForInsert = sParseTree->whereForInsert;
+    
     // out 설정
     *aGraph = (qmgGraph *)sMyGraph;
 
@@ -189,6 +193,28 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         IDE_TEST( qmo::makeUpdateGraph( sStatement ) != IDE_SUCCESS );
 
         sCurrChildren = & (sMyGraph->graph.children[QMO_MERGE_UPDATE_IDX]);
+        
+        sCurrChildren->childGraph = sStatement->myPlan->graph;
+
+        // next 연결
+        sPrevChildren->next = sCurrChildren;
+        sPrevChildren = sCurrChildren;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+    //---------------------------
+    // delete graph
+    //---------------------------
+
+    if ( sMyGraph->deleteStatement != NULL )
+    {
+        sStatement = sMyGraph->deleteStatement;
+    
+        IDE_TEST( qmo::makeDeleteGraph( sStatement ) != IDE_SUCCESS );
+
+        sCurrChildren = & (sMyGraph->graph.children[QMO_MERGE_DELETE_IDX]);
         
         sCurrChildren->childGraph = sStatement->myPlan->graph;
 
@@ -391,7 +417,27 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     {
         // Nothing to do.
     }
+
+    //---------------------------
+    // delete plan의 생성
+    //---------------------------
+
+    if ( sMyGraph->deleteStatement != NULL )
+    {
+        sStatement = sMyGraph->deleteStatement;
     
+        sChildren = & (sMyGraph->graph.children[QMO_MERGE_DELETE_IDX]);
+        
+        IDE_TEST( sChildren->childGraph->makePlan( sStatement,
+                                                   NULL,
+                                                   sChildren->childGraph )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+        
     //---------------------------
     // insert plan의 생성
     //---------------------------
@@ -406,6 +452,40 @@ qmgMerge::makePlan( qcStatement     * aStatement,
                                                    NULL,
                                                    sChildren->childGraph )
                   != IDE_SUCCESS );
+
+        //------------------------------------------
+        // insert where 구문 내의 Subquery 최적화
+        //------------------------------------------
+    
+        if ( sMyGraph->whereForInsert != NULL )
+        {
+            // Subquery 존재할 경우 Subquery 최적화
+            if ( (sMyGraph->whereForInsert->lflag & QTC_NODE_SUBQUERY_MASK )
+                 == QTC_NODE_SUBQUERY_EXIST )
+            {
+                // BUG-32584
+                // 모든 서브쿼리에 대해서 MakeGraph 한후에 MakePlan을 해야 한다.
+                IDE_TEST( qmoSubquery::optimizeExprMakeGraph(
+                              aStatement,
+                              ID_UINT_MAX,
+                              sMyGraph->whereForInsert )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qmoSubquery::optimizeExprMakePlan(
+                              aStatement,
+                              ID_UINT_MAX,
+                              sMyGraph->whereForInsert )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* nothing to do */
+            }
+        }
+        else
+        {
+            /* nothing to do */
+        }
     }
     else
     {
@@ -447,8 +527,11 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     sMRGEInfo.selectTargetStatement   = sMyGraph->selectTargetStatement;
 
     sMRGEInfo.updateStatement         = sMyGraph->updateStatement;
+    sMRGEInfo.deleteStatement         = sMyGraph->deleteStatement;
     sMRGEInfo.insertStatement         = sMyGraph->insertStatement;
     sMRGEInfo.insertNoRowsStatement   = sMyGraph->insertNoRowsStatement;
+
+    sMRGEInfo.whereForInsert          = sMyGraph->whereForInsert;
     
     sMRGEInfo.resetPlanFlagStartIndex = sResetPlanFlagStartIndex;
     sMRGEInfo.resetPlanFlagEndIndex   = sResetPlanFlagEndIndex; 

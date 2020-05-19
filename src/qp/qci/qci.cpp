@@ -609,20 +609,8 @@ void qci::endTransForSession( qciSession * aSession )
                                         & aSession->mQPSpecific.mTemporaryObj,
                                         QCM_TEMPORARY_ON_COMMIT_DELETE_ROWS );
 
-    // BUG-45385
-    // shard meta를 변경후 commit시 scn을 변경한다.
-    if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
-         QC_SESSION_SHARD_META_TOUCH_TRUE )
-    {
-        aSession->mQPSpecific.mFlag &= ~QC_SESSION_SHARD_META_TOUCH_MASK;
-        aSession->mQPSpecific.mFlag |= QC_SESSION_SHARD_META_TOUCH_FALSE;
-
-        sdi::incShardLinkerChangeNumber();
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    // BUG-46884
+    sdi::unsetShardMetaTouched( aSession );
 }
 
 void qci::endSession( qciSession * aSession )
@@ -680,6 +668,30 @@ IDE_RC qci::finalizeStatement( qciStatement *aStatement )
     IDE_EXCEPTION_END;
     
     return IDE_FAILURE;
+}
+
+void qci::clearShardDataInfo( qciStatement * aStatement )
+{
+    qcStatement * sStatement = & aStatement->statement;
+
+    if ( sStatement->allocFlag == ID_TRUE )
+    {
+        if ( QC_PRIVATE_TMPLATE( sStatement ) != NULL )
+        {
+            sdi::clearDataInfo( sStatement,
+                                & ( QC_PRIVATE_TMPLATE( sStatement )->shardExecData ) );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
 }
 
 IDE_RC qci::checkExecuteFuncAndSetEnv( qciStatement * aStatement,
@@ -1271,9 +1283,9 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     smiStatement * sSmiStmtOrg;
     qcStatement  * sStatement;
     qciStmtType    sStmtType;
-    SInt           sStage = 0;
-    SInt           sOpState = 0;
-    SInt           sTestState = 0;
+    volatile SInt  sStage;
+    volatile SInt  sOpState;
+    volatile SInt  sTestState;
 
     //---------------------------------------------
     // QCI_STMT_STATE_PARSED 상태에서만
@@ -1283,6 +1295,9 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     //---------------------------------------------
 
     sStatement = &aStatement->statement;
+    sStage     = 0; /* BUG-45994 - 컴파일러 최적화 회피 */
+    sOpState   = 0; /* BUG-45994 */
+    sTestState = 0; /* BUG-45994 */
 
     IDE_TEST( checkExecuteFuncAndSetEnv(
                   aStatement,
@@ -1339,9 +1354,13 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
             /* release 또는 test 상황이 아닐 경우 필요 없다. */
         }
 
-        // BUG-44710
+        /* PROJ-2701 Sharding online data rebuild */
         qcgPlan::registerPlanProperty( sStatement,
-                                       PLAN_PROPERTY_SHARD_LINKER_CHANGE_NUMBER );
+                                       PLAN_PROPERTY_SHARD_META_NUMBER_FOR_DATA );
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_META_NUMBER_FOR_SESSION );
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_IS_DATA_SESSION );
 
         //-----------------------------------------
         // VALIDATE
@@ -1516,6 +1535,10 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
             // Nothing to do.
         }
 
+        /* PROJ-2632 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SERIAL_EXECUTE_MODE );
+
         // 사용빈도가 낮거나 항상 참조하여 무조건 기록한다.
         qcgPlan::registerPlanProperty( sStatement,
                                        PLAN_PROPERTY_STACK_SIZE );
@@ -1601,6 +1624,20 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
             }
 
             qdcAudit::setOperation( sStatement );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        /* PROJ-2701 Sharding online data rebuild
+         * Rebuild coordinator가 bind정보 없이 생성한 plan은
+         * Plan cache에 등록하지 않는다.
+         */
+        if ( ( sStatement->mFlag & QC_STMT_SHARD_REBUILD_FORCE_MASK ) ==
+             QC_STMT_SHARD_REBUILD_FORCE_TRUE )
+        {
+            aPlanCacheContext->mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
         }
         else
         {
@@ -1986,6 +2023,10 @@ IDE_RC qci::execute( qciStatement * aStatement,
         IDE_TEST( qcm::validateAndLockAllObjects( sStatement )
                   != IDE_SUCCESS );
 
+        /* PROJ-2701 Sharding online data rebuild */
+        IDE_TEST( checkShardPlanRebuild( (qcStatement*)aStatement )
+                  != IDE_SUCCESS );
+
         /* PROJ-2462 Result Cache */
         if ( ( sStmtType == QCI_STMT_SELECT ) ||
              ( sStmtType == QCI_STMT_SELECT_FOR_UPDATE ) )
@@ -2225,12 +2266,19 @@ IDE_RC qci::fetchColumn( qciStatement           * aStatement,
     if( ( sTargetColumn->type.dataTypeId == MTD_BLOB_LOCATOR_ID ) ||
         ( sTargetColumn->type.dataTypeId == MTD_CLOB_LOCATOR_ID ) )
     {
-        IDE_TEST( smiLob::getInfoPtr( *(smLobLocator*) sTargetValue,
-                                      & sLocatorInfo )
-                  != IDE_SUCCESS );
+        if ( *( smLobLocator * )sTargetValue != MTD_LOCATOR_NULL )
+        {
+            IDE_TEST( smiLob::getInfoPtr( *(smLobLocator*) sTargetValue,
+                                          & sLocatorInfo )
+                      != IDE_SUCCESS );
 
-        *sLocatorInfo &= ~MTC_LOB_LOCATOR_CLIENT_MASK; 
-        *sLocatorInfo |=  MTC_LOB_LOCATOR_CLIENT_TRUE; 
+            *sLocatorInfo &= ~MTC_LOB_LOCATOR_CLIENT_MASK; 
+            *sLocatorInfo |=  MTC_LOB_LOCATOR_CLIENT_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
     else
     {
@@ -2308,12 +2356,19 @@ IDE_RC qci::fetchColumn( iduMemory     * aMemory,
     if( ( sTargetColumn->type.dataTypeId == MTD_BLOB_LOCATOR_ID ) ||
         ( sTargetColumn->type.dataTypeId == MTD_CLOB_LOCATOR_ID ) )
     {
-        IDE_TEST( smiLob::getInfoPtr( *(smLobLocator*) sTargetValue,
-                                      & sLocatorInfo )
-                  != IDE_SUCCESS );
+        if ( *( smLobLocator * )sTargetValue != MTD_LOCATOR_NULL )
+        {
+            IDE_TEST( smiLob::getInfoPtr( *(smLobLocator*) sTargetValue,
+                                          & sLocatorInfo )
+                      != IDE_SUCCESS );
 
-        *sLocatorInfo &= ~MTC_LOB_LOCATOR_CLIENT_MASK; 
-        *sLocatorInfo |=  MTC_LOB_LOCATOR_CLIENT_TRUE; 
+            *sLocatorInfo &= ~MTC_LOB_LOCATOR_CLIENT_MASK; 
+            *sLocatorInfo |=  MTC_LOB_LOCATOR_CLIENT_TRUE; 
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
     else
     {
@@ -4030,6 +4085,13 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                           != IDE_SUCCESS );
                 break;
             }
+        case QCI_STMT_ALT_SYS_DUMP_CALLSTACKS:
+            {
+                IDE_TEST( qdc::dumpAllCallstacks( sStatement )
+                          != IDE_SUCCESS );
+                break;
+            }
+
         case QCI_STMT_ALT_SYS_VERIFY :
             {
                 IDE_TEST( qdc::verify( sStatement )
@@ -4274,10 +4336,20 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                 break;
             }
         // PROJ-2638
-        case QCI_STMT_SET_SHARD_LINKER_ON:
+        case QCI_STMT_RELOAD_SHARD_META_NUMBER:
             {
-                IDE_TEST( qci::mSessionCallback.mSetShardLinker(
-                              sMmSession )
+                IDE_TEST( qci::mSessionCallback.mReloadShardMetaNumber(
+                              sMmSession,
+                              ID_FALSE ) // LOCAL keyword does not exist
+                          != IDE_SUCCESS );
+                break;
+            }
+        // PROJ-2701
+        case QCI_STMT_RELOAD_SHARD_META_NUMBER_LOCAL:
+            {
+                IDE_TEST( qci::mSessionCallback.mReloadShardMetaNumber(
+                              sMmSession,
+                              ID_TRUE ) // LOCAL keyword exists
                           != IDE_SUCCESS );
                 break;
             }
@@ -4610,7 +4682,7 @@ IDE_RC qci::startup( idvSQL          * aStatistics,
             // cache meta
             // PSM, NSP 초기화
             IDE_TEST(qcg::startupService( aStatistics ) != IDE_SUCCESS);
-            if ( QCU_SHARD_META_ENABLE == 1 )
+            if ( SDU_SHARD_ENABLE == 1 )
             {
                 // PROJ-2638
                 sdi::initOdbcLibrary();
@@ -4621,7 +4693,7 @@ IDE_RC qci::startup( idvSQL          * aStatistics,
             }
             break;
         case QCI_STARTUP_SHUTDOWN:
-            if ( QCU_SHARD_META_ENABLE == 1 )
+            if ( SDU_SHARD_ENABLE == 1 )
             {
                 // PROJ-2638
                 sdi::finiOdbcLibrary();
@@ -4800,7 +4872,7 @@ qci::printPlanTreeText( qcStatement  * aStatement,
                                 aString,
                                 aDisplay )
               != IDE_SUCCESS );
-    
+
     // 종료 line 출력
     iduVarStringAppend( aString,
                         "------------------------------------------------------------\n" );
@@ -4905,6 +4977,9 @@ qci::printPlanTreeText( qcStatement  * aStatement,
     {
         // Nothing to do.
     }
+
+    /* BUG-45899 */
+    sdi::printAnalysisInfo( aStatement, aString );
 
     return IDE_SUCCESS;
 
@@ -5383,17 +5458,19 @@ qci::getOutBindParamSize( qciStatement *aStatement,
         {
             // proj_2160 cm_type removal
             // lob param인 경우 SQL_NO_TOTAL(-4)가 들어온다
-            // 그러면, cm lob locator size(12)를 세팅한다.
+            // 그러면, cm lob locator size를 세팅한다.
             if( ( sBindParam->type == MTD_CLOB_LOCATOR_ID ) ||
                 ( sBindParam->type == MTD_BLOB_LOCATOR_ID ) )
             {
                 if( sBindParam->precision == SQL_NO_TOTAL )
                 {
-                    sOutBindParamSize += ID_SIZEOF(mtdBlobLocatorType) + ID_SIZEOF(UInt);
+                    /* BUG-45962 */
+                    sOutBindParamSize += ID_SIZEOF(mtdBlobLocatorType) + ID_SIZEOF(ULong) + ID_SIZEOF(UChar);
                 }
                 else
                 {
-                    sOutBindParamSize += (sBindParam->precision) + ID_SIZEOF(UInt);
+                    /* BUG-45962 */
+                    sOutBindParamSize += (sBindParam->precision) + ID_SIZEOF(ULong) + ID_SIZEOF(UChar);
                 }
             }
             else
@@ -5408,7 +5485,8 @@ qci::getOutBindParamSize( qciStatement *aStatement,
                 }
                 else
                 {
-                    sOutBindParamSize += (sBindParam->precision) + ID_SIZEOF(UInt);
+                    /* BUG-45962 */
+                    sOutBindParamSize += (sBindParam->precision) + ID_SIZEOF(ULong);
                 }
             }
             sOutBindParamCount++;
@@ -5507,23 +5585,39 @@ IDE_RC qci::validatePlan(
     void                               * aSharedPlan,
     idBool                             * aIsValidPlan )
 {
-    qcStatement    * sStatement = & aStatement->statement;
-    smiStatement   * sSmiStmtOrg;
-    qcgPlanObject  * sObject;
-    qcgEnvProcList * sProc;
-    qcgEnvPkgList  * sPkg;
-    idBool           sIsValid;
-    UInt             sStage = 0;
+    qcStatement       * sStatement = & aStatement->statement;
+    smiStatement      * sSmiStmtOrg;
+    qcgPlanObject     * sObject;
+    qcgEnvProcList    * sProc;
+    qcgEnvPkgList     * sPkg;
+    idBool              sIsValid;
+    UInt                sStage = 0;
+    // BUG-46085
+    UInt                sStage2 = 0;
+    iduVarMemListStatus sPosition;
+    qsvEnvInfo          sOriEnvInfo;
+
+    /* BUG-45893 */
+    UInt             sUserID = QCG_GET_SESSION_USER_ID( sStatement );
+
+    // BUG-46085
+    IDE_TEST( sStatement->myPlan->qmpMem->getStatus( &sPosition ) != IDE_SUCCESS );
+    sStage2 = 2;
 
     sObject = & ((qcSharedPlan*) aSharedPlan)->planEnv->planObject;
 
     *aIsValidPlan = ID_TRUE;
 
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
+    sStage2 = 3;
+
+    idlOS::memcpy( &sOriEnvInfo, sStatement->spvEnv, ID_SIZEOF(qsvEnvInfo) );
+    sStage2 = 4;
 
     if( sObject->tableList != NULL )
     {
         IDE_TEST( qcgPlan::validatePlanTable( sObject->tableList,
+                                              sUserID,            /* BUG-45893 */
                                               & sIsValid )
                   != IDE_SUCCESS );
 
@@ -5704,7 +5798,17 @@ IDE_RC qci::validatePlan(
         // Nothing to do.
     }
 
+    // BUG-46085
+    sStage2 = 3;
+    idlOS::memcpy( sStatement->spvEnv, &sOriEnvInfo, ID_SIZEOF(qsvEnvInfo) );
+
+    sStage2 = 2;
     qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+
+    sStage2 = 1;
+    IDE_TEST( sStatement->myPlan->qmpMem->setStatus( &sPosition ) != IDE_SUCCESS );
+    sStage2 = 0;
+    IDE_TEST( sStatement->myPlan->qmpMem->free( sPosition.mCursor ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -5748,7 +5852,21 @@ IDE_RC qci::validatePlan(
             break;
     }
 
-    qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+    // BUG-46085
+    switch( sStage2 )
+    {
+        case 4:
+            idlOS::memcpy( sStatement->spvEnv, &sOriEnvInfo, ID_SIZEOF(qsvEnvInfo) );
+        case 3:
+            qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+        case 2:
+            (void)sStatement->myPlan->qmpMem->setStatus( &sPosition );
+        case 1:
+            (void)sStatement->myPlan->qmpMem->free( sPosition.mCursor );
+            break;
+        default:
+            break;
+    }
 
     return IDE_FAILURE;
 }
@@ -6307,6 +6425,24 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
     idBool                  sIsQmpInited = ID_FALSE;
 
     sStatement = & aStatement->statement;
+
+    // BUG-46137
+    if ( QC_SHARED_TMPLATE(sStatement) != NULL )
+    {
+        if ( ( QC_SHARED_TMPLATE(sStatement)->flag & QC_TMP_PLAN_CACHE_KEEP_MASK )
+                == QC_TMP_PLAN_CACHE_KEEP_TRUE ) 
+        {
+            aPlanCacheContext->mPlanCacheKeep = ID_TRUE;
+        }
+        else
+        {
+            aPlanCacheContext->mPlanCacheKeep = ID_FALSE;
+        }
+    }
+    else
+    {
+        aPlanCacheContext->mPlanCacheKeep = ID_FALSE;
+    }
 
     aPlanCacheContext->mSharedPlanSize = 0;
     aPlanCacheContext->mPrepPrivateTemplateSize = 0;
@@ -7224,7 +7360,15 @@ idBool qci::isCacheAbleStatement( qciStatement * aStatement )
     if( ( sTemplate->flag & QC_TMP_PLAN_CACHE_IN_MASK ) ==
           QC_TMP_PLAN_CACHE_IN_ON )
     {
-        sIsCacheAble = ID_TRUE;
+        // BUG-46902 Shard rebuild coordinating 중에 수행되는 statement는 cachable statement가 아니다.
+        if ( sdi::isRebuildCoordinator( &aStatement->statement ) == ID_FALSE )
+        {
+            sIsCacheAble = ID_TRUE;
+        }
+        else
+        {
+            sIsCacheAble = ID_FALSE;
+        }
     }
     else
     {
@@ -7582,19 +7726,26 @@ void qci::getFetchColumnInfo( qciStatement       * aStatement,
     if ( (aFetchColumnInfo->dataTypeId == MTD_BLOB_LOCATOR_ID) ||
          (aFetchColumnInfo->dataTypeId == MTD_CLOB_LOCATOR_ID) )
     {
-        // BUG-40427
-        // 내부적으로 사용하는 LOB Cursor가 아님을 표시한다.
-        // BUG-40840 left outer join 에서 null row 고려
-        if (smiLob::getInfoPtr( *(smLobLocator*)sTargetStack->value,
-                                &sLocatorInfo )
-            == IDE_SUCCESS)
+        if ( *(smLobLocator *)(sTargetStack->value) != MTD_LOCATOR_NULL )
         {
-            *sLocatorInfo &= ~MTC_LOB_LOCATOR_CLIENT_MASK; 
-            *sLocatorInfo |=  MTC_LOB_LOCATOR_CLIENT_TRUE; 
+            // BUG-40427
+            // 내부적으로 사용하는 LOB Cursor가 아님을 표시한다.
+            // BUG-40840 left outer join 에서 null row 고려
+            if (smiLob::getInfoPtr( *(smLobLocator*)sTargetStack->value,
+                                    &sLocatorInfo )
+                == IDE_SUCCESS)
+            {
+                *sLocatorInfo &= ~MTC_LOB_LOCATOR_CLIENT_MASK; 
+                *sLocatorInfo |=  MTC_LOB_LOCATOR_CLIENT_TRUE; 
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
         else
         {
-            // Nothing to do.
+            /* Nothing to do */
         }
     }
     else
@@ -7839,15 +7990,17 @@ IDE_RC qci::fastExecute( smiTrans      * aSmiTrans,
     // qmxMem을 기록하고 재사용한다.
     if ( sStatement->simpleInfo.status.mSavedCurr == NULL )
     {
-        IDE_TEST( sStatement->qmxMem->getStatus(
-                      &(sStatement->simpleInfo.status) )
-                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sStatement->qmxMem->getStatus(
+                            &(sStatement->simpleInfo.status) )
+                        != IDE_SUCCESS,
+                        ERR_MEM_OP );
     }
     else
     {
-        IDE_TEST( sStatement->qmxMem->setStatus(
-                      &(sStatement->simpleInfo.status) )
-                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sStatement->qmxMem->setStatus(
+                            &(sStatement->simpleInfo.status) )
+                        != IDE_SUCCESS,
+                        ERR_MEM_OP );
     }
     
     if ( aShmResult != NULL )
@@ -7895,6 +8048,13 @@ IDE_RC qci::fastExecute( smiTrans      * aSmiTrans,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qci::fastExecute"
+                     " memory error" );
+    }
     IDE_EXCEPTION( ERR_INVALID_SHM_SIZE )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
@@ -8422,9 +8582,13 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
     smiStatement   sSmiStmt;
     smiStatement * sSmiStmtOrg;
     smiStatement * sDummySmiStmt;
-    smSCN          sDummySCN;
+    volatile smSCN sDummySCN;
     qcStatement  * sStatement;
-    SInt           sStage = 0;
+    volatile SInt  sStage;
+
+    IDE_FT_ROOT_BEGIN();
+
+    IDE_FT_ROOT_BEGIN();
 
     IDE_DASSERT( aStatement != NULL );
 
@@ -8437,6 +8601,8 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
     sStatement = &aStatement->statement;
 
     IDE_DASSERT( sStatement != NULL );
+
+    sStage = 0; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     IDE_TEST_RAISE( aStatement->state != QCI_STMT_STATE_PARSED,
                     ERR_INVALID_STATE );
@@ -8485,8 +8651,6 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
     QC_SHARED_TMPLATE(sStatement)->flag &= ~QC_TMP_SHARD_TRANSFORM_MASK;
     QC_SHARED_TMPLATE(sStatement)->flag |= QC_TMP_SHARD_TRANSFORM_DISABLE;
 
-    IDE_FT_ROOT_BEGIN();
-
     IDE_FT_BEGIN();
 
     IDE_TEST( sStatement->myPlan->parseTree->parse( sStatement )
@@ -8494,14 +8658,9 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
     sStage = 4;
 
     IDE_DASSERT( sStatement->spvEnv != NULL );
-
     IDE_FT_END();
 
-    IDE_FT_ROOT_END();
-
     IDE_TEST( qcg::fixAfterParsing( sStatement ) != IDE_SUCCESS);
-
-    IDE_FT_ROOT_BEGIN();
 
     IDE_FT_BEGIN();
 
@@ -8509,8 +8668,6 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
               != IDE_SUCCESS );
 
     IDE_FT_END();
-
-    IDE_FT_ROOT_END();
 
     IDE_TEST( qcg::fixAfterValidation( sStatement ) != IDE_SUCCESS );
 
@@ -8520,18 +8677,22 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
     //-----------------------------------------
     // ANALYZE
     //-----------------------------------------
-
-    IDE_FT_ROOT_BEGIN();
-
     IDE_FT_BEGIN();
 
-    IDE_TEST( sdi::analyze( sStatement ) != IDE_SUCCESS );
+    /*
+     * PROJ-2701 Sharding online data rebuild
+     * Shardcli의 경우 sessionSMN으로 shard analysis를 수행한다.
+     */
+    IDE_TEST( sdi::analyze( sStatement,
+                            QCG_GET_SESSION_SHARD_META_NUMBER(sStatement) ) != IDE_SUCCESS );
 
     IDE_TEST( sdi::setAnalysisResult( sStatement ) != IDE_SUCCESS );
 
+    /* BUG-45899 */
+    IDE_DASSERT( sStatement->myPlan->mShardAnalysis != NULL );
+    sdi::setPrintInfoFromAnalyzeInfo( &(sStatement->mShardPrintInfo),
+                                      sStatement->myPlan->mShardAnalysis );
     IDE_FT_END();
-
-    IDE_FT_ROOT_END();
 
     //-----------------------------------------
     // MISC
@@ -8561,10 +8722,14 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
               != IDE_SUCCESS );
 
     sStage = 1;
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit( (smSCN *)&sDummySCN ) != IDE_SUCCESS );
 
     sStage = 0;
     IDE_TEST( sTrans.destroy( sStatement->mStatistics ) != IDE_SUCCESS );
+
+    IDE_FT_ROOT_END();
+
+    IDE_FT_ROOT_END();
 
     return IDE_SUCCESS;
 
@@ -8603,7 +8768,7 @@ IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
                 /* Nothing to do */
             }
         case 2:
-            if ( sTrans.commit( &sDummySCN ) != IDE_SUCCESS )
+            if ( sTrans.commit( (smSCN *)&sDummySCN ) != IDE_SUCCESS )
             {
                 IDE_ERRLOG( IDE_QP_1 );
             }
@@ -8658,18 +8823,47 @@ IDE_RC qci::getShardAnalyzeInfo( qciStatement         * aStatement,
     return IDE_FAILURE;
 }
 
-void qci::getShardNodeInfo( qciShardNodeInfo * aNodeInfo )
+IDE_RC qci::checkShardPlanRebuild( qcStatement * aStatement )
 {
-    return sdi::getNodeInfo( aNodeInfo );
-}
+    qcPlanProperty * sPlanProperty = NULL;
 
-/* PROJ-2638 */
-idBool qci::isShardMetaEnable()
-{
-    return ( QCU_SHARD_META_ENABLE == 1 ? ID_TRUE : ID_FALSE );
-}
+    //------------------------------------------
+    // SMN이 변경 되었다면 rebuild를 통해 plan을 재생성 한다.
+    //------------------------------------------
+    if ( aStatement->myPlan->planEnv != NULL )
+    {
+        sPlanProperty = &(aStatement->myPlan->planEnv->planProperty);
 
-idBool qci::isShardCoordinator( qcStatement * aStatement )
-{
-    return qcg::isShardCoordinator( aStatement );
+        IDE_TEST_RAISE( ( sPlanProperty->mSMNForDataNodeRef == ID_TRUE ) &&
+                        ( sPlanProperty->mSMNForDataNode !=
+                          sdi::getSMNForDataNode() ),
+                        ERR_REBUILD_QCI_EXEC );
+
+        IDE_TEST_RAISE( ( sPlanProperty->mSMNForSessionRef == ID_TRUE ) &&
+                        ( sPlanProperty->mSMNForSession !=
+                          QCG_GET_SESSION_SHARD_META_NUMBER(aStatement) ),
+                        ERR_REBUILD_QCI_EXEC );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //------------------------------------------
+    // Rebuild transformation에 의한 dummy plan일 경우
+    // rebuild를 통해 plan을 재생성한다.
+    //------------------------------------------
+    IDE_TEST_RAISE( ( aStatement->mFlag & QC_STMT_SHARD_REBUILD_FORCE_MASK ) ==
+                    QC_STMT_SHARD_REBUILD_FORCE_TRUE,
+                    ERR_REBUILD_QCI_EXEC );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_REBUILD_QCI_EXEC );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_REBUILD_QCI_EXEC));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

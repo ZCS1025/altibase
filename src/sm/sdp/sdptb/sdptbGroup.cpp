@@ -519,7 +519,6 @@ IDE_RC sdptbGroup::makeMetaHeadersForAutoExtend(
                                           aStatistics,
                                           sdrMiniTrans::getTrans( &sMtx ),
                                           aSpaceID,
-                                          aNeededPageCnt,
                                           sFileNode )
                 != IDE_SUCCESS );
 
@@ -1337,7 +1336,7 @@ IDE_RC sdptbGroup::logAndInitGGHdrPage( sdrMtx        * aMtx,
     /* PROJ-1704 Disk MVCC Renewal
      * Undo TBS의 첫번째 FGH에는 Free Extent Dir List가 존재한다.
      */
-    if ( ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO ) &&
+    if ( ( sctTableSpaceMgr::isUndoTableSpace( aSpaceID ) ) &&
          ( aGGID == 0 ) )
     {
         IDE_TEST( sdpSglPIDList::initList( 
@@ -1643,7 +1642,7 @@ IDE_RC sdptbGroup::doRefineSpaceCacheCore( sddTableSpaceNode * aSpaceNode )
 
                 // PROJ-1704 Disk MVCC Renewal
                 // Undo TBS에서 필요한 Free ExtDir List 정보를 확인한다
-                if ( ( sSpaceNode->mID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO )&& 
+                if ( ( sctTableSpaceMgr::isUndoTableSpace(sSpaceNode->mID) )&& 
                      ( sFileNode->mID == 0 ) )
                 {
                     if ( sdpSglPIDList::getNodeCnt( 
@@ -2022,6 +2021,7 @@ IDE_RC sdptbGroup::logAndSetFreeOfLG( sdrMtx            * aMtx,
  *  현재 구조에서 GG header에대한 초기화는 writeNBytes를 사용해서 구현하였으므로
  *  이 함수는 사실상 불필요하다. 하지만, 만약을 대비하여 만들어 놓았다.
  ***********************************************************************/
+/* BUG-46036 codesonar warning 제거
 IDE_RC sdptbGroup::initGG( sdrMtx      * aMtx,
                            UChar       * aPagePtr )
 {
@@ -2030,7 +2030,7 @@ IDE_RC sdptbGroup::initGG( sdrMtx      * aMtx,
 
     return IDE_SUCCESS;
 }
-
+*/
 /***********************************************************************
  * Description:
  *  [ redo routine ]

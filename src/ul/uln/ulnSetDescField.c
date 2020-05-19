@@ -93,7 +93,6 @@ static ACI_RC ulnSetDescHeaderField(ulnFnContext *aFnContext,
          */
         ulnError(aFnContext, ulERR_ABORT_READONLY_DESCRIPTOR_FIELD, aFieldIdentifier);
     }
-
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_MANAGEMENT_ERROR, "");
@@ -124,10 +123,10 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
     ACP_UNUSED(aBufferLength);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);  /* BUG-46113 */
 
-    sDesc = aFnContext->mHandle.mDesc;
-
-    sDescRec  = ulnDescGetDescRec(sDesc, aRecNumber);
+    sDesc    = aFnContext->mHandle.mDesc;
+    sDescRec = ulnDescGetDescRec(sDesc, aRecNumber);
 
     // fix BUG-24380
     // 바인드 안한 레코드 넘버에 대해서 SetDescField() 를 하면
@@ -341,12 +340,10 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnSetDescRecordField");
     }
-
     ACI_EXCEPTION(LABEL_INVALID_SQL_TYPE)
     {
         ulnError(aFnContext, ulERR_ABORT_INVALID_SQL_TYPE, sValue);
     }
-
     ACI_EXCEPTION(LABEL_INVALID_SQL_C_TYPE)
     {
         /*
@@ -354,17 +351,18 @@ static ACI_RC ulnSetDescRecordField(ulnFnContext *aFnContext,
          */
         ulnError(aFnContext, ulERR_ABORT_INVALID_APP_BUFFER_TYPE, sValue);
     }
-
     ACI_EXCEPTION(LABEL_INVALID_DESC_INDEX)
     {
         ulnError(aFnContext, ulERR_ABORT_INVALID_DESCRIPTOR_INDEX, aRecNumber);
     }
-
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_MANAGEMENT_ERROR, "");
     }
-
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -435,7 +433,6 @@ SQLRETURN ulnSetDescField(ulnDesc      *aDesc,
     {
         ulnError(&sFnContext, ulERR_ABORT_INVALID_HANDLE);
     }
-
     ACI_EXCEPTION_END;
 
     ULN_IS_FLAG_UP(sNeedExit)

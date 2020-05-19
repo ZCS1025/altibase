@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCount.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfCount.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -111,6 +111,7 @@ static const mtcExecute mtfExecuteAsterisk = {
     mtfCountFinalize,
     mtfCountCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -122,6 +123,7 @@ static const mtcExecute mtfExecute = {
     mtfCountFinalize,
     mtfCountCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -133,6 +135,7 @@ static const mtcExecute mtfExecuteXlobColumn = {
     mtfCountFinalize,
     mtfCountCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -144,6 +147,7 @@ static const mtcExecute mtfExecuteXlobLocator = {
     mtfCountFinalize,
     mtfCountCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

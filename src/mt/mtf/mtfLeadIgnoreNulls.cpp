@@ -95,6 +95,7 @@ static const mtcExecute mtfExecute = {
     mtfLeadIgnoreNullsFinalize,
     mtfLeadIgnoreNullsCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

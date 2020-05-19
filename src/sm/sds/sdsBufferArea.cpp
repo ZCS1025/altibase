@@ -73,8 +73,9 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
                                       8,                 // align byte
                                       ID_FALSE,			 // ForcePooling
                                       ID_TRUE,			 // GarbageCollection
-                                      ID_TRUE )			 // HWCacheLine
-             != IDE_SUCCESS );
+                                      ID_TRUE,			 // HWCacheLine
+                                      IDU_MEMPOOL_TYPE_LEGACY  /* mempool type */) 
+                != IDE_SUCCESS);			
     sState = 2;
 
     /* BCB초기화 및 할당 */

@@ -1236,9 +1236,9 @@ SQLRETURN ulnBulkOperations(ulnStmt      *aStmt,
     ULN_FLAG(sNeedExit);
     ULN_FLAG(sNeedFinPtContext);
 
-    ulnDbc         *sParentDbc = aStmt->mParentDbc;
+    ulnDbc         *sParentDbc = NULL;
     ulnFnContext    sFnContext;
-    ulnPtContext   *sPtContext = &(sParentDbc->mPtContext);
+    ulnPtContext   *sPtContext = NULL;
 
     ACP_UNUSED(aOperation);
 
@@ -1246,6 +1246,9 @@ SQLRETURN ulnBulkOperations(ulnStmt      *aStmt,
 
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
+
+    sParentDbc = aStmt->mParentDbc;  /* BUG-46885 */
+    sPtContext = &(sParentDbc->mPtContext);
 
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext, sPtContext,
                                           &(sParentDbc->mSession))

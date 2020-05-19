@@ -16,7 +16,7 @@
  
 
 /*********************************************************************** */
-/* $Id: qdq.h 82075 2018-01-17 06:39:52Z jina.kim $ */
+/* $Id: qdq.h 82844 2018-04-19 00:41:18Z andrew.shin $ */
 /**********************************************************************/
 #ifndef _O_QDQ_H_
 #define _O_QDQ_H_  1
@@ -44,6 +44,22 @@ public:
     
     static IDE_RC executeStart( qcStatement * aStatement);
     static IDE_RC executeStop( qcStatement * aStatement);
+
+    /* BUG-45921 */
+    static IDE_RC validateAlterQueueSequence( qcStatement * aStatement );
+    static IDE_RC executeAlterQueueSequence( qcStatement * aStatement );
+    static IDE_RC checkQueueSequenceInfo( qcStatement      * aStatement,
+                                          UInt               aUserID,
+                                          qcNamePosition     aQueueName,
+                                          qcmSequenceInfo  * aQueueSequenceInfo,
+                                          void            ** aQueueSequenceHandle );
+    static IDE_RC updateQueueSequenceFromMeta( qcStatement    * aStatement,
+                                               UInt             aUserID,
+                                               qcNamePosition   aQueueNamePos,
+                                               UInt             aQueueSequenceID,
+                                               smOID            aQueueSequenceOID,
+                                               SInt             aColumnCount,
+                                               UInt             aParallelDegree );
 };
 
 #endif // _O_QDQ_H_

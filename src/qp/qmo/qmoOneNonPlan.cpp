@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoOneNonPlan.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmoOneNonPlan.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     Plan Generator
@@ -933,6 +933,30 @@ IDE_RC qmoOneNonPlan::makeSCAN( qcStatement  * aStatement ,
     // simple index scan인 경우 fast execute를 수행한다.
     IDE_TEST( checkSimpleSCAN( aStatement, sSCAN ) != IDE_SUCCESS );
 
+    /* PROJ-2632 */
+    sSCAN->mSerialFilterOffset = QC_SHARED_TMPLATE( aStatement )->tmplate.dataSize;
+    sSCAN->mSerialFilterSize   = 0;
+    sSCAN->mSerialFilterCount  = 0;
+    sSCAN->mSerialFilterInfo   = NULL;
+
+    IDE_TEST( buildSerialFilterInfo( aStatement,
+                                     aQuerySet->SFWGH->hints,
+                                     sSCAN->method.filter,
+                                     &( sSCAN->mSerialFilterSize ),
+                                     &( sSCAN->mSerialFilterCount ),
+                                     &( sSCAN->mSerialFilterInfo ) )
+              != IDE_SUCCESS );
+
+    if ( sSCAN->mSerialFilterInfo != NULL)
+    {
+        QC_SHARED_TMPLATE( aStatement )->tmplate.dataSize
+            += QTC_GET_SERIAL_EXECUTE_DATA_SIZE( sSCAN->mSerialFilterSize );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     *aPlan = (qmnPlan *)sSCAN;
 
     /* PROJ-2462 Result Cache */
@@ -1571,6 +1595,34 @@ qmoOneNonPlan::makeSCAN4Partition( qcStatement     * aStatement,
      * parallel degree
      */
     sSCAN->plan.mParallelDegree = aFrom->tableRef->mParallelDegree;
+
+    // PROJ-2551 simple query 최적화
+    // simple index scan인 경우 fast execute를 수행한다.
+    IDE_TEST( checkSimpleSCAN( aStatement, sSCAN ) != IDE_SUCCESS );
+
+    /* PROJ-2632 */
+    sSCAN->mSerialFilterOffset = QC_SHARED_TMPLATE( aStatement )->tmplate.dataSize;
+    sSCAN->mSerialFilterSize   = 0;
+    sSCAN->mSerialFilterCount  = 0;
+    sSCAN->mSerialFilterInfo   = NULL;
+
+    IDE_TEST( buildSerialFilterInfo( aStatement,
+                                     aQuerySet->SFWGH->hints,
+                                     sSCAN->method.filter,
+                                     &( sSCAN->mSerialFilterSize ),
+                                     &( sSCAN->mSerialFilterCount ),
+                                     &( sSCAN->mSerialFilterInfo ) )
+              != IDE_SUCCESS );
+
+    if ( sSCAN->mSerialFilterInfo != NULL)
+    {
+        QC_SHARED_TMPLATE( aStatement )->tmplate.dataSize
+            += QTC_GET_SERIAL_EXECUTE_DATA_SIZE( sSCAN->mSerialFilterSize );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     *aPlan = (qmnPlan *)sSCAN;
 
@@ -2494,7 +2546,7 @@ qmoOneNonPlan::initGRBY( qcStatement       * aStatement ,
                                                 (qtcNode *)sArg,
                                                 0,
                                                 0,
-                                                ID_FALSE )
+                                                ID_TRUE ) // BUG-46249
                           != IDE_SUCCESS );
             }
         }
@@ -5290,6 +5342,16 @@ qmoOneNonPlan::makeUPTE( qcStatement   * aStatement ,
         // Nothing to do.
     }
 
+    // key preserved property
+    if ( aQuerySet->SFWGH->preservedInfo != NULL )
+    {
+        if ( aQuerySet->SFWGH->preservedInfo->useKeyPreservedTable == ID_TRUE )
+        {
+            sUPTE->flag &= ~QMNC_UPTE_VIEW_KEY_PRESERVED_MASK;
+            sUPTE->flag |= QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE;
+        }
+    }
+    
     //----------------------------------------------------------------
     // 메인 작업
     //----------------------------------------------------------------
@@ -5683,7 +5745,17 @@ qmoOneNonPlan::makeDETE( qcStatement   * aStatement ,
     {
         // Nothing to do.
     }
-
+    
+    // key preserved property
+    if ( aQuerySet->SFWGH->preservedInfo != NULL )
+    {
+        if ( aQuerySet->SFWGH->preservedInfo->useKeyPreservedTable == ID_TRUE )
+        {
+            sDETE->flag &= ~QMNC_DETE_VIEW_KEY_PRESERVED_MASK;
+            sDETE->flag |= QMNC_DETE_VIEW_KEY_PRESERVED_TRUE;
+        }
+    }
+        
     //----------------------------------------------------------------
     // 메인 작업
     //----------------------------------------------------------------
@@ -6804,10 +6876,15 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
     UInt          * sOffsets = NULL;
     UInt            sOffset = 0;
     UInt            i;
+    qmncPCRD      * sPCRD = NULL;
+    qmnChildren   * sChildren = NULL;
+    qmncSCAN      * sSCAN = NULL;
+    qcmColumn     * sQcmColumn = NULL;
+    mtcColumn     * sTemp = NULL;
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimplePROJ::__FT__" );
 
-    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
+    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement, NULL ) == ID_FALSE,
                    NORMAL_EXIT );
 
     // loop가 없어야 한다.
@@ -6825,7 +6902,7 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
     {
         if ( ( sPROJ->limit->start.constant != 1 ) ||
              ( sPROJ->limit->count.constant == 0 ) ||
-             ( sPROJ->limit->count.constant == QMS_LIMIT_UNKNOWN ) )
+             ( sPROJ->limit->count.hostBindNode != NULL ) )
         {
             IDE_CONT( NORMAL_EXIT );
         }
@@ -6971,6 +7048,54 @@ qmoOneNonPlan::checkSimplePROJ( qcStatement * aStatement,
         sOffset     += sValueSizes[i];
     }
 
+    if ( sPROJ->plan.left->type == QMN_PCRD )
+    {
+        sPCRD = (qmncPCRD*)sPROJ->plan.left;
+
+        IDE_TEST_CONT( sPCRD->mIsSimple == ID_FALSE, NORMAL_EXIT );
+
+        for ( sChildren = sPCRD->plan.children;
+              sChildren != NULL;
+              sChildren = sChildren->next )
+        {
+            sSCAN = (qmncSCAN*)sChildren->childPlan;
+
+            IDU_FIT_POINT( "qmoOneNonPlan::checkSimplePROJ::alloc::sTemp",
+                            idERR_ABORT_InsufficientMemory );
+
+            IDE_TEST( QC_QMP_MEM( aStatement )->alloc( sPROJ->targetCount * ID_SIZEOF( mtcColumn ),
+                                                       (void **)&sTemp )
+                      != IDE_SUCCESS );
+
+            for ( sTarget  = sPROJ->myTarget, i = 0;
+                  sTarget != NULL;
+                  sTarget  = sTarget->next, i++ )
+            {
+                sColumn = QTC_STMT_COLUMN( aStatement, sTarget->targetColumn );
+
+                for ( sQcmColumn = sSCAN->partitionRef->partitionInfo->columns;
+                      sQcmColumn != NULL;
+                      sQcmColumn = sQcmColumn->next )
+                {
+                    if ( sQcmColumn->basicInfo->column.id == sColumn->column.id )
+                    {
+                        sTemp[i] = *sQcmColumn->basicInfo;
+                        break;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+            }
+            sSCAN->mSimpleColumns = sTemp;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
     sPROJ->isSimple            = sIsSimple;
@@ -7000,7 +7125,6 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
  *     - fixed key range와 variable key range만 가능하다.
  *     - full scan이나 index full scan만 가능하다.
  *     - index key를 모두 사용하지 않아도 가능하다.
- *     - limit이 없어야 한다.
  *
  ***********************************************************************/
 
@@ -7021,16 +7145,11 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleSCAN::__FT__" );
 
-    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
+    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement, NULL ) == ID_FALSE,
                    NORMAL_EXIT );
 
-    // limit이 없어야 한다.
-    // non-partitioned memory table만 가능
+    // memory table만 가능
     if ( ( sSCAN->tableRef->remoteTable != NULL ) ||
-         ( sSCAN->tableRef->tableInfo->tablePartitionType
-           == QCM_PARTITIONED_TABLE ) ||
-         ( smiIsDiskTable( sSCAN->tableRef->tableHandle )
-           == ID_TRUE ) ||
          ( qcuTemporaryObj::isTemporaryTable( sSCAN->tableRef->tableInfo )
            == ID_TRUE ) )
     {
@@ -7043,12 +7162,38 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
         // Nothing to do.
     }
 
+    if ( sSCAN->tableRef->tableInfo->tablePartitionType
+         == QCM_PARTITIONED_TABLE )
+    {
+        if ( smiIsDiskTable( sSCAN->partitionRef->partitionHandle ) == ID_TRUE )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        if ( smiIsDiskTable( sSCAN->tableRef->tableHandle ) == ID_TRUE )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
     // 상수 limit만 가능
     if ( sSCAN->limit != NULL )
     {
-        if ( ( sSCAN->limit->start.constant == QMS_LIMIT_UNKNOWN ) ||
+        if ( ( sSCAN->limit->start.hostBindNode != NULL ) ||
              ( sSCAN->limit->count.constant == 0 ) ||
-             ( sSCAN->limit->count.constant == QMS_LIMIT_UNKNOWN ) )
+             ( sSCAN->limit->count.hostBindNode != NULL ) )
         {
             sIsSimple = ID_FALSE;
 
@@ -7480,6 +7625,7 @@ qmoOneNonPlan::checkSimpleSCAN( qcStatement  * aStatement,
     sSCAN->simpleUnique         = sIsUnique;
     sSCAN->simpleRid            = sRidScan;
     sSCAN->simpleCompareOpCount = sCompareOpCount;
+    sSCAN->mSimpleColumns       = NULL;
 
     return IDE_SUCCESS;
 
@@ -7699,7 +7845,7 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleINST::__FT__" );
 
-    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
+    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement, NULL ) == ID_FALSE,
                    NORMAL_EXIT );
 
     sIsSimple = ID_TRUE;
@@ -7711,8 +7857,6 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
          ( sINST->isAppend == ID_TRUE ) ||
          ( sINST->tableRef->tableInfo->triggerCount > 0 ) ||
          ( sINST->tableRef->tableInfo->lobColumnCount > 0 ) ||
-         ( sINST->tableRef->tableInfo->tablePartitionType
-           == QCM_PARTITIONED_TABLE ) ||
          ( smiIsDiskTable( sINST->tableRef->tableHandle )
            == ID_TRUE ) ||
          ( qcuTemporaryObj::isTemporaryTable( sINST->tableRef->tableInfo )
@@ -7730,6 +7874,17 @@ qmoOneNonPlan::checkSimpleINST( qcStatement * aStatement,
     else
     {
         // Nothing to do.
+    }
+
+    if ( sINST->tableRef->tableInfo->tablePartitionType
+         == QCM_PARTITIONED_TABLE )
+    {
+        sINST->flag &= ~QMNC_INST_PARTITIONED_MASK;
+        sINST->flag |= QMNC_INST_PARTITIONED_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     // BUG-43410 foreign key 지원
@@ -7995,7 +8150,7 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleUPTE::__FT__" );
 
-    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
+    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement, NULL ) == ID_FALSE,
                    NORMAL_EXIT );
 
     sIsSimple = ID_TRUE;
@@ -8003,14 +8158,13 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
     // 기타 등등 검사
     if ( ( sUPTE->insteadOfTrigger == ID_TRUE ) ||
          ( sUPTE->tableRef->tableInfo->triggerCount > 0 ) ||
-         ( sUPTE->tableRef->tableInfo->tablePartitionType
-           == QCM_PARTITIONED_TABLE ) ||
          ( sUPTE->compressedTuple != UINT_MAX ) ||
          ( sUPTE->subqueries != NULL ) ||
          ( sUPTE->nextValSeqs != NULL ) ||
          ( sUPTE->defaultExprColumns != NULL ) ||
          ( sUPTE->checkConstrList != NULL ) ||
-         ( sUPTE->returnInto != NULL ) )
+         ( sUPTE->returnInto != NULL ) || 
+         ( sUPTE->updateType == QMO_UPDATE_ROWMOVEMENT ) )
     {
         sIsSimple = ID_FALSE;
 
@@ -8021,12 +8175,48 @@ qmoOneNonPlan::checkSimpleUPTE( qcStatement  * aStatement,
         // Nothing to do.
     }
 
+    if ( sUPTE->tableRef->tableInfo->tablePartitionType
+         == QCM_PARTITIONED_TABLE )
+    {
+        sUPTE->flag &= ~QMNC_UPTE_PARTITIONED_MASK;
+        sUPTE->flag |= QMNC_UPTE_PARTITIONED_TRUE;
+
+        if ( sUPTE->tableRef->partitionSummary != NULL )
+        {
+            if ( sUPTE->tableRef->partitionSummary->diskPartitionCount > 0 )
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        if ( smiIsDiskTable( sUPTE->tableRef->tableHandle ) == ID_TRUE )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
     // scan limit 적용된 상수 limit만 가능
     if ( sUPTE->limit != NULL )
     {
         if ( ( sUPTE->limit->start.constant != 1 ) ||
              ( sUPTE->limit->count.constant == 0 ) ||
-             ( sUPTE->limit->count.constant == QMS_LIMIT_UNKNOWN ) )
+             ( sUPTE->limit->count.hostBindNode != NULL ) )
         {
             sIsSimple = ID_FALSE;
 
@@ -8385,15 +8575,13 @@ qmoOneNonPlan::checkSimpleDETE( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::checkSimpleDETE::__FT__" );
 
-    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement ) == ID_FALSE,
+    IDE_TEST_CONT( qciMisc::checkExecFast( aStatement, NULL ) == ID_FALSE,
                    NORMAL_EXIT );
 
     sIsSimple = ID_TRUE;
 
     if ( ( sDETE->insteadOfTrigger == ID_TRUE ) ||
          ( sDETE->tableRef->tableInfo->triggerCount > 0 ) ||
-         ( sDETE->tableRef->tableInfo->tablePartitionType
-           == QCM_PARTITIONED_TABLE ) ||
          ( sDETE->returnInto != NULL ) )
     {
         sIsSimple = ID_FALSE;
@@ -8405,12 +8593,48 @@ qmoOneNonPlan::checkSimpleDETE( qcStatement  * aStatement,
         // Nothing to do.
     }
 
+    if ( sDETE->tableRef->tableInfo->tablePartitionType
+         == QCM_PARTITIONED_TABLE )
+    {
+        sDETE->flag &= ~QMNC_DETE_PARTITIONED_MASK;
+        sDETE->flag |= QMNC_DETE_PARTITIONED_TRUE;
+
+        if ( sDETE->tableRef->partitionSummary != NULL )
+        {
+            if ( sDETE->tableRef->partitionSummary->diskPartitionCount > 0 )
+            {
+                sIsSimple = ID_FALSE;
+                IDE_CONT( NORMAL_EXIT );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        if ( smiIsDiskTable( sDETE->tableRef->tableHandle ) == ID_TRUE )
+        {
+            sIsSimple = ID_FALSE;
+            IDE_CONT( NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
     // scan limit 적용된 상수 limit만 가능
     if ( sDETE->limit != NULL )
     {
         if ( ( sDETE->limit->start.constant != 1 ) ||
              ( sDETE->limit->count.constant == 0 ) ||
-             ( sDETE->limit->count.constant == QMS_LIMIT_UNKNOWN ) )
+             ( sDETE->limit->count.hostBindNode != NULL ) )
         {
             sIsSimple = ID_FALSE;
 
@@ -9182,6 +9406,82 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
     //----------------------------------
 
     qtc::dependencyClear( & sSDIN->plan.depInfo );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmoOneNonPlan::buildSerialFilterInfo( qcStatement          * aStatement,
+                                             qmsHints             * aHints,
+                                             qtcNode              * aFilter,
+                                             UInt                 * aFilterSize,
+                                             UInt                 * aFilterCount,
+                                             mtxSerialFilterInfo ** aInfo )
+{
+/***********************************************************************
+ *
+ * Description :
+ *  PROJ-2632
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    mtxSerialFilterInfo * sInfo       = NULL;
+    mtxSerialFilterInfo * sHead       = NULL;
+    UInt                  sFiterCount = 0;
+
+    IDE_TEST_CONT( aFilter == NULL,
+                   BUILD_ERROR );
+
+    IDE_TEST_CONT( ( QC_SHARED_TMPLATE( aStatement )->flag & QC_TMP_DISABLE_SERIAL_FILTER_MASK )
+                   == QC_TMP_DISABLE_SERIAL_FILTER_TRUE,
+                   BUILD_ERROR );
+
+    if ( aHints != NULL )
+    {
+        IDE_TEST_RAISE( aHints->mSerialFilter == QMS_SERIAL_FILTER_FALSE,
+                        BUILD_ERROR );
+
+        IDE_TEST_RAISE( ( ( aHints->mSerialFilter == QMS_SERIAL_FILTER_NONE ) &&
+                          ( QCG_GET_SERIAL_EXECUTE_MODE( aStatement ) == 0 ) ),
+                        BUILD_ERROR );
+    }
+    else
+    {
+        IDE_TEST_RAISE( QCG_GET_SERIAL_EXECUTE_MODE( aStatement ) == 0,
+                        BUILD_ERROR );
+    }
+
+    IDE_TEST_RAISE( qtc::estimateSerializeFilter( aStatement,
+                                                  &( aFilter->node ),
+                                                  &( sFiterCount ) )
+                     != IDE_SUCCESS, BUILD_ERROR );
+
+    IDE_TEST_RAISE( sFiterCount <= 0,
+                    BUILD_ERROR );
+
+    IDE_TEST( qtc::allocateSerializeFilter( aStatement,
+                                            sFiterCount,
+                                            &( sInfo ) )
+              != IDE_SUCCESS );
+
+    sHead = sInfo;
+
+    IDE_TEST_RAISE( qtc::recursiveSerializeFilter( aStatement,
+                                                   &( aFilter->node ),
+                                                   sInfo + sFiterCount,
+                                                   &( sHead ) )
+                   != IDE_SUCCESS, BUILD_ERROR );
+
+    *aFilterSize  = sHead->mOffset + sHead->mHeader.mSize;
+    *aFilterCount = sFiterCount;
+    *aInfo        = sInfo;
+
+    IDE_EXCEPTION_CONT( BUILD_ERROR );
 
     return IDE_SUCCESS;
 

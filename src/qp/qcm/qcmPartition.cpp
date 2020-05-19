@@ -498,6 +498,47 @@ IDE_RC qcmPartition::getPartitionCount( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC qcmPartition::getPartitionCount4SmiStmt( smiStatement * aSmiStmt,
+                                                UInt           aTableID,
+                                                UInt         * aPartitionCount)
+{
+    smiRange              sRange;
+    qtcMetaRangeColumn    sRangeColumn;
+    mtcColumn           * sTableIDCol;
+    vSLong                sRowCount;
+
+    IDE_TEST( smiGetTableColumns( gQcmTablePartitions,
+                                  QCM_TABLE_PARTITIONS_TABLE_ID_COL_ORDER,
+                                  (const smiColumn**)&sTableIDCol )
+              != IDE_SUCCESS );
+
+    qcm::makeMetaRangeSingleColumn(
+        &sRangeColumn,
+        (const mtcColumn*) sTableIDCol,
+        (const void *) &aTableID,
+        &sRange);
+
+    IDE_TEST( qcm::selectCount(
+                  aSmiStmt,
+                  gQcmTablePartitions,
+                  &sRowCount,
+                  smiGetDefaultFilter(),
+                  & sRange,
+                  gQcmTablePartitionsIndex
+                  [QCM_TABLE_PARTITIONS_IDX2_ORDER] )
+              != IDE_SUCCESS );
+
+    IDE_DASSERT( sRowCount > 0 );
+
+    *aPartitionCount = sRowCount;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qcmPartition::getIndexPartitionCount( qcStatement * aStatement,
                                              UInt          aIndexID,
                                              SChar       * aIndexPartName,
@@ -788,6 +829,7 @@ IDE_RC qcmPartition::setPartitionRef(
     switch( sTableRef->tableInfo->partitionMethod )
     {
         case QCM_PARTITION_METHOD_RANGE:
+        case QCM_PARTITION_METHOD_RANGE_USING_HASH:
         {
             IDE_TEST( smiGetTableColumns( gQcmTablePartitions,
                                           QCM_TABLE_PARTITIONS_PARTITION_MIN_VALUE_COL_ORDER,
@@ -3318,7 +3360,8 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
     sPartitionInfo->tableType = aTableInfo->tableType;
     sPartitionInfo->status = aTableInfo->status;
 
-    (void)qcm::setOperatableFlag( sPartitionInfo );
+    qcm::setOperatableFlag( sPartitionInfo->tableType,
+                            &sPartitionInfo->operatableFlag );
 
     //to fix BUG-19476
     sPartitionInfo->partitionMethod = aTableInfo->partitionMethod;
@@ -3408,13 +3451,13 @@ IDE_RC qcmPartition::makeAndSetQcmPartitionInfo( smiStatement * aSmiStmt,
               != IDE_SUCCESS );
 
     // partition key
-    IDU_LIMITPOINT("qcmPartition::makeAndSetQcmPartitionInfo::malloc2");
+    IDU_FIT_POINT("qcmPartition::makeAndSetQcmPartitionInfo::malloc2");
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_QCM, 1,
                                  ID_SIZEOF(qcmColumn) * aTableInfo->partKeyColCount,
                                  (void**)&(sPartitionInfo->partKeyColumns) )
               != IDE_SUCCESS );
 
-    IDU_LIMITPOINT("qcmPartition::makeAndSetQcmPartitionInfo::malloc3");
+    IDU_FIT_POINT("qcmPartition::makeAndSetQcmPartitionInfo::malloc3");
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_QCM, 1,
                                  ID_SIZEOF(mtcColumn) * aTableInfo->partKeyColCount,
                                  (void**)&(sPartitionInfo->partKeyColBasicInfo) )

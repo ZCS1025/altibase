@@ -57,6 +57,11 @@ SQLRETURN getQueueInfo( SChar *a_user,
     idBool sNeedQuote4Tbl    = ID_FALSE;
     SInt   sNeedQuote4File          = 0;
 
+    SChar       sTBSName[UTM_NAME_LEN+1];
+    SQLLEN      sTBSName_ind;
+    SInt        sTbsType  = 0;
+    SQLLEN      sTbsType_ind;
+
     s_puser_name[0] = '\0';
     idlOS::fprintf(stdout, "\n##### QUEUE #####\n");
 
@@ -100,6 +105,16 @@ SQLRETURN getQueueInfo( SChar *a_user,
                    (SQLPOINTER)s_table_type, (SQLLEN)ID_SIZEOF(s_table_type),
                    NULL)
         != SQL_SUCCESS, tbl_error);    
+
+    IDE_TEST_RAISE(
+        SQLBindCol(s_tblStmt, 7, SQL_C_CHAR, (SQLPOINTER)sTBSName,
+                   (SQLLEN)ID_SIZEOF(sTBSName), &sTBSName_ind)
+        != SQL_SUCCESS, tbl_error);
+    
+    IDE_TEST_RAISE(
+        SQLBindCol(s_tblStmt, 8, SQL_C_SLONG, (SQLPOINTER)&sTbsType, 0,
+                   &sTbsType_ind)
+        != SQL_SUCCESS, tbl_error);
 
     while ((sRet = SQLFetch(s_tblStmt)) != SQL_NO_DATA)
     {
@@ -161,7 +176,7 @@ SQLRETURN getQueueInfo( SChar *a_user,
                       s_table_name,
                       NULL );
 
-        IDE_TEST( getQueueQuery( s_user_name, s_table_name, aTblFp )
+        IDE_TEST( getQueueQuery( s_user_name, s_table_name, sTBSName, &sTbsType, aTblFp )
                                  != SQL_SUCCESS);
 
         idlOS::fprintf( stdout, "\n" );
@@ -197,6 +212,8 @@ SQLRETURN getQueueInfo( SChar *a_user,
 
 SQLRETURN getQueueQuery( SChar *a_user,
                          SChar *a_table,
+                         SChar *a_tbsname,
+                         SInt  *a_tbstype,
                          FILE  *a_crt_fp)
 {
 #define IDE_FN "getQueueQuery()"
@@ -340,6 +357,14 @@ SQLRETURN getQueueQuery( SChar *a_user,
     if ( ( sIsStructQeueue == ID_TRUE ) && ( sIsFirst == ID_FALSE ) )
     {
         idlVA::appendFormat( sDdl, ID_SIZEOF(sDdl), "\n)" );
+    }
+
+    // BUG-46888
+    if (( *a_tbstype == SMI_MEMORY_USER_DATA ) || ( *a_tbstype == SMI_DISK_USER_DATA ))
+    {
+        s_pos = idlOS::strlen( sDdl );
+        eraseWhiteSpace( a_tbsname );
+        idlOS::sprintf( sDdl + s_pos, " tablespace  \"%s\"", a_tbsname );
     }
     
     // BUG-33995 aexport have wrong free handle code

@@ -72,6 +72,11 @@ public:
 
     static void fatalReadCorruptPage();
 
+    /* BUG-45598: CORRUPT_PAGE_ERR_POLICY 프로퍼티에 정의된 값에 따라서
+     * Error처리 정책 셋팅.
+     */
+    static void setPageErrPolicyByProp();
+
     static inline sdbCorruptPageReadPolicy getCorruptPageReadPolicy();
 
 private:

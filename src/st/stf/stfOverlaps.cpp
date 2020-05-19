@@ -84,6 +84,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfOverlapsCalculate,
     NULL,
+    mtx::calculateNA,
     stfOverlapsEstimateRange,
     stfOverlapsExtractRange
 };

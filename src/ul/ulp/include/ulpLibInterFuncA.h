@@ -46,6 +46,11 @@ ACI_RC ulpDisconnect( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *aReserv
 
 ACI_RC ulpRunDirectQuery ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *aReserved );
 
+/* BUG-45779 */
+ACI_RC ulpRunDirectQueryCache(acp_char_t *aConnName, ulpSqlstmt *aSqlstmt);
+
+ACI_RC ulpRunDirectQueryUnCache(acp_char_t *aConnName, ulpSqlstmt *aSqlstmt);
+
 ACI_RC ulpExecuteImmediate ( acp_char_t *aConnName, ulpSqlstmt *aInSqlstmt, void *aReserved );
 
 ACI_RC ulpPrepare ( acp_char_t *aConnName, ulpSqlstmt *aInSqlstmt, void *aReserved );

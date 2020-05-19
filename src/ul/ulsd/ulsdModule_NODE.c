@@ -23,6 +23,8 @@
 #include <ulnPrivate.h>
 
 #include <ulsd.h>
+#include <ulsdFailover.h>
+#include <ulsdnFailover.h>
 
 ACI_RC ulsdModuleHandshake_NODE(ulnFnContext *aFnContext)
 {
@@ -129,10 +131,25 @@ void ulsdModuleOnCmError_NODE(ulnFnContext     *aFnContext,
                               ulnDbc           *aDbc,
                               ulnErrorMgr      *aErrorMgr)
 {
-    ACP_UNUSED(aDbc);
-    ACP_UNUSED(aErrorMgr);
+    ACI_RC sRet = ACI_FAILURE;
 
-    ulsdRaiseShardNodeFailRetryAvailableError(aFnContext);
+    if ( ulnFailoverIsOn( aDbc ) == ACP_TRUE )
+    {
+        sRet = ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
+    }
+    else if ( ulnDbcGetSessionFailover( aDbc ) == ACP_TRUE )
+    {
+        sRet = ulsdFODoReconnect( aFnContext, aDbc, aErrorMgr );
+    }
+    else
+    {
+        /* sRet == ACI_FAILURE */
+    }
+
+    if ( sRet != ACI_SUCCESS )
+    {
+        ulsdnRaiseShardNodeFailoverIsNotAvailableError( aFnContext );
+    }
 }
 
 ACI_RC ulsdModuleUpdateNodeList_NODE(ulnFnContext  *aFnContext,
@@ -142,6 +159,42 @@ ACI_RC ulsdModuleUpdateNodeList_NODE(ulnFnContext  *aFnContext,
     ACP_UNUSED(aDbc);
 
     return ACI_SUCCESS;
+}
+
+ACI_RC ulsdModuleNotifyFailOver_NODE( ulnDbc *aDbc )
+{
+    ulnDbc                   * sMetaDbc = aDbc->mShardDbcCxt.mParentDbc;
+    ulsdNodeReport             sReport;
+    ulnFnContext               sMetaFnContext;
+
+    ULN_INIT_FUNCTION_CONTEXT( sMetaFnContext, ULN_FID_NONE, sMetaDbc, ULN_OBJ_TYPE_DBC );
+
+    ulsdGetNodeConnectionReport( aDbc, &sReport );
+
+    ACI_TEST( ulsdSendNodeConnectionReport( &sMetaFnContext, &sReport ) != ACI_SUCCESS );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+void ulsdModuleAlignDataNodeConnection_NODE( ulnFnContext * aFnContext,
+                                             ulnDbc       * aNodeDbc )
+{
+    ACP_UNUSED( aFnContext       );
+    ACP_UNUSED( aNodeDbc         );
+}
+
+void ulsdModuleErrorCheckAndAlignDataNode_NODE( ulnFnContext * aFnContext )
+{
+    ACP_UNUSED( aFnContext       );
+}
+
+acp_bool_t ulsdModuleHasNoData_NODE( ulnStmt * aStmt )
+{
+    return ulnCursorHasNoData( ulnStmtGetCursor( aStmt ) );
 }
 
 ulsdModule gShardModuleNODE =
@@ -158,5 +211,9 @@ ulsdModule gShardModuleNODE =
     ulsdModuleMoreResults_NODE,
     ulsdModuleGetPreparedStmt_NODE,
     ulsdModuleOnCmError_NODE,
-    ulsdModuleUpdateNodeList_NODE
+    ulsdModuleUpdateNodeList_NODE,
+    ulsdModuleNotifyFailOver_NODE,
+    ulsdModuleAlignDataNodeConnection_NODE,
+    ulsdModuleErrorCheckAndAlignDataNode_NODE,
+    ulsdModuleHasNoData_NODE
 };

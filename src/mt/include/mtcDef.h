@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtcDef.h 82146 2018-01-29 06:47:57Z andrew.shin $
+ * $Id: mtcDef.h 85262 2019-04-17 01:37:36Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_MTC_DEF_H_
@@ -986,6 +986,10 @@ typedef struct mtdValueInfo     mtdValueInfo;
 // PROJ-2002 Column Security
 typedef struct mtcEncryptInfo   mtcEncryptInfo;
 
+/* PROJ-2632 */
+typedef struct mtxModule        mtxModule;
+typedef union  mtxEntry         mtxEntry;
+
 typedef enum
 {
     NC_VALID = 0,         /* 정상적인 1글자 */
@@ -1253,6 +1257,12 @@ typedef IDE_RC (*mtfEstimateRangeFunc)( mtcNode*      aNode,
                                         UInt         aArgument,
                                         UInt*        aSize );
 
+/* PROJ-2632 */
+typedef IDE_RC (*mtxSerialExecuteFunc)( mtxEntry ** aEntry );
+
+typedef mtxSerialExecuteFunc (*mtxGetSerialExecute)( UInt aMtd1Type,
+                                                     UInt aMtd2Type );
+
 //----------------------------------------------------------------
 // PROJ-1358
 // 참고) mtfCalculateFunc, mtfEstimateRangeFunc 등은
@@ -1511,6 +1521,7 @@ struct mtcExecute {
     mtfCalculateFunc     finalize;      // Aggregation 종료 함수
     mtfCalculateFunc     calculate;     // 연산 함수
     void*                calculateInfo; // 연산을 위한 부가 정보, 현재 미사용
+    mtxSerialExecuteFunc mSerialExecute;/* PROJ-2632 */
     mtfEstimateRangeFunc estimateRange; // Key Range 크기 추출 함수
     mtfExtractRangeFunc  extractRange;  // Key Range 생성 함수
 };
@@ -1597,6 +1608,9 @@ struct mtkRangeCallBack
 typedef struct mtfFuncDataBasicInfo
 {
     iduMemory            * memoryMgr;
+
+    /* BUG-46906 */
+    iduMemoryStatus        mMemStatus;
 } mtfFuncDataBasicInfo;
 
 // BUG-41944 high precision/performance hint 제공
@@ -1605,7 +1619,7 @@ typedef enum
     MTC_ARITHMETIC_OPERATION_PRECISION = 0,           // 산술연산시 정밀도우선
     MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1 = 1,  // 산술연산시 성능우선
     MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL2 = 2,  // 산술연산시 성능우선 SUM, AVG
-    
+    MTC_ARITHMETIC_OPERATION_MAX_PRECISION = 3,       /* BUG-46195 */
     MTC_ARITHMETIC_OPERATION_DEFAULT = MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1
 } mtcArithmeticOpMode;
 
@@ -2209,5 +2223,227 @@ typedef enum {
     ((aNode)->column != MTC_RID_COLUMN_ID) ?  \
     ((aTuple)->execute + (aNode)->column)  :  \
     ((aTuple)->ridExecute)
+
+/* PROJ-2632 */
+#define MTX_SERIAL_EXECUTE_DATA_SIZE  ( ID_SIZEOF( mtxSerialExecuteData ) )
+#define MTX_SERIAL_ENTRY_SIZE         ( ID_SIZEOF( mtxEntry ) )
+
+#define MTX_ENTRY_TYPE_NONE           ( 0x00000000 )
+#define MTX_ENTRY_TYPE_VALUE          ( 0x00000001 )
+#define MTX_ENTRY_TYPE_RID            ( 0x00000002 )
+#define MTX_ENTRY_TYPE_COLUMN         ( 0x00000003 )
+#define MTX_ENTRY_TYPE_FUNCTION       ( 0x00000004 )
+#define MTX_ENTRY_TYPE_SINGLE         ( 0x00000005 )
+#define MTX_ENTRY_TYPE_CONVERT        ( 0x00000006 )
+#define MTX_ENTRY_TYPE_CONVERT_CHAR   ( 0x00000007 )
+#define MTX_ENTRY_TYPE_CONVERT_DATE   ( 0x00000008 )
+#define MTX_ENTRY_TYPE_CHECK          ( 0x00000009 )
+#define MTX_ENTRY_TYPE_AND            ( 0x0000000A )
+#define MTX_ENTRY_TYPE_OR             ( 0x0000000B )
+#define MTX_ENTRY_TYPE_AND_SINGLE     ( 0x0000000C )
+#define MTX_ENTRY_TYPE_OR_SINGLE      ( 0x0000000D )
+#define MTX_ENTRY_TYPE_NOT            ( 0x0000000E )
+#define MTX_ENTRY_TYPE_LNNVL          ( 0x0000000F )
+#define MTX_ENTRY_TYPE_ERROR          ( 0x000000FF )
+
+#define MTX_ENTRY_SIZE_ZERO           ( 0x00000000 )
+#define MTX_ENTRY_SIZE_ONE            ( 0x00000001 )
+#define MTX_ENTRY_SIZE_TWO            ( 0x00000002 )
+#define MTX_ENTRY_SIZE_THREE          ( 0x00000003 )
+
+#define MTX_ENTRY_COUNT_ZERO          ( 0x00000000 )
+#define MTX_ENTRY_COUNT_ONE           ( 0x00000001 )
+#define MTX_ENTRY_COUNT_TWO           ( 0x00000002 )
+#define MTX_ENTRY_COUNT_THREE         ( 0x00000003 )
+
+#define MTX_ENTRY_FLAG_INITIALIZE     ( 0x00000000 )
+#define MTX_ENTRY_FLAG_CALCULATE_MASK ( 0x00000001 )
+#define MTX_ENTRY_FLAG_CALCULATE      ( 0x00000001 )
+
+typedef enum
+{
+    MTX_EXECUTOR_ID_DATE,
+    MTX_EXECUTOR_ID_SMALLINT,
+    MTX_EXECUTOR_ID_INTEGER,
+    MTX_EXECUTOR_ID_BIGINT,
+    MTX_EXECUTOR_ID_REAL,
+    MTX_EXECUTOR_ID_DOUBLE,
+    MTX_EXECUTOR_ID_FLOAT,
+    MTX_EXECUTOR_ID_NUMERIC,
+    MTX_EXECUTOR_ID_CHAR,
+    MTX_EXECUTOR_ID_VARCHAR,
+    MTX_EXECUTOR_ID_NCHAR,
+    MTX_EXECUTOR_ID_NVARCHAR,
+    MTX_EXECUTOR_ID_INTERVAL,
+    MTX_EXECUTOR_ID_NIBBLE,
+    MTX_EXECUTOR_ID_BIT,
+    MTX_EXECUTOR_ID_VARBIT,
+    MTX_EXECUTOR_ID_BYTE,
+    MTX_EXECUTOR_ID_VARBYTE,
+    MTX_EXECUTOR_ID_RID,
+    MTX_EXECUTOR_ID_COLUMN,
+    MTX_EXECUTOR_ID_AND,
+    MTX_EXECUTOR_ID_OR,
+    MTX_EXECUTOR_ID_NOT,
+    MTX_EXECUTOR_ID_EQUAL,
+    MTX_EXECUTOR_ID_NOT_EQUAL,
+    MTX_EXECUTOR_ID_GREATER_THAN,
+    MTX_EXECUTOR_ID_GREATER_EQUAL,
+    MTX_EXECUTOR_ID_LESS_THAN,
+    MTX_EXECUTOR_ID_LESS_EQUAL,
+    MTX_EXECUTOR_ID_ADD,
+    MTX_EXECUTOR_ID_SUBTRACT,
+    MTX_EXECUTOR_ID_MULTIPLY,
+    MTX_EXECUTOR_ID_DIVIDE,
+    MTX_EXECUTOR_ID_IS_NOT_NULL,
+    MTX_EXECUTOR_ID_LNNVL,
+    MTX_EXECUTOR_ID_MAX
+} mtxSerialExecuteId;
+
+struct mtxModule
+{
+    mtxSerialExecuteId   mId;
+    mtxSerialExecuteFunc mCommon;
+    mtxGetSerialExecute  mGetExecute;
+};
+
+typedef struct mtxEntryHeader
+{
+    UShort mId;     /* 2B : Identify Entry Set*/
+    UChar  mType;   /* 3B : Entry Set Type*/
+    UChar  mSize;   /* 4B : Entry Size for Entry Set*/
+    UChar  mCount;  /* 5B : Arugment Count*/
+    UChar  mFlag;   /* 6B : Flag*/
+    UChar  mRSV[2]; /* 8B */
+} mtxEntryHeader;
+
+union mtxEntry
+{
+    mtxEntryHeader         mHeader; 
+    void                 * mAddress;
+    mtxSerialExecuteFunc   mExecute;
+};
+
+#define MTX_SET_ENTRY_HEAD( _entry_, _header_ ) \
+{                                               \
+    ( _entry_ )->mHeader = ( _header_ );        \
+    ( _entry_ )++;                              \
+}
+
+#define MTX_SET_ENTRY_ADDR( _entry_, _val_ ) \
+{                                            \
+    ( _entry_ )->mAddress = ( _val_ );       \
+    ( _entry_ )++;                           \
+}
+
+#define MTX_SET_ENTRY_RETN( _entry_, _val_ ) \
+    MTX_SET_ENTRY_ADDR( ( _entry_ ), ( _val_ ) )
+
+#define MTX_SET_ENTRY_EXEC( _entry_, _val_ ) \
+{                                            \
+    ( _entry_ )->mExecute = ( _val_ );       \
+    ( _entry_ )++;                           \
+}
+
+#define MTX_SET_ENTRY_FLAG( _entry_, _flag_ ) \
+{                                             \
+    ( _entry_ )->mHeader.mFlag |= ( _flag_ ); \
+}
+
+#define MTX_INITAILZE_ENTRY_FLAG( _entry_ ) \
+{                                           \
+    ( _entry_ )->mHeader.mFlag &=           \
+        ~MTX_ENTRY_FLAG_CALCULATE;          \
+}
+
+#define MTX_GET_TUPLE_ADDR( _template_, _node_ )        \
+    (void*)&(( _template_ )->rows[( _node_ )->table])
+
+#define MTX_GET_COLUNM_ADDR( _template_, _node_ )             \
+    (void*)&((( _template_ )->rows[( _node_ )->table].columns \
+              + ( _node_ )->column)->column)
+
+#define MTX_GET_MTC_COLUMN( _template_, _node_ )            \
+    (void*)(( _template_ )->rows[( _node_ )->table].columns \
+            + ( _node_ )->column)
+
+#define MTX_GET_ROW_ADDR( _template_, _node_ )              \
+    (UChar*)(( _template_ )->rows[( _node_ )->table].row)
+
+#define MTX_GET_ROW_OFFSET( _template_, _node_ )      \
+    ((( _template_ )->rows[( _node_ )->table].columns \
+      + ( _node_ )->column)->column.offset)
+
+#define MTX_GET_RETURN_ADDR( _template_, _node_ )               \
+    (void*)(MTX_GET_ROW_ADDR( ( _template_ ), ( _node_ ) )      \
+            + MTX_GET_ROW_OFFSET( ( _template_ ), ( _node_ )))
+
+#define MTX_GET_SERIAL_EXECUTE_DATA_SIZE( _count_ ) \
+    ( MTX_SERIAL_EXECUTE_DATA_SIZE                  \
+      + ( MTX_SERIAL_ENTRY_SIZE * ( _count_ ) ) )
+
+typedef struct mtxSerialExecuteData
+{
+    mtcTuple             * mTable;
+    mtxEntry             * mEntry;
+    UInt                   mEntryTotalSize;
+    UInt                   mEntrySetCount;
+} mtxSerialExecuteData;
+
+#define MTX_SERIAL_EXEUCTE_DATA_INITIALIZE( _data_ ,                \
+                                            _template_,             \
+                                            _count_,                \
+                                            _setcount_,             \
+                                            _offset_ )              \
+{                                                                   \
+    ( _data_ )                  =                                   \
+        (mtxSerialExecuteData*)( ( _template_ ) + ( _offset_ ) );   \
+    ( _data_ )->mTable          = NULL;                             \
+    ( _data_ )->mEntry          =                                   \
+        (mtxEntry*)( ( _template_ ) + ( _offset_ )                  \
+                     + MTX_SERIAL_EXECUTE_DATA_SIZE );              \
+    ( _data_ )->mEntryTotalSize = ( _count_ );                      \
+    ( _data_ )->mEntrySetCount  = ( _setcount_ );                   \
+}
+
+typedef struct mtxSerialFilterInfo
+{
+    mtxEntryHeader        mHeader;
+    mtcNode             * mNode;
+    mtxSerialExecuteFunc  mExecute;
+    UInt                  mOffset;
+    mtxSerialFilterInfo * mLeft;
+    mtxSerialFilterInfo * mRight;
+} mtxSerialFilterInfo;
+
+#define MTX_SET_SERIAL_FILTER_INFO( _info_ ,     \
+                                    _node_ ,     \
+                                    _execute_ ,  \
+                                    _offset_,    \
+                                    _left_,      \
+                                    _right_ )    \
+{                                                \
+    ( _info_ )->mNode    = ( _node_ );           \
+    ( _info_ )->mExecute = ( _execute_ );        \
+    ( _info_ )->mOffset  = ( _offset_ );         \
+    ( _info_ )->mLeft    = ( _left_ );           \
+    ( _info_ )->mRight   = ( _right_ );          \
+}
+
+#define MTX_SET_ENTRY_HEADER( _header_,  \
+                              _id_,      \
+                              _type_,    \
+                              _size_,    \
+                              _count_ )  \
+{                                        \
+    ( _header_ ).mId     = ( _id_ );     \
+    ( _header_ ).mType   = ( _type_ );   \
+    ( _header_ ).mSize   = ( _size_ );   \
+    ( _header_ ).mCount  = ( _count_ );  \
+    ( _header_ ).mFlag   =               \
+        MTX_ENTRY_FLAG_INITIALIZE;       \
+    ( _header_ ).mRSV[0] = 0;            \
+    ( _header_ ).mRSV[1] = 0;            \
+}
 
 #endif /* _O_MTC_DEF_H_ */

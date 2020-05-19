@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiReadLogByOrder.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiReadLogByOrder.cpp 83020 2018-05-11 06:34:58Z seulki $
  **********************************************************************/
 
 #include <idl.h>
@@ -347,19 +347,19 @@ IDE_RC smiReadLogByOrder::readLog( smSN    * aSN,
             //[TASK-6757]LFG,SN 제거
             if ( smrCompareLSN::isLT( &mCurReadInfoPtr->mReadLSN, &mLstReadLogLSN ) )
             {
+                ideLog::log( IDE_ERR_0,
+                             "Read Invalid Log during Read Log By Order. \n"
+                             "CurRedo LSN = %"ID_UINT32_FMT",%"ID_UINT32_FMT"\n"
+                             "Last Apply  LSN = %"ID_UINT32_FMT",%"ID_UINT32_FMT"\n",
+                             mCurReadInfoPtr->mReadLSN.mFileNo,
+                             mCurReadInfoPtr->mReadLSN.mOffset,
+                             mLstReadLogLSN.mFileNo,
+                             mLstReadLogLSN.mOffset );
+
                 *aIsValid = ID_FALSE;
                 mCurReadInfoPtr = NULL;
 
-                IDE_ERROR_RAISE_MSG( 0,
-                                     error_read_invalid_log,
-                                     "Read Invalid Log during Read Log By Order. \n"
-                                     "CurRedo LSN = %"ID_UINT32_FMT",%"ID_UINT32_FMT"\n"
-                                     "Last Synced LSN = %"ID_UINT32_FMT",%"ID_UINT32_FMT"\n"
-                                     "Last Apply  LSN = %"ID_UINT32_FMT",%"ID_UINT32_FMT"\n",
-                                     mLstReadLogLSN.mFileNo,
-                                     mLstReadLogLSN.mOffset,
-                                     mCurReadInfoPtr->mReadLSN.mFileNo,
-                                     mCurReadInfoPtr->mReadLSN.mOffset );
+                IDE_ERROR_RAISE(0, error_read_invalid_log );
             }
             else
             {

@@ -184,6 +184,7 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
  #else
     SChar       *sArgv[10];
  #endif
+    SChar        sAEFPCmd[DK_PATH_LEN]; /* AEFP : AltiLinker Execution File Path */
     SChar        sAEFCmd[DK_PATH_LEN];  /* AEF: AltiLinker Execution File */
     SChar        sAEFPath[DK_PATH_LEN]; /* altilinker.jar file path */
     SChar        sXmsOpt[DK_NAME_LEN];  /* jvm memory initial size option */
@@ -197,6 +198,7 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
  #else
     ASYS_TCHAR  *sArgv[10];
  #endif
+    ASYS_TCHAR   sAEFPCmd[DK_PATH_LEN];
     ASYS_TCHAR   sAEFCmd[DK_PATH_LEN];
     ASYS_TCHAR   sAEFPath[DK_PATH_LEN];
     ASYS_TCHAR   sXmsOpt[DK_NAME_LEN];
@@ -378,6 +380,15 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     sIsAllocated = ID_FALSE;
     (void)iduMemMgr::freeRaw( sFinalLinkerLogFilePath );
 
+    idlOS::snprintf( sAEFPCmd, 
+                     ID_SIZEOF( sAEFPCmd ),
+                     PDL_TEXT( "%s%cbin%c"
+                               DKA_CMD_STR_JAVA
+                               PDL_PLATFORM_EXE_SUFFIX_A ),
+                     sJavaHome, 
+                     IDL_FILE_SEPARATOR,
+                     IDL_FILE_SEPARATOR );
+
     idlOS::snprintf( sAEFCmd, 
                      ID_SIZEOF( sAEFCmd ),
                      PDL_TEXT( "%s%cbin%c"
@@ -395,7 +406,7 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
                      IDL_FILE_SEPARATOR );
 
     /* 4. Check java execution file */
-    IDE_TEST_RAISE( idlOS::access( sAEFCmd, X_OK ) == -1,
+    IDE_TEST_RAISE( idlOS::access( sAEFPCmd, X_OK ) == -1,
                     ERR_ACCESS_JAVA_EXEC_FILE );
 
     IDE_TEST_RAISE( idlOS::access( sAEFPath, R_OK ) == -1,
@@ -514,7 +525,7 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     }
     IDE_EXCEPTION( ERR_ACCESS_JAVA_EXEC_FILE );
     {
-        IDE_SET( ideSetErrorCode( dkERR_ABORT_DKA_JAVA_EXEC_ERR,  sAEFCmd, idlOS::strerror(errno) ) );
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DKA_JAVA_EXEC_ERR,  sAEFPCmd, idlOS::strerror(errno) ) );
     }
     IDE_EXCEPTION( JAVA_HOME_ERR );
     {
@@ -941,15 +952,22 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
         if ( idlOS::strcasecmp( sTarget->mName, aTargetName ) == 0 )
         {
             idlOS::strncpy( aInfo->mTargetName, sTarget->mName, DK_NAME_LEN + 1 );
+            aInfo->mTargetName[DK_NAME_LEN] = '\0';
 
             if ( ( sTarget->mJdbcDriver != NULL ) && ( sTarget->mConnectionUrl != NULL ) )
             {
                 idlOS::strncpy( aInfo->mJdbcDriverPath, sTarget->mJdbcDriver, DK_PATH_LEN + 1);
+                aInfo->mJdbcDriverPath[DK_PATH_LEN] = '\0';
+
+
                 idlOS::strncpy( aInfo->mRemoteServerUrl, sTarget->mConnectionUrl, DK_URL_LEN + 1);
+                aInfo->mRemoteServerUrl[DK_URL_LEN] = '\0';
+
 
                 if ( sTarget->mJdbcDriverClassName != NULL ) /* options */
                 {
-                    idlOS::strcpy( aInfo->mJdbcDriverClassName, sTarget->mJdbcDriverClassName );
+                    idlOS::strncpy( aInfo->mJdbcDriverClassName, sTarget->mJdbcDriverClassName, DK_DRIVER_CLASS_NAME_LEN + 1 );
+                    aInfo->mJdbcDriverClassName[DK_DRIVER_CLASS_NAME_LEN] = '\0';
                 }
                 else
                 {
@@ -960,6 +978,8 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
                 if ( sTarget->mUser != NULL )
                 {
                     idlOS::strncpy( aInfo->mRemoteServerUserID, sTarget->mUser, DK_USER_ID_LEN + 1 );
+                    aInfo->mRemoteServerUserID[DK_USER_ID_LEN] = '\0';
+
                 }
                 else
                 {
@@ -968,6 +988,8 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
                 if ( sTarget->mPassword != NULL )
                 {
                     idlOS::strncpy( aInfo->mRemoteServerPasswd, sTarget->mPassword, DK_USER_PW_LEN + 1 );
+                    aInfo->mRemoteServerPasswd[DK_USER_PW_LEN] = '\0';
+;
                 }
                 else
                 {
@@ -977,6 +999,8 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
                 {
                     idlOS::strncpy( aInfo->mXADataSourceClassName,
                                 sTarget->mXADataSourceClassName, DK_PATH_LEN + 1 );
+                    aInfo->mXADataSourceClassName[DK_PATH_LEN]= '\0';
+0;
                 }
                 else
                 {
@@ -987,6 +1011,8 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
                 {
                     idlOS::strncpy( aInfo->mXADataSourceUrlSetterName,
                                     sTarget->mXADataSourceUrlSetterName, DK_NAME_LEN + 1 );
+                    aInfo->mXADataSourceUrlSetterName[DK_NAME_LEN] = '\0';
+0;
                 }
                 else
                 {

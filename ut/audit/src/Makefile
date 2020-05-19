@@ -1,4 +1,4 @@
-# $Id: Makefile 76513 2016-08-03 06:26:02Z bethy $
+# $Id: Makefile 82688 2018-04-03 05:57:13Z bethy $
 #
 
 include ../../utEnv.mk
@@ -13,6 +13,7 @@ INCLUDES += $(foreach i, ./include, $(IDROPT)$(i))
 
 DBA_SRCS = $(DEV_DIR)/ut/audit/src/ata/utAtb.cpp \
        $(DEV_DIR)/ut/audit/src/ata/utAtbConnection.cpp \
+       $(DEV_DIR)/ut/audit/src/ata/utAtbLob.cpp \
        $(DEV_DIR)/ut/audit/src/ata/utAtbField.cpp \
        $(DEV_DIR)/ut/audit/src/ata/utAtbQuery.cpp \
        $(DEV_DIR)/ut/audit/src/ata/utAtbRow.cpp

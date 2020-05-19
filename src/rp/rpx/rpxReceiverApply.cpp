@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverApply.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxReceiverApply.cpp 85244 2019-04-16 05:09:21Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -67,7 +67,7 @@ rpxApplyFunc rpxReceiverApply::mApplyFunc[] =
     applyNA,                           // Replication Flush ACK
     applyNA,                           // Stop ACK
     applyIgnore,                       // Handshake
-    applyNA,                           // Handshake Ready
+    applyNA,                           // Handshake Ack
     applySyncPKBegin,                  // Incremental Sync Primary Key Begin
     applySyncPK,                       // Incremental Sync Primary Key
     applySyncPKEnd,                    // Incremental Sync Primary Key End
@@ -78,7 +78,11 @@ rpxApplyFunc rpxReceiverApply::mApplyFunc[] =
     applyNA,                           // Ack End Rebuild index for RP Sync    
     applyLobTrim,                      // LOB Trim
     applyAckOnDML,                     // Ack On DML
-    applyNA                            // Ack Eager
+    applyNA,                           // Ack Eager
+    applyIgnore,                       // DDL Replicate Handshake
+    applyNA,                           // DDL Replicate Handshake Ack
+    applyNA,                           // DDL Replicate Execute
+    applyNA                            // DDL Replicate Execute Ack
 };
 
 
@@ -114,6 +118,7 @@ IDE_RC rpxReceiverApply::initialize( rpxReceiver        * aReceiver,
     mDeleteFailureCount = 0;
     mCommitCount = 0;
     mAbortCount = 0;
+    mSyncTupleSuccessCount = 0;
 
     //BUG-27831 : valgrind uninitialize values
     mRestartSN      = SM_SN_NULL;
@@ -126,7 +131,7 @@ IDE_RC rpxReceiverApply::initialize( rpxReceiver        * aReceiver,
     mTransactionFlag = SMI_TRANSACTION_NORMAL | (UInt)RPU_ISOLATION_LEVEL;
 
     mReceiver = aReceiver;
-    mOpStatistics = &(aReceiver->mOpStatistics);
+    mStatistics = &(aReceiver->mStatistics);
 
     mRepName = aReceiver->mRepName;
 
@@ -202,7 +207,7 @@ IDE_RC rpxReceiverApply::initializeInLocalMemory( void )
 
     sIsConflictWhenNotEnoughSpace = mReceiver->isEagerReceiver();
 
-    IDE_TEST( mSmExecutor.initialize( mOpStatistics,
+    IDE_TEST( mSmExecutor.initialize( mStatistics,
                                       &(mReceiver->mMeta),
                                       sIsConflictWhenNotEnoughSpace )
               != IDE_SUCCESS );
@@ -314,43 +319,44 @@ IDE_RC rpxReceiverApply::initializeInLocalMemory( void )
 
 void rpxReceiverApply::finalizeInLocalMemory( void )
 {
-    IDE_ASSERT( mTransTbl != NULL );
-
-    mTransTbl->destroy();
-
-    (void)iduMemMgr::free( mTransTbl );
-    mTransTbl = NULL;
-
-    mSmExecutor.destroy();
-
-    if ( mAbortTxList != NULL )
+    if ( mTransTbl != NULL )
     {
-        (void)iduMemMgr::free( mAbortTxList );
-        mAbortTxList = NULL;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
+		mTransTbl->destroy();
 
-    if ( mClearTxList != NULL )
-    {
-        (void)iduMemMgr::free( mClearTxList );
-        mClearTxList = NULL;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
+		(void)iduMemMgr::free( mTransTbl );
+		mTransTbl = NULL;
 
-    if ( mSQLBuffer != NULL )
-    {
-        (void)iduMemMgr::free( mSQLBuffer );
-        mSQLBuffer = NULL;
-    }
-    else
-    {
-        /* do nothing */
+		mSmExecutor.destroy();
+
+		if ( mAbortTxList != NULL )
+		{
+		    (void)iduMemMgr::free( mAbortTxList );
+		    mAbortTxList = NULL;
+		}
+		else
+		{
+		    /* Nothing to do */
+		}
+
+		if ( mClearTxList != NULL )
+		{
+		    (void)iduMemMgr::free( mClearTxList );
+		    mClearTxList = NULL;
+		}
+		else
+		{
+		    /* Nothing to do */
+		}
+
+		if ( mSQLBuffer != NULL )
+		{
+		    (void)iduMemMgr::free( mSQLBuffer );
+		    mSQLBuffer = NULL;
+		}
+		else
+		{
+		    /* do nothing */
+		}
     }
 
     return;
@@ -388,7 +394,7 @@ void rpxReceiverApply::finalize() // call by receiver itself
         mTransTbl->rollbackAllATrans();
     }
 
-    if ( rpuProperty::isUseV6Protocol() != ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( &( mReceiver->mMeta.mReplication ) ) != ID_TRUE )
     {
         /* BUG-40557 sync 가 아니면 RebuildIndices 를 하지 않아도 된다. */
         if ( ( mStartMode == RP_RECEIVER_SYNC ) || 
@@ -463,6 +469,7 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
             case RP_X_KEEP_ALIVE:
             case RP_X_REPL_STOP:
             case RP_X_HANDSHAKE:
+            case RP_X_DDL_REPLICATE_HANDSHAKE:
             case RP_X_SYNC_PK_BEGIN:
             case RP_X_SYNC_PK:
             case RP_X_SYNC_PK_END:
@@ -489,6 +496,7 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
         case RP_X_KEEP_ALIVE:
         case RP_X_REPL_STOP:
         case RP_X_HANDSHAKE:
+        case RP_X_DDL_REPLICATE_HANDSHAKE:
         case RP_X_SYNC_PK_BEGIN:
         case RP_X_SYNC_PK:
         case RP_X_SYNC_PK_END:
@@ -629,7 +637,7 @@ IDE_RC rpxReceiverApply::begin( smiTrans *aSmiTrans, idBool aIsConflictResolutio
     for(i = 0; i <= sCnt; i++)
     {
         if( aSmiTrans->begin(&spRootStmt,
-                             NULL,
+                             mStatistics,
                              sFlag,
                              mReceiver->mReplID, // PROJ-1553 Self Deadlock
                              ID_TRUE)
@@ -781,12 +789,15 @@ IDE_RC rpxReceiverApply::insertSyncXLog( smiTrans       * aSmiTrans,
                                         &mSmiStmt,
                                         &mCursor,
                                         aMetaItem,
+                                        mSyncTupleSuccessCount,
                                         &mIsBegunSyncStmt,
                                         &mIsOpenedSyncCursor,
                                         &sFailType )
          != IDE_SUCCESS )
     {
         IDE_TEST( sFailType == RP_APPLY_FAIL_INTERNAL );
+
+        IDE_TEST_RAISE( mSyncTupleSuccessCount > 0, ERR_SYNC_FAILED_BY_CONFLICT );
 
         IDE_TEST( getKeyRange( aMetaItem, &sKeyRange, aXLog->mACols, ID_FALSE )
                   != IDE_SUCCESS );
@@ -831,12 +842,19 @@ IDE_RC rpxReceiverApply::insertSyncXLog( smiTrans       * aSmiTrans,
     {
         // Increase INSERT_SUCCESS_COUNT in V$REPRECEIVER
         mInsertSuccessCount++;
+        mSyncTupleSuccessCount++;
     }
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_SYNC_FAILED_BY_CONFLICT );
+    {
+        printInsertErrLog( aMetaItem, aMetaItem, aXLog );
+
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_SYNC_FAILED_BY_BULK_INSERT ) );
+    }
     IDE_EXCEPTION_END;
-    IDE_ERRLOG(IDE_RP_0);
 
     // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
     mInsertFailureCount++;
@@ -986,9 +1004,11 @@ IDE_RC rpxReceiverApply::insertReplace( rpdXLog          * aXLog,
     UInt       sReplLockTimeout = 0;
 
     IDE_TEST( getConfictResolutionTransaction( aXLog->mTID,
-                                               &sTrans,
-                                               &sReplLockTimeout )
+                                               &sTrans )
               != IDE_SUCCESS );
+
+    sReplLockTimeout = sTrans->getReplTransLockTimeout();
+    IDE_TEST( sTrans->setReplTransLockTimeout( 0 ) != IDE_SUCCESS );
 
     IDE_TEST( getKeyRange( aMetaItem,
                            &sKeyRange,
@@ -1439,10 +1459,15 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
     rpdMetaItem * sMetaItem = NULL;
     smiRange      sKeyRange;
     idBool        sIsSync = ID_FALSE;
-    idBool        sIsLOBOperationException;
-
+    idBool        sIsLOBOperationException = ID_FALSE;
+    idBool        sIsConflict = ID_FALSE;
+    smiTrans    * sTrans = NULL;
+    UInt          sReplLockTimeout = 0;
+    UInt          sConFlictReplLockTimeout = 0;
+    idBool        sIsBegunSyncStmt;
+    
     IDE_ASSERT(aSmiTrans != NULL);
-
+        
     // check existence of TABLE
     IDE_TEST( mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
               != IDE_SUCCESS );
@@ -1457,33 +1482,86 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
                                  ID_TRUE )
                     != IDE_SUCCESS, ERR_GET_KEYRANGE );
 
-    if ( mIsBegunSyncStmt == ID_TRUE )
+    sIsBegunSyncStmt = mIsBegunSyncStmt;
+    
+    if ( sIsBegunSyncStmt == ID_TRUE )
     {
         sIsSync = ID_TRUE;
         IDE_TEST( mSmExecutor.stmtEndAndCursorClose( &mSmiStmt,
                                                      &mCursor,
                                                      &mIsBegunSyncStmt,
                                                      &mIsOpenedSyncCursor,
+                                                     &mSyncTupleSuccessCount,
                                                      SMI_STATEMENT_RESULT_SUCCESS )
                   != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
-        if ( mSmExecutor.openLOBCursor( aSmiTrans,
-                                        aXLog,
-                                        sMetaItem,
-                                        &sKeyRange,
-                                        aTransTbl,
-                                        &sIsLOBOperationException )
-             != IDE_SUCCESS )
-        {
-            IDE_TEST_RAISE( sIsLOBOperationException != ID_TRUE, ERR_LOB_EXCEPTION );
+    sReplLockTimeout = aSmiTrans->getReplTransLockTimeout();
+    if ( mTransTbl->isNullTransForConflictResolution( aXLog->mTID ) == ID_TRUE )
+    {
+        /*do nothing*/
+    }
+    else /* not null */
+    {
+        IDE_TEST( aSmiTrans->setReplTransLockTimeout( 0 ) != IDE_SUCCESS );
+    }
 
-            addAbortTx(aXLog->mTID, aXLog->mSN);
+    if ( mSmExecutor.openLOBCursor( aSmiTrans,
+                                    aXLog,
+                                    sMetaItem,
+                                    &sKeyRange,
+                                    aTransTbl,
+                                    &sIsLOBOperationException,
+                                    &sIsConflict )
+         != IDE_SUCCESS )
+    {
+        if ( sIsConflict == ID_TRUE )
+        {            
+            IDE_TEST( getConfictResolutionTransaction( aXLog->mTID,
+                                                       &sTrans )
+                      != IDE_SUCCESS );
+            
+            sConFlictReplLockTimeout = sTrans->getReplTransLockTimeout();
+            IDE_TEST( sTrans->setReplTransLockTimeout( 0 ) != IDE_SUCCESS );
+            
+            if ( mSmExecutor.openLOBCursor( sTrans,
+                                            aXLog,
+                                            sMetaItem,
+                                            &sKeyRange,
+                                            aTransTbl,
+                                            &sIsLOBOperationException,
+                                            &sIsConflict )
+                 != IDE_SUCCESS )
+            {                
+                IDE_TEST_RAISE( sIsLOBOperationException != ID_TRUE, ERR_LOB_EXCEPTION );
+                
+                addAbortTx(aXLog->mTID, aXLog->mSN);
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+            
+            IDE_TEST( sTrans->setReplTransLockTimeout( sConFlictReplLockTimeout ) != IDE_SUCCESS );  
         }
         else
         {
-            /* Nothing to do */
-        }
+            IDE_TEST_RAISE( sIsLOBOperationException != ID_TRUE, ERR_LOB_EXCEPTION );     
 
+            addAbortTx(aXLog->mTID, aXLog->mSN);
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    
+    if ( sIsBegunSyncStmt == ID_TRUE )
+    {
         IDE_TEST( mSmExecutor.stmtBeginAndCursorOpen( aSmiTrans,
                                                       &mSmiStmt,
                                                       &mCursor,
@@ -1494,23 +1572,10 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
     }
     else
     {
-        if ( mSmExecutor.openLOBCursor( aSmiTrans,
-                                        aXLog,
-                                        sMetaItem,
-                                        &sKeyRange,
-                                        aTransTbl,
-                                        &sIsLOBOperationException )
-             != IDE_SUCCESS )
-        {
-            IDE_TEST_RAISE( sIsLOBOperationException != ID_TRUE, ERR_LOB_EXCEPTION );
-
-            addAbortTx(aXLog->mTID, aXLog->mSN);
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+        /* Nothing to do */
     }
+
+    IDE_TEST( aSmiTrans->setReplTransLockTimeout( sReplLockTimeout ) != IDE_SUCCESS );    
 
     return IDE_SUCCESS;
 
@@ -1788,7 +1853,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
 
     RP_CREATE_FLAG_VARIABLE(IDV_OPTM_INDEX_RP_R_TX_BEGIN);
 
-    RP_OPTIMIZE_TIME_BEGIN(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_BEGIN);
+    RP_OPTIMIZE_TIME_BEGIN(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_BEGIN);
 
     if(aApply->mTransTbl->isATrans(aXLog->mTID) == ID_FALSE)
     {
@@ -1859,7 +1924,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
         }
     }
 
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_BEGIN);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_BEGIN);
 
     return IDE_SUCCESS;
 
@@ -1893,7 +1958,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
         IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE ) );
     }
     IDE_EXCEPTION_END;
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_BEGIN);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_BEGIN);
 
     IDE_ERRLOG(IDE_RP_0);
 
@@ -1948,7 +2013,7 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
 
     RP_CREATE_FLAG_VARIABLE(IDV_OPTM_INDEX_RP_R_TX_COMMIT);
 
-    RP_OPTIMIZE_TIME_BEGIN(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_COMMIT);
+    RP_OPTIMIZE_TIME_BEGIN(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_COMMIT);
 
     if ( aApply->mIsBegunSyncStmt == ID_TRUE )
     {
@@ -1956,6 +2021,7 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
                                                              &(aApply->mCursor),
                                                              &aApply->mIsBegunSyncStmt,
                                                              &aApply->mIsOpenedSyncCursor,
+                                                             &aApply->mSyncTupleSuccessCount,
                                                              SMI_STATEMENT_RESULT_SUCCESS )
                   != IDE_SUCCESS );
     }
@@ -2024,7 +2090,7 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
         /* nothing to do */
     }
 
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_COMMIT);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_COMMIT);
 
     return IDE_SUCCESS;
 
@@ -2049,7 +2115,7 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
         }
     }
     IDE_EXCEPTION_END;
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_COMMIT);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_COMMIT);
 
     IDE_ERRLOG(IDE_RP_0);
 
@@ -2091,7 +2157,7 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
 
     RP_CREATE_FLAG_VARIABLE(IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
-    RP_OPTIMIZE_TIME_BEGIN(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
+    RP_OPTIMIZE_TIME_BEGIN(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
     if ( aApply->mIsBegunSyncStmt == ID_TRUE )
     {
@@ -2099,6 +2165,7 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
                                                              &(aApply->mCursor),
                                                              &aApply->mIsBegunSyncStmt,
                                                              &aApply->mIsOpenedSyncCursor,
+                                                             &aApply->mSyncTupleSuccessCount,
                                                              SMI_STATEMENT_RESULT_FAILURE )
                   != IDE_SUCCESS );
     }
@@ -2129,7 +2196,7 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
         aApply->mTransTbl->removeTrans(aXLog->mTID);
     }
 
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
     return IDE_SUCCESS;
 
@@ -2144,7 +2211,7 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
         IDE_SET(ideSetErrorCode(rpERR_ABORT_ABORT_ERROR_IN_RUN));
     }
     IDE_EXCEPTION_END;
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
     IDE_ERRLOG(IDE_RP_0);
 
@@ -2302,15 +2369,15 @@ IDE_RC rpxReceiverApply::applySyncInsert( rpxReceiverApply * aApply, rpdXLog * a
                               aXLog->mTableOID );
 
         IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE_INS ) );
+        IDE_ERRLOG( IDE_RP_0 );
     }
     IDE_EXCEPTION_END;
-
-    IDE_ERRLOG( IDE_RP_0 );
 
     (void) aApply->mSmExecutor.stmtEndAndCursorClose( &(aApply->mSmiStmt),
                                                       &(aApply->mCursor),
                                                       &aApply->mIsBegunSyncStmt,
                                                       &aApply->mIsOpenedSyncCursor,
+                                                      &aApply->mSyncTupleSuccessCount,
                                                       SMI_STATEMENT_RESULT_FAILURE );
 
     sTblNode = aApply->mTransTbl->getTrNode( aXLog->mTID );
@@ -2631,7 +2698,7 @@ IDE_RC rpxReceiverApply::applySPAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
 
     RP_CREATE_FLAG_VARIABLE(IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
-    RP_OPTIMIZE_TIME_BEGIN(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
+    RP_OPTIMIZE_TIME_BEGIN(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
     if(aApply->mTransTbl->isATrans(aXLog->mTID) == ID_TRUE)
     {
@@ -2673,12 +2740,12 @@ IDE_RC rpxReceiverApply::applySPAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
         }
     }
 
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-    RP_OPTIMIZE_TIME_END(aApply->mOpStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
+    RP_OPTIMIZE_TIME_END(aApply->mStatistics, IDV_OPTM_INDEX_RP_R_TX_ABORT);
 
     IDE_ERRLOG(IDE_RP_0);
 
@@ -3435,12 +3502,16 @@ IDE_RC rpxReceiverApply::buildXLogAck( rpdXLog * aXLog, rpXLogAck * aAck )
     {
         case RP_X_HANDSHAKE:   // PROJ-1442 Replication Online 중 DDL 허용
             IDE_WARNING( IDE_RP_0, RP_TRC_RA_NTC_HANDSHAKE_XLOG );
-            aAck->mAckType = RP_X_HANDSHAKE_READY;
+            aAck->mAckType = RP_X_HANDSHAKE_ACK;
             break;
             
         case RP_X_REPL_STOP :
             IDE_WARNING( IDE_RP_0, RP_TRC_RA_NTC_REPL_STOP_XLOG );
             aAck->mAckType = RP_X_STOP_ACK;
+            break;
+    
+        case RP_X_DDL_REPLICATE_HANDSHAKE :
+            aAck->mAckType = RP_X_DDL_REPLICATE_HANDSHAKE_ACK;
             break;
 
         default :
@@ -3552,7 +3623,7 @@ IDE_RC rpxReceiverApply::apply( rpdXLog * aXLog )
 {
     IDE_DASSERT(aXLog->mType != RP_X_ACK);
     IDE_DASSERT(aXLog->mType != RP_X_STOP_ACK);
-    IDE_DASSERT(aXLog->mType != RP_X_HANDSHAKE_READY);
+    IDE_DASSERT(aXLog->mType != RP_X_HANDSHAKE_ACK);
 
     // TASK-2359
     if ( RPU_REPLICATION_PERFORMANCE_TEST == 0 )
@@ -3746,7 +3817,7 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
     smSCN           sSCN      = SM_SCN_INIT;
     UInt            sUserID   = 0;
     void          * sTableHandle = NULL;
-    
+
     /* BUG-40557 */
     IDE_TEST_RAISE ( aApply->mRemoteTable == NULL, ERR_NOT_EXIST_TABLE );
 
@@ -3756,7 +3827,7 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
     sStage = 1;
 
     IDE_TEST( sTrans.begin( &sRootStmt,
-                            NULL,
+                            aApply->mStatistics,
                             ( SMI_ISOLATION_NO_PHANTOM     |
                               SMI_TRANSACTION_NORMAL       |
                               SMI_TRANSACTION_REPL_DEFAULT |
@@ -3764,7 +3835,7 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
               != IDE_SUCCESS );
     sStage = 2;
 
-    IDE_TEST( sStmt.begin( NULL,
+    IDE_TEST( sStmt.begin( sTrans.getStatistics(),
                            sRootStmt,
                            SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
     sStage = 3;
@@ -3791,6 +3862,8 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
 
         IDE_TEST( aApply->mReceiver->mMeta.searchTable( &sLocalTable, sMetaItem->mItem.mTableOID )
                   != IDE_SUCCESS);
+        
+        IDE_TEST_RAISE( sLocalTable == NULL, ERR_NOT_FOUND_TABLE );
 
         sTable = smiGetTable( (smOID)(sLocalTable->mItem.mTableOID) );
 
@@ -3923,6 +3996,10 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_SYNC_TABLE_NUMBER ) );
     }
+    IDE_EXCEPTION( ERR_NOT_FOUND_TABLE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_META_NO_SUCH_DATA ) );
+    }    
     IDE_EXCEPTION_END;
 
     if( sNewCachedMetaCount > 0 )
@@ -4207,9 +4284,11 @@ IDE_RC rpxReceiverApply::insertReplaceSQL( rpdMetaItem      * aLocalMetaItem,
     SLong               sRowCount = 0;
 
     IDE_TEST( getConfictResolutionTransaction( aXLog->mTID,
-                                               &sTrans,
-                                               &sReplLockTimeout )
+                                               &sTrans )
               != IDE_SUCCESS );
+
+    sReplLockTimeout = sTrans->getReplTransLockTimeout();
+    IDE_TEST( sTrans->setReplTransLockTimeout( 0 ) != IDE_SUCCESS );
 
     /* Delete + Insert를 적용하기 전에 Savepoint를 두 개 설정한다. */
     if ( aSPName != NULL )
@@ -4780,6 +4859,7 @@ IDE_RC rpxReceiverApply::updateSQL( smiTrans    * aSmiTrans,
                 {
                     /* do noting */
                 }
+                
             }
             else
             {
@@ -4834,13 +4914,11 @@ IDE_RC rpxReceiverApply::updateSQL( smiTrans    * aSmiTrans,
 }
 
 IDE_RC rpxReceiverApply::getConfictResolutionTransaction( smTID        aTID,
-                                                          smiTrans  ** aTrans,
-                                                          UInt       * aReplLockTimeout )
+                                                          smiTrans  ** aTrans )
 {
     smiTrans          * sTrans = NULL;
     idBool              sIsAlloced = ID_FALSE;
     idBool              sIsBegun = ID_FALSE;
-    UInt                sReplLockTimeout = 0;
     rpdTransTblNode   * sTblNode = NULL;
 
     sTblNode = mTransTbl->getTrNode( aTID );
@@ -4866,19 +4944,13 @@ IDE_RC rpxReceiverApply::getConfictResolutionTransaction( smTID        aTID,
         {
             /* do nothing */
         }
-
-        sReplLockTimeout = sTrans->getReplTransLockTimeout();
-        IDE_TEST( sTrans->setReplTransLockTimeout( 0 ) != IDE_SUCCESS );
     }
     else
     {
         sTrans = mTransTbl->getSmiTransForConflictResolution( aTID );
-
-        sReplLockTimeout = sTrans->getReplTransLockTimeout();
     }
-
+    
     *aTrans = sTrans;
-    *aReplLockTimeout = sReplLockTimeout;
 
     return IDE_SUCCESS;
 

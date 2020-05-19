@@ -231,6 +231,8 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
 
                 CMI_WR2(sCtx, &sLen16);
 
+                IDU_FIT_POINT_RAISE("mmtCmsFetch::doFetch::CHAR::MarshallingError", MarshallingError);
+
                 IDE_TEST_RAISE( cmiSplitWrite( sCtx,
                                                sLen16,
                                                ((mtdCharType*)sFetchColumnInfo.value)->value)
@@ -314,9 +316,11 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
                 IDE_TEST_RAISE( cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA,
                                 NotSupportDataType );
 
+                IDU_FIT_POINT_RAISE("mmtCmsFetch::doFetch::LOB::MarshallingError", MarshallingError);
+
                 /* PROJ-2047 Strengthening LOB - LOBCACHE */
-                (void)qciMisc::lobGetLength( *((smLobLocator*)sFetchColumnInfo.value),
-                                             &sLobSize );
+                IDE_TEST_RAISE(qciMisc::lobGetLength(*((smLobLocator*)sFetchColumnInfo.value), &sLobSize)
+                               != IDE_SUCCESS, MarshallingError);  /* BUG-45898 */
 
                 sColumnSize = ID_SIZEOF(smLobLocator) + ID_SIZEOF(ULong) + ID_SIZEOF(UChar);
 
@@ -458,16 +462,25 @@ static IDE_RC doFetch( cmiProtocolContext *aProtocolContext,
     }
     IDE_EXCEPTION(MarshallingError);
     {
-        // 마샬링 에러가 발생한 경우 세션을 끊는 방법밖에 없다.
-        // cf) 첫번째 패킷이 이미 전송된 후에 두번째 패킷에서
-        // 마샬링 에러가 발생하면 ErrorResult 조차도 보내면 안된다.
-        // client에서는 특정 프로토콜이 연이어 올것이라 믿기 때문에.
-        sCtx->mSessionCloseNeeded = ID_TRUE;
         ideLog::log(IDE_SERVER_1,
                     "doFetch: marshal error ["
                     "column no: %d "
                     "type: %u]",
                     sColumnIndex, sFetchColumnInfo.dataTypeId);
+
+        if (cmiGetLinkImpl(sCtx) != CMI_LINK_IMPL_IPCDA)
+        {
+            // 마샬링 에러가 발생한 경우 세션을 끊는 방법밖에 없다.
+            // cf) 첫번째 패킷이 이미 전송된 후에 두번째 패킷에서
+            // 마샬링 에러가 발생하면 ErrorResult 조차도 보내면 안된다.
+            // client에서는 특정 프로토콜이 연이어 올것이라 믿기 때문에.
+            sCtx->mSessionCloseNeeded = ID_TRUE;
+        }
+        else
+        {
+            /* BUG-45898 IPCDA는 패킷이 분할되지 않기에 접속을 끊을 필요는 없다. */
+            sWriteCheckState = CMI_WRITE_CHECK_ACTIVATED;
+        }
     }
     IDE_EXCEPTION_END;
 
@@ -490,6 +503,9 @@ static IDE_RC fetchEnd(cmiProtocolContext *aProtocolContext,
     UShort         sEnableResultSetCount;
     mmcResultSet * sResultSet;
     mmcStatement * sResultSetStmt;
+
+    /* BUG-45898 접속을 끊어야 할 때는 패킷을 더 전송할 필요가 없다. */
+    IDE_TEST(aProtocolContext->mSessionCloseNeeded == ID_TRUE);
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
@@ -595,6 +611,7 @@ IDE_RC mmtServiceThread::fetchIPCDA(cmiProtocolContext *aProtocolContext,
     UInt              sSize        = 0;
     UInt              sRemainSize  = 0;
     idBool            sRecordExist;
+    mmcTransObj      *sShareTrans = NULL;
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
@@ -618,6 +635,12 @@ IDE_RC mmtServiceThread::fetchIPCDA(cmiProtocolContext *aProtocolContext,
     if ( aRecordCount == 0)
     {
         aRecordCount = ID_UINT_MAX;
+    }
+
+    sShareTrans = aStatement->getShareTransForSmiStmtLock(NULL);
+    if ( sShareTrans != NULL )
+    {
+        aStatement->acquireShareTransSmiStmtLock(sShareTrans);
     }
 
     do
@@ -669,6 +692,12 @@ IDE_RC mmtServiceThread::fetchIPCDA(cmiProtocolContext *aProtocolContext,
                  != IDE_SUCCESS);
     }
 
+    if (sShareTrans != NULL)
+    {
+        aStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(FetchError);
@@ -680,6 +709,12 @@ IDE_RC mmtServiceThread::fetchIPCDA(cmiProtocolContext *aProtocolContext,
         IDE_POP();
     }
     IDE_EXCEPTION_END;
+
+    if (sShareTrans != NULL)
+    {
+        aStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
 
     return IDE_FAILURE;
 }
@@ -702,6 +737,7 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
     idBool            sRecordExist;
     mmcBaseRow       *sBaseRow         = NULL;    // PROJ-2331
     idBool            sIsFetchRowsMode = ID_FALSE;
+    mmcTransObj      *sShareTrans = NULL;
 
     sResultSet = aStatement->getResultSet( aResultSetID );
     // bug-26977: codesonar: resultset null ref
@@ -741,6 +777,12 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
     else
     {
         aRecordCount = ID_UINT_MAX;
+    }
+
+    sShareTrans = aStatement->getShareTransForSmiStmtLock(NULL);
+    if ( sShareTrans != NULL )
+    {
+        aStatement->acquireShareTransSmiStmtLock(sShareTrans);
     }
 
     do
@@ -830,6 +872,12 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
         /* do nothing. */
     }
 
+    if (sShareTrans != NULL)
+    {
+        aStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(FetchError);
@@ -841,6 +889,12 @@ IDE_RC mmtServiceThread::fetch(cmiProtocolContext *aProtocolContext,
         IDE_POP();
     }
     IDE_EXCEPTION_END;
+
+    if (sShareTrans != NULL)
+    {
+        aStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
 
     return IDE_FAILURE;
 }
@@ -858,6 +912,7 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
     SLong              i;
     mmcResultSet     * sResultSet;
     mmcStatement     * sResultSetStmt;
+    mmcTransObj      * sShareTrans = NULL;
 
     UInt        sStatementID;
     UShort      sResultSetID;
@@ -897,6 +952,12 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
 
     sStatement->setFetchEndTime(0); /* BUG-19456 */
     sStatement->setFetchStartTime(mmtSessionManager::getBaseTime());
+
+    sShareTrans = sStatement->getShareTransForSmiStmtLock(NULL);
+    if (sShareTrans != NULL)
+    {
+        sStatement->acquireShareTransSmiStmtLock(sShareTrans);
+    }
 
     if (sStatement->getStmtType() == QCI_STMT_DEQUEUE)
     {
@@ -938,6 +999,12 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
         }
     }
 
+    if (sShareTrans != NULL)
+    {
+        sStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
+
     /* BUG-19456 */
     sStatement->setFetchEndTime(mmtSessionManager::getBaseTime());
 
@@ -956,6 +1023,12 @@ IDE_RC mmtServiceThread::fetchMoveProtocol(cmiProtocolContext *aProtocolContext,
         IDE_SET(ideSetErrorCode(mmERR_ABORT_UNSUPPORTED_FETCHMOVE));
     }
     IDE_EXCEPTION_END;
+
+    if (sShareTrans != NULL)
+    {
+        sStatement->releaseShareTransSmiStmtLock(sShareTrans);
+        sShareTrans = NULL;
+    }
 
     return sThread->answerErrorResult(aProtocolContext,
                                       CMI_PROTOCOL_OPERATION(DB, FetchMove),
@@ -1028,10 +1101,6 @@ IDE_RC mmtServiceThread::fetchProtocol(cmiProtocolContext *aProtocolContext,
          * IPCDA의 심플쿼리에서는 데이터가 Execute에서 SHM으로 복사가
          * 이루어 진다. 따라서, 실제 fetch에서는 아무것도 하지 않는다.
          */
-
-        CMI_WOP(aProtocolContext, CMP_OP_DB_IPCDALastOpEnded);
-
-        MMT_IPCDA_INCREASE_DATA_COUNT(aProtocolContext);
     }
     else
     {

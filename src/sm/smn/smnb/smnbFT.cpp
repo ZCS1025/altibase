@@ -228,7 +228,7 @@ smnbFT::buildRecordTreeStructure( idvSQL              * /*aStatistics*/,
     }
     else
     {
-        IDE_TEST( smnbBTree::lockTree( sIdxHdr ) != IDE_SUCCESS );
+        smnbBTree::lockTree( sIdxHdr );
         sState = 1;
 
         sRootNode = (smnbNode*)(sIdxHdr->root);
@@ -257,7 +257,7 @@ smnbFT::buildRecordTreeStructure( idvSQL              * /*aStatistics*/,
 
         // unlatch tree latch
         sState = 0;
-        IDE_TEST( smnbBTree::unlockTree( sIdxHdr ) != IDE_SUCCESS );
+        smnbBTree::unlockTree( sIdxHdr );
     }
 
     return IDE_SUCCESS;
@@ -629,7 +629,7 @@ IDE_RC smnbFT::buildRecordKey( idvSQL              * /*aStatistics*/,
     else
     {
         // Set Tree Latch
-        IDE_TEST( smnbBTree::lockTree( sIdxHdr ) != IDE_SUCCESS );
+        smnbBTree::lockTree( sIdxHdr );
         sState = 1;
 
         // Get Root Page ID
@@ -660,7 +660,7 @@ IDE_RC smnbFT::buildRecordKey( idvSQL              * /*aStatistics*/,
 
         // unlatch tree latch
         sState = 0;
-        IDE_TEST( smnbBTree::unlockTree( sIdxHdr ) != IDE_SUCCESS );
+        smnbBTree::unlockTree( sIdxHdr );
     }
         
     return IDE_SUCCESS;
@@ -1783,12 +1783,17 @@ IDE_RC smnbFT::buildRecordForMemBTreeNodePool(idvSQL              * /*aStatistic
     smnbNodePool4PerfV  sIndexNodePool4PerfV;
     smnFreeNodeList    *sFreeNodeList = (smnFreeNodeList*)smnbBTree::mSmnbFreeNodeList;
 
+    UInt sSlotPerPage    = smnbBTree::mSmnbNodePool.getSlotPerPage();
+    UInt sAllocSlotCount = smnbBTree::mSmnbNodePool.getAllocSlotCount();
+
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    sIndexNodePool4PerfV.mTotalPageCount = smnbBTree::mSmnbNodePool.getPageCount();
-    sIndexNodePool4PerfV.mTotalNodeCount =
-        smnbBTree::mSmnbNodePool.getPageCount() * smnbBTree::mSmnbNodePool.getSlotPerPage();
+    /* BUG-46402 : 페이지 개념이 없어졌으나, 호환성을 위해서 계산함 */
+    sIndexNodePool4PerfV.mTotalPageCount = ( sSlotPerPage == 0 ) ? 0 
+                                           : ( ( sAllocSlotCount + sSlotPerPage - 1 ) / sSlotPerPage );
+
+    sIndexNodePool4PerfV.mTotalNodeCount = sAllocSlotCount;
     sIndexNodePool4PerfV.mFreeNodeCount  = smnbBTree::mSmnbNodePool.getFreeSlotCount();
     sIndexNodePool4PerfV.mUsedNodeCount  =
         sIndexNodePool4PerfV.mTotalNodeCount - sIndexNodePool4PerfV.mFreeNodeCount;

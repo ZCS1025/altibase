@@ -100,6 +100,7 @@ const mtcExecute mtfExecuteFor1Arg = {
     mtf::calculateNA,
     mtfTo_ncharCalculateFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -111,6 +112,7 @@ const mtcExecute mtfExecuteNcharFor1Arg = {
     mtf::calculateNA,
     mtfTo_ncharCalculateNcharFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -122,6 +124,7 @@ const mtcExecute mtfExecuteNumberFor2Args = {
     mtf::calculateNA,
     mtfTo_ncharCalculateNumberFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -133,6 +136,7 @@ const mtcExecute mtfExecuteDateFor2Args = {
     mtf::calculateNA,
     mtfTo_ncharCalculateDateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

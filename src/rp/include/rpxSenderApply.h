@@ -63,7 +63,8 @@ public:
                       idBool            aIsSupportRecovery,
                       RP_SENDER_TYPE   *aSenderType,
                       UInt              aParallelID,
-                      RP_SENDER_STATUS *aStatus);
+                      RP_SENDER_STATUS *aStatus,
+                      RP_SOCKET_TYPE    aSocketType);
 
     IDE_RC updateXSN(smSN);
     void   destroy();
@@ -105,7 +106,7 @@ private:
     rpnMessenger    * mMessenger;
     rpdMeta          *mMeta;
     void             *mRsc;             // BUG-29689 HBT Check
-    idBool           *mNetworkError;
+    idBool           *mRetryError;
     idBool           *mApplyFaultFlag;
     idBool           *mSenderStopFlag;
     idBool            mExitFlag;
@@ -131,7 +132,9 @@ private:
     idvSQL          * mOpStatistics;
     idvSession      * mStatSession;
 
-    smSN              mEagerUpdatedRestartSNGap; 
+    smSN              mEagerUpdatedRestartSNGap;
+
+    RP_SOCKET_TYPE    mSocketType;
 
     /* Function */
     IDE_RC            checkHBT( void );

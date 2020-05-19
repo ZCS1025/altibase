@@ -94,23 +94,27 @@ IDE_RC rpnPollAddSocket( rpnPoll      * aPoll,
     return IDE_FAILURE;
 }
 
-IDE_RC rpnPollRemoveSocket( rpnPoll     * aPoll,
-                            rpnSocket   * aSocket )
+void rpnPollRemoveSocket( rpnPoll     * aPoll,
+                          rpnSocket   * aSocket )
 {
-    IDE_TEST_RAISE( acpPollRemoveSock( &(aPoll->mPollSet),
-                                       &(aSocket->mSocket) )
-                    != ACP_RC_SUCCESS, ERR_REMOVE_SOCK );
-    aPoll->mCount--;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_REMOVE_SOCK )
+    acp_rc_t sRC = ACP_RC_SUCCESS;
+    SChar    sErrorMessage[128] = { 0, };
+    
+    sRC = acpPollRemoveSock( &(aPoll->mPollSet), &(aSocket->mSocket) );
+    
+    if ( sRC != ACP_RC_SUCCESS )
     {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_POLL_REMOVE_SOCK ) );
+        idlOS::snprintf( sErrorMessage,
+                         ID_SIZEOF( sErrorMessage ),
+                         "[rpnPollRemoveSocket] acpPollRemoveSock failure ( return : %"ID_INT32_FMT")",
+                         sRC );        
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, sErrorMessage ) );
+        IDE_ERRLOG( IDE_RP_0 );
+        
+        IDE_DASSERT( 0 );
     }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    
+    aPoll->mCount--;
 }
 
 static IDE_RC rpnPollDispatchResume( rpnPoll *  aPoll )

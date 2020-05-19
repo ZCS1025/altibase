@@ -5,7 +5,7 @@ include ../utEnv.mk
 
 DIST_DIR=$(ALTI_HOME)/packages
 
-PACKAGE_FILE_LIST=dbms_application_info dbms_lock dbms_output dbms_random dbms_sql utl_file utl_raw utl_tcp utl_smtp dbms_stats dbms_alert dbms_concurrent_exec dbms_recyclebin dbms_utility dbms_shard standard utl_copyswap
+PACKAGE_FILE_LIST=dbms_application_info dbms_lock dbms_output dbms_random dbms_sql utl_file utl_raw utl_tcp utl_smtp dbms_stats dbms_alert dbms_concurrent_exec dbms_recyclebin dbms_utility dbms_shard standard utl_copyswap dbms_sql_plan_cache dbms_standard utl_shard_online_rebuild
 
 ifeq "$(ALTIBASE_PRODUCT)" "hdb"
 PACKAGE_FILE_LIST += sys_context 

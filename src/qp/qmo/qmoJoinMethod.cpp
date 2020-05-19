@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoJoinMethod.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoJoinMethod.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
  *
  * Description :
  *    Join Cost를 구하여 다양한 Join Method들 중에서 가장 cost 가 좋은
@@ -40,6 +40,7 @@
 #include <qcgPlan.h>
 #include <qmoCrtPathMgr.h>
 #include <qmgShardSelect.h>
+#include <qmv.h>
 
 IDE_RC
 qmoJoinMethodMgr::init( qcStatement    * aStatement,
@@ -2832,6 +2833,23 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
     qcgPlan::registerPlanProperty( aStatement,
                                     PLAN_PROPERTY_OPTIMIZER_JOIN_DISABLE );
 
+    // BUG-46932
+    if ( ( QCU_OPTIMIZER_INVERSE_JOIN_ENABLE == 0 ) &&
+         ( ( aGraph->type == QMG_SEMI_JOIN ) ) ) 
+    {
+        // recursive with인 경우 forceJoinOrder4RecursiveView에서 순서를 강제로 설정
+        if ( (aGraph->myQuerySet->flag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
+             == QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE )
+        {
+            // 3 : inverse hash
+            sJoinMethodCost[3].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+            sJoinMethodCost[3].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+        }
+    }
+
+    qcgPlan::registerPlanProperty( aStatement,
+                                   PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE );
+
     *aMethodCnt = sMethodCnt;
     *aMethod = sJoinMethodCost;
 
@@ -3026,6 +3044,25 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
 
     qcgPlan::registerPlanProperty( aStatement,
                                     PLAN_PROPERTY_OPTIMIZER_JOIN_DISABLE );
+
+    // BUG-46932
+    if ( ( QCU_OPTIMIZER_INVERSE_JOIN_ENABLE == 0 ) &&
+         ( ( aGraph->type == QMG_SEMI_JOIN ) || 
+           ( aGraph->type == QMG_ANTI_JOIN ) ||
+           ( aGraph->type == QMG_LEFT_OUTER_JOIN ) ) )
+    {
+        // recursive with인 경우 forceJoinOrder4RecursiveView에서 순서를 강제로 설정
+        if ( (aGraph->myQuerySet->flag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
+             == QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE )
+        {
+            // 2 : inverse hash
+            sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+            sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+        }
+    }
+
+    qcgPlan::registerPlanProperty( aStatement,
+                                   PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE );
 
     *aMethodCnt = sMethodCnt;
     *aMethod = sJoinMethodCost;
@@ -3232,6 +3269,24 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
 
     qcgPlan::registerPlanProperty( aStatement,
                                     PLAN_PROPERTY_OPTIMIZER_JOIN_DISABLE );
+
+    // BUG-46932
+    if ( ( QCU_OPTIMIZER_INVERSE_JOIN_ENABLE == 0 ) &&
+         ( ( aGraph->type == QMG_SEMI_JOIN ) || 
+           ( aGraph->type == QMG_ANTI_JOIN ) ) )
+    {
+        // recursive with인 경우 forceJoinOrder4RecursiveView에서 순서를 강제로 설정
+        if ( (aGraph->myQuerySet->flag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
+             == QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE )
+        {
+            // 2 : inverse hash
+            sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+            sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+        }
+    }
+
+    qcgPlan::registerPlanProperty( aStatement,
+                                   PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE );
 
     *aMethodCnt = sMethodCnt;
     *aMethod = sJoinMethodCost;

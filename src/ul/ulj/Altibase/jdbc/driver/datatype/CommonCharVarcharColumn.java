@@ -296,15 +296,33 @@ public abstract class CommonCharVarcharColumn extends AbstractColumn
     protected boolean getBooleanSub() throws SQLException
     {
         String sString = getStringSub().trim();
+        boolean sResult = false;
         try
         {
-            return Double.parseDouble(sString) != 0;
+            sResult = Double.parseDouble(sString) != 0;
+        }
+        catch(NumberFormatException sNFE)
+        {
+            if ( ("TRUE".equalsIgnoreCase(sString)) ||
+                 ("T".equalsIgnoreCase(sString)) )
+            {
+                sResult = true;
+            }
+            else if ( ("FALSE".equalsIgnoreCase(sString)) ||
+                      ("F".equalsIgnoreCase(sString)) )
+            {
+                sResult = false;
+            }
+            else
+            {
+                Error.throwSQLException(ErrorDef.INVALID_DATA_CONVERSION, sString, "boolean");
+            }
         }
         catch (Exception sEx)
         {
             Error.throwSQLException(ErrorDef.INVALID_DATA_CONVERSION, sString, "boolean", sEx);
-            return false;
         }
+        return sResult;
     }
 
     protected byte getByteSub() throws SQLException

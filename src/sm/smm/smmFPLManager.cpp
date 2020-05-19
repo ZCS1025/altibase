@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
-* $Id: smmFPLManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+* $Id: smmFPLManager.cpp 84383 2018-11-20 04:18:42Z emlee $
 **********************************************************************/
 
 #include <idl.h>
@@ -1679,7 +1679,7 @@ IDE_RC smmFPLManager::aggregateTotalPageCountAction(
 
     scPageID * sTotalPageCount = (scPageID*) aActionArg;
 
-    if(sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE )
     {
         if ( sctTableSpaceMgr::hasState( aTBSNode,
                                          SCT_SS_SKIP_COUNTING_TOTAL_PAGES )

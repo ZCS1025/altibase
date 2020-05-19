@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxPJMgr.h 85220 2019-04-12 03:29:08Z donghyun1 $
  **********************************************************************/
 
 
@@ -50,10 +50,6 @@ private:
 
     iduList        mSyncList;
     
-    idBool    isSyncSuccess();
-    IDE_RC    getTupleNumber( rpdMetaItem  *aMetaItem,
-                              smiStatement *aPJStmt,
-                              ULong        *aSyncTuples );
     void      removeTotalSyncItems();
 
 public:
@@ -63,6 +59,10 @@ public:
     IDE_RC    initialize( SChar        * aRepName,
                           smiStatement * aStatement,
                           rpdMeta      * aMeta,
+                          RP_SOCKET_TYPE aSocketType,
+                          SChar        * aIPAddress,
+                          UInt           aPortNo,
+                          rpIBLatency    aIBLatency,
                           idBool       * aExitFlag,
                           SInt           aParallelFactor,
                           smiStatement * aParallelSmiStmts );

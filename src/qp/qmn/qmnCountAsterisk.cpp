@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnCountAsterisk.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnCountAsterisk.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     CoUNT (*) Plan Node
@@ -1315,9 +1315,6 @@ qmnCUNT::makeKeyRangeAndFilter( qcTemplate * aTemplate,
  *
  ***********************************************************************/
 
-#define IDE_FN "qmnCUNT::makeKeyRangeAndFilter"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
-
     qmnCursorPredicate  sPredicateInfo;
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
@@ -1360,6 +1357,10 @@ qmnCUNT::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.callBackDataAnd = & aDataPlan->callBackDataAnd;
     sPredicateInfo.callBackData = aDataPlan->callBackData;
 
+    /* PROJ-2632 */
+    sPredicateInfo.mSerialFilterInfo  = NULL;
+    sPredicateInfo.mSerialExecuteData = NULL;
+
     //-------------------------------------
     // Key Range, Key Filter, Filter의 생성
     //-------------------------------------
@@ -1376,8 +1377,6 @@ qmnCUNT::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-
-#undef IDE_FN
 }
 
 IDE_RC

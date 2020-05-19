@@ -1,0 +1,3 @@
+01B00 # Batch update exception occurred
+23000 # The row already exists in a unique index
+HYT00 # Client's query exceeded the execution time limit

@@ -244,9 +244,7 @@ IDE_RC smmTBSStartupShutdown::createChkptPathNode(
     UInt                sState  = 0;
 
     IDE_DASSERT( aChkptPathAttr != NULL );
-
     IDE_DASSERT( aChkptPathAttr->mAttrType == SMI_CHKPTPATH_ATTR );
-
     IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(
                                    aChkptPathAttr->mSpaceID ) == ID_TRUE );
     IDE_DASSERT( aAnchorOffset != 0 );
@@ -337,7 +335,7 @@ IDE_RC smmTBSStartupShutdown::initFromStatePhaseAction(
     if(sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE)
     {
         IDE_TEST( smmTBSMultiPhase::initFromStatePhase (
-                      (smmTBSNode *) aTBSNode )
+                                          (smmTBSNode *) aTBSNode )
                   != IDE_SUCCESS );
     }
 

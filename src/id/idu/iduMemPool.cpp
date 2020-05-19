@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemPool.cpp 81424 2017-10-24 09:20:55Z minku.kang $
+ * $Id: iduMemPool.cpp 84923 2019-02-25 04:54:35Z djin $
  **********************************************************************/
 
 #include <idl.h>
@@ -80,6 +80,23 @@ extern const vULong gFence;
     element 하나가 return 된다.
     만약 element가 부족하면 chunk 하나와 element 5개를 더 할당한다.
  * ----------------------------------------------*/
+ /*************************************************************
+  * BUG-46165 
+  *   [MUST]
+  *   when IDU_MEMPOOL_TYPE_TIGHT,the following specifications "MUST" be met.
+  *   otherwise, you will encounter assert error.
+  *    -  aElemSize must be 2^n, 
+  *    -  aElemCount must be 2^n,
+  *    -  aElemSize == aAlignByte
+  *    -  aElemSize >=8
+  *   
+  *   [INFO] 
+  *   (following things are just for your information.)
+  *   In IDU_MEMPOOL_TYPE_TIGHT,
+  *   - aHWCacheLine is ignored  
+  *   - aElemCount is set to 2 if it is 1.
+  *   - __MEMPOOL_MINIMUM_SLOT_COUNT is ignored.
+  *************************************************************/
 /*-----------------------------------------------------------
  * Description: iduMemPool을 초기화 한다.
  *
@@ -97,7 +114,9 @@ extern const vULong gFence;
  *                          강제로 생성.(BUG-21547)
  * aGarbageCollection - [IN] Garbage collection에 기여하도록 할것인가 결정.
  *                           ID_TRUE일때 mem pool manager에 의해서 관리되어짐
- * aHWCacheLIne       - [IN] H/W cache line align 을 사용할것인가
+ * aHWCacheLine       - [IN] H/W cache line align 을 사용할것인가
+ *                           it's ignored in IDU_MEMPOOL_TYPE_TIGHT.
+ * aType              - [IN] mempool type. legacy or tight
  * ---------------------------------------------------------*/
 IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
                               SChar*               aName,
@@ -109,12 +128,26 @@ IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
                               UInt                 aAlignByte,
                               idBool               aForcePooling,
                               idBool               aGarbageCollection,
-                              idBool               aHWCacheLine )
+                              idBool               aHWCacheLine,
+                              iduMemPoolType       aType)
 {
-    UInt  i;
+    UInt  i, j;
     ULong sMinSlotCnt = iduProperty::getMinMemPoolSlotCount();
 
-    IDE_ASSERT( aName != NULL );
+    IDE_DASSERT( aName != NULL );
+    IDE_DASSERT( (aType == IDU_MEMPOOL_TYPE_LEGACY) ||
+                 (aType == IDU_MEMPOOL_TYPE_TIGHT) );
+
+#ifdef MEMORY_ASSERT
+    mType = IDU_MEMPOOL_TYPE_LEGACY;
+#else
+#if defined(ALTI_CFG_OS_AIX)
+    /* BUG-46668 MEMPOOL_TYPE_TIGHT is not working in AIX */
+    mType = IDU_MEMPOOL_TYPE_LEGACY;
+#else
+    mType = aType;
+#endif
+#endif
 
     // mFlag setting. ////////////////////////////////////
     mFlag = 0;
@@ -160,6 +193,7 @@ IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
 
 #if defined(ALTIBASE_MEMORY_CHECK)
     mAlignByte = aAlignByte;
+    mElemSize  = aElemSize;
 #else
     if( (mFlag & IDU_MEMPOOL_CACHE_LINE_IDU_ALIGN) &&
         (aElemSize <= IDU_MEMPOOL_MIN_SIZE_FOR_HW_CACHE_ALIGN) )
@@ -170,21 +204,51 @@ IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
     {
         mAlignByte =  aAlignByte;
     }
-#endif
 
     mElemSize   =  idlOS::align8( aElemSize );
+#endif
 
 #ifdef MEMORY_ASSERT
     mSlotSize = IDU_ALIGN( mElemSize +
                            ID_SIZEOF(gFence)       +
                            ID_SIZEOF(iduMemSlot *) +
                            ID_SIZEOF(gFence));
-#else
-    mSlotSize   = IDU_ALIGN(mElemSize + ID_SIZEOF(iduMemSlot *));
-#endif
 
     mElemCnt    = ( aElemCount < sMinSlotCnt ) ? sMinSlotCnt  : aElemCount;
     mChunkSize  = IDL_CACHE_LINE + CHUNK_HDR_SIZE + ( mSlotSize* mElemCnt );
+#else
+
+    if( mType == IDU_MEMPOOL_TYPE_TIGHT )
+    {
+        //these values must be given well by the caller!
+        IDE_ASSERT( aElemSize >= 8 );
+        IDE_ASSERT( checkSize4Tight(aElemSize) == ID_TRUE );
+        IDE_ASSERT( checkSize4Tight(aElemCount) == ID_TRUE );
+        IDE_ASSERT( aElemSize == aAlignByte );
+
+        mElemSize   = aElemSize;  
+        mSlotSize   = mElemSize;
+
+        mAlignByte =  aAlignByte;
+
+        //element count must be more than or equal to 2.
+        if( aElemCount >= 2 )
+        {
+            mElemCnt = aElemCount;
+        }
+        else
+        {
+            mElemCnt = 2;
+        }
+        mChunkSize  = mElemSize*mElemCnt; //header size is not considered..
+    }
+    else if( mType == IDU_MEMPOOL_TYPE_LEGACY )
+    {
+        mSlotSize   = IDU_ALIGN(mElemSize + ID_SIZEOF(iduMemSlot *));
+        mElemCnt    = ( aElemCount < sMinSlotCnt ) ? sMinSlotCnt  : aElemCount;
+        mChunkSize  = IDL_CACHE_LINE + CHUNK_HDR_SIZE + ( mSlotSize* mElemCnt );
+    }
+#endif
 
     if (aName == NULL)
     {
@@ -225,7 +289,7 @@ IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
 #else
             mMemList[i] = new (mMemList[i]) iduMemList();
 #endif
-
+            IDU_FIT_POINT("iduMemPool::initialize::mMemList::initialize");
             IDE_TEST(  mMemList[i]->initialize( i, this) != IDE_SUCCESS);
         }
     }
@@ -238,23 +302,32 @@ IDE_RC iduMemPool::initialize(iduMemoryClientIndex aIndex,
     {
        IDE_TEST( iduMemPoolMgr::addMemPool(this)  !=  IDE_SUCCESS);
     }
-
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
     {
         if( mFlag & IDU_MEMPOOL_USE_POOLING )
         {
-            for (i = 0; i < mListCount; i++)
+            if ( mMemList != NULL )
             {
-                if (mMemList[i] != NULL)
+                for (j = 0; j < mListCount; j++)
                 {
-                    IDE_ASSERT(mMemList[i]->destroy() == IDE_SUCCESS);
-
-                    IDE_ASSERT(iduMemMgr::free(mMemList[i]) == IDE_SUCCESS);
-
-                    mMemList[i] = NULL;
+                    if (mMemList[j] != NULL)
+                    {
+                        if ( j < i )
+                        {
+                            IDE_ASSERT(mMemList[j]->destroy() == IDE_SUCCESS);
+                        }
+    
+                        IDE_ASSERT(iduMemMgr::free(mMemList[j]) == IDE_SUCCESS);
+    
+                        mMemList[j] = NULL;
+                    }
                 }
+                
+                IDE_ASSERT( iduMemMgr::free(mMemList) == IDE_SUCCESS );
+                mMemList = NULL;
             }
         }
         else
@@ -411,7 +484,15 @@ IDE_RC iduMemPool::memfree(void *aMem)
         sCurChunk         = *((iduMemChunk **)((UChar *)aMem + mElemSize +
                                            ID_SIZEOF(vULong)));
 # else
-        sCurChunk         = *((iduMemChunk **)((UChar *)aMem + mElemSize));
+    if( mType == IDU_MEMPOOL_TYPE_TIGHT )
+    {
+        sCurChunk = (iduMemChunk *)( ( (ULong)aMem  & (ULong)( ~(mChunkSize - 1 ))) 
+                                     + mChunkSize ); 
+    }
+    else if( mType == IDU_MEMPOOL_TYPE_LEGACY )
+    {
+        sCurChunk = *((iduMemChunk **)((UChar *)aMem + mElemSize));
+    }
 # endif
 
         sCurList = (iduMemList*)sCurChunk->mParent;
@@ -568,3 +649,20 @@ ULong iduMemPool::getMemorySize()
     return sMemSize;
 }
 
+
+//check if the size is 2^n.
+//well... UInt is big enough to contain element size or element count.
+idBool iduMemPool::checkSize4Tight(UInt  aSize)
+{
+        UInt sMask = 0x80000000; 
+        UInt sCnt=0;
+        while( sMask > 0 )
+        {
+            if( aSize & sMask )
+            {
+                sCnt++;
+            }
+            sMask >>= 1;
+        }
+        return  (idBool)(sCnt == 1);
+}

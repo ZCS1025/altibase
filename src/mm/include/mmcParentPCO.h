@@ -77,8 +77,11 @@ public:
     inline idBool isSameSQLText(SChar* aSQLText,
                                 UInt   aSQLTextLen);
 
+    inline void setPlanCacheKeep(mmcPCOPlanCacheKeep aPlanCacheKeep);  /* BUG-46158 */
+    inline mmcPCOPlanCacheKeep getPlanCacheKeep();
+
     //for performance view(private -> public)
-    SChar        mSQLTextIdString[MMC_SQL_CACHE_TEXT_ID_LEN + 1];
+    SChar        mSQLTextId[MMC_SQL_CACHE_TEXT_ID_LEN + 1];
     SChar*       mSQLString4SoftPrepare;
     UInt         mChildCreateCnt;
     UInt         mChildCnt;
@@ -101,6 +104,8 @@ private:
     /*fix BUG-31050 The approach for reducing the latch duration of plan cache LRU
       by moving free parent PCO to the out side of critical section */
     iduListNode  mVictimNode;
+
+    mmcPCOPlanCacheKeep mPlanCacheKeep;  /* BUG-46158 PLAN_CACHE_KEEP */
 };
 
 inline void   mmcParentPCO::incChildCreateCnt()
@@ -165,5 +170,13 @@ SChar * mmcParentPCO::getSQLString4HardPrepare()
     return mSQLString4HardPrepare;
 }
 
+inline void mmcParentPCO::setPlanCacheKeep(mmcPCOPlanCacheKeep aPlanCacheKeep)
+{
+    mPlanCacheKeep = aPlanCacheKeep;
+}
+inline mmcPCOPlanCacheKeep mmcParentPCO::getPlanCacheKeep()
+{
+    return mPlanCacheKeep;
+}
 
 #endif

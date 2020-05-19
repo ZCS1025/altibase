@@ -69,21 +69,24 @@ struct ulnFnContext
 
     /* PROJ-2177 User Interface - Cancel */
     acp_bool_t          mNeedUnlock;
+
+    /* BUG-46092 */
+    acp_bool_t          mIsFailoverSuccess;
 };
 
-#define ULN_FNCONTEXT_SET_RC(aFnContext, aRC)                                           \
-    do {                                                                                \
-        if((aFnContext)->mHandle.mObj != NULL)                                          \
-        {                                                                               \
-            ulnDiagSetReturnCode(&((aFnContext)->mHandle.mObj->mDiagHeader), (aRC));    \
-            /* PROJ-2177: NEED DATA가 발생한 함수 기억 */                              \
-            if (((aRC) == SQL_NEED_DATA)                                                \
-             && ((aFnContext)->mFuncID != ULN_FID_PARAMDATA))                           \
-            {                                                                           \
-                ulnStmtSetNeedDataFuncID((aFnContext)->mHandle.mStmt, (aFnContext)->mFuncID);\
-            }                                                                           \
-        }                                                                               \
-        (aFnContext)->mSqlReturn = (aRC);                                               \
+#define ULN_FNCONTEXT_SET_RC(aFnContext, aRC)                                                 \
+    do {                                                                                      \
+        if((aFnContext)->mHandle.mObj != NULL)                                                \
+        {                                                                                     \
+            ulnDiagSetReturnCode(&((aFnContext)->mHandle.mObj->mDiagHeader), (aRC));          \
+            /* PROJ-2177: NEED DATA가 발생한 함수 기억 */                                     \
+            if (((aRC) == SQL_NEED_DATA)                                                      \
+             && ((aFnContext)->mFuncID != ULN_FID_PARAMDATA))                                 \
+            {                                                                                 \
+                ulnStmtSetNeedDataFuncID((aFnContext)->mHandle.mStmt, (aFnContext)->mFuncID); \
+            }                                                                                 \
+        }                                                                                     \
+        (aFnContext)->mSqlReturn = (aRC);                                                     \
     } while(0)
 
 #define ULN_FNCONTEXT_GET_RC(aFnContext)        ((aFnContext)->mSqlReturn)
@@ -105,32 +108,65 @@ struct ulnFnContext
         aContext.mXaRecoverXid = NULL;                               \
         /* PROJ-2177: User Interface - Cancel */                     \
         aContext.mNeedUnlock  = ACP_FALSE;                           \
+        aContext.mIsFailoverSuccess = ACP_FALSE;                     \
     } while(0)
 
-#define ULN_FNCONTEXT_GET_DBC(aFnContext, aDbc)                     \
-    do {                                                            \
-        switch((aFnContext)->mObjType)                              \
-        {                                                           \
-            case ULN_OBJ_TYPE_DBC:                                  \
-                (aDbc) = (aFnContext)->mHandle.mDbc;                \
-                break;                                              \
-            case ULN_OBJ_TYPE_STMT:                                 \
-                (aDbc) = (aFnContext)->mHandle.mStmt->mParentDbc;   \
-                break;                                              \
-            default:                                                \
-                (aDbc) = NULL;                                      \
-                break;                                              \
-        }                                                           \
+#define ULN_FNCONTEXT_GET_DBC(aFnContext, aDbc)                                \
+    do {                                                                       \
+        ulnObject *sParentObject = NULL;                                       \
+        switch((aFnContext)->mObjType)                                         \
+        {                                                                      \
+            case ULN_OBJ_TYPE_DBC:                                             \
+                (aDbc) = (aFnContext)->mHandle.mDbc;                           \
+                break;                                                         \
+            case ULN_OBJ_TYPE_STMT:                                            \
+                (aDbc) = (aFnContext)->mHandle.mStmt->mParentDbc;              \
+                break;                                                         \
+            case ULN_OBJ_TYPE_DESC:  /* BUG-46113 */                           \
+                sParentObject = (aFnContext)->mHandle.mDesc->mParentObject;    \
+                if (ULN_OBJ_GET_TYPE(sParentObject) == ULN_OBJ_TYPE_DBC)       \
+                {                                                              \
+                    (aDbc) = (ulnDbc *)sParentObject;                          \
+                }                                                              \
+                else if (ULN_OBJ_GET_TYPE(sParentObject) == ULN_OBJ_TYPE_STMT) \
+                {                                                              \
+                    (aDbc) = ((ulnStmt *)sParentObject)->mParentDbc;           \
+                }                                                              \
+                else                                                           \
+                {                                                              \
+                    (aDbc) = NULL;  /* non-reachable */                        \
+                }                                                              \
+                break;                                                         \
+            default:                                                           \
+                (aDbc) = NULL;                                                 \
+                break;                                                         \
+        }                                                                      \
     } while(0)
 
 ACP_INLINE ulnDbc* ulnFnContextGetDbc(ulnFnContext *aFnContext)
 {
+    ulnObject *sParentObject = NULL;
+
     switch (aFnContext->mObjType)
     {
         case ULN_OBJ_TYPE_DBC:
             return aFnContext->mHandle.mDbc;
         case ULN_OBJ_TYPE_STMT:
             return aFnContext->mHandle.mStmt->mParentDbc;
+        case ULN_OBJ_TYPE_DESC:  /* BUG-46113 */
+            sParentObject = (aFnContext)->mHandle.mDesc->mParentObject;
+            if (ULN_OBJ_GET_TYPE(sParentObject) == ULN_OBJ_TYPE_DBC)
+            {
+                return (ulnDbc *)sParentObject;
+            }
+            else if (ULN_OBJ_GET_TYPE(sParentObject) == ULN_OBJ_TYPE_STMT)
+            {
+                return ((ulnStmt *)sParentObject)->mParentDbc;
+            }
+            else
+            {
+                return NULL;  /* non-reachable */
+            }
         default:
             return NULL;
     }

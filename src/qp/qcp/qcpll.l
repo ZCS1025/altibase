@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcpll.l 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcpll.l 84796 2019-01-25 01:06:22Z donovan.seo $
  **********************************************************************/
 
 %option c++
@@ -368,6 +368,7 @@ COMPRESS          { return TA_COMPRESS;          } // PROJ-2264 Dictionary table
 REORGANIZE        { return TA_REORGANIZE;        } // PROJ-2264 Dictionary table
 DISJOIN           { return TA_DISJOIN;           } /* PROJ-1810 Partition Exchange */
 CONJOIN           { return TA_CONJOIN;           } /* BUG-42468 JOIN TO CONJOIN */
+ANALYSIS[ \t\r\n]+PROPAGATION   { return TA_ANALYSIS_PROPAGATION; } // BUG-46095
 
 LATERAL           { return TR_LATERAL;           } // PROJ-2418 Lateral View
 CROSS             { return TR_CROSS;             } // PROJ-2418 Lateral View
@@ -389,6 +390,7 @@ OVER              { return TR_OVER;              } // PROJ-1762
 MODIFY            { return TR_MODIFY;            } // PROJ-1877
 COMMENT           { return TR_COMMENT;           } // BUG-21387 Comment 기능 지원
 SHRINK_MEMPOOL    { return TR_SHRINK_MEMPOOL;    } // PROJ-2065
+DUMP_CALLSTACKS   { return TR_DUMP_CALLSTACKS;   } // BUG-45182
 ROLLUP            { return TR_ROLLUP;            } // PROJ-1353
 CUBE              { return TR_CUBE;              } // PROJ-1353
 GROUPING[ \t\r\n]+SETS { return TR_GROUPING_SETS;     } // PROJ-1353
@@ -399,6 +401,7 @@ NODE[ \t\r\n]*"["[ \t\r\n]*META[ \t\r\n]*"]" {
                     return TA_NODE_META;         } /* BUG-45359 */
 NODE[ \t\r\n]*"["[ \t\r\n]*DATA {
                     return TA_NODE_DATA;         } /* BUG-45359 */
+WITH[ \t\r\n]+ROLLUP { return TC_WITH_ROLLUP;    } /* BUG-46702 */
 
 <NEG_TRAIL>([_A-Z]|({NEG_TRAIL_CH}))([_0-9A-Z$#]|({NEG_TRAIL_CH}))*   {
                                          return TI_NONQUOTED_IDENTIFIER; }

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiStatement.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiStatement.h 85343 2019-04-30 01:50:33Z returns $
  **********************************************************************/
 
 #ifndef _O_SMI_STATEMENT_H_
@@ -28,12 +28,18 @@
 class smiStatement
 {
  public:
+
+     /* BUG-46786 */
+    static IDE_RC checkImpSVP4Shard( smiTrans * aTrans );
+    static IDE_RC abortToImpSVP4Shard( smiTrans * aTrans );
+
     // Statement를 Begin
     IDE_RC begin( idvSQL         * aStatistics,
                   smiStatement   * aParent,
                   UInt             aFlag );
     // Statement를 end
     IDE_RC end( UInt aFlag );
+    IDE_RC endForce();
     // Statement의 속성변경(Memory Only, Disk Only, Hybrid?)
     IDE_RC resetCursorFlag( UInt aFlag );
 
@@ -43,6 +49,8 @@ class smiStatement
     static void tryUptTransAllViewSCN( smiStatement* aStmt );
 
     inline smiTrans* getTrans( void );
+    /* BUG-46756 IPCDA Simplequery execute에서는 smiStatement를 begin하지 않고 smiTrans 셋팅이 필요함. */
+    inline void      setTrans( smiTrans* aTrans );
     inline smSCN     getSCN();
     inline smSCN     getInfiniteSCN();
     inline idBool    isDummy();
@@ -160,6 +168,11 @@ class smiStatement
 inline smiTrans* smiStatement::getTrans( void )
 {
     return mTrans;
+}
+
+inline void      smiStatement::setTrans(smiTrans *aTrans)
+{
+    mTrans = aTrans;
 }
 
 inline smSCN smiStatement::getSCN(void)

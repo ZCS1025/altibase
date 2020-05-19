@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utdb.h 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utdb.h 82790 2018-04-15 23:41:55Z bethy $
  ******************************************************************************/
 
 #ifndef _UT_DB_H_
@@ -84,6 +84,21 @@ typedef struct nameList_t  {
     SChar            *name;
     nameList_t       *next;
 } nameList_t;
+
+/*
+ * BUG-45958 Need to support BIT/VARBIT type
+ *   The following struct and macros come from mtdTypes.h
+ */
+typedef struct bit_t
+{
+    UInt  mPrecision;
+    UChar mData[1];
+} bit_t;
+
+#define BIT_TO_BYTE(n)            ( ((n) + 7) >> 3 )
+
+#define BIT_TYPE_STRUCT_SIZE( precision )           \
+    ( ID_SIZEOF( UInt ) + BIT_TO_BYTE(precision) )
 
 // ** Convert Row to NATIVE FORMAT (Altibase problems fix ) ** //
 typedef IDE_RC (*rowToNative)( Row * );
@@ -226,6 +241,7 @@ public:
 
    inline SChar* getSchema() { return mSchema; }
     inline metaColumns * getTCM() { return mTCM; }
+    inline void setErrNo(SInt aErrNo) { mErrNo = aErrNo; }
 
 protected: friend class Query;
 
@@ -264,7 +280,7 @@ public:
 
     virtual IDE_RC execute (bool  = true)     =0;// exec and (convertToNative)
     virtual IDE_RC execute (const SChar*, ...)=0;// direct execution
-    virtual IDE_RC lobAtToAt (Query *, Query *, SChar *);
+    virtual IDE_RC lobAtToAt (Query *, Query *, SChar *, SChar *) = 0;
 
     virtual IDE_RC assign  (const SChar*, ...)  ;// Format assign SQL
 
@@ -314,6 +330,10 @@ public:
     /* TASK-4212: audit툴의 대용량 처리시 개선 */
     void   setArrayCount( SInt aArrayCount );
     IDE_RC setStmtAttr4Array( void );
+
+    /* BUG-45909 Improve LOB Processing */
+    virtual IDE_RC close4DML() = 0;
+    virtual IDE_RC putLob(UShort, Field *) = 0;
 
 protected: friend class Connection;
 
@@ -412,6 +432,12 @@ public:
     virtual SInt   getSChar(       SChar *, UInt);
     static  SInt   getSChar(SInt , SChar *, UInt, SChar*, UInt);
     static IDE_RC  makeAtbDate(SQL_TIMESTAMP_STRUCT * aFrom, mtdDateType * aTo);
+
+    /* BUG-45909 Improve LOB Processing */
+    inline  SQLUBIGINT getLobLoc() { return mLobLoc ; }
+    virtual IDE_RC     initLob() = 0;
+    virtual IDE_RC     finiLob() = 0;
+    virtual bool       compareLob(Field *) = 0;
 
 protected: friend class Row;
     /* Name description */

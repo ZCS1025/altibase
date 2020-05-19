@@ -16,7 +16,7 @@
  
 
 /*****************************************************************************
- * $Id: mtuProperty.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtuProperty.h 83585 2018-07-30 09:50:39Z andrew.shin $
  *
  * MT에서 사용하는 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 처리한다.
@@ -97,6 +97,13 @@
 // BUG-41555 DBMS PIPE
 #define MTU_MSG_QUEUE_PERMISSION ( MTU_PROPERTY(mMsgQueuePermission) )
 
+/* BUG-46267 */
+#define MTU_NUMBER_CONVERSION_MODE ( MTU_PROPERTY( mNumberConversionMode ) )
+
+/* BUG-46267 */
+#define MTU_NUMBER_CONVERSION_DISABLE ( (UInt)0 )
+#define MTU_NUMBER_CONVERSION_ENABLE  ( (UInt)1 )
+
 typedef enum
 {
     MTU_NLS_COMP_BINARY = 0,
@@ -158,7 +165,9 @@ typedef struct mtuProperties
 
     // BUG-41555 DBMS PIPE
     UInt               mMsgQueuePermission;
-    
+
+    /* BUG-46267 */
+    UInt               mNumberConversionMode;
 } mtuProperties;
     
 class mtuProperty

@@ -23,6 +23,7 @@ public class NumberColumn extends CommonNumericColumn
     NumberColumn()
     {
         super();
+        addMappedJdbcTypeSet(AltibaseTypes.NUMBER);
     }
 
     public int getDBColumnType()
@@ -30,11 +31,6 @@ public class NumberColumn extends CommonNumericColumn
         return ColumnTypes.NUMBER;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.NUMBER };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "NUMBER";

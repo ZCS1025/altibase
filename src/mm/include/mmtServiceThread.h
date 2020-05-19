@@ -27,7 +27,6 @@
 #include <mmcStatement.h>
 #include <mmuProperty.h>
 #include <mmtDef.h>
-#include <mmtIPCDAProcMonitor.h>
 
 class mmcTask;
 class mmcSession;
@@ -104,9 +103,6 @@ public:
     //fix PROJ-1749
     void   getNewTask();
     void   executeTask();
-
-    /* PROJ-2616 */
-    void   executeTask4IPCDADedicatedMode();
 
     /* PROJ-2108 Dedicated thread mode which uses less CPU */
     IDE_RC signalToServiceThread(mmtServiceThread *aThread);
@@ -448,6 +444,12 @@ public:
     static IDE_RC shardPrepareProtocol(cmiProtocolContext *, cmiProtocol *, void *, void *);
 
     static IDE_RC shardEndPendingTxProtocol(cmiProtocolContext *, cmiProtocol *, void *, void *);
+
+    /* BUG-46785 Shard statement partial rollback */
+    static IDE_RC setSavepointProtocol( cmiProtocolContext *, cmiProtocol *, void *, void * );
+    static IDE_RC rollbackToSavepointProtocol( cmiProtocolContext *, cmiProtocol *, void *, void * );
+    static IDE_RC shardStmtPartialRollback( cmiProtocolContext *, cmiProtocol *, void *, void * );
+    static IDE_RC shardNodeReport( cmiProtocolContext *, cmiProtocol *, void *, void * );
 };
 
 

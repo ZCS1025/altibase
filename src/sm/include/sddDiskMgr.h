@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddDiskMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddDiskMgr.h 84383 2018-11-20 04:18:42Z emlee $
  *
  * Description :
  *
@@ -157,7 +157,6 @@ public:
                        idvSQL      *         aStatistics,
                        void        *         aTrans,
                        scSpaceID             aTableSpaceID,
-                       ULong                 aSizeWanted,   // page 개수로 표현
                        sddDataFileNode     * aFileNode );
 
     /* datafile 노드의 autoextend 속성 변경 */

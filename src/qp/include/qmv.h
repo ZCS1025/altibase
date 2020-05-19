@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmv.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmv.h 85332 2019-04-26 01:19:42Z ahra.cho $
  **********************************************************************/
 
 #ifndef _Q_QMV_H_
@@ -128,6 +128,11 @@
 #define QMV_SFWGH_SHARD_TRANS_VIEW_MASK              (0x04000000)
 #define QMV_SFWGH_SHARD_TRANS_VIEW_FALSE             (0x00000000)
 #define QMV_SFWGH_SHARD_TRANS_VIEW_TRUE              (0x04000000)
+
+// BUG-46932
+#define QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK        (0x08000000)
+#define QMV_QUERYSET_FROM_RECURSIVE_WITH_TRUE        (0x08000000)
+#define QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE       (0x00000000)
 
 #define QMV_SET_QCM_COLUMN(_dest_, _src_)                       \
     {                                                           \
@@ -373,6 +378,19 @@ private:
 
     /* PROJ-2219 Row-level before update trigger */
     static IDE_RC makeNewUpdateColumnList( qcStatement * aQcStmt );
+
+    /* BUG-45825 */
+    static IDE_RC notAllowedAnalyticFunc( qcStatement * aStatement,
+                                          qtcNode     * aNode );
+
+    /* BUG-46174 */
+    static IDE_RC parseSPVariableValue( qcStatement   * aStatement,
+                                        qtcNode       * aSPVariable,
+                                        qmmValueNode ** aValues);
+
+    /* BUG-46702 */
+    static IDE_RC convertWithRoullupToRollup( qcStatement * aStatement,
+                                              qmsSFWGH    * aSFWGH );
 };
 
 #endif  // _Q_QMV_H_

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpsSmExecutor.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpsSmExecutor.h 85255 2019-04-16 08:33:27Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RPS_SM_EXECUTOR_H_
@@ -69,6 +69,7 @@ public:
                               smiStatement     * aSmiStmt,
                               smiTableCursor   * aCursor,
                               rpdMetaItem      * aMetaItem,
+                              ULong              aSyncTupleSuccessCount,
                               idBool           * aIsBegunSyncStmt,
                               idBool           * aIsOpenedSyncCursor,
                               rpApplyFailType  * aFailType );
@@ -81,6 +82,7 @@ public:
                                   smiTableCursor * aCursor,
                                   idBool         * aIsBegunSyncStmt,
                                   idBool         * aIsOpenedCursor,
+                                  ULong          * aSyncTupleSuccessCount,
                                   SInt             aStmtEndFalg );
 
     IDE_RC stmtBeginAndCursorOpen( smiTrans       * aTrans,
@@ -138,7 +140,8 @@ public:
                           rpdMetaItem * aMetaItem,
                           smiRange    * aKeyRange,
                           rpdTransTbl * aTransTbl,
-                          idBool      * aIsLOBOperationException );
+                          idBool      * aIsLOBOperationException,
+                          idBool      * aIsLockTimeout );
 
     IDE_RC closeLOBCursor( rpdXLog     *aXLog,
                            rpdTransTbl *aTransTbl,

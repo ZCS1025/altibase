@@ -35,4 +35,12 @@ ACP_INLINE void ulsdStmtSetShardTargetDataNodeName(ulnStmt *aStmt, acp_uint8_t *
                  "%s",
                  aNodeName);
 }
+
+SQLRETURN ulsdnStmtShardStmtPartialRollback( ulnDbc * aDbc );
+
+ACI_RC ulsdnStmtShardStmtPartialRollbackResult( cmiProtocolContext * aProtocolContext,
+                                                cmiProtocol        * aProtocol,
+                                                void               * aServiceSession,
+                                                void               * aUserContext );
+
 #endif // _O_ULSDN_STMT_H_ 1

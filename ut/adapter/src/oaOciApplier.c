@@ -55,6 +55,50 @@ static void writeOciErrorMessageToLogFile(oaOciApplierHandle *aHandle)
     oaLogMessage(OAM_ERR_LIBRARY, "OCI", sErrorCode, sMessage);
 }
 
+
+static int getOciErrorCode( oaOciApplierHandle *aHandle )
+{
+    int sErrorCode = DEFAULT_ERROR_CODE;
+    unsigned char sMessage[1024];
+    
+    if ( OCIErrorGet( (dvoid *)aHandle->mError, (ub4)1, (text *)NULL,
+                      &sErrorCode, sMessage, ACI_SIZEOF(sMessage),
+                      (ub4)OCI_HTYPE_ERROR ) != OCI_SUCCESS )
+    {
+        sErrorCode = -1;
+    }
+
+    return sErrorCode;
+}
+
+static void oaCheckErrorCode( oaOciApplierHandle *aHandle, int aErrorCode )
+{
+    int                 sErrorCode       = DEFAULT_ERROR_CODE;
+    int                *sSkipError       = NULL;
+    acp_list_node_t    *sIterator        = NULL;
+    acp_list_t         *sListHead        = &(aHandle->mSkipErrorList);
+
+    if ( aErrorCode == DEFAULT_ERROR_CODE )
+    {
+        sErrorCode = getOciErrorCode( aHandle );
+    }
+    else
+    {
+        sErrorCode = aErrorCode;
+    }
+    
+    ACP_LIST_ITERATE( sListHead, sIterator )
+    {
+        sSkipError = (int *)( sIterator->mObj );
+
+        if ( *sSkipError == sErrorCode )
+        {
+            aHandle->mIsSkipErrorList = ACP_TRUE;
+            break;
+        }
+    }
+}
+
 /**
  * @breif  Array DML 실행 오류를 출력한다.
  *
@@ -110,6 +154,8 @@ static void writeArrayDMLOciErrorMessageToLogFile( oaContext          * aContext
                  == OCI_SUCCESS )
             {
                 oaLogMessage( OAM_ERR_LIBRARY, "OCI", sErrorCode, sMessage );
+                
+                oaCheckErrorCode( aHandle, sErrorCode );
             }
             else
             {
@@ -236,6 +282,9 @@ ace_rc_t initializeOciApplier( oaContext           * aContext,
     sAceRC = oaOciApplierLogIn(aContext, sOciApplierHandle);
     ACE_TEST(sAceRC != ACE_RC_SUCCESS);
 
+    sAceRC = oaOciInitializeSkipErrorList(aContext, sOciApplierHandle);
+    ACE_TEST(sAceRC != ACE_RC_SUCCESS);
+
     *aOciApplierHandle = sOciApplierHandle;
 
     return ACE_RC_SUCCESS;
@@ -261,6 +310,8 @@ void oaFinalizeOCILibrary()
 
 void finalizeOciApplier( oaOciApplierHandle *aOciApplierHandle )
 {
+    oaOciFinalizeSkipErrorList( aOciApplierHandle );
+
     oaOciApplierLogOut(aOciApplierHandle);
 
     oaOciApplierFinalize( aOciApplierHandle );
@@ -373,6 +424,7 @@ ace_rc_t oaOciApplierInitialize( oaContext                   * aContext,
     sHandle->mErrorRetryCount = aConfig->mErrorRetryCount;
     sHandle->mErrorRetryInterval = aConfig->mErrorRetryInterval;
     sHandle->mSkipError = aConfig->mSkipError;
+    sHandle->mIsSkipErrorList = ACP_FALSE;
 
     *aHandle = sHandle;
 
@@ -621,7 +673,7 @@ ace_rc_t readSQLFile( oaContext          * aContext,
     ACE_EXCEPTION( ERROR_LOGIN_FILE_READ )
     {        
         acpErrorString( sAcpRC, sErrMsg, 1024 );
-        oaLogMessage( OAM_ERR_LOGIN_FILE_READ, sErrMsg );
+        oaLogMessage( OAM_ERR_FILE_READ, OA_ADAPTER_LOGIN_SQL_FILE_NAME, sErrMsg );
     }
     ACE_EXCEPTION( ERROR_LOGIN_SQL_MAX_SIZE )
     {
@@ -683,9 +735,11 @@ ace_rc_t executeLogInSqlFile( oaContext          * aContext,
 /*
  *
  */
-ace_rc_t openLogInSqlFile( oaContext          * aContext,  
-                           acp_std_file_t     * aFile,
-                           acp_bool_t         * aIsExistFile )
+
+ace_rc_t openFile( oaContext          * aContext,
+                   acp_char_t         * aFileName,
+                   acp_std_file_t     * aFile,
+                   acp_bool_t         * aIsExistFile )
 {
     acp_rc_t            sAcpRC = ACP_RC_EEXIST;
     acp_char_t          sErrMsg[1024];
@@ -693,62 +747,61 @@ ace_rc_t openLogInSqlFile( oaContext          * aContext,
     acp_stat_t          sStat;
     acp_bool_t          sIsExistFile = ACP_FALSE;
     acp_std_file_t      sFile = {NULL};
-    
-    ACP_STR_DECLARE_DYNAMIC( sLogInSQLPath );
-    ACP_STR_INIT_DYNAMIC( sLogInSQLPath, 128, 128 );
-    
+
+    ACP_STR_DECLARE_DYNAMIC( sFilePath );
+    ACP_STR_INIT_DYNAMIC( sFilePath, 128, 128 );
+
     sAcpRC = acpEnvGet( OA_ADAPTER_HOME_ENVIRONMENT_VARIABLE, &sHome );
-    if ( ACP_RC_NOT_ENOENT( sAcpRC ) )
+    if ( ACP_RC_NOT_ENOENT(sAcpRC) && (sAcpRC == ACP_RC_SUCCESS) )
     {
-        ACE_TEST( ACP_RC_NOT_SUCCESS( sAcpRC ) );
-
-        (void)acpStrCpyFormat( &sLogInSQLPath, "%s/conf/", sHome );
+        (void)acpStrCpyFormat( &sFilePath, "%s/conf/", sHome );
     }
-    else 
+    else
     {
-        (void)acpStrCpyCString( &sLogInSQLPath, "./conf/" );
-    }    
-    
-    (void)acpStrCatCString( &sLogInSQLPath, OA_ADAPTER_LOGIN_SQL_FILE_NAME );
+        (void)acpStrCpyCString( &sFilePath, "./conf/" );
+    }
 
-    sAcpRC = acpFileStatAtPath( (char *)acpStrGetBuffer( &sLogInSQLPath ),
+    (void)acpStrCatCString( &sFilePath, aFileName );
+
+    sAcpRC = acpFileStatAtPath( (char *)acpStrGetBuffer( &sFilePath ),
                                 &sStat,
                                 ACP_TRUE);
     if ( ACP_RC_NOT_ENOENT( sAcpRC ) )
     {
         sAcpRC = acpStdOpen( &sFile,
-                             (char *)acpStrGetBuffer( &sLogInSQLPath ), 
+                             (char *)acpStrGetBuffer( &sFilePath ),
                              ACP_STD_OPEN_READ_TEXT );
-        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS( sAcpRC ), ERROR_LOGIN_FILE_OPEN );
+        ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS( sAcpRC ), ERROR_FILE_OPEN );
         sIsExistFile = ACP_TRUE;
     }
     else
     {
         /* Nothing to do */
     }
-    ACP_STR_FINAL( sLogInSQLPath );
-    
+    ACP_STR_FINAL( sFilePath );
+
     *aIsExistFile = sIsExistFile;
     *aFile = sFile;
-    
+
     return ACE_RC_SUCCESS;
-    
-    ACE_EXCEPTION( ERROR_LOGIN_FILE_OPEN )
-    {        
+
+    ACE_EXCEPTION( ERROR_FILE_OPEN )
+    {
         acpErrorString( sAcpRC, sErrMsg, 1024 );
-        oaLogMessage( OAM_ERR_LOGIN_FILE_OPEN, sErrMsg );
+        oaLogMessage( OAM_ERR_FILE_OPEN, aFileName, sErrMsg );
     }
     ACE_EXCEPTION_END;
-    
-    ACP_STR_FINAL( sLogInSQLPath );
+
+    ACP_STR_FINAL( sFilePath );
 
     return ACE_RC_FAILURE;
 }
 
-void closeLogInSqlFile( acp_std_file_t * aFile )
+void closeFile( acp_std_file_t * aFile )
 {
     (void)acpStdClose( aFile );
 }
+
 /*
  *
  */
@@ -759,9 +812,10 @@ ace_rc_t executeLogInSql( oaContext          * aContext,
     acp_bool_t          sIsExistFile = ACP_FALSE;
     acp_bool_t          sIsOpenFile = ACP_FALSE;
     
-    ACE_TEST( openLogInSqlFile( aContext, 
-                                &sFile, 
-                                &sIsExistFile ) != ACE_RC_SUCCESS );
+    ACE_TEST( openFile( aContext,
+                        OA_ADAPTER_LOGIN_SQL_FILE_NAME,
+                        &sFile,
+                        &sIsExistFile ) != ACE_RC_SUCCESS );
     if ( sIsExistFile == ACP_TRUE )
     {
         sIsOpenFile = ACP_TRUE;
@@ -770,7 +824,7 @@ ace_rc_t executeLogInSql( oaContext          * aContext,
                                        aHandle, 
                                        &sFile ) != ACE_RC_SUCCESS );
         sIsOpenFile = ACP_FALSE;
-        closeLogInSqlFile( &sFile );
+        closeFile( &sFile );
     }
     else
     {
@@ -784,7 +838,7 @@ ace_rc_t executeLogInSql( oaContext          * aContext,
     if ( sIsOpenFile == ACP_TRUE )
     {
         sIsOpenFile = ACP_FALSE;
-        closeLogInSqlFile( &sFile );
+        closeFile( &sFile );
     }
     else
     {
@@ -1884,6 +1938,8 @@ ace_rc_t oaOciApplierApplyLogRecordList( oaContext          * aContext,
 
         sLogRecord = (oaLogRecord *)((acp_list_node_t *)sIterator)->mObj;
 
+        aHandle->mIsSkipErrorList = ACP_FALSE;
+        
         while ( oaOciApplierApplyLogRecord( aContext,
                                             aHandle,
                                             sLogRecord )
@@ -1903,7 +1959,7 @@ ace_rc_t oaOciApplierApplyLogRecordList( oaContext          * aContext,
             {
                 /* nothing to do */
             }
-
+            
             if ( sRetryCount < aHandle->mErrorRetryCount )
             {
                 sRetryCount++;
@@ -1921,9 +1977,14 @@ ace_rc_t oaOciApplierApplyLogRecordList( oaContext          * aContext,
                     oaLogMessage( OAM_MSG_DUMP_LOG, "LogRecord apply aborted" );
                     (void)applyAbortLogRecord( aContext, aHandle );
                 }
-
-                ACE_TEST_RAISE( aHandle->mSkipError == ACP_FALSE, ERR_RETRY_END );
-
+                
+                oaCheckErrorCode( aHandle, DEFAULT_ERROR_CODE );
+                ACE_TEST_RAISE( ( aHandle->mSkipError == 0 ) && 
+                                ( aHandle->mIsSkipErrorList == ACP_FALSE ),
+                                ERR_RETRY_END );
+                ACE_TEST_RAISE( ( aHandle->mSkipError == 1 ) &&
+                                ( aHandle->mIsSkipErrorList == ACP_TRUE  ), 
+                                ERR_RETRY_END );
                 break;
             }
         }
@@ -2000,3 +2061,278 @@ ace_rc_t oaOciApplierApplyLogRecord( oaContext          * aContext,
 
     return ACE_RC_FAILURE;
 }
+
+static ace_rc_t readSkipErrorList( oaContext           * aContext,
+                                   acp_std_file_t      * aFile,
+                                   oaOciApplierHandle  * aHandle,
+                                   acp_str_t           * aStr,
+                                   acp_bool_t          * aIsEOF )
+{
+    acp_char_t      sLineBuffer[OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1];
+    acp_char_t      sErrMsg[1024];
+    acp_bool_t      sIsEOF = ACP_FALSE;
+    ace_rc_t        sAcpRC =  ACE_RC_SUCCESS;
+
+    sLineBuffer[0] = '\0';
+
+    sAcpRC = acpStdGetCString( aFile,
+                               sLineBuffer,
+                               OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1 );
+    ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_LOGIN_FILE_READ );
+
+    sAcpRC = acpStrCpyBuffer( aStr,
+                              sLineBuffer,
+                              acpCStrLen( sLineBuffer, OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1 ) );
+    ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_LOGIN_FILE_READ );    
+
+    (void)acpStdIsEOF( aFile, &sIsEOF );
+
+    *aIsEOF = sIsEOF;
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_LOGIN_FILE_READ )
+    {
+        acpErrorString( sAcpRC, sErrMsg, 1024 );
+
+        if ( aHandle->mSkipError == 0 )
+        {
+            oaLogMessage( OAM_ERR_FILE_READ, OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME, sErrMsg );
+        }
+        else
+        {
+            oaLogMessage( OAM_ERR_FILE_READ, OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME, sErrMsg );
+        }
+    }
+    ACE_EXCEPTION_END;
+
+    return ACE_RC_FAILURE;
+}
+
+static void trimSkipError( acp_str_t * aStr )
+{
+    acp_uint32_t        i       = 0;
+    acp_uint32_t        j       = 0;    
+    acp_uint32_t        sStrLen = 0;
+    acp_char_t        * sBuffer = NULL;
+
+    sStrLen = acpStrGetLength( aStr );
+    sBuffer = acpStrGetBuffer( aStr );
+    
+    if ( sStrLen != 0 )
+    {
+        for ( i = 0 ; i < sStrLen ; i++ )
+        {
+            if (sBuffer[i] != ' ' )
+            {
+                break;
+            }
+        }
+
+        for ( ; ( i < sStrLen ) && ( sBuffer[i] != '\0' ) ; i++ )
+        {
+            if ( (sBuffer[i] == '\r') || (sBuffer[i] == '\n') ||
+                 (sBuffer[i] == '#' ) || (sBuffer[i] == ' ' ) )
+            {
+                break;
+            }
+            else
+            {
+                if ( i != j )
+                {
+                    sBuffer[j] = sBuffer[i];
+                }
+                else
+                {
+                    /* nothing to do */
+                }
+                j++;
+            }
+        }
+
+        sBuffer[j] = '\0';
+       
+        acpStrResetLength( aStr );
+    }
+}
+
+static ace_rc_t setSkipError( oaContext            * aContext,
+                              oaOciApplierHandle   * aHandle,
+                              acp_list_t           * aLogRecordList,
+                              acp_str_t            * aStr )
+{
+    acp_sint32_t      sSign             = 0;
+    acp_list_node_t * sSkipErrorNode    = NULL;
+    acp_uint64_t    * sSkipError        = NULL;
+
+
+    trimSkipError( aStr );
+    
+    if ( acpStrGetLength( aStr ) != 0 )
+    {
+        ACE_TEST_RAISE( acpMemCalloc( (void **)&sSkipErrorNode,
+                                      1,
+                                      ACI_SIZEOF(acp_list_node_t) )
+                        != ACE_RC_SUCCESS, ERROR_MEM_CALLOC );
+
+        ACE_TEST_RAISE( acpMemCalloc( (void **)&sSkipError,
+                                      1,
+                                      ACI_SIZEOF(acp_uint64_t) )
+                        != ACE_RC_SUCCESS, ERROR_MEM_CALLOC );
+
+        ACE_TEST_RAISE( acpStrToInteger( aStr, &sSign, sSkipError, NULL, 0, 0)
+                       != ACE_RC_SUCCESS, ERROR_INVALID_SKIP_OCI_ERROR );
+
+        acpListInitObj( sSkipErrorNode, (void *)sSkipError );
+        acpListAppendNode( aLogRecordList, sSkipErrorNode );
+    }
+        
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_MEM_CALLOC )
+    {
+        oaLogMessage(OAM_ERR_MEM_CALLOC );
+    }
+    ACE_EXCEPTION( ERROR_INVALID_SKIP_OCI_ERROR )
+    {
+        if ( aHandle->mSkipError == 0 )
+        {
+            oaLogMessage( OAM_ERR_INVALID_SKIP_LIST, OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME );
+        }
+        else
+        {
+            oaLogMessage( OAM_ERR_INVALID_SKIP_LIST, OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME );
+        }
+    }
+    ACE_EXCEPTION_END;
+
+    if ( sSkipError != NULL )
+    {
+        acpMemFree( sSkipError );
+        sSkipError = NULL;
+    }
+
+    if ( sSkipErrorNode != NULL )
+    {
+        acpMemFree( sSkipErrorNode );
+        sSkipErrorNode = NULL;
+    }
+
+    return ACE_RC_FAILURE;
+}
+
+static ace_rc_t setSkipErrorList( oaContext           *aContext,
+                                  oaOciApplierHandle  *aHandle,
+                                  acp_list_t          *aLogRecordList,
+                                  acp_std_file_t      *aFile )
+{
+    acp_bool_t      sIsEOF = ACP_FALSE;
+
+    ACP_STR_DECLARE_DYNAMIC( sErrStr );
+    ACP_STR_INIT_DYNAMIC( sErrStr,
+                          OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1,
+                          OA_ADAPTER_SKIP_ERROR_BUFF_SIZE + 1 );
+
+    while ( sIsEOF == ACP_FALSE )
+    {
+        acpStrClear( &sErrStr );
+
+        ACE_TEST( readSkipErrorList( aContext,
+                                     aFile,
+                                     aHandle,
+                                     &sErrStr,
+                                     &sIsEOF ) != ACE_RC_SUCCESS );
+
+        ACE_TEST( setSkipError( aContext,
+                                aHandle,
+                                aLogRecordList,
+                                &sErrStr )
+                  != ACE_RC_SUCCESS );
+    }
+
+    ACP_STR_FINAL( sErrStr );
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION_END;
+
+    ACP_STR_FINAL( sErrStr );
+
+    return ACE_RC_FAILURE;
+}
+
+ace_rc_t oaOciInitializeSkipErrorList( oaContext          *aContext,
+                                       oaOciApplierHandle *aHandle )
+{
+    acp_std_file_t      sFile = {NULL};
+    acp_bool_t          sIsExistFile = ACP_FALSE;
+    acp_bool_t          sIsOpenFile = ACP_FALSE;
+    acp_char_t        * sFileName;
+    acp_list_t        * sListHead = &(aHandle->mSkipErrorList);
+
+    acpListInit( sListHead );
+
+    if ( aHandle->mSkipError == 0 )
+    {
+        sFileName = OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME;
+    }
+    else
+    {
+        sFileName = OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME;
+    }
+
+    ACE_TEST( openFile( aContext,
+                        sFileName,
+                        &sFile,
+                        &sIsExistFile ) != ACE_RC_SUCCESS );
+    if ( sIsExistFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_TRUE;
+        ACE_TEST( setSkipErrorList( aContext,
+                                    aHandle,
+                                    sListHead,
+                                    &sFile ) != ACE_RC_SUCCESS );
+        sIsOpenFile = ACP_FALSE;
+        closeFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return ACE_RC_SUCCESS;
+    
+    ACE_EXCEPTION_END;
+
+    if ( sIsOpenFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_FALSE;
+        closeFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    oaLogMessage(OAM_MSG_DUMP_LOG, "oaOciInitializeSkipErrorList ACE_RC_FAILURE" );
+    return ACE_RC_FAILURE;
+}
+
+
+void oaOciFinalizeSkipErrorList( oaOciApplierHandle * aHandle )
+{
+    acp_list_node_t   * sNodeNext   = NULL;    
+    acp_list_node_t   * sIterator   = NULL;
+    acp_list_t        * sListHead   = &(aHandle->mSkipErrorList);
+
+    ACP_LIST_ITERATE_SAFE(sListHead, sIterator, sNodeNext)
+    {
+        if ( sIterator->mObj != NULL )
+        {
+            acpListDeleteNode(sIterator);
+            acpMemFree( sIterator->mObj );
+            acpMemFree( sIterator );
+        }
+    }
+}
+

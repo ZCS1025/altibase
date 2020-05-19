@@ -27,6 +27,7 @@ public class LongVarBinaryColumn extends CommonBinaryColumn
     public LongVarBinaryColumn()
     {
         super(LENGTH_SIZE_INT32);
+        addMappedJdbcTypeSet(AltibaseTypes.LONGVARBINARY);
     }
 
     private int mWrittenByteLength = 0;
@@ -34,11 +35,6 @@ public class LongVarBinaryColumn extends CommonBinaryColumn
     public int getDBColumnType()
     {
         return ColumnTypes.BINARY;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.LONGVARBINARY };
     }
 
     public String getDBColumnTypeName()

@@ -381,7 +381,8 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
     {
         ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
     }
-    ACI_TEST(sDbc == NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     aCharSet->mSrc     = (acp_uint8_t*)aSrc;
     aCharSet->mSrcLen  = aSrcLen;
@@ -518,6 +519,14 @@ ACI_RC ulnCharSetConvert(ulnCharSet      *aCharSet,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        if (aFnContext != NULL) /* BUG-46360 */
+        {
+            ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+        }
+    }
     ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
     {
         if (aFnContext != NULL)
@@ -582,7 +591,9 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
     {
         ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
     }
-    ACI_TEST(sDbc == NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     /*
      * BUG-28980 [CodeSonar]Null Pointer Dereference]
      */
@@ -758,6 +769,14 @@ ACI_RC ulnCharSetConvertUseBuffer(ulnCharSet      *aCharSet,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        if (aFnContext != NULL)    /* BUG-46360 */
+        {
+            ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+        }
+    }
     ACI_EXCEPTION(LABEL_STRING_RIGHT_TRUNCATED)
     {
         // 남은 문자열 길이 계산

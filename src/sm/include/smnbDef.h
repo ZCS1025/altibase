@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnbDef.h 85340 2019-04-30 00:15:02Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMNB_DEF_H_
@@ -39,13 +39,8 @@
 /* smnbIterator.stack                */
 # define SMNB_STACK_DEPTH               (128)
 
-/* aCache   VON gSmntNodePool.initialize                    */
-# define SMNB_NODE_POOL_CACHE                                \
-    (SMM_TEMP_PAGE_BODY_SIZE/idlOS::align((UInt)smnbBTree::mNodeSize))
-
-/* aMaximum VON gSmntNodePool.initialize                    */
-# define SMNB_NODE_POOL_MAXIMUM                              \
-    (SMNB_NODE_POOL_CACHE*2)
+# define SMNB_NODE_POOL_CACHE   (10)
+# define SMNB_NODE_POOL_MAXIMUM (100)
 
 # define SMNB_AGER_COUNT                (2)
 # define SMNB_AGER_MAX_COUNT            (25)
@@ -125,13 +120,13 @@ typedef struct smnbNode
 
 #define SMNB_SCAN_LATCH(aNode) \
     IDL_MEM_BARRIER;           \
-    IDE_ASSERT((((smnbNode*)(aNode))->latch & SMNB_SCAN_LATCH_BIT) != SMNB_SCAN_LATCH_BIT); \
+    IDE_DASSERT((((smnbNode*)(aNode))->latch & SMNB_SCAN_LATCH_BIT) != SMNB_SCAN_LATCH_BIT); \
     ((smnbNode*)(aNode))->latch |= SMNB_SCAN_LATCH_BIT; \
     IDL_MEM_BARRIER;
 
 #define SMNB_SCAN_UNLATCH(aNode) \
     IDL_MEM_BARRIER;             \
-    IDE_ASSERT((((smnbNode*)(aNode))->latch & SMNB_SCAN_LATCH_BIT) == SMNB_SCAN_LATCH_BIT); \
+    IDE_DASSERT((((smnbNode*)(aNode))->latch & SMNB_SCAN_LATCH_BIT) == SMNB_SCAN_LATCH_BIT); \
     (((smnbNode*)(aNode))->latch)++; \
     IDL_MEM_BARRIER;
 
@@ -333,8 +328,8 @@ typedef struct smnbIntStack
 typedef struct smnbSortStack
 {
     void*             leftNode;
-    UInt              leftPos;
     void*             rightNode;
+    UInt              leftPos;
     UInt              rightPos;
 } smnbSortStack;
 

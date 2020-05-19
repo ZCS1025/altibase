@@ -59,7 +59,8 @@ IDE_RC sdrCorruptPageMgr::initialize( UInt  aHashTableSize )
                                    genHashValueFunc,
                                    compareFunc ) != IDE_SUCCESS );
 
-    mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_FATAL;
+    // BUG-45598: 프로퍼티에 맞춰 Corrupt Page 처리 정책을 설정
+    setPageErrPolicyByProp();
 
     return IDE_SUCCESS;
 
@@ -183,7 +184,7 @@ IDE_RC sdrCorruptPageMgr::delCorruptPage( scSpaceID aSpaceID,
         ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                      SM_TRC_DRECOVER_DEL_CORRUPTED_PAGE,
                      sTBSAttr.mName,
-                     aPageID, 0 );
+                     aPageID );
 
         IDE_ASSERT( iduMemMgr::free(sNode) == IDE_SUCCESS );
     }
@@ -289,7 +290,8 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
     sState = 0;
     IDE_TEST( smuHash::close( &mCorruptedPages ) != IDE_SUCCESS );
 
-    mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_FATAL;
+    // BUG-45598: 프로퍼티에 맞춰 Corrupt Page 처리 정책을 재 설정
+    setPageErrPolicyByProp();
 
     return IDE_SUCCESS;
 
@@ -307,7 +309,7 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
                     == IDE_SUCCESS );
     }
 
-    mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_FATAL;
+    setPageErrPolicyByProp();
 
     return IDE_FAILURE;
 }
@@ -405,3 +407,20 @@ void sdrCorruptPageMgr::fatalReadCorruptPage()
     mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_FATAL ;
 }
 
+/***********************************************************************
+ * Description : 운영중 corrupt page를 읽었을 때 정책을 CorruptPageErrPolicy
+ *              프로퍼티 값에 따라서 설정한다.(BUG-45598)
+ **********************************************************************/
+void sdrCorruptPageMgr::setPageErrPolicyByProp()
+{
+    if ( ( smuProperty::getCorruptPageErrPolicy()
+           & SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
+         == SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
+    {
+        mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_FATAL;
+    }
+    else
+    {
+        mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_ABORT;
+    }
+}

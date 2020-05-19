@@ -45,6 +45,36 @@ IDL_EXTERN_C SInt gIdeFTTrace;
 static       SInt gIdeFTTrace;
 #endif
 
+/* BUG-45994 */
+#if defined(ALTI_CFG_OS_AIX)
+    #pragma option_override( qmv::parseSelect, "opt(level, 0)" )
+    #pragma option_override( qmv::getRefColumnList, "opt(level, 0)" )
+    #pragma option_override( rpcManager::ddlSyncBegin, "opt(level, 0)" )
+    #pragma option_override( rpcManager::ddlSyncBeginInternal, "opt(level, 0)" )
+    #pragma option_override( rpcManager::ddlSyncEnd, "opt(level, 0)" )
+    #pragma option_override( rpcManager::ddlSyncEndInternal, "opt(level, 0)" )
+/* Not FATAL
+    #pragma option_override( qci::parse, "opt(level, 0)" )
+    #pragma option_override( qci::hardPrepare, "opt(level, 0)" )
+    #pragma option_override( qci::shardAnalyze, "opt(level, 0)" )
+    #pragma option_override( qmoPartition::makePartitions, "opt(level, 0)" )
+    #pragma option_override( qmoPartition::makeHashKeyFromPartKeyRange, "opt(level, 0)" )
+    #pragma option_override( qmoRownumPredToLimit::makeLimit, "opt(level, 0)" )
+    #pragma option_override( qmv::parseViewInFromClause, "opt(level, 0)" )
+    #pragma option_override( qmv::parseViewInExpression, "opt(level, 0)" )
+    #pragma option_override( qmv::validateSelect, "opt(level, 0)" )
+    #pragma option_override( qmvQuerySet::validateView, "opt(level, 0)" )
+    #pragma option_override( qmvShardTransform::isShardQuery, "opt(level, 0)" )
+    #pragma option_override( qmvShardTransform::isTransformAbleQuery, "opt(level, 0)" )
+    #pragma option_override( qmvWith::validate, "opt(level, 0)" )
+    #pragma option_override( qsv::createExecParseTreeOnCallSpecNode, "opt(level, 0)" )
+    #pragma option_override( qsv::parseExecPkgAssign, "opt(level, 0)" )
+    #pragma option_override( qsvProcVar::searchFieldOfRecord, "opt(level, 0)" )
+    #pragma option_override( qsvProcVar::searchPkgVarWithArg, "opt(level, 0)" )
+    #pragma option_override( qsvProcVar::searchPkgVarNonArg, "opt(level, 0)" )
+*/
+#endif
+
 typedef struct ideFaultCallStackElement
 {
     jmp_buf      mJmpBuf;
@@ -63,11 +93,12 @@ typedef struct ideFaultMgr
     ID_FT_VOLATILE idBool     mIsExceptionDisable;    /* [EXPT] only for exception section (with from signal handler) */
     sigset_t                  mSavedSigMask;
     SInt                      mDummyFlag;             /* dummy flag for preventing a specific code optimization which can be used for register like %rax instead of stack for local variable */
+    SInt                      mRootBeginDepth;        /* IDE_FT_ROOT_BEGIN이 여러번 호출되도 처리하기 위한 변수 */
 } ideFaultMgr;
 
 IDE_RC ideEnableFaultMgr(idBool aIsThreadEnable);
 idBool ideIsEnabledFaultMgr();
-void   ideClearFTCallStack();
+void   ideClearFTCallStack( SInt aRootCnt );
 
 idBool ideCanFaultTolerate(SInt        aSigNum,
                            siginfo_t  *aSigInfo,

@@ -88,8 +88,8 @@ static IDE_RC getBindParamCallback(idvSQL       * /*aStatistics*/,
         // bug-25312: prepare 이후에 autocommit을 off에서 on으로 변경하고
         // bind 하면 stmt->mTrans 가 null이어서 segv.
         // 변경: stmt->mTrans를 구하여 null이면 TransID로 0을 넘기도로 수정
-        smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
-        smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
+        mmcTransObj *sTrans = sSession->getTransPtr(sStatement);
+        smTID sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
 
         idvProfile::writeBindA5( (void *)&sArg->mData,
                                sStatement->getSessionID(),
@@ -135,8 +135,8 @@ static IDE_RC getBindParamListCallbackA5(idvSQL       * /*aStatistics*/,
         // bug-25312: prepare 이후에 autocommit을 off에서 on으로 변경하고
         // bind 하면 stmt->mTrans 가 null이어서 segv.
         // 변경: stmt->mTrans를 구하여 null이면 TransID로 0을 넘기도로 수정
-        smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
-        smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
+        mmcTransObj *sTrans = sSession->getTransPtr(sStatement);
+        smTID sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
 
         idvProfile::writeBindA5( (void *)&sAny,
                                sStatement->getSessionID(),
@@ -977,7 +977,7 @@ IDE_RC mmtServiceThread::atomicEndA5(mmcStatement * aStatement, cmiProtocolConte
                         IDV_STAT_INDEX_EXECUTE_SUCCESS_COUNT, 1);
 
     IDV_SQL_ADD_DIRECT(sStatistics, mExecuteSuccessCount, 1);
-    IDV_SQL_ADD_DIRECT(sStatistics, mProcessRow, (ULong)(sExecuteContext.mAffectedRowCount));
+    IDV_SQL_ADD_DIRECT(sStatistics, mProcessRow, (ULong)IDL_MAX(0, sExecuteContext.mAffectedRowCount));
 
     aStatement->setStmtState(MMC_STMT_STATE_EXECUTED);
 

@@ -52,8 +52,9 @@ IDE_RC smmShmKeyList::initialize()
                                        IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,		/* AlignByte */
                                        ID_FALSE,							/* ForcePooling */
                                        ID_TRUE,								/* GarbageCollection */
-                                       ID_TRUE ) 							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                       ID_TRUE,                             /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_LEGACY              /* mempool type */) 
+              != IDE_SUCCESS);			
 
     SMU_LIST_INIT_BASE( & mKeyList );
 

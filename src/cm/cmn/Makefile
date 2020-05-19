@@ -1,7 +1,7 @@
 include ../cmEnv.mk
 
 SRCS=$(CMN_SRCS)
-OBJS=$(SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT))
+OBJS=$(patsubst $(DEV_DIR)/%, $(TARGET_DIR)/%.$(OBJEXT), $(basename $(SRCS)))
 
 
 all: $(OBJS)

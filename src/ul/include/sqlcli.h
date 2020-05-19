@@ -113,6 +113,7 @@ extern "C" {
 /* ALTIBASE UL FAIL-OVER */
 
 #define ALTIBASE_ALTERNATE_SERVERS                   2033
+#define ALTIBASE_LOAD_BALANCE                        2034
 #define ALTIBASE_CONNECTION_RETRY_COUNT              2035
 #define ALTIBASE_CONNECTION_RETRY_DELAY              2036
 #define ALTIBASE_SESSION_FAILOVER                    2037
@@ -165,6 +166,13 @@ extern "C" {
 #define ALTIBASE_SHARD_GLOBAL_TRANSACTION            2069
 
 #define ALTIBASE_PREPARE_WITH_DESCRIBEPARAM          2068
+
+/* InfiniBand(IB) */    
+#define ALTIBASE_IB_LATENCY                          2069
+#define ALTIBASE_IB_CONCHKSPIN                       2070
+
+/* Below Ver 6 */
+#define ALTIBASE_UNUSED_01                           6001  /* ALTIBASE_NUMERIC_DOUBLE_MODE */
 
 /*
  * STMT and DBC attributes that decide how many rows to prefetch
@@ -224,11 +232,14 @@ extern "C" {
 #define ALTIBASE_FAILOVER_SUCCESS             0x51190
 #define EMBEDED_ALTIBASE_FAILOVER_SUCCESS   (-ALTIBASE_FAILOVER_SUCCESS)
 
-/* Data Node  Retry Available Error Code */
-#define ALTIBASE_SHARD_NODE_FAIL_RETRY_AVAILABLE    0x51216
+/* Data Node  Failover is not available Error Code */
+#define ALTIBASE_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE    0x51216
 
 /* Data Node  Invalid Touch Error Code */
 #define ALTIBASE_SHARD_NODE_INVALID_TOUCH    0x51217
+
+/* Shard meta information is changed */
+#define ALITBASE_SHARD_META_INFO_CHANGED     0x5121f
 
 /* Options for SQL_CURSOR_HOLD */
 #define SQL_CURSOR_HOLD_ON        1
@@ -251,6 +262,14 @@ extern "C" {
 /* Options for ALTIBASE_PREPARE_WITH_DESCRIBEPARAM */
 #define ALTIBASE_PREPARE_WITH_DESCRIBEPARAM_OFF 0
 #define ALTIBASE_PREPARE_WITH_DESCRIBEPARAM_ON  1
+
+/* Options for ALTIBASE_IB_LATENCY */
+#define ALTIBASE_IB_LATENCY_NORMAL     0
+#define ALTIBASE_IB_LATENCY_PREFERRED  1
+
+#define ALTIBASE_IB_CONCHKSPIN_MIN     0
+#define ALTIBASE_IB_CONCHKSPIN_MAX     2147483
+#define ALTIBASE_IB_CONCHKSPIN_DEFAULT 0
 
 /* Options for SQL_ATTR_PARAMS_SET_ROW_COUNTS */
 #define SQL_ROW_COUNTS_ON  1

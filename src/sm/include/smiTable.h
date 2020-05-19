@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTable.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiTable.h 84317 2018-11-12 00:39:24Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SMI_TABLE_H_
@@ -31,9 +31,17 @@
  * Table Meta Log Record의 Body에 해당하는 부분
  */
 typedef smrTableMeta smiTableMeta;
+typedef smrDDLStmtMeta smiDDLStmtMeta;
 
 //mtcDef.h 에 MTC_POLICY_NAME_SIZE와 동일 해야 합니다.
 #define SM_POLICY_NAME_SIZE (16 - 1)
+
+typedef struct smiPartTableMeta
+{
+    UInt          mPartitionOrder;
+    SChar         mPartCondMinValues[SM_MAX_PARTKEY_COND_VALUE_LEN + 1 + 7]; // 7 Byte 는 Dummy
+    SChar         mPartCondMaxValues[SM_MAX_PARTKEY_COND_VALUE_LEN + 1 + 7]; // 7 Byte 는 Dummy
+} smiPartTableMeta;
 
 typedef struct smiColumnMeta
 {
@@ -342,7 +350,11 @@ public:
                                 SLong             aMinSequence,
                                 UInt              aFlag,
                                 SLong           * aLastSyncSeq);
-    
+
+    /* BUG-45929 */
+    static IDE_RC resetSequence( smiStatement    * aStatement,
+                                 const void      * aTable );
+
     static IDE_RC readSequence(smiStatement        * aStatement,
                                const void          * aTable,
                                SInt                  aFlag,
@@ -451,6 +463,24 @@ public:
 
     static IDE_RC indexReorganization( void    * aHeader );
 
+    static IDE_RC swapIndexID( smiStatement * aStatement,
+                               void         * aTable1,
+                               void         * aIndex1,
+                               void         * aTable2,
+                               void         * aIndex2 );
+
+    static IDE_RC modifyIndexID( smiStatement * aStatement,
+                                 const void   * aTable,
+                                 void         * aIndex,
+                                 UInt           aIndexID );
+
+    static IDE_RC swapIndexColumns( smiStatement * aStatement,
+                                    void         * aIndex1,
+                                    void         * aIndex2 );
+
+    static IDE_RC modifyIndexColumns( smiStatement  * aStatement,
+                                      void          * aIndex,
+                                      UInt          * aColumns );
 private:
     static IDE_RC makeKeyColumnList( void            * aTableHeader,
                                      void            * aIndexHeader,

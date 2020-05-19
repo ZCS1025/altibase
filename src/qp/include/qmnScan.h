@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnScan.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnScan.h 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     SCAN Node
@@ -167,6 +167,11 @@
 #define QMND_SCAN_RESTART_CURSOR_FALSE      (0x00000000)
 #define QMND_SCAN_RESTART_CURSOR_TRUE       (0x00000020)
 
+/* PROJ-2632 */
+#define QMND_SCAN_SERIAL_EXECUTE_MASK       (0x00000040)
+#define QMND_SCAN_SERIAL_EXECUTE_FALSE      (0x00000000)
+#define QMND_SCAN_SERIAL_EXECUTE_TRUE       (0x00000040)
+
 /*---------------------------------------------------------------------
  *  Example)
  *      SELECT * FROM T1 WHERE i2 > 3;
@@ -250,6 +255,7 @@ typedef struct qmncSCAN
     idBool         simpleUnique;  // 최대 1건인 경우
     idBool         simpleRid;     // rid scan인 경우
     UInt           simpleCompareOpCount;
+    mtcColumn    * mSimpleColumns;
     
     //---------------------------------
     // Predicate 종류
@@ -293,6 +299,12 @@ typedef struct qmncSCAN
 
     // PROJ-1446 Host variable을 포함한 질의 최적화
     qmoScanDecisionFactor * sdf;
+
+    /* PROJ-2632 */
+    UInt                  mSerialFilterOffset; /* in Execute, Dataplan Offset */
+    UInt                  mSerialFilterSize;   /* in Execute, Total Entry Allocate Size */
+    UInt                  mSerialFilterCount;  /* in Execute, Total Entry Set Count */
+    mtxSerialFilterInfo * mSerialFilterInfo;
 
 } qmncSCAN;
 
@@ -412,6 +424,8 @@ typedef struct qmndSCAN
     /* PROJ-2402 Parallel Table Scan */
     UInt                        mAccessCnt4Parallel;
 
+    /* PROJ-2632 */
+    mtxSerialExecuteData      * mSerialExecuteData;
 } qmndSCAN;
 
 class qmnSCAN

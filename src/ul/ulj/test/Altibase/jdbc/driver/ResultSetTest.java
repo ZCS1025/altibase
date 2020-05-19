@@ -685,10 +685,28 @@ public class ResultSetTest extends AltibaseTestCase
         connection().rollback();
         assertEquals(true, sRSC.next());
         assertEquals(3, sRSC.getInt(1));
+
+        /* BUG-45841 Fetch Across Rollback에 의해 커서가 유지된다. */
+        assertEquals(true, sRSR.next());
+        assertEquals(2, sRSR.getInt(1));
+
+        Statement sStmtRR = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        sStmtRR.setFetchSize(1);
+        assertEquals(1, sStmtRR.executeUpdate("UPDATE t1 SET c1 = 2 WHERE c1 = 2"));
+        ResultSet sRSRR = sStmtRR.executeQuery("SELECT t1.* FROM t1");
+        assertEquals(true, sRSRR.next());
+        assertEquals(1, sRSRR.getInt(1));
+
+        connection().rollback();  /* Update에 의해 sRSRR 커서는 닫힌다. */
+        assertEquals(true, sRSC.next());
+        assertEquals(4, sRSC.getInt(1));
+        assertEquals(true, sRSR.next());
+        assertEquals(3, sRSR.getInt(1));
+
         try
         {
-            sRSR.next();
-            fail();
+            sRSRR.next();
+            fail("Expected FETCH_OUT_OF_SEQUENCE, but failed.");
         }
         catch (SQLException ex)
         {
@@ -699,6 +717,8 @@ public class ResultSetTest extends AltibaseTestCase
         sStmtR.close();
         sRSC.close();
         sStmtC.close();
+        sStmtRR.close();
+        sRSRR.close();
     }
 
     // #endregion CLOSE_CURSORS_AT_COMMIT test

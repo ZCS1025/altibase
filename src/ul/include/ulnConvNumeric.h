@@ -83,7 +83,6 @@ void ulncDecimalPrintW(ulncNumeric   *aDecimal,
 acp_float_t  ulncCmtNumericToFloat(cmtNumeric *aNumeric);
 acp_double_t ulncCmtNumericToDouble(cmtNumeric *aNumeric);
 ACI_RC       ulncCmtNumericToDecimal(cmtNumeric *aCmNumeric, ulncNumeric *aDecimal);
-void         ulncCmtNumericToMtNumeric( cmtNumeric * aNumeric, mtdNumericType * aMtNumeric );
 
 acp_uint64_t ulncDecimalToULong(ulncNumeric *aDecimal, acp_bool_t *aIsOverFlow);
 acp_uint64_t ulncDecimalToSLong(ulncNumeric *aDecimal, acp_bool_t *aIsOverFlow);

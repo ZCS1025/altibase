@@ -65,11 +65,19 @@ else
 		LIBS_STATIC += $(LIBOPT)clntst10 `cat ./lib/aix_lib/ldflags` `cat ./lib/aix_lib/sysliblist`
 	else # LINUX
 		ifeq "$(ALTI_CFG_BITTYPE)" "64"
-			INCLUDES += $(IDROPT)./include/linux64_include
-			LIBDIRS += $(LDROPT)./lib/linux64_lib $(LDROPT).
-			export LD_LIBRARY_PATH:=./lib/linux64_lib:${LD_LIBRARY_PATH}
-			LIBS_DYNAMIC += $(LIBOPT)clntsh
-			LIBS_STATIC += $(LIBOPT)clntst10 `cat ./lib/linux64_lib/ldflags` `cat ./lib/linux64_lib/sysliblist`
+			ifeq "$(OS_TARGET)" "POWERPC64LE_LINUX"
+				INCLUDES += $(IDROPT)./include/powerlinux64_include
+				LIBDIRS += $(LDROPT)./lib/powerlinux64_lib $(LDROPT).
+				export LD_LIBRARY_PATH:=./lib/powerlinux64_lib:${LD_LIBRARY_PATH}
+				LIBS_DYNAMIC += $(LIBOPT)clntsh
+				LIBS_STATIC += $(LIBOPT)clntst12 `cat ./lib/powerlinux64_lib/ldflags` `cat ./lib/powerlinux64_lib/sysliblist`
+			else
+				INCLUDES += $(IDROPT)./include/linux64_include
+				LIBDIRS += $(LDROPT)./lib/linux64_lib $(LDROPT).
+				export LD_LIBRARY_PATH:=./lib/linux64_lib:${LD_LIBRARY_PATH}
+				LIBS_DYNAMIC += $(LIBOPT)clntsh
+				LIBS_STATIC += $(LIBOPT)clntst10 `cat ./lib/linux64_lib/ldflags` `cat ./lib/linux64_lib/sysliblist`
+			endif
 		else # LINUX 32 bit
 			INCLUDES += $(IDROPT)./include/linux32_include
 			LIBDIRS += $(LDROPT)./lib/linux32_lib $(LDROPT).
@@ -117,6 +125,8 @@ build: build_msg $(OBJS)
 	cp -f msg/msgEN82.mdl oraAdapter_home/msg/
 	cp -f conf/oraAdapter.conf oraAdapter_home/conf/oraAdapter.conf
 	cp -f conf/oalogin.sql oraAdapter_home/conf/oalogin.sql
+	cp -f conf/ora_dbms_skip_error_include.list oraAdapter_home/conf/dbms_skip_error_include.list
+	cp -f conf/ora_dbms_skip_error_exclude.list oraAdapter_home/conf/dbms_skip_error_exclude.list
 
 build_static: build_msg $(OBJS)
 	$(LD) $(OBJS) $(INCLUDES) $(LIBDIRS) $(LFLAGS) $(LDOUT)$(OUT) $(LIBS_STATIC) $(LIBS)
@@ -161,6 +171,8 @@ dist:
 	cp -f oraAdapter_home/msg/msgEN82.mdl dist/msg/
 	cp -f oraAdapter_home/conf/oraAdapter.conf dist/conf/oraAdapter.conf
 	cp -f oraAdapter_home/conf/oalogin.sql dist/conf/oalogin.sql
+	cp -f oraAdapter_home/conf/dbms_skip_error_include.list dist/conf/dbms_skip_error_include.list
+	cp -f oraAdapter_home/conf/dbms_skip_error_exclude.list dist/conf/dbms_skip_error_exclude.list    
 	builder build $(ORA_ADAPTER_INSTALLER_XML) --setvars oraadapter_filename=$(RELEASE_ORA_ADAPTER_DIST_NAME) oraadapter_version=$(RELEASE_VERSION)
 
 #

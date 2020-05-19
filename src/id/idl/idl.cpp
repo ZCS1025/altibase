@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idl.cpp 80329 2017-06-21 22:45:22Z kclee $
+ * $Id: idl.cpp 84438 2018-11-27 01:50:06Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -310,17 +310,17 @@ SInt idlVA::getPhysicalCoreCount()
   SChar *sPtr= NULL;
   SInt   sNCores = ((SInt)idlOS::sysconf(_SC_NPROCESSORS_ONLN)); //just in case 
 
-  fp = popen("lparstat -i | grep -m 1 \"Online Virtual CPUs\"", "r");
+  fp = popen("lparstat -i | grep \"Online Virtual CPUs\"", "r");
   if (fp != NULL) {
       while (fgets(sBuf, sizeof(sBuf), fp) != NULL) {
             sPtr=strstr(sBuf,":");
             if(sPtr != NULL )
             {
-                    sNCores =  *((UChar*)sPtr + 2) - '0';
+                    sNCores =  idlOS::atoi(sPtr + 2); //BUG-46543
             }
       }
+      pclose(fp);
   }
-  pclose(fp);
 
 #elif defined(INTEL_LINUX) || defined(AMD64_LINUX) || defined(XEON_LINUX) || defined(X86_64_LINUX) 
   //Linux/X86
@@ -348,9 +348,8 @@ SInt idlVA::getPhysicalCoreCount()
                 }
             }
       }
-
+      pclose(fp);
   }
-  pclose(fp);
 
 #elif defined(HP_HPUX) || defined(IA64_HP_HPUX)
     //HP/IA64(itanium)

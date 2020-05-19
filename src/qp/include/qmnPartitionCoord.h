@@ -132,7 +132,12 @@ typedef struct qmncPCRD
     qtcNode        * filter;            // Filter
     qtcNode        * lobFilter;         // Lob Filter ( BUG-25916 ) 
     qtcNode        * subqueryFilter;    // Subquery Filter
-    
+   
+    /* PROJ-2705 memory parittion simple query */
+    idBool           mIsSimple;          // simple index scan or simple full scan
+    qmnValueInfo     mSimpleValues;
+    UInt             mSimpleCompareOpCount;
+
     //---------------------------------
     // Display 관련 정보
     //---------------------------------

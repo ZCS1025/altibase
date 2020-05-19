@@ -32,8 +32,8 @@ static IDE_RC answerPrepareResult(cmiProtocolContext *aProtocolContext, mmcState
     // bug-25109 support ColAttribute baseTableName
     SChar  sBaseTableOwnerName[QC_MAX_OBJECT_NAME_LEN+1];
     SChar  sBaseTableName[QC_MAX_OBJECT_NAME_LEN+1];
-    UInt   sBaseTableOwnerNameLen  = 0;
-    UInt   sBaseTableNameLen       = 0;
+    UInt   sBaseTableOwnerNameLen = 0;
+    UInt   sBaseTableNameLen      = 0;
 
     idBool sBaseTableUpdatable = ID_FALSE;
 

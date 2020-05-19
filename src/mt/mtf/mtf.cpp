@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtf.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtf.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -704,7 +704,16 @@ IDE_RC mtf::makeConversionNodes( mtcNode*          aNode,
             if( sNode->conversion == NULL )
             {
                 sNode->conversion = sConversionNode;
-                aNode->cost = sCost;
+
+                /* BUG-461267 */
+                if ( MTU_NUMBER_CONVERSION_MODE == MTU_NUMBER_CONVERSION_ENABLE )
+                {
+                    aNode->cost = sCost;
+                }
+                else
+                {
+                    aNode->cost += sCost;
+                }
             }
             else
             {
@@ -791,7 +800,16 @@ IDE_RC mtf::makeLeftConversionNodes( mtcNode*          aNode,
             if( sNode->leftConversion == NULL )
             {
                 sNode->leftConversion = sConversionNode;
-                aNode->cost = sCost;
+                
+                /* BUG-461267 */
+                if ( MTU_NUMBER_CONVERSION_MODE == MTU_NUMBER_CONVERSION_ENABLE )
+                {
+                    aNode->cost = sCost;
+                }
+                else
+                {
+                    aNode->cost += sCost;
+                }
             }
             else
             {
@@ -1336,9 +1354,11 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
     const mtcName*    sName;
     idBool            sChangeCost = ID_FALSE;
 
+    /* BUG-46195 */
     // BUG-34342
     // 산술연산 모드가 performance인 경우
-    if ( MTU_ARITHMETIC_OP_MODE >= MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1 )
+    if ( ( MTU_ARITHMETIC_OP_MODE == MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1 ) ||
+         ( MTU_ARITHMETIC_OP_MODE == MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL2 ) )
     {
         // 변환 Cost를 변경하고 연산자 선택 시 Native C Type (double 등)
         // 이 선택될 확률을 높인다.
@@ -1474,8 +1494,9 @@ IDE_RC mtf::initialize( mtfModule *** aExtFuncModuleGroup,
                                           IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                           ID_FALSE,							/* ForcePooling */
                                           ID_TRUE,							/* GarbageCollection */
-                                          ID_TRUE )							/* HWCacheLine */
-              != IDE_SUCCESS );
+                                          ID_TRUE,                          /* HWCacheLine */
+                                          IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+              != IDE_SUCCESS );			
 
     return IDE_SUCCESS;
     
@@ -2958,6 +2979,100 @@ void mtf::freeFuncDataMemory( iduMemory * aMemoryMgr )
     aMemoryMgr->destroy();
     
     (void) mFuncMemoryPool.memfree( aMemoryMgr );
+}
+
+/* BUG-46892 */
+IDE_RC mtf::getFuncDataMemorySize( mtcTemplate * aTemplate,
+                                   iduMemory   * aMemoryMgr,
+                                   ULong         aSize )
+{
+    UInt              sCount          = 0;
+    ULong             sTotalSize      = (ULong)0;
+    ULong             sWantedSize     = iduProperty::getQpMemChunkSize();
+    ULong             sMathTempMemMax = iduProperty::getMathTempMemMax();
+    iduMemoryStatus   sMemStatus;
+    iduMemoryHeader * sHeader;
+    iduMemoryHeader * sCurHead;
+  
+    if ( ( aTemplate->funcData != NULL ) &&
+         ( sMathTempMemMax > 0 ) )
+    {
+        IDE_TEST( aMemoryMgr->getStatus( &( sMemStatus ) ) != IDE_SUCCESS );
+
+        sHeader = sMemStatus.mSavedCurr;
+
+        if ( aSize > ( sHeader->mChunkSize - sHeader->mCursor ) )
+        {
+            for ( sCurHead  = sHeader->mNext;
+                  sCurHead != NULL;
+                  sCurHead  = sCurHead->mNext )
+            {
+                if ( aSize <= ( sCurHead->mChunkSize - sCurHead->mCursor ) )
+                {
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do*/
+                }
+            }
+
+            if ( sCurHead == NULL )
+            {
+                if ( sWantedSize < aSize )
+                {
+                    sWantedSize = aSize;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
+                sTotalSize += sWantedSize;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        for ( sCount = 0;
+              sCount < aTemplate->funcDataCnt;
+              sCount++ )
+        {
+            if ( aTemplate->funcData[ sCount ] != NULL )
+            {
+                sTotalSize += aTemplate->funcData[ sCount ]->memoryMgr->getSize();
+
+                IDE_TEST_RAISE( sTotalSize >= sMathTempMemMax, ERR_MT_MEM_ALLOC );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MT_MEM_ALLOC );
+    {
+        IDE_SET( ideSetErrorCode( mtERR_ABORT_MAX_MEM_SIZE_EXCEED,
+                                  "MATHEMATICS_TEMP",
+                                  sTotalSize,
+                                  sMathTempMemMax ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC mtf::setKeepOrderData( mtcNode          * aNode,

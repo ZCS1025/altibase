@@ -83,6 +83,22 @@ UInt   cmnLinkPeerSizeUNIX();
 
 #endif
 
+/* PROJ-2681 */
+typedef struct cmnLinkDescIB
+{
+    PDL_SOCKET              mHandle;
+    struct sockaddr_storage mAddr;
+    SInt                    mAddrLen; /* getnameinfo needs this */
+    UInt                    mLatency; /* for RDMA_LATENCY rsocket option */
+    UInt                    mConChkSpin; /* for RDMA_CONCHKSPIN rsocket option */
+} cmnLinkDescIB;
+
+IDE_RC cmnLinkListenMapIB(cmnLink *aLink);
+UInt   cmnLinkListenSizeIB(void);
+
+IDE_RC cmnLinkPeerMapIB(cmnLink *aLink);
+UInt   cmnLinkPeerSizeIB(void);
+
 /*PROJ-2616*/
 #if !defined(CM_DISABLE_IPC) && !defined(CM_DISABLE_IPCDA)
 

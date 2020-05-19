@@ -60,7 +60,7 @@ IDE_RC rpnMessenger::initializeCmBlock( void )
          sResendBlock = ID_FALSE;
     }
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( mReplication ) == ID_TRUE )
     {
         IDE_TEST_RAISE( cmiAllocCmBlockForA5( &mProtocolContext,
                                               CMI_PROTOCOL_MODULE( RP ),
@@ -71,12 +71,12 @@ IDE_RC rpnMessenger::initializeCmBlock( void )
     }
     else
     {
-            IDE_TEST_RAISE( cmiAllocCmBlock( &mProtocolContext,
-                                             CMI_PROTOCOL_MODULE( RP ),
-                                             (cmiLink *)mLink,
-                                             this,
-                                             sResendBlock )
-                            != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
+        IDE_TEST_RAISE( cmiAllocCmBlock( &mProtocolContext,
+                                         CMI_PROTOCOL_MODULE( RP ),
+                                         (cmiLink *)mLink,
+                                         this,
+                                         sResendBlock )
+                        != IDE_SUCCESS, ERR_ALLOC_CM_BLOCK );
     }
 
     mIsInitCmBlock = ID_TRUE;
@@ -96,13 +96,13 @@ IDE_RC rpnMessenger::initializeCmBlock( void )
 /*
  *
  */
-IDE_RC rpnMessenger::initializeCmLink( RPN_MESSENGER_SOCKET_TYPE aSocketType )
+IDE_RC rpnMessenger::initializeCmLink( RP_SOCKET_TYPE aSocketType )
 {
     IDE_DASSERT( mLink == NULL );
 
     switch ( aSocketType )
     {
-    case RPN_MESSENGER_SOCKET_TYPE_TCP:
+    case RP_SOCKET_TYPE_TCP:
         IDU_FIT_POINT_RAISE( "rpnMessenger::initializeCmLink::Erratic::rpERR_ABORT_ALLOC_LINK",
                              ERR_ALLOC_LINK );
         IDE_TEST_RAISE( cmiAllocLink( &mLink,
@@ -111,15 +111,22 @@ IDE_RC rpnMessenger::initializeCmLink( RPN_MESSENGER_SOCKET_TYPE aSocketType )
                         != IDE_SUCCESS, ERR_ALLOC_LINK );
         break;
         
-    case RPN_MESSENGER_SOCKET_TYPE_UNIX:
+    case RP_SOCKET_TYPE_UNIX:
         IDE_TEST_RAISE( cmiAllocLink( &mLink,
                                       CMI_LINK_TYPE_PEER_CLIENT,
                                       CMI_LINK_IMPL_UNIX )
                         != IDE_SUCCESS, ERR_ALLOC_LINK );
         break;
+    case RP_SOCKET_TYPE_IB:
+        IDE_TEST_RAISE( cmiAllocLink( &mLink,
+                                      CMI_LINK_TYPE_PEER_CLIENT,
+                                      CMI_LINK_IMPL_IB )
+                        != IDE_SUCCESS, ERR_ALLOC_LINK );
+        break;
+
     }
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( mReplication ) == ID_TRUE )
     {
         cmiLinkSetPacketTypeA5( mLink );
     }
@@ -183,8 +190,7 @@ void rpnMessenger::destroyCmLink( void )
 /*
  *
  */
-void rpnMessenger::initializeNetworkAddress( 
-    RPN_MESSENGER_SOCKET_TYPE aSocketType )
+void rpnMessenger::initializeNetworkAddress( RP_SOCKET_TYPE aSocketType )
 {
     (void)idlOS::memset( mLocalIP, 0x00, RP_IP_ADDR_LEN );
     mLocalPort = 0;
@@ -192,18 +198,25 @@ void rpnMessenger::initializeNetworkAddress(
     (void)idlOS::memset( mRemoteIP, 0x00, RP_IP_ADDR_LEN );
     mRemotePort = 0;
 
+    mIBLatency = RP_IB_LATENCY_NONE;
+
     switch ( aSocketType )
     {
-        case RPN_MESSENGER_SOCKET_TYPE_TCP:
+        case RP_SOCKET_TYPE_TCP:
             (void)idlOS::snprintf( mLocalIP, sizeof( mLocalIP ), "127.0.0.1" );
             mLocalPort = RPU_REPLICATION_PORT_NO;
             break;
 
-        case RPN_MESSENGER_SOCKET_TYPE_UNIX:
+        case RP_SOCKET_TYPE_UNIX:
             (void)idlOS::snprintf( mLocalIP, sizeof( mLocalIP ), 
                                    "%s", RP_SOCKET_UNIX_DOMAIN_STR );
             (void)idlOS::snprintf( mRemoteIP, sizeof( mRemoteIP ),
                                    "%s", RP_SOCKET_UNIX_DOMAIN_STR );
+            break;
+        
+        case RP_SOCKET_TYPE_IB:
+            (void)idlOS::snprintf( mLocalIP, ID_SIZEOF( mLocalIP ), "127.0.0.1" );
+            mLocalPort = RPU_REPLICATION_IB_PORT_NO;
             break;
     }
 }
@@ -211,14 +224,16 @@ void rpnMessenger::initializeNetworkAddress(
 /*
  *
  */
-IDE_RC rpnMessenger::initialize( RPN_MESSENGER_SOCKET_TYPE    aSocketType,
+IDE_RC rpnMessenger::initialize( RP_SOCKET_TYPE               aSocketType,
                                  idBool                     * aExitFlag,
+                                 rpdReplications            * aReplication,
                                  void                       * aHBTResource,
                                  idBool                       aNeedLock )
 {
     SChar   sName[IDU_MUTEX_NAME_LEN] = { 0, };
 
     mSocketType = aSocketType;
+    mReplication = aReplication;
 
     mExitFlag = aExitFlag;
 
@@ -411,6 +426,28 @@ IDE_RC rpnMessenger::connectThroughUnix( SChar * aFileName )
 /*
  *
  */
+IDE_RC rpnMessenger::connectThroughIB( SChar * aHostIp, UInt aPortNo, rpIBLatency aIBLatency )
+{
+    cmiConnectArg      sConnectArg;
+
+    idlOS::memset( &sConnectArg, 0, ID_SIZEOF(cmiConnectArg) );
+    sConnectArg.mIB.mAddr    = aHostIp;
+    sConnectArg.mIB.mPort    = aPortNo;
+    sConnectArg.mIB.mLatency = aIBLatency;
+    sConnectArg.mIB.mBindAddr = NULL;
+
+    IDE_TEST( connect( &sConnectArg ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*
+ *
+ */
 void rpnMessenger::disconnect( void )
 {
     destroyCmBlock();
@@ -442,15 +479,12 @@ IDE_RC rpnMessenger::checkRemoteReplVersion( rpMsgReturn * aResult,
                                              SChar       * aErrMsg,
                                              UInt        * aMsgLen )
 {
-    rpnMessenger * sThis          = NULL;
-    idBool       * sExitFlagPtr   = NULL;
-    idBool         sDummyExitFlag = ID_FALSE;
     rpdVersion     sVersion;
     SInt           sDummyFailbackStatus;
     UInt           sResult        = RP_MSG_DISCONNECT;
     ULong          sDummyXSN;
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( mReplication ) == ID_TRUE )
     {
         sVersion.mVersion = RP_MAKE_VERSION( 6, 1, 1, REPLICATION_ENDIAN_64BIT);
     }
@@ -459,20 +493,11 @@ IDE_RC rpnMessenger::checkRemoteReplVersion( rpMsgReturn * aResult,
         sVersion.mVersion = RP_CURRENT_VERSION;
     }
 
-    (void)cmiGetOwnerForProtocolContext( &mProtocolContext, (void **)&sThis );
-
-    if ( sThis != NULL )
-    {
-        sExitFlagPtr = sThis->mExitFlag;
-    }
-    else
-    {
-        sExitFlagPtr = &sDummyExitFlag;     // BUG-23302
-    }
-
     if ( rpnComm::sendVersion( mHBTResource, 
-                               &mProtocolContext, 
-                               &sVersion ) 
+                               &mProtocolContext,
+                               mExitFlag,
+                               &sVersion,
+                               RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
          != IDE_SUCCESS )
     {
         IDE_ERRLOG( IDE_RP_0 );
@@ -485,7 +510,7 @@ IDE_RC rpnMessenger::checkRemoteReplVersion( rpMsgReturn * aResult,
     }
 
     if ( rpnComm::recvHandshakeAck( &mProtocolContext,
-                                    sExitFlagPtr,
+                                    mExitFlag,
                                     &sResult,
                                     &sDummyFailbackStatus,
                                     &sDummyXSN,
@@ -585,7 +610,11 @@ IDE_RC rpnMessenger::handshake( rpdMeta * aMeta )
                        sMsgLen,
                        &(aMeta->mReplication.mRemoteVersion) );
 
-    IDE_TEST_RAISE( aMeta->sendMeta( mHBTResource, &mProtocolContext ) 
+    IDE_TEST_RAISE( aMeta->sendMeta( mHBTResource, 
+                                     &mProtocolContext,
+                                     mExitFlag,
+                                     ID_FALSE,
+                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
                     != IDE_SUCCESS, ERR_SEND_META );
 
     sBuffer[0] = '\0';
@@ -677,8 +706,9 @@ IDE_RC rpnMessenger::handshakeAndGetResults( rpdMeta * aMeta,
                                              rpMsgReturn * aRC,
                                              SChar * aRCMsg,
                                              SInt aRCMsgLen,
+                                             idBool aMetaInitFlag,
                                              SInt * aFailbackStatus,
-                                             smSN * aXSN )
+                                             smSN * aReceiverXSN )
 {
     rpMsgReturn sVersionResult = RP_MSG_DISCONNECT;
     UInt        sMetaResult    = RP_MSG_DISCONNECT;
@@ -731,7 +761,12 @@ IDE_RC rpnMessenger::handshakeAndGetResults( rpdMeta * aMeta,
                        &(aMeta->mReplication.mRemoteVersion) );
 
     // Success of Check Protocol, AND check Meta.
-    if ( aMeta->sendMeta( mHBTResource, &mProtocolContext ) != IDE_SUCCESS )
+    if ( aMeta->sendMeta( mHBTResource, 
+                          &mProtocolContext,
+                          mExitFlag,
+                          aMetaInitFlag,
+                          RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
+         != IDE_SUCCESS )
     {
         *aRC = RP_MSG_DISCONNECT;
 
@@ -756,7 +791,7 @@ IDE_RC rpnMessenger::handshakeAndGetResults( rpdMeta * aMeta,
                                     mExitFlag,
                                     &sMetaResult,
                                     aFailbackStatus,
-                                    aXSN,
+                                    aReceiverXSN,
                                     sBuffer,
                                     &sMsgLen,
                                     RPU_REPLICATION_RECEIVE_TIMEOUT )
@@ -833,14 +868,18 @@ IDE_RC rpnMessenger::handshakeAndGetResults( rpdMeta * aMeta,
 /*
  *
  */
-IDE_RC rpnMessenger::sendStop( smSN aRestartSN )
+IDE_RC rpnMessenger::sendStop( smSN       aRestartSN,
+                               idBool   * aExitFlag, 
+                               UInt       aTimeoutSec )
 {
     IDE_TEST( rpnComm::sendStop( mHBTResource,
                                  &mProtocolContext,
+                                 aExitFlag,
                                  RP_TID_NULL,
                                  SM_SN_NULL,
                                  SM_SN_NULL,
-                                 aRestartSN )
+                                 aRestartSN,
+                                 aTimeoutSec )
               != IDE_SUCCESS );
     
     return IDE_SUCCESS;
@@ -902,23 +941,24 @@ IDE_RC rpnMessenger::receiveAck( rpXLogAck * aAck,
  */
 IDE_RC rpnMessenger::sendStopAndReceiveAck( void )
 {
-    idBool     sDummyExitFlag = ID_FALSE;
     rpXLogAck  sDummyAck;
     idBool     sIsTimeOut = ID_FALSE;
 
     IDE_TEST( rpnComm::sendStop( mHBTResource,
                                  &mProtocolContext,
+                                 NULL,  /* exit flag */
                                  RP_TID_NULL,
                                  SM_SN_NULL,
                                  SM_SN_NULL,
-                                 SM_SN_NULL )
+                                 SM_SN_NULL,
+                                 RPN_STOP_MSG_NETWORK_TIMEOUT_SEC )
               != IDE_SUCCESS );
 
     IDE_TEST( rpnComm::recvAck( NULL, /* memory allocator : not used */
                                 &mProtocolContext,
-                                &sDummyExitFlag,
+                                NULL, /* exit flag */
                                 &sDummyAck,
-                                RPU_REPLICATION_RECEIVE_TIMEOUT,
+                                RPN_STOP_MSG_NETWORK_TIMEOUT_SEC,
                                 &sIsTimeOut )
               != IDE_SUCCESS );
 
@@ -936,10 +976,12 @@ IDE_RC rpnMessenger::sendSyncXLogTrCommit( smTID aTransID )
 {
     IDE_TEST( rpnComm::sendTrCommit( mHBTResource,
                                      &mProtocolContext,
+                                     mExitFlag,
                                      aTransID,
                                      SM_SN_NULL,
                                      SM_SN_NULL,
-                                     ID_FALSE )
+                                     ID_FALSE,
+                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -956,9 +998,11 @@ IDE_RC rpnMessenger::sendSyncXLogTrAbort( smTID aTransID )
 {
     IDE_TEST( rpnComm::sendTrAbort( mHBTResource,
                                     &mProtocolContext,
+                                    mExitFlag,
                                     aTransID,
                                     SM_SN_NULL,
-                                    SM_SN_NULL )
+                                    SM_SN_NULL,
+                                    RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
     
     return IDE_SUCCESS;
@@ -1028,6 +1072,7 @@ IDE_RC rpnMessenger::syncXLogInsert( smTID       aTransID,
 
     IDE_TEST( rpnComm::sendSyncInsert( mHBTResource,
                                        &mProtocolContext,
+                                       mExitFlag,
                                        aTransID,
                                        0,
                                        SM_SN_NULL,
@@ -1035,7 +1080,8 @@ IDE_RC rpnMessenger::syncXLogInsert( smTID       aTransID,
                                        aTableOID,
                                        aColCnt,
                                        sColArray,
-                                       mSyncAfterMtdValueLen )
+                                       mSyncAfterMtdValueLen,
+                                       RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1094,6 +1140,7 @@ IDE_RC rpnMessenger::sendXLogInsert( smTID       aTransID,
 
     IDE_TEST( rpnComm::sendInsert( mHBTResource,
                                    &mProtocolContext,
+                                   mExitFlag,
                                    aTransID,
                                    0,
                                    SM_SN_NULL,
@@ -1101,7 +1148,8 @@ IDE_RC rpnMessenger::sendXLogInsert( smTID       aTransID,
                                    aTableOID,
                                    aColCnt,
                                    sColArray,
-                                   mSyncAfterMtdValueLen )
+                                   mSyncAfterMtdValueLen,
+                                   RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1227,6 +1275,7 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
 
         IDE_TEST_RAISE( rpnComm::sendLobCursorOpen( mHBTResource,
                                                     &mProtocolContext,
+                                                    mExitFlag,
                                                     aTransID,
                                                     0,
                                                     SM_SN_NULL,
@@ -1235,7 +1284,8 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
                                                     sCID,
                                                     sPKColCnt,
                                                     sPK,
-                                                    mSyncPKMtdValueLen )
+                                                    mSyncPKMtdValueLen,
+                                                    RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                         != IDE_SUCCESS, ERR_SEND_OPEN_LOB_CURSOR );
 
         IDE_TEST_RAISE( qciMisc::lobGetLength( sLocator,
@@ -1244,13 +1294,15 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
 
         IDE_TEST_RAISE( rpnComm::sendLobPrepare4Write( mHBTResource,
                                                        &mProtocolContext,
+                                                       mExitFlag,
                                                        aTransID,
                                                        0,
                                                        SM_SN_NULL,
                                                        sLocator,
                                                        0,
                                                        0,
-                                                       sLOBSize )
+                                                       sLOBSize,
+                                                       RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                         != IDE_SUCCESS, ERR_SEND_PREPARE4WRITE );
 
         /* 실제 LOB value를 read하여 전송하도록 한다. 한번에 모든 LOB value를 전송하려고 하면,
@@ -1272,13 +1324,15 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
 
             IDE_TEST_RAISE( rpnComm::sendLobPartialWrite( mHBTResource,
                                                           &mProtocolContext,
+                                                          mExitFlag,
                                                           aTransID,
                                                           0,
                                                           SM_SN_NULL,
                                                           sLocator,
                                                           sOffset,
                                                           sReadLength,
-                                                          sPiece )
+                                                          sPiece,
+                                                          RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                             != IDE_SUCCESS, ERR_SEND_PARTIAL_WRITE );
         }
 
@@ -1294,22 +1348,26 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
 
             IDE_TEST_RAISE( rpnComm::sendLobPartialWrite( mHBTResource,
                                                           &mProtocolContext,
+                                                          mExitFlag,
                                                           aTransID,
                                                           0,
                                                           SM_SN_NULL,
                                                           sLocator,
                                                           sOffset,
                                                           sReadLength,
-                                                          sPiece )
+                                                          sPiece,
+                                                          RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                             != IDE_SUCCESS, ERR_SEND_PARTIAL_WRITE );
         }
 
         IDE_TEST_RAISE( rpnComm::sendLobFinish2Write( mHBTResource,
                                                       &mProtocolContext,
+                                                      mExitFlag,
                                                       aTransID,
                                                       0,
                                                       SM_SN_NULL,
-                                                      sLocator )
+                                                      sLocator,
+                                                      RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                         != IDE_SUCCESS, ERR_SEND_FINISH2WRITE );
 
         sIsLobCursorOpened = ID_FALSE;
@@ -1321,10 +1379,12 @@ IDE_RC rpnMessenger::sendXLogLob( smTID               aTransID,
 
         IDE_TEST_RAISE( rpnComm::sendLobCursorClose( mHBTResource,
                                                      &mProtocolContext,
+                                                     mExitFlag,
                                                      aTransID,
                                                      0,
                                                      SM_SN_NULL,
-                                                     sLocator )
+                                                     sLocator,
+                                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                         != IDE_SUCCESS, ERR_SEND_CLOSE_LOB_CURSOR );
     }
 
@@ -1422,10 +1482,20 @@ void rpnMessenger::setRemoteTcpAddress( SChar * aRemoteIP,
     mRemotePort = aRemotePort;
 }
 
+void rpnMessenger::setRemoteIBAddress(  SChar      * aRemoteIP,
+                                        SInt         aRemotePort,
+                                        rpIBLatency  aIBLatency )
+{
+    (void)idlOS::snprintf( mRemoteIP, ID_SIZEOF( mRemoteIP ), "%s", aRemoteIP );
+    mRemotePort = aRemotePort;
+    mIBLatency  = aIBLatency;
+}
+
+
 /*
  *
  */
-void rpnMessenger::updateTcpAddress( void )
+void rpnMessenger::updateAddress( void )
 {
     SChar sPort[IDL_IP_PORT_MAX_LEN];
 
@@ -1435,24 +1505,24 @@ void rpnMessenger::updateTcpAddress( void )
         (void)cmiGetLinkInfo( mLink,
                               mLocalIP,
                               sizeof( mLocalIP ),
-                              CMI_LINK_INFO_TCP_LOCAL_IP_ADDRESS );
+                              CMI_LINK_INFO_LOCAL_IP_ADDRESS );
         (void)cmiGetLinkInfo( mLink,
                               mRemoteIP,
                               sizeof( mRemoteIP ),
-                              CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS );
+                              CMI_LINK_INFO_REMOTE_IP_ADDRESS );
         
         // BUG-15944
         (void)idlOS::memset( sPort, 0x00, sizeof( sPort ) );
         (void)cmiGetLinkInfo( mLink,
                               sPort,
                               sizeof( sPort ),
-                              CMI_LINK_INFO_TCP_LOCAL_PORT );
+                              CMI_LINK_INFO_LOCAL_PORT );
         mLocalPort = idlOS::atoi( sPort );
         (void)idlOS::memset( sPort, 0x00, sizeof( sPort ) );
         (void)cmiGetLinkInfo( mLink,
                               sPort,
                               sizeof( sPort ),
-                              CMI_LINK_INFO_TCP_REMOTE_PORT );
+                              CMI_LINK_INFO_REMOTE_PORT );
         mRemotePort = idlOS::atoi( sPort );
     }
     else
@@ -1492,10 +1562,12 @@ IDE_RC rpnMessenger::sendTrCommit( rpdTransTbl      * aTransTbl,
             sForceFlush = ID_TRUE;
             IDE_TEST( rpnComm::sendTrCommit( mHBTResource,
                                              &mProtocolContext,
+                                             mExitFlag,
                                              aLogAnlz->getSendTransID(),
                                              aLogAnlz->mSN,
                                              aFlushSN,
-                                             sForceFlush )
+                                             sForceFlush,
+                                             RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                       != IDE_SUCCESS );
 
             IDE_TEST( rpnComm::recvAck( NULL, /* memory allocator : not used */
@@ -1513,10 +1585,12 @@ IDE_RC rpnMessenger::sendTrCommit( rpdTransTbl      * aTransTbl,
             sForceFlush = ID_FALSE;
             IDE_TEST( rpnComm::sendTrCommit( mHBTResource,
                                              &mProtocolContext,
+                                             mExitFlag,
                                              aLogAnlz->getSendTransID(),
                                              aLogAnlz->mSN,
                                              aFlushSN,
-                                             sForceFlush )
+                                             sForceFlush,
+                                             RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                       != IDE_SUCCESS );
         }
     }
@@ -1554,9 +1628,11 @@ IDE_RC rpnMessenger::sendTrAbort( rpdTransTbl       * aTransTbl,
 
         IDE_TEST( rpnComm::sendTrAbort( mHBTResource,
                                         &mProtocolContext,
+                                        mExitFlag,
                                         aLogAnlz->getSendTransID(),
                                         aLogAnlz->mSN,
-                                        aFlushSN )
+                                        aFlushSN,
+                                        RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                  != IDE_SUCCESS );
     }
 
@@ -1583,6 +1659,7 @@ IDE_RC rpnMessenger::sendInsert( rpdTransTbl    * aTransTbl,
 
     IDE_TEST( rpnComm::sendInsert( mHBTResource,
                                    &mProtocolContext,
+                                   mExitFlag,
                                    aLogAnlz->getSendTransID(),
                                    aLogAnlz->mSN,
                                    aFlushSN,
@@ -1590,7 +1667,8 @@ IDE_RC rpnMessenger::sendInsert( rpdTransTbl    * aTransTbl,
                                    aLogAnlz->mTableOID,
                                    aLogAnlz->mRedoAnalyzedColCnt,
                                    aLogAnlz->mACols,
-                                   aLogAnlz->mAMtdValueLen )
+                                   aLogAnlz->mAMtdValueLen,
+                                   RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1616,6 +1694,7 @@ IDE_RC rpnMessenger::sendUpdate( rpdTransTbl        * aTransTbl,
 
     IDE_TEST( rpnComm::sendUpdate( mHBTResource,
                                    &mProtocolContext,
+                                   mExitFlag,
                                    aLogAnlz->getSendTransID(),
                                    aLogAnlz->mSN,
                                    aFlushSN,
@@ -1631,7 +1710,8 @@ IDE_RC rpnMessenger::sendUpdate( rpdTransTbl        * aTransTbl,
                                    aLogAnlz->mACols,
                                    aLogAnlz->mPKMtdValueLen,
                                    aLogAnlz->mAMtdValueLen,
-                                   aLogAnlz->mBMtdValueLen )
+                                   aLogAnlz->mBMtdValueLen,
+                                   RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1657,6 +1737,7 @@ IDE_RC rpnMessenger::sendDelete( rpdTransTbl        * aTransTbl,
 
     IDE_TEST( rpnComm::sendDelete( mHBTResource,
                                    &mProtocolContext,
+                                   mExitFlag,
                                    aLogAnlz->getSendTransID(),
                                    aLogAnlz->mSN,
                                    aFlushSN,
@@ -1670,7 +1751,8 @@ IDE_RC rpnMessenger::sendDelete( rpdTransTbl        * aTransTbl,
                                    aLogAnlz->mBCols,
                                    aLogAnlz->mBChainedCols,
                                    aLogAnlz->mBMtdValueLen,
-                                   aLogAnlz->mChainedValueTotalLen )
+                                   aLogAnlz->mChainedValueTotalLen,
+                                   RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1713,11 +1795,13 @@ IDE_RC rpnMessenger::sendSPSet( rpdTransTbl         * aTransTbl,
 
         IDE_TEST( rpnComm::sendSPSet( mHBTResource,
                                       &mProtocolContext,
+                                      mExitFlag,
                                       aLogAnlz->getSendTransID(),
                                       aLogAnlz->mSN,
                                       aFlushSN,
                                       aLogAnlz->mSPNameLen,
-                                      aLogAnlz->mSPName )
+                                      aLogAnlz->mSPName,
+                                      RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                   != IDE_SUCCESS );
     }
 
@@ -1749,11 +1833,13 @@ IDE_RC rpnMessenger::sendSPAbort( rpdTransTbl       * aTransTbl,
 
         IDE_TEST( rpnComm::sendSPAbort( mHBTResource,
                                         &mProtocolContext,
+                                        mExitFlag,
                                         aLogAnlz->getSendTransID(),
                                         aLogAnlz->mSN,
                                         aFlushSN,
                                         aLogAnlz->mSPNameLen,
-                                        aLogAnlz->mSPName )
+                                        aLogAnlz->mSPName,
+                                        RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                   != IDE_SUCCESS );
     }
 
@@ -1780,6 +1866,7 @@ IDE_RC rpnMessenger::sendLobCursorOpen( rpdTransTbl     * aTransTbl,
 
     IDE_TEST( rpnComm::sendLobCursorOpen( mHBTResource,
                                           &mProtocolContext,
+                                          mExitFlag,
                                           aLogAnlz->getSendTransID(),
                                           aLogAnlz->mSN,
                                           aFlushSN,
@@ -1788,7 +1875,8 @@ IDE_RC rpnMessenger::sendLobCursorOpen( rpdTransTbl     * aTransTbl,
                                           aLogAnlz->mLobColumnID,
                                           aLogAnlz->mPKColCnt,
                                           aLogAnlz->mPKCols,
-                                          aLogAnlz->mPKMtdValueLen )
+                                          aLogAnlz->mPKMtdValueLen,
+                                          RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1809,10 +1897,12 @@ IDE_RC rpnMessenger::sendLobCursorClose( rpdLogAnalyzer * aLogAnlz,
 
     IDE_TEST( rpnComm::sendLobCursorClose( mHBTResource,
                                            &mProtocolContext,
+                                           mExitFlag,
                                            aLogAnlz->getSendTransID(),
                                            aLogAnlz->mSN,
                                            aFlushSN,
-                                           aLogAnlz->mLobLocator )
+                                           aLogAnlz->mLobLocator,
+                                           RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1833,13 +1923,15 @@ IDE_RC rpnMessenger::sendLobPrepareWrite( rpdLogAnalyzer    * aLogAnlz,
 
     IDE_TEST( rpnComm::sendLobPrepare4Write( mHBTResource,
                                              &mProtocolContext,
+                                             mExitFlag,
                                              aLogAnlz->getSendTransID(),
                                              aLogAnlz->mSN,
                                              aFlushSN,
                                              aLogAnlz->mLobLocator,
                                              aLogAnlz->mLobOffset,
                                              aLogAnlz->mLobOldSize,
-                                             aLogAnlz->mLobNewSize )
+                                             aLogAnlz->mLobNewSize,
+                                             RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1860,13 +1952,15 @@ IDE_RC rpnMessenger::sendLobPartialWrite( rpdLogAnalyzer    * aLogAnlz,
 
     IDE_TEST( rpnComm::sendLobPartialWrite( mHBTResource,
                                             &mProtocolContext,
+                                            mExitFlag,
                                             aLogAnlz->getSendTransID(),
                                             aLogAnlz->mSN,
                                             aFlushSN,
                                             aLogAnlz->mLobLocator,
                                             aLogAnlz->mLobOffset,
                                             aLogAnlz->mLobPieceLen,
-                                            aLogAnlz->mLobPiece )
+                                            aLogAnlz->mLobPiece,
+                                            RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1887,10 +1981,12 @@ IDE_RC rpnMessenger::sendLobFinishWrite( rpdLogAnalyzer     * aLogAnlz,
 
     IDE_TEST( rpnComm::sendLobFinish2Write( mHBTResource,
                                             &mProtocolContext,
+                                            mExitFlag,
                                             aLogAnlz->getSendTransID(),
                                             aLogAnlz->mSN,
                                             aFlushSN,
-                                            aLogAnlz->mLobLocator )
+                                            aLogAnlz->mLobLocator,
+                                            RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1911,11 +2007,13 @@ IDE_RC rpnMessenger::sendLobTrim( rpdLogAnalyzer    * aLogAnlz,
 
     IDE_TEST( rpnComm::sendLobTrim( mHBTResource,
                                     &mProtocolContext,
+                                    mExitFlag,
                                     aLogAnlz->getSendTransID(),
                                     aLogAnlz->mSN,
                                     aFlushSN,
                                     aLogAnlz->mLobLocator,
-                                    aLogAnlz->mLobOffset )
+                                    aLogAnlz->mLobOffset,
+                                    RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2132,11 +2230,13 @@ IDE_RC rpnMessenger::sendXLogSPSet( smTID   aTID,
 
     IDE_TEST( rpnComm::sendSPSet( mHBTResource,
                                   &mProtocolContext,
+                                  mExitFlag,
                                   aTID,
                                   aSN,
                                   aFlushSN,
                                   aSpNameLen,
-                                  aSpName )
+                                  aSpName,
+                                  RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     if ( aNeedLock == ID_TRUE )
@@ -2194,10 +2294,12 @@ IDE_RC rpnMessenger::sendXLogKeepAlive( smSN    aSN,
     
     IDE_TEST( rpnComm::sendKeepAlive( mHBTResource,
                                       &mProtocolContext,
+                                      mExitFlag,
                                       RP_TID_NULL,
                                       aSN,
                                       aFlushSN,
-                                      aRestartSN )
+                                      aRestartSN,
+                                      RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     if ( aNeedLock == ID_TRUE )
@@ -2254,9 +2356,11 @@ IDE_RC rpnMessenger::sendXLogHandshake( smSN    aSN,
     
     IDE_TEST( rpnComm::sendHandshake( mHBTResource,
                                       &mProtocolContext,
+                                      mExitFlag,
                                       RP_TID_NULL,
                                       aSN,
-                                      aFlushSN )
+                                      aFlushSN,
+                                      RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     if ( aNeedLock == ID_TRUE )
@@ -2297,9 +2401,11 @@ IDE_RC rpnMessenger::sendXLogSyncPKBegin( void )
 {
     IDE_TEST( rpnComm::sendSyncPKBegin( mHBTResource,
                                         &mProtocolContext,
+                                        mExitFlag,
                                         RP_TID_NULL,
                                         SM_SN_NULL,
-                                        SM_SN_NULL )
+                                        SM_SN_NULL,
+                                        RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2319,13 +2425,15 @@ IDE_RC rpnMessenger::sendXLogSyncPK( ULong        aTableOID,
 {
     IDE_TEST( rpnComm::sendSyncPK( mHBTResource,
                                    &mProtocolContext,
+                                   mExitFlag,
                                    RP_TID_NULL,
                                    SM_SN_NULL,
                                    SM_SN_NULL,
                                    aTableOID,
                                    aPKColCnt,
                                    aPKCols,
-                                   aPKLen )
+                                   aPKLen,
+                                   RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2342,9 +2450,11 @@ IDE_RC rpnMessenger::sendXLogSyncPKEnd( void )
 {
     IDE_TEST( rpnComm::sendSyncPKEnd( mHBTResource,
                                       &mProtocolContext,
+                                      mExitFlag,
                                       RP_TID_NULL,
                                       SM_SN_NULL,
-                                      SM_SN_NULL )
+                                      SM_SN_NULL,
+                                      RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2361,9 +2471,11 @@ IDE_RC rpnMessenger::sendXLogFailbackEnd( void )
 {
     IDE_TEST( rpnComm::sendFailbackEnd( mHBTResource,
                                         &mProtocolContext,
+                                        mExitFlag,
                                         RP_TID_NULL,
                                         SM_SN_NULL,
-                                        SM_SN_NULL )
+                                        SM_SN_NULL,
+                                        RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2383,6 +2495,7 @@ IDE_RC rpnMessenger::sendXLogDelete( ULong        aTableOID,
 {
     IDE_TEST( rpnComm::sendDelete( mHBTResource,
                                    &mProtocolContext,
+                                   mExitFlag,
                                    RP_TID_NULL,
                                    0,
                                    SM_SN_NULL,
@@ -2396,7 +2509,8 @@ IDE_RC rpnMessenger::sendXLogDelete( ULong        aTableOID,
                                    NULL,
                                    NULL,
                                    NULL,
-                                   NULL )
+                                   NULL,
+                                   RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2413,10 +2527,12 @@ IDE_RC rpnMessenger::sendXLogTrCommit( void )
 {
     IDE_TEST( rpnComm::sendTrCommit( mHBTResource,
                                      &mProtocolContext,
+                                     mExitFlag,
                                      RP_TID_NULL,
                                      SM_SN_NULL,
                                      SM_SN_NULL,
-                                     ID_TRUE )
+                                     ID_TRUE,
+                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2433,9 +2549,11 @@ IDE_RC rpnMessenger::sendXLogTrAbort( void )
 {
     IDE_TEST( rpnComm::sendTrAbort( mHBTResource,
                                     &mProtocolContext,
+                                    mExitFlag,
                                     RP_TID_NULL,
                                     SM_SN_NULL,
-                                    SM_SN_NULL )
+                                    SM_SN_NULL,
+                                    RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2515,7 +2633,9 @@ IDE_RC rpnMessenger::sendSyncTableNumber( UInt aSyncTableNumber )
 {
     IDE_TEST_RAISE( rpnComm::sendSyncTableNumber( mHBTResource,
                                                   &mProtocolContext,
-                                                  aSyncTableNumber )
+                                                  mExitFlag,
+                                                  aSyncTableNumber,
+                                                  RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                     != IDE_SUCCESS, ERR_SEND_SYNC_TABLE_NUMBER );
 
     return IDE_SUCCESS;
@@ -2535,7 +2655,9 @@ IDE_RC rpnMessenger::sendSyncTableInfo( rpdMetaItem * aItem )
 
     IDE_TEST_RAISE( rpnComm::sendMetaReplTbl( mHBTResource,
                                               &mProtocolContext,
-                                              aItem )
+                                              mExitFlag,
+                                              aItem,
+                                              RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                     != IDE_SUCCESS, ERR_SEND_SYNC_TABLES );
 
     return IDE_SUCCESS;
@@ -2556,7 +2678,9 @@ IDE_RC rpnMessenger::sendSyncTableInfo( rpdMetaItem * aItem )
 IDE_RC rpnMessenger::sendSyncStart( void )
 {
     IDE_TEST( rpnComm::sendSyncStart( mHBTResource,
-                                      &mProtocolContext ) 
+                                      &mProtocolContext,
+                                      mExitFlag,
+                                      RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2569,7 +2693,9 @@ IDE_RC rpnMessenger::sendSyncStart( void )
 IDE_RC rpnMessenger::sendRebuildIndex( void )
 {
     IDE_TEST( rpnComm::sendRebuildIndex( mHBTResource,
-                                         &mProtocolContext ) 
+                                         &mProtocolContext,
+                                         mExitFlag,
+                                         RPU_REPLICATION_SENDER_SEND_TIMEOUT ) 
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2583,7 +2709,9 @@ IDE_RC rpnMessenger::sendRebuildIndex( void )
 IDE_RC rpnMessenger::sendAckOnDML( void )
 {
     IDE_TEST( rpnComm::sendAckOnDML( mHBTResource,
-                                     &mProtocolContext )
+                                     &mProtocolContext,
+                                     mExitFlag,
+                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT )
               != IDE_SUCCESS );
     
     return IDE_SUCCESS;
@@ -2597,7 +2725,9 @@ IDE_RC rpnMessenger::sendCmBlock( void )
 {
      IDE_TEST( rpnComm::sendCmBlock( mHBTResource,
                                      &mProtocolContext,
-                                     ID_TRUE )
+                                     mExitFlag,
+                                     ID_TRUE,
+                                     RPU_REPLICATION_SENDER_SEND_TIMEOUT )
                != IDE_SUCCESS );
      return IDE_SUCCESS;
 
@@ -2606,6 +2736,97 @@ IDE_RC rpnMessenger::sendCmBlock( void )
      return IDE_FAILURE;
 }
 
+IDE_RC rpnMessenger::sendDDLASyncStart( UInt aType )
+{
+    IDE_TEST( rpnComm::sendDDLASyncStart( mHBTResource,
+                                          &mProtocolContext,
+                                          mExitFlag,
+                                          aType,
+                                          RPU_REPLICATION_SENDER_SEND_TIMEOUT )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnMessenger::recvDDLASyncStartAck( UInt * aType )
+{
+    IDE_TEST( rpnComm::recvDDLASyncStartAck( &mProtocolContext,
+                                             mExitFlag,
+                                             aType,
+                                             RPU_REPLICATION_RECEIVE_TIMEOUT )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnMessenger::sendDDLASyncExecute( UInt    aType,
+                                          SChar * aUserName,
+                                          UInt    aDDLEnableLevel,
+                                          UInt    aTargetCount,
+                                          SChar * aTargetTableName,
+                                          SChar * aTargetPartNames,
+                                          smSN    aDDLCommitSN,
+                                          SChar * aDDLStmt )
+{
+    rpdVersion sVersion;
+
+    sVersion.mVersion = RP_CURRENT_VERSION;
+
+    IDE_TEST( rpnComm::sendDDLASyncExecute( mHBTResource,
+                                            &mProtocolContext,
+                                            mExitFlag,
+                                            aType,
+                                            aUserName,
+                                            aDDLEnableLevel,
+                                            aTargetCount,
+                                            aTargetTableName,
+                                            aTargetPartNames,
+                                            aDDLCommitSN,
+                                            &sVersion,
+                                            aDDLStmt,
+                                            RPU_REPLICATION_SENDER_SEND_TIMEOUT )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+     return IDE_FAILURE;
+}
+
+IDE_RC rpnMessenger::recvDDLASyncExecuteAck( UInt  * aType,
+                                             UInt  * aIsSuccess, 
+                                             UInt  * aErrCode,
+                                             SChar * aErrMsg )
+{
+    IDU_FIT_POINT_RAISE( "rpnMessenger::recvDDLASyncExecuteAck::ERR_NETWORK", ERR_NETWORK );
+    IDE_TEST( rpnComm::recvDDLASyncExecuteAck( &mProtocolContext,
+                                               mExitFlag,
+                                               aType,
+                                               aIsSuccess,
+                                               aErrCode,
+                                               aErrMsg,
+                                               RPU_REPLICATION_RECEIVE_TIMEOUT )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+     
+    IDE_EXCEPTION( ERR_NETWORK );
+    {
+        IDE_SET( ideSetErrorCode( cmERR_ABORT_CONNECTION_CLOSED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 
 void rpnMessenger::setLastSN( rpdSenderInfo     * aSenderInfo,
                               smTID               aTransID,

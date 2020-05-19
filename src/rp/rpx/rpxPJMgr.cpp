@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxPJMgr.cpp 85220 2019-04-12 03:29:08Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h> // to remove win32 compile warning
@@ -36,6 +36,10 @@ rpxPJMgr::rpxPJMgr() : idtBaseThread()
 IDE_RC rpxPJMgr::initialize( SChar        * aRepName,
                              smiStatement * aStatement,
                              rpdMeta      * aMeta,
+                             RP_SOCKET_TYPE aSocketType,
+                             SChar        * aIPAddress,
+                             UInt           aPortNo,
+                             rpIBLatency    aIBLatency,
                              idBool       * aExitFlag,
                              SInt           aParallelFactor,
                              smiStatement * aParallelSmiStmts )
@@ -63,13 +67,15 @@ IDE_RC rpxPJMgr::initialize( SChar        * aRepName,
                                    1,
                                    ID_SIZEOF(rpxSyncItem),
                                    256,
-                                   IDU_AUTOFREE_CHUNK_LIMIT,	/* ChunkLimit */
-                                   ID_FALSE,					/* UseMutex */
-                                   8,							/* AlignByte */
-                                   ID_FALSE,					/* ForcePooling */
-                                   ID_TRUE,						/* GarbageCollection */
-                                   ID_TRUE )					/* HwCacheLine */
-              != IDE_SUCCESS );
+                                   IDU_AUTOFREE_CHUNK_LIMIT,    /* ChunkLimit */
+                                   ID_FALSE,                    /* UseMutex */
+                                   8,                           /* AlignByte */
+                                   ID_FALSE,                    /* ForcePooling */
+                                   ID_TRUE,                     /* GarbageCollection */
+                                   ID_TRUE,                     /* HWCacheLine */
+                                   IDU_MEMPOOL_TYPE_LEGACY      /* mempool type*/)
+             != IDE_SUCCESS);
+
     sStage = 2;
 
     mChildArray = NULL;
@@ -99,6 +105,10 @@ IDE_RC rpxPJMgr::initialize( SChar        * aRepName,
 
         IDE_TEST_RAISE( mChildArray[i]->initialize( this,
                                                     aMeta,
+                                                    aSocketType,
+                                                    aIPAddress,
+                                                    aPortNo,
+                                                    aIBLatency,
                                                     &( aParallelSmiStmts[i] ),
                                                     mChildCount,
                                                     i,
@@ -186,11 +196,6 @@ IDE_RC rpxPJMgr::allocSyncItem( rpdMetaItem * aTable )
 
     sSyncItem->mTable = aTable;
     sSyncItem->mSyncedTuples = 0;
-
-    IDE_TEST( getTupleNumber( aTable,
-                              mStatement,
-                              &( sSyncItem->mTotalTuples ) )
-              != IDE_SUCCESS );
 
     IDU_LIST_INIT_OBJ( &( sSyncItem->mNode ), sSyncItem );
     IDU_LIST_ADD_LAST( &mSyncList, &( sSyncItem->mNode ) );
@@ -347,8 +352,6 @@ void rpxPJMgr::run()
 
     IDE_TEST( sIsChildFail == ID_TRUE );
 
-    IDE_TEST_RAISE( isSyncSuccess() != ID_TRUE, ERR_FAIL_SYNC_TABLE ); 
-
     mPJMgrExitFlag = ID_TRUE;
 
     return;
@@ -425,68 +428,4 @@ ULong rpxPJMgr::getSyncedCount( SChar *aTableName )
     IDE_ASSERT( mJobMutex.unlock() == IDE_SUCCESS );
 
     return sCount;
-}
-/*
- *
- */
-idBool rpxPJMgr::isSyncSuccess()
-{ 
-    idBool        sIsSuccess = ID_FALSE;
-
-    rpxSyncItem * sSyncItem  = NULL;
-    iduListNode * sNode      = NULL;
-    iduListNode * sDummy     = NULL;
-
-    IDE_ASSERT( mJobMutex.lock( NULL ) == IDE_SUCCESS );
-
-    if ( IDU_LIST_IS_EMPTY( &mSyncList ) != ID_TRUE )
-    {
-        IDU_LIST_ITERATE_SAFE( &mSyncList, sNode, sDummy )
-        {
-            sSyncItem = (rpxSyncItem*)sNode->mObj;
-            if ( sSyncItem->mTotalTuples == sSyncItem->mSyncedTuples )
-            {
-                sIsSuccess = ID_TRUE;
-            }
-            else
-            {
-                sIsSuccess = ID_FALSE;
-                break;
-            }
-
-        }
-    }
-
-    IDE_ASSERT( mJobMutex.unlock() == IDE_SUCCESS );
-
-    return sIsSuccess;
-}
-/*
- * 
- */ 
-IDE_RC rpxPJMgr::getTupleNumber(rpdMetaItem  * aMetaItem,
-                                smiStatement * aSmiStmt,
-                                ULong        * aSyncTuples)
-{
-    void     * sTableHandle = NULL;
-    smiTrans * sTrans       = NULL;
-
-    sTableHandle = (void *)smiGetTable( (smOID)aMetaItem->mItem.mTableOID );
-
-    sTrans = aSmiStmt->getTrans();
-
-    IDE_TEST( smiStatistics::getTableStatNumRow( sTableHandle,
-                                                 ID_TRUE,
-                                                 sTrans,
-                                                 (SLong *)aSyncTuples )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_SET(ideSetErrorCode(rpERR_ABORT_RP_SENDER_SYNC_TABLE));
-    IDE_ERRLOG(IDE_RP_0);
-
-    return IDE_FAILURE;
 }

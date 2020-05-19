@@ -109,3 +109,41 @@ ACI_RC ulsdModuleUpdateNodeList(ulnFnContext  *aFnContext,
 {
     return aDbc->mShardModule->ulsdModuleUpdateNodeList(aFnContext, aDbc);
 }
+
+ACI_RC ulsdModuleNotifyFailOver( ulnDbc *aDbc )
+{
+    return aDbc->mShardModule->ulsdModuleNotifyFailOver( aDbc );
+}
+
+void ulsdModuleAlignDataNodeConnection( ulnFnContext * aFnContext,
+                                        ulnDbc       * aNodeDbc )
+{
+    ulnDbc * sDbc = NULL;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    ACE_DASSERT( sDbc != NULL );
+
+    sDbc->mShardModule->ulsdModuleAlignDataNodeConnection( aFnContext,
+                                                           aNodeDbc );
+    return;
+}
+
+void ulsdModuleErrorCheckAndAlignDataNode( ulnFnContext * aFnContext )
+{
+    ulnDbc * sDbc = NULL;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    ACE_DASSERT( sDbc != NULL );
+
+    sDbc->mShardModule->ulsdModuleErrorCheckAndAlignDataNode( aFnContext );
+
+    return;
+}
+
+
+acp_bool_t ulsdModuleHasNoData( ulnStmt * aStmt )
+{
+    return aStmt->mShardModule->ulsdModuleHasNoData( aStmt );
+}

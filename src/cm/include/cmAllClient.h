@@ -76,5 +76,7 @@
 #include <cmpModuleClient.h>
 #include <cmiClient.h>
 #include <cmxXidClient.h>
+#include <cmnIB.h>
+#include <cmnSockIBClient.h>
 
 #endif

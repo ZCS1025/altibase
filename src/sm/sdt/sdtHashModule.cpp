@@ -580,11 +580,11 @@ IDE_RC sdtHashModule::movePartition( smiTempTableHeader  * aHeader,
                                            SDT_WAGROUPID_SUB,
                                            &sFlushWPID )
               != IDE_SUCCESS );
-    IDE_TEST( sdtWASegment::movePage( sWASeg,
-                                      SDT_WAGROUPID_HASH,
-                                      aSrcWPID,
-                                      SDT_WAGROUPID_SUB,
-                                      sFlushWPID )
+    IDE_TEST( sdtWASegment::moveWPage( sWASeg,
+                                       SDT_WAGROUPID_HASH,
+                                       aSrcWPID,
+                                       SDT_WAGROUPID_SUB,
+                                       sFlushWPID )
               != IDE_SUCCESS );
     IDE_TEST( sdtWASegment::allocAndAssignNPage( sWASeg,
                                                  sFlushWPID )

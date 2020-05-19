@@ -895,11 +895,6 @@ IDE_RC mmtServiceThread::paramInfoSetListProtocol(cmiProtocolContext *aProtocolC
         aProtocolContext->mReadBlock->mCursor = sOrgCursor + (sParamCount * 20);
     }
 
-    if( sRealParamCount == 0 )
-    {
-        // IDE_TEST(qci::bindParamInfo(sQciStmt) != IDE_SUCCESS);
-    }
-
     sStatement->setBindState(MMC_STMT_BIND_INFO);
 
     return answerParamInfoSetListResult(aProtocolContext);
@@ -1229,8 +1224,8 @@ IDE_RC mmtServiceThread::paramDataInProtocol(cmiProtocolContext *aProtocolContex
     // 변경: stmt->mTrans를 구하여 null이면 TransID로 0을 넘기도로 수정
     if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_BIND_FLAG) == IDV_PROF_TYPE_BIND_FLAG)
     {
-        smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
-        smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
+        mmcTransObj *sTrans = sSession->getTransPtr(sStatement);
+        smTID sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
 
         sBindParam.id = sParamNumber - 1;
         IDE_TEST(qci::getBindParamInfo(sQciStmt, &sBindParam) != IDE_SUCCESS);
@@ -1383,7 +1378,7 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
                     InvalidArrayBinds);
 
     if ( (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) &&
-         (qci::isSimpleQuery(sQciStmt) == ID_TRUE))
+         (sStatement->isSimpleQuery() == ID_TRUE))
     {
         sStatement->setBindState(MMC_STMT_BIND_DATA);
 
@@ -1510,8 +1505,8 @@ IDE_RC mmtServiceThread::paramDataInListProtocol(cmiProtocolContext *aProtocolCo
                 // bug-25312: prepare 이후에 autocommit을 off에서 on으로 변경하고
                 // bind 하면 stmt->mTrans 가 null이어서 segv.
                 // 변경: stmt->mTrans를 구하여 null이면 TransID로 0을 넘기도로 수정
-                smiTrans *sTrans = sSession->getTrans(sStatement, ID_FALSE);
-                smTID sTransID = (sTrans != NULL) ? sTrans->getTransID() : 0;
+                mmcTransObj *sTrans = sSession->getTransPtr(sStatement);
+                smTID sTransID = (sTrans != NULL) ? mmcTrans::getTransID(sTrans) : 0;
 
                 for ( j = 0; j < sParamCount; j++)
                 {

@@ -187,7 +187,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                         "NLS_NCHAR_LITERAL_REPLACE=%"ID_INT32_FMT";", aNLS_REPLACE);
 
 #if !defined (VC_WIN32) && !defined (NTO_QNX)
-    if (aConnType == 1 || aConnType == 3 || aConnType == 6 || aConnType == 7)
+    if (aConnType == 1 || aConnType == 3 || aConnType == 6 || aConnType == 7 || aConnType == 8)
 #endif
     {
         idlVA::appendFormat(sConnStr, ID_SIZEOF(sConnStr),

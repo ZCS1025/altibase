@@ -109,10 +109,9 @@
     q1 --> q3 --> q4 --> top --> null
     q2를 찾지 못함
 */
-
 IDE_RC qmvWith::validate( qcStatement * aStatement )
 {
-    qcStmtListMgr     * sStmtListMgr = NULL;
+    qcStmtListMgr     * sStmtListMgr; /* BUG-45994 - 컴파일러 최적화 회피 */
     qmsWithClause     * sWithClause;
     qmsParseTree      * sParseTree;
     qmsParseTree      * sViewParseTree = NULL;
@@ -129,6 +128,9 @@ IDE_RC qmvWith::validate( qcStatement * aStatement )
 
     sParseTree = (qmsParseTree*)aStatement->myPlan->parseTree;
     sStmtListMgr = aStatement->myPlan->stmtListMgr;
+
+    /* BUG-45994 */
+    IDU_FIT_POINT_FATAL( "qmvWith::validate::__FT__::STAGE1" );
 
     // codesonar::Null Pointer Dereference
     IDE_FT_ERROR( sStmtListMgr != NULL );
@@ -259,6 +261,7 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
 {
     qcWithStmt     * sCurWithStmt;
     idBool           sIsFound =  ID_FALSE;
+    qmsQuerySet    * sQuerySet = NULL;
 
     IDU_FIT_POINT_FATAL( "qmvWith::parseViewInTableRef::__FT__" );
 
@@ -312,6 +315,11 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
                     aTableRef->tempRecursiveView = aTableRef->view;
                     
                     aTableRef->view = NULL;
+
+                    /* BUG-46932 from 절에 recursive with view를 사용하고 있다 */
+                    sQuerySet = ((qmsParseTree*)aStatement->myPlan->parseTree)->querySet;
+                    sQuerySet->flag &= ~QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK;
+                    sQuerySet->flag |= QMV_QUERYSET_FROM_RECURSIVE_WITH_TRUE;
 
                     // 다음 부터는 하위 recursive view이다.
                     sCurWithStmt->isTop = ID_FALSE;

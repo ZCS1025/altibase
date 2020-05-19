@@ -40,7 +40,7 @@ typedef struct AssocFetchListItem
 class mmdXid
 {
 private:
-    smiTrans   *mTrans;
+    mmcTransObj *mTrans;
 
     mmdXidMutex *mMutex;
     idBool       mMutexNeedDestroy;
@@ -56,7 +56,7 @@ private:
 public:
     /* BUG-18981 */
     IDE_RC initialize(ID_XID           *aUserXid,
-                      smiTrans         *aTrans,
+                      mmcTransObj      *aTrans,
                       mmdXidHashBucket *aBucket);
     IDE_RC finalize(mmdXidHashBucket *aBucket, idBool aFreeTrans);
 
@@ -85,7 +85,7 @@ public:
     /* BUG-18981 */
     ID_XID        *getXid();
     iduListNode   *getLstNode();
-    smiTrans   *getTrans();
+    mmcTransObj   *getTransPtr();
 
     mmdXaState  getState();
     void        setState(mmdXaState aState);
@@ -157,7 +157,7 @@ inline iduList *mmdXid::getLstNode()
     return &mListNode;
 }
 
-inline smiTrans *mmdXid::getTrans()
+inline mmcTransObj *mmdXid::getTransPtr()
 {
     return mTrans;
 }

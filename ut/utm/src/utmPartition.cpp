@@ -608,6 +608,10 @@ void toPartitionMethodStr(utmPartTables* aPartTableInfo,
         case UTM_PARTITION_METHOD_LIST:
             idlOS::strcpy(aRetMethodName, "LIST");
             break;
+        /* BUG-46065 Range Using hash */
+        case UTM_PARTITION_METHOD_RANGE_USING_HASH:
+            idlOS::strcpy(aRetMethodName, "RANGE_USING_HASH");
+            break;
         default:    // UTM_PARTITION_METHOD_NONE or etc..
             idlOS::strcpy(aRetMethodName, "NONE");
     }
@@ -882,6 +886,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
     switch (aPartTablesInfo->m_partitionMethod)
     {
         case UTM_PARTITION_METHOD_RANGE:
+        case UTM_PARTITION_METHOD_RANGE_USING_HASH: /* BUG-46065 range using hash */
             idlOS::strcpy(sPartitionConditionStr, "VALUES LESS THAN");
             break;
         case UTM_PARTITION_METHOD_HASH:
@@ -952,6 +957,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
         {
             case UTM_PARTITION_METHOD_RANGE:
             case UTM_PARTITION_METHOD_LIST:
+            case UTM_PARTITION_METHOD_RANGE_USING_HASH: /* BUG-46065 range using hash */
                 if (sPartitionMaxValueInd != SQL_NULL_DATA)
                 {
                     sDdlPos += idlOS::sprintf( aDdl + sDdlPos, 

@@ -1286,19 +1286,23 @@ qmnDETE::deleteOneRow( qcTemplate * aTemplate,
     smiValue           sWhereSmiValues[QC_MAX_COLUMN_COUNT];
     idBool             sIsDiskTableOrPartition;
 
-    /* BUG-39399 remove search key preserved table */
-    if ( ( sCodePlan->flag & QMNC_DETE_VIEW_MASK )
-         == QMNC_DETE_VIEW_TRUE )
+    if ( ( sCodePlan->flag & QMNC_DETE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_DETE_VIEW_KEY_PRESERVED_FALSE )
     {
-        IDE_TEST( checkDuplicateDelete( sCodePlan,
-                                        sDataPlan )
-                  != IDE_SUCCESS );
+        /* BUG-39399 remove search key preserved table */
+        if ( ( sCodePlan->flag & QMNC_DETE_VIEW_MASK )
+             == QMNC_DETE_VIEW_TRUE )
+        {
+            IDE_TEST( checkDuplicateDelete( sCodePlan,
+                                            sDataPlan )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing To Do */
+        }
     }
-    else
-    {
-        /* Nothing To Do */
-    }
-
+    
     //-----------------------------------
     // copy old row
     //-----------------------------------
@@ -1363,6 +1367,25 @@ qmnDETE::deleteOneRow( qcTemplate * aTemplate,
     // delete one row
     //-----------------------------------
 
+    if ( ( sCodePlan->flag & QMNC_DETE_VIEW_KEY_PRESERVED_MASK )
+         == QMNC_DETE_VIEW_KEY_PRESERVED_TRUE )
+    {
+        // PROJ-2204 join update, delete
+        // tuple 원복시 cursor도 원복해야한다.
+        if ( ( sCodePlan->flag & QMNC_DETE_VIEW_MASK )
+             == QMNC_DETE_VIEW_TRUE )
+        {
+            IDE_TEST( sDataPlan->deleteCursor->setRowPosition(
+                          sDataPlan->deleteTuple->row,
+                          sDataPlan->deleteTuple->rid )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    
     if ( sDataPlan->retryInfo.mIsWithoutRetry == ID_TRUE )
     {
         if ( sCodePlan->tableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
@@ -1800,8 +1823,7 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
         while( sSearchRow != NULL )
         {
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
         
             //------------------------------------------
             // Child Table에 대한 Referencing 검사
@@ -1817,8 +1839,7 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
                       != IDE_SUCCESS );
         
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
         
             sOrgRow = sSearchRow = aDeleteTuple->row;
 
@@ -1838,6 +1859,13 @@ qmnDETE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
     
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnDETE::checkDeleteChildRefOnScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION( ERR_NOT_FOUND )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,

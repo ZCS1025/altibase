@@ -1,4 +1,4 @@
-/** 
+/**
  *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 
 /***********************************************************************
  * $Id$
@@ -45,17 +45,17 @@ typedef struct qmxFastScanInfo
     qmncSCAN            * scan;
     qcmIndex            * index;
     const void          * indexHandle;
-    
+
     void                * mtdValue[QC_MAX_KEY_COLUMN_COUNT * 2];
     smiRange            * keyRange;
     smiRange              range;
     qtcMetaRangeColumn    rangeColumn[QC_MAX_KEY_COLUMN_COUNT * 2];
-    
+
     smiTableCursor        cursor;
     smiCursorProperties   property;
     idBool                inited;
     idBool                opened;
-    
+
     const void          * row;
     scGRID                rid;
 
@@ -65,7 +65,7 @@ typedef struct qmxFastScanInfo
     qmxFastRowInfo      * curRowInfo;
     qmxFastRow          * curRow;
     UInt                  curIdx;
-    
+
 } qmxFastScanInfo;
 
 // PROJ-2551 simple query 최적화
@@ -81,7 +81,7 @@ public:
                                UChar        * aShmResult,
                                UInt         * aResultSize,
                                UInt         * aRowCount );
-    
+
     static IDE_RC fastMoveNextResult( qcStatement  * aStatement,
                                       idBool       * aRecordExist );
 
@@ -101,14 +101,14 @@ private:
                                        SInt                   aIndicator,
                                        UChar                * aBindBuffer,
                                        mtdDateType          * aDate );
-    
+
     static IDE_RC getSimpleCValue( qmnValueInfo             * aValueInfo,
                                    void                    ** aMtdValue,
                                    struct qciBindParamInfo  * aParamInfo,
                                    UChar                    * aBindBuffer,
                                    SChar                   ** aBuffer,
                                    idBool                     aNeedCanonize );
-    
+
     static IDE_RC getSimpleConstMtdValue( qcStatement  * aStatement,
                                           mtcColumn    * aColumn,
                                           void       ** aMtdValue,
@@ -120,16 +120,16 @@ private:
 
     static IDE_RC getSimpleMtdBigint( struct qciBindParam  * aParam,
                                       mtdBigintType        * aValue );
-    
+
     static IDE_RC getSimpleMtdNumeric( struct qciBindParam  * aParam,
                                        mtdNumericType       * aValue );
-    
+
     static IDE_RC getSimpleMtdValue( qmnValueInfo             * aValueInfo,
                                      void                    ** aMtdValue,
                                      struct qciBindParamInfo  * aParamInfo,
                                      SChar                   ** aBuffer,
                                      idBool                     aNeedCanonize );
-    
+
     static IDE_RC getSimpleMtdValueSize( mtcColumn * aColumn,
                                          void      * aMtdValue,
                                          UInt      * aSize );
@@ -149,7 +149,7 @@ private:
                                       smiRange            ** aKeyRange,
                                       idBool               * aIsNull,
                                       SChar               ** aBuffer );
-    
+
     static IDE_RC makeSimpleKeyRange( qcStatement          * aStatement,
                                       struct qmncSCAN      * aSCAN,
                                       qcmIndex             * aIndex,
@@ -169,7 +169,7 @@ private:
                                         void               ** aMtdValue,
                                         qtcMetaRangeColumn  * aRangeColumn,
                                         idBool              * aIsNull );
-    
+
     static IDE_RC calculateSimpleValues( qcStatement      * aStatement,
                                          struct qmncUPTE  * aUPTE,
                                          UChar            * aBindBuffer,
@@ -180,7 +180,7 @@ private:
     static IDE_RC isSimpleNullValue( mtcColumn  * aColumn,
                                      const void * aValue,
                                      idBool     * aIsNull );
-    
+
     static IDE_RC checkSimpleNullValue( mtcColumn  * aColumn,
                                         const void * aValue );
 
@@ -191,7 +191,7 @@ private:
     static IDE_RC calculateSimpleToChar( qmnValueInfo * aValueInfo,
                                          mtdDateType  * aDateValue,
                                          mtdCharType  * aCharValue );
-    
+
     static IDE_RC executeFastSelect( smiTrans     * aSmiTrans,
                                      qcStatement  * aStatement,
                                      UShort       * aBindColInfo,
@@ -216,21 +216,58 @@ private:
                               SChar            * aBuffer,
                               qmxFastScanInfo  * aScanInfo,
                               UInt               aScanIndex );
-    
+
     static IDE_RC executeFastInsert( smiTrans     * aSmiTrans,
                                      qcStatement  * aStatement,
                                      UChar        * aBindBuffer,
                                      UInt         * aRowCount );
-    
+
     static IDE_RC executeFastUpdate( smiTrans     * aSmiTrans,
                                      qcStatement  * aStatement,
                                      UChar        * aBindBuffer,
                                      UInt         * aRowCount );
-    
+
     static IDE_RC executeFastDelete( smiTrans     * aSmiTrans,
                                      qcStatement  * aStatement,
                                      UChar        * aBindBuffer,
                                      UInt         * aRowCount );
+
+    static IDE_RC executeFastPartitionSelect( smiTrans     * aSmiTrans,
+                                              qcStatement  * aStatement,
+                                              UShort       * aBindColInfo,
+                                              UChar        * aBindBuffer,
+                                              UInt           aShmSize,
+                                              UChar        * aShmResult,
+                                              UInt         * aResultSize,
+                                              UInt         * aRowCount );
+
+    static IDE_RC executeFastPartitionInsert( smiTrans     * aSmiTrans,
+                                              qcStatement  * aStatement,
+                                              UChar        * aBindBuffer,
+                                              UInt         * aRowCount );
+
+    static IDE_RC executeFastPartitionUpdate( smiTrans     * aSmiTrans,
+                                              qcStatement  * aStatement,
+                                              UChar        * aBindBuffer,
+                                              UInt         * aRowCount );
+
+    static IDE_RC executeFastPartitionDelete( smiTrans     * aSmiTrans,
+                                              qcStatement  * aStatement,
+                                              UChar        * aBindBuffer,
+                                              UInt         * aRowCount );
+
+    static IDE_RC makeSimplePartKeyRange( qcStatement          * aStatement,
+                                          struct qmncPCRD      * aPCRD,
+                                          UChar                * aBindBuffer,
+                                          void                ** aMtdValue,
+                                          mtcColumn            * aPartKeyColumns,
+                                          UInt                 * aPartKeyColsFlag,
+                                          smiRange             * aRange,
+                                          mtkRangeCallBack     * aMinimumCallBack,
+                                          mtkRangeCallBack     * aMaximumCallBack,
+                                          smiRange            ** aKeyRange,
+                                          idBool               * aIsNull,
+                                          SChar               ** aBuffer );
 };
 
 #endif  // _Q_QMX_H_

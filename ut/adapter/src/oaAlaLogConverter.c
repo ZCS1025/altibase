@@ -185,13 +185,9 @@ static ace_rc_t getLogRecordValueMaxLength( oaContext    * aContext,
             break;
 
         case ALA_DATA_TYPE_DATE:
-#if defined(ALTIADAPTER) || defined(JDBCADAPTER)
             /* BUG-43020 "YYYY/MM/DD HH24:MI:SS.SSSSSS" */
             *aMaxLength = 26 + 1;
-#else
-            /* BUGBUG : "YYYY/MM/DD HH24:MI:SS" Format. BUG-32998 참고 */
-            *aMaxLength = 19 + 1;
-#endif
+
             break;
 
         case ALA_DATA_TYPE_CHAR :
@@ -265,6 +261,7 @@ static ace_rc_t initializeLogRecordColumn( oaContext          * aContext,
     ALA_Column        * sColumnMeta = NULL;
     oaLogRecordColumn * sLogRecordColumnArray = NULL;
     oaLogRecordColumn * sLogRecordColumn = NULL;
+    ALA_BOOL            sIsHiddenColumn = ALA_FALSE;
 
     sAcpRC = acpMemCalloc( (void **)&sLogRecordColumnArray,
                            aTable->mColumnCount,
@@ -301,9 +298,17 @@ static ace_rc_t initializeLogRecordColumn( oaContext          * aContext,
         ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_MEM_CALLOC );
 
         ACE_TEST( ALA_IsHiddenColumn( sColumnMeta,
-                                      &(sLogRecordColumn->mIsHidden),
+                                      &sIsHiddenColumn,
                                       (ALA_ErrorMgr*)aAlaErrorMgr )
                   != ALA_SUCCESS );
+        if ( sIsHiddenColumn == ALA_FALSE )
+        {
+            sLogRecordColumn->mIsHidden = ACP_FALSE;
+        }
+        else
+        {
+            sLogRecordColumn->mIsHidden = ACP_TRUE;
+        }
     }
 
     *aLogRecordColumn = sLogRecordColumnArray;
@@ -372,6 +377,7 @@ static ace_rc_t initializeLogRecordPrimaryKey( oaContext          * aContext,
     ALA_Column        * sColumnMeta = NULL;
     oaLogRecordColumn * sLogRecordColumnArray = NULL;
     oaLogRecordColumn * sLogRecordColumn = NULL;
+    ALA_BOOL            sIsHiddenColumn = ALA_FALSE;    
 
     sAcpRC = acpMemCalloc( (void **)&sLogRecordColumnArray,
                            aTable->mPKColumnCount,
@@ -408,9 +414,17 @@ static ace_rc_t initializeLogRecordPrimaryKey( oaContext          * aContext,
         ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS(sAcpRC), ERROR_MEM_CALLOC );
 
         ACE_TEST( ALA_IsHiddenColumn( sColumnMeta,
-                                      &(sLogRecordColumn->mIsHidden),
+                                      &sIsHiddenColumn,
                                       (ALA_ErrorMgr*)aAlaErrorMgr )
                   != ALA_SUCCESS );
+        if ( sIsHiddenColumn == ALA_FALSE )
+        {
+            sLogRecordColumn->mIsHidden = ACP_FALSE;
+        }
+        else
+        {
+            sLogRecordColumn->mIsHidden = ACP_TRUE;
+        }
     }
 
     *aLogRecordColumn = sLogRecordColumnArray;
@@ -868,17 +882,17 @@ static ace_rc_t findTableInfoAndLogRecordBox(oaContext *aContext,
                                              logRecordBox **aLogRecordBox)
 {
     acp_sint32_t i = 0;
-    acp_bool_t sFlagFound = ALA_FALSE;
+    acp_bool_t sFlagFound = ACP_FALSE;
 
     for (i = 0; i < aHandle->mTableCount; i++)
     {
         if (aHandle->mTableInfo[i].mAlaTable->mTableOID == aTableOID)
         {
-            sFlagFound = ALA_TRUE;
+            sFlagFound = ACP_TRUE;
             break;
         }
     }
-    ACE_TEST_RAISE(sFlagFound != ALA_TRUE, ERROR_TABLE_INFO_NOT_EXIST);
+    ACE_TEST_RAISE(sFlagFound != ACP_TRUE, ERROR_TABLE_INFO_NOT_EXIST);
 
     *aTableInfo = &(aHandle->mTableInfo[i]);
     *aLogRecordBox = &(aHandle->mLogRecordBox[i]);
@@ -915,7 +929,7 @@ static void convertAlaDateToText( ALA_Value         * aAlaValue,
 #ifdef JDBCADAPTER
     (void)acpSnprintf(sValue,
                       aLogRecordColumn->mMaxLength,
-                      "%d-%d-%d %d:%d:%d.%d",
+                      "%04d-%02d-%02d %02d:%02d:%02d.%06d",
                       sDateValue->mYear,
                       (sDateValue->mMonDayHour & 0x3c00) >> 10,
                       (sDateValue->mMonDayHour & 0x03e0) >> 5,
@@ -926,7 +940,7 @@ static void convertAlaDateToText( ALA_Value         * aAlaValue,
 #else    
     (void)acpSnprintf(sValue,
                       aLogRecordColumn->mMaxLength,
-                      "%4d/%2d/%2d %2d:%2d:%2d.%6d",
+                      "%04d/%02d/%02d %02d:%02d:%02d.%06d",
                       sDateValue->mYear,
                       (sDateValue->mMonDayHour & 0x3c00) >> 10,
                       (sDateValue->mMonDayHour & 0x03e0) >> 5,

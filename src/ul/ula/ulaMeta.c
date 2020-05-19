@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: ulaMeta.c 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: ulaMeta.c 83269 2018-06-15 07:08:32Z donghyun1 $
  **********************************************************************/
 
 #include <acp.h>
@@ -351,9 +351,9 @@ ACI_RC ulaMetaRecvMeta(ulaMeta            * aMeta,
     ACI_TEST_RAISE(acpCStrCaseCmp(aMeta->mReplication.mXLogSenderName,
                                   aXLogSenderName,
                                   ULA_NAME_LEN) != 0, ERR_XLOG_SENDER_NAME);
-
     /* ROLE을 확인한다. */
-    ACI_TEST_RAISE(sTempInfo.mRole != ULA_ROLE_ANALYSIS, ERR_ROLE);
+    ACI_TEST_RAISE( ( sTempInfo.mRole != ULA_ROLE_ANALYSIS ) && 
+                    ( sTempInfo.mRole != ULA_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE);
 
     /* Replication Flags를 확인한다. */
     ACI_TEST_RAISE((sTempInfo.mFlags & ULA_WAKEUP_PEER_SENDER_MASK)

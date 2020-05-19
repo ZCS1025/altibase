@@ -19,6 +19,7 @@ package Altibase.jdbc.driver;
 import java.sql.ParameterMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnInfo;
@@ -62,7 +63,8 @@ public class AltibaseParameterMetaData implements ParameterMetaData
 
     public int getParameterType(int aParamIndex) throws SQLException
     {
-        return ((Column)mColumns.get(aParamIndex - 1)).getMappedJDBCTypes()[0];
+        Set<Integer> sMappedJdbcTypeSet = ((Column)mColumns.get(aParamIndex - 1)).getMappedJDBCTypes();
+        return sMappedJdbcTypeSet.iterator().next();
     }
 
     public String getParameterTypeName(int aParamIndex) throws SQLException

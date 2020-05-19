@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdDate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtdDate.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -96,14 +96,15 @@ static
     const char* gRMMonth[12] = {
         "I", "II", "III", "IV", "V", "VI",
         "VII", "VIII", "IX", "X", "XI", "XII"
-    };
+};
 static
     const char* grmMonth[12] = {
         "i", "ii", "iii", "iv", "v", "vi",
         "vii", "viii", "ix", "x", "xi", "xii"
     };
 
-mtdDateType mtdDateNull = { -32768, 0, 0 };
+const mtdDateType mtdDateNull = { -32768, 0, 0 }; /* PROJ-2632 */
+
 const UChar mtdDateInterface::mNONE   = 0;
 const UChar mtdDateInterface::mDIGIT  = 1;
 const UChar mtdDateInterface::mALPHA  = 2;
@@ -5366,6 +5367,74 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                                                sStringMaxLen,
                                                "%"ID_INT32_FMT,
                                                mtc::weekOfYearForStandard( sYear, sMonth, sDay ) );
+                }
+                break;
+
+            case MTD_DATE_FORMAT_IYYY :   /* BUG-46727 TO_CHAR()에 IYYY 추가 */
+                if ( sIsFillMode == ID_FALSE )
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%04"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) );
+                }
+                else
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) );
+                }
+                break;
+
+            case MTD_DATE_FORMAT_IYY :   /* BUG-46727 TO_CHAR()에 IYY 추가 */
+                if ( sIsFillMode == ID_FALSE )
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%03"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) % 1000 );
+                }
+                else
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) % 1000 );
+                }
+                break;
+
+            case MTD_DATE_FORMAT_IY :   /* BUG-46727 TO_CHAR()에 IY 추가 */
+                if ( sIsFillMode == ID_FALSE )
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%02"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) % 100);
+                }
+                else
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) % 100 );
+                }
+                break;
+
+            case MTD_DATE_FORMAT_I :   /* BUG-46727 TO_CHAR()에 I 추가 */
+                if ( sIsFillMode == ID_FALSE )
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%01"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) % 10 );
+                }
+                else
+                {
+                    sLength = idlOS::snprintf( (SChar *) sString,
+                                               sStringMaxLen,
+                                               "%"ID_INT32_FMT,
+                                               mtc::yearForStandard( sYear, sMonth, sDay ) % 10 );
                 }
                 break;
 

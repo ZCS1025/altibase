@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCommand.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLCommand.h 85096 2019-03-28 04:04:46Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLCOMMAND_H_
@@ -66,12 +66,6 @@ public:
     SChar           * GetCommandStr()
                                       { return m_CommandStr; }
 
-/* BUG-37166 isql does not consider double quotation when it parses
- * stored procedure's arguments */
-    void              SetArgList( SChar * a_ArgList );
-    SChar           * GetArgList()
-                                      { return m_ArgList; }
-    
     void              SetShellCommand(SChar * a_ShellCommand);
     SChar           * GetShellCommand()
                                       { return m_ShellCommand; }
@@ -243,6 +237,7 @@ public:
     static IDE_RC     executeDescTable();
     static IDE_RC     executeDescDollarTable();
     static IDE_RC     executeProc();
+    static IDE_RC     executeAnonymBlock(); /* BUG-46733 */
     static IDE_RC     executeExit();
     static IDE_RC     executeEdit();
     static IDE_RC     executeHelp();
@@ -273,6 +268,7 @@ public:
     static IDE_RC     executeShowFixedTables();
     static IDE_RC     executeShowDumpTables();
     static IDE_RC     executeShowPerfViews();
+    static IDE_RC     executeShowShardPerfViews();  /* BUG-45646 */
     static IDE_RC     executeShowSequences();
     static IDE_RC     executeDeclareVar();
     static IDE_RC     executeAssignVar();
@@ -290,7 +286,6 @@ private:
 
     SChar           * m_Query;                    // query for SQLExecDirect()
     SChar           * m_CommandStr;               // add history
-    SChar           * m_ArgList;                  // BUG-37166
     SChar             m_ShellCommand[WORD_LEN];   // !shell_command
 
     idBool            m_OnOff;

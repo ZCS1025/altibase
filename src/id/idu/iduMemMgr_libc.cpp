@@ -41,12 +41,10 @@ IDE_RC iduMemMgr::libc_destroyStatic(void)
 
 void iduMemMgr::libc_getHeader(void* aMemPtr,
                                void** aHeader1,
-                               void** aHeader2,
-                               void** aTailer)
+                               void** aHeader2)
 {
     iduMemLibcHeader*  sHeader1;
     iduMemLibcHeader*  sHeader2;
-    iduMemLibcHeader** sTailer1;
     iduMemLibcHeader** sTailer2;
 
     SChar*              sMemPtr = (SChar*)aMemPtr;
@@ -57,14 +55,10 @@ void iduMemMgr::libc_getHeader(void* aMemPtr,
                                      - sizeof(iduMemLibcHeader) - sizeof(void*));
     sHeader1 = *sTailer2;
 
-    sTailer1 = (iduMemLibcHeader**)(sMemPtr + sHeader1->mAllocSize
-                                     - sizeof(iduMemLibcHeader) - sizeof(void*));
-
-    IDE_DASSERT(sHeader1 == *sTailer2);
+    IDE_DASSERT( sHeader1 == sHeader2 );
 
     *aHeader1 = (void*)sHeader1;
     *aHeader2 = (void*)sHeader2;
-    *aTailer  = (void*)sTailer1;
 }
 
 IDE_RC iduMemMgr::libc_malloc(iduMemoryClientIndex   aIndex,
@@ -104,6 +98,11 @@ IDE_RC iduMemMgr::libc_malign(iduMemoryClientIndex   aIndex,
                               ULong                  aAlign,
                               void                 **aMemPtr)
 {
+    IDE_DASSERT(aMemPtr != NULL);
+
+#if defined(ALTI_CFG_OS_LINUX) || defined(ALTI_CFG_OS_HPUX) 
+    *aMemPtr = (SChar*)memalign(aAlign, aSize);
+#elif defined(ALTI_CFG_OS_AIX)
     ULong               sBlockSize;
     ULong               sAllocSize;
     ULong               sAddr;
@@ -157,12 +156,17 @@ IDE_RC iduMemMgr::libc_malign(iduMemoryClientIndex   aIndex,
 
         *aMemPtr = (void*)(sHeader2 + 1);
     }
+#else
+#error not_implemented
+#endif
+    IDE_TEST(*aMemPtr == NULL);
 
-    server_statupdate(aIndex, (SLong)sAllocSize, 1);
+    server_statupdate(aIndex, (SLong)aSize, 1);
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+    IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerError ));
     return IDE_FAILURE;
 }
 
@@ -217,8 +221,7 @@ IDE_RC iduMemMgr::libc_realloc(iduMemoryClientIndex  aIndex,
     SChar*              sMemPtr;
 
     IDE_DASSERT(aMemPtr != NULL);
-    libc_getHeader(*aMemPtr, (void**)&sHeader1,
-                   (void**)&sHeader2, (void**)&sTailer);
+    libc_getHeader(*aMemPtr, (void**)&sHeader1, (void**)&sHeader2);
     sNewSize = idlOS::align8(aSize + ID_SIZEOF(iduMemLibcHeader)) + ID_SIZEOF(void*);
     sOldSize = sHeader1->mAllocSize;
 
@@ -268,21 +271,30 @@ IDE_RC iduMemMgr::libc_realloc(iduMemoryClientIndex  aIndex,
     return IDE_FAILURE;
 }
 
-IDE_RC iduMemMgr::libc_free(void *aMemPtr)
+IDE_RC iduMemMgr::libc_free(void                   *aMemPtr)
 {
     iduMemLibcHeader*  sHeader1;
     iduMemLibcHeader*  sHeader2;
-    iduMemLibcHeader** sTailer;
 
     IDE_DASSERT(aMemPtr != NULL);
-    libc_getHeader(aMemPtr, (void**)&sHeader1,
-                   (void**)&sHeader2, (void**)&sTailer);
+
+    libc_getHeader(aMemPtr, (void**)&sHeader1, (void**)&sHeader2);
     server_statupdate((iduMemoryClientIndex)sHeader1->mClientIndex,
                       -((SLong)sHeader1->mAllocSize), -1);
 
     /* sHeader1 is always the header block */
     idlOS::free(sHeader1);
 
+    return IDE_SUCCESS;
+}
+
+IDE_RC iduMemMgr::libc_free4malign(void                   *aMemPtr,
+                                   iduMemoryClientIndex    aIndex,
+                                   ULong                   aSize)
+{
+    idlOS::free(aMemPtr);
+    server_statupdate(aIndex, 
+                     -(SLong)aSize, -1);
     return IDE_SUCCESS;
 }
 

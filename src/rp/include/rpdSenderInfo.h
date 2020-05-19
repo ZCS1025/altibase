@@ -58,7 +58,8 @@ public:
                      smSN         aRestartSN,
                      SInt         aReplMode,
                      SInt         aRole,
-                     rpxSender  ** aAssignedTransactionTable);
+                     UInt         aSenderListIdx,
+                     rpxSender ** aAssignedTransactionTable );
         
     void   setAbortTransaction(UInt     aAbortTxCount,
                                rpTxAck *aAbortTxList);
@@ -68,9 +69,6 @@ public:
 
     smSN   getRestartSN();
     void   setRestartSN(smSN aRestartSN);
-    
-    smSN   getMinWaitSN();
-    void   setMinWaitSN(smSN aMinWaitSN);
     
     smSN   getRmtLastCommitSN();
     void   setRmtLastCommitSN(smSN aRmtLastCommitSN);
@@ -102,9 +100,6 @@ public:
                           smTID    aTID );
 
     idBool isActiveTrans(smTID aTID);
-
-    //BUG-22173 : V$REPSENDER act_repl_mode 추가
-    inline idBool getIsExceedRepGap(){ return mIsExceedRepGap; }
 
     void                setSenderStatus(RP_SENDER_STATUS aStatus);
     RP_SENDER_STATUS    getSenderStatus();
@@ -142,15 +137,8 @@ private:
     smSN calcurateCurrentGap( smSN aCurrentSN );
 
 private:
-    // PROJ-1541: sender, sender apply, service thread가 공유하는 자료
-    // mMinWaitSN: 현재 대기 중인 service thread가 대기상태에서 해제되기 위해
-    // 필요로 하는 최소 SN
-
-    //Sender,SenderApply,Service Thread가 공유하는 자료구조
-    //Service Thread의 Commit시 Wait여부와 관련된 자료구조
     iduMutex            mServiceSNMtx;
     iduCond             mServiceWaitCV;
-    smSN                mMinWaitSN; 
     smSN                mLastProcessedSN;
     smSN                mLastArrivedSN;
     
@@ -163,6 +151,8 @@ private:
      */
     iduMutex            mAssignedTransTableMutex;
     rpxSender        ** mAssignedTransTable;
+
+    UInt                mSenderListIndex;
 
     UInt                mTransTableSize;
 
@@ -178,8 +168,6 @@ private:
 
     //mIsActive를 update하기 위해서는 모든 Mutex를 획득해야함(activate,deActivate)
     idBool              mIsActive;
-
-    idBool              mIsExceedRepGap;//BUG-22173 : V$REPSENDER act_repl_mode 추가
 
     // Failback을 위해 필요한 데이터
     RP_SENDER_STATUS    mSenderStatus;
@@ -198,6 +186,10 @@ private:
     idBool               mIsRebuildIndex;
 
     UInt                mThroughput;
+    
+    idBool              mIsSkipUpdateXSN;
+
+    idBool              mIsWaitOnFailback;
 public:
     SInt                mOriginReplMode;
     UInt                mReconnectCount;
@@ -210,7 +202,15 @@ private:
     rpdLastProcessedSNNode * mLastProcessedSNTable;
 
 private:
-    idBool      needWait( smTID aTID );
+    void        checkAndWaitToApply( smTID      aTransID,
+                                     smSN       aLastSN,
+                                     idBool   * aWaitedLastSN );
+    idBool      needWait( RP_SENDER_STATUS  aSenderStatus,
+                          smTID             aTransID,
+                          smSN              aLastSN,
+                          idBool            aAlreadyLocked,
+                          idBool          * aWaitedLastSN );
+
     void        removeAssignedSender( smTID    aTransID );
 
 public:
@@ -219,6 +219,16 @@ public:
     idBool      isTransAcked( smTID aTransID );
     idBool      isAllTransFlushed( smSN aCurrentSN );
     void        initializeLastProcessedSNTable( void );
+    IDE_RC      waitLastProcessedSN( idvSQL * aStatistics,
+                                     idBool * aExitFlag,
+                                     smSN     aLastSN );
+    void        setSkipUpdateXSN( idBool aIsSkip );
+    idBool      getSkipUpdateXSN( void );
+
+    inline UInt getSenderListIndex( void )
+    {
+        return mSenderListIndex;
+    }
 };
 
 #endif //_O_RPD_SENDER_INFO_H_

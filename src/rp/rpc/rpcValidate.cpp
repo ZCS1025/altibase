@@ -22,6 +22,7 @@
 #include <idl.h>
 #include <ide.h>
 #include <rpi.h>
+#include <cm.h>
 #include <cmi.h>
 #include <qci.h>
 #include <rpcValidate.h>
@@ -55,6 +56,7 @@ qciValidateReplicationCallback rpcValidate::mCallback =
         rpcValidate::validateAlterSetGapless,
         rpcValidate::validateAlterSetParallel,
         rpcValidate::validateAlterSetGrouping,
+        rpcValidate::validateAlterSetDDLReplicate,
         rpcValidate::validateAlterPartition
 };
 
@@ -67,12 +69,13 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     SChar              sHostIP[QC_MAX_IP_LEN + 1];
     qriReplItem      * sReplItem;
     idBool             sIsExist;
-    SInt               sTCPCount = 0;
+    SInt               sNetworkCount = 0;
     SInt               sUnixDomainCount = 0;
     idBool             sIsRecoveryOpt = ID_FALSE;
     idBool             sIsGroupingOpt = ID_FALSE;
     idBool             sIsParallelOpt = ID_FALSE;
-    idBool             sIsGaplessReplOpt = ID_FALSE;
+    idBool             sIsDDLReplicateOpt = ID_FALSE;
+    idBool             sIsGaplessReplOpt  = ID_FALSE;
     idBool             sIsLocalReplOpt = ID_FALSE;
     SChar              sReplName[ QCI_MAX_NAME_LEN + 1 ]     = { 0, };
     SChar              sPeerReplName[ QCI_MAX_NAME_LEN + 1 ] = { 0, };
@@ -154,6 +157,18 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
             /* do nothing */
         }
 
+        if ( sReplOptions->optionsFlag == RP_OPTION_DDL_REPLICATE_SET )
+        {
+            IDE_TEST_RAISE( sIsDDLReplicateOpt == ID_TRUE,
+                            ERR_DUPLICATE_OPTION );
+            
+            sIsDDLReplicateOpt = ID_TRUE;
+        }
+        else
+        {
+            /* do nothing */
+        }
+
         /* BUG-45236 Local Replication 지원 */
         if ( sReplOptions->optionsFlag == RP_OPTION_LOCAL_SET )
         {
@@ -173,9 +188,10 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
         }
     }
 
-    IDE_TEST_RAISE((sParseTree->role == RP_ROLE_ANALYSIS) &&
-                   (sIsRecoveryOpt == ID_TRUE),
-                   ERR_ROLE_NOT_SUPPORT_REPL_OPTION);
+    IDE_TEST_RAISE( ( ( sParseTree->role == RP_ROLE_ANALYSIS ) ||
+                      ( sParseTree->role == RP_ROLE_ANALYSIS_PROPAGATION ) ) &&
+                    ( sIsRecoveryOpt == ID_TRUE ),
+                    ERR_ROLE_NOT_SUPPORT_REPL_OPTION );
 
     /* PROJ-1915 : RP_ROLE_ALNALYSIS 와 OFFLINE 옵션 사용 불가  */
     IDU_FIT_POINT_RAISE( "rpcValidate::validateCreate::Erratic::rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE",
@@ -193,6 +209,23 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     IDE_TEST_RAISE((sParseTree->replMode == RP_EAGER_MODE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_EAGER);
+
+    IDE_TEST_RAISE( ( ( sParseTree->role == RP_ROLE_ANALYSIS ) ||
+                      ( sParseTree->role == RP_ROLE_ANALYSIS_PROPAGATION ) ) &&
+                    ( sIsDDLReplicateOpt == ID_TRUE ),
+                    ERR_ROLE_NOT_SUPPORT_DDL_REPLICATE_OPTION );
+
+    IDE_TEST_RAISE( ( sIsParallelOpt == ID_TRUE ) &&
+                    ( sIsDDLReplicateOpt == ID_TRUE ), 
+                    ERR_NOT_SUPPORT_PARALLEL_WITH_DDL_REPLICATE );
+
+    IDE_TEST_RAISE( ( sParseTree->replMode == RP_EAGER_MODE ) &&
+                    ( sIsDDLReplicateOpt == ID_TRUE ),
+                    ERR_CANNOT_SET_BOTH_EAGER_AND_DDL_REPLICATE );
+
+    IDE_TEST_RAISE( ( sIsOfflineReplOpt == ID_TRUE ) &&
+                    ( sIsDDLReplicateOpt == ID_TRUE ),
+                    ERR_NOT_SUPPORT_OFFLINE_AND_DDL_REPLICATE );
 
     // BUG-17616
     IDE_TEST_RAISE((sParseTree->role == RP_ROLE_ANALYSIS) &&
@@ -235,6 +268,10 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
         }
         else
         {
+            IDE_TEST_RAISE( ( sReplHost->connOpt->connType == RP_SOCKET_TYPE_IB ) &&
+                            ( sParseTree->role == RP_ROLE_ANALYSIS ), 
+                            ERR_ROLE_NOT_SUPPORT_IB );
+
             if ( RPU_REPLICATION_ALLOW_DUPLICATE_HOSTS != 1 )
             {
                 IDE_TEST( rpdCatalog::checkReplicationExistByAddr( aQcStatement,
@@ -254,19 +291,17 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                 IDE_TEST_RAISE( sIsExist == ID_TRUE, ERR_ALREADY_EXIST_REPL_HOST );
             }
 
-            // BUG-18713
             QCI_STR_COPY( sHostIP, sReplHost->hostIp );
-            IDE_TEST_RAISE(isValidIPFormat(sHostIP) != ID_TRUE,
-                           ERR_INVALID_HOST_IP_PORT);
+
             IDE_TEST_RAISE(sReplHost->portNumber > 0xFFFF,
                            ERR_INVALID_HOST_IP_PORT);
 
-            sTCPCount++;
+            sNetworkCount++;
         }
     }
     IDU_FIT_POINT_RAISE( "rpcValidate::validateCreate::Erratic::rpERR_ABORT_RPC_ROLE_SUPPORT_ONE_SOCKET_TYPE",
                         ERR_ROLE_SUPPORT_ONE_SOCKET_TYPE ); 
-    IDE_TEST_RAISE((sUnixDomainCount == 1) && (sTCPCount > 0),
+    IDE_TEST_RAISE((sUnixDomainCount == 1) && (sNetworkCount > 0) ,
                    ERR_ROLE_SUPPORT_ONE_SOCKET_TYPE);
 
     IDU_FIT_POINT_RAISE( "rpcValidate::validateCreate::Erratic::rpERR_ABORT_RPC_ROLE_SUPPORT_ONE_UNIX_DOMAIN",
@@ -302,6 +337,26 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_DUPLICATE_REPL_OPTION));
     }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_PARALLEL_WITH_DDL_REPLICATE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "The parallel option is not supported with DDL replicate option." ) )
+    }
+    IDE_EXCEPTION( ERR_CANNOT_SET_BOTH_EAGER_AND_DDL_REPLICATE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "The DDL replicate option is not supported with eager mode." ) )
+    }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_OFFLINE_AND_DDL_REPLICATE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "The offline option is not supported with DDL replicate option." ) )
+    }
+    IDE_EXCEPTION( ERR_ROLE_NOT_SUPPORT_DDL_REPLICATE_OPTION )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "DDL replication option not supported in this role." ) )
+    }
     IDE_EXCEPTION(ERR_MAX_REPLICATION_COUNT)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_MAX_REPLICATION_COUNT));
@@ -309,6 +364,10 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     IDE_EXCEPTION(ERR_ROLE_NOT_SUPPORT_UNIX_DOMAIN)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_UNIX_DOMAIN));
+    }
+    IDE_EXCEPTION(ERR_ROLE_NOT_SUPPORT_IB)
+    {
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_IB));
     }
     IDE_EXCEPTION(ERR_ROLE_SUPPORT_ONE_SOCKET_TYPE)
     {
@@ -551,7 +610,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
     }
 
     // if a foreign key exist, then error.
-    if(aRole != RP_ROLE_ANALYSIS)   // PROJ-1537
+    if( ( aRole != RP_ROLE_ANALYSIS ) && ( aRole != RP_ROLE_ANALYSIS_PROPAGATION ) )   // PROJ-1537
     {
         // fix BUG-19089
         if( QCU_CHECK_FK_IN_CREATE_REPLICATION_DISABLE == 0 )
@@ -942,8 +1001,12 @@ IDE_RC rpcValidate::validateAlterAddHost(void * aQcStatement)
              != IDE_SUCCESS);
 
     sReplHost = sParseTree->hosts;
-    if(sReplications.mRole == RP_ROLE_ANALYSIS)
+    if( ( sReplications.mRole == RP_ROLE_ANALYSIS ) ||
+        ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ) )
     {
+        IDE_TEST_RAISE( sReplHost->connOpt->connType == RP_SOCKET_TYPE_IB,
+                        ERR_ROLE_NOT_SUPPORT_IB )
+
         IDE_TEST(rpdCatalog::checkHostIPExistByNameAndHostIP(
                      aQcStatement,
                      sParseTree->replName,
@@ -1019,8 +1082,6 @@ IDE_RC rpcValidate::validateAlterAddHost(void * aQcStatement)
 
         // BUG-18713
         QCI_STR_COPY( sHostIP, sReplHost->hostIp );
-        IDE_TEST_RAISE(isValidIPFormat(sHostIP) != ID_TRUE,
-                       ERR_INVALID_HOST_IP_PORT);
         IDE_TEST_RAISE(sReplHost->portNumber > 0xFFFF,
                        ERR_INVALID_HOST_IP_PORT);
     }
@@ -1046,6 +1107,10 @@ IDE_RC rpcValidate::validateAlterAddHost(void * aQcStatement)
     IDE_EXCEPTION(ERR_ALREADY_EXIST_REPL_HOST)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_ALREADY_EXIST_REPL_HOST));
+    }
+    IDE_EXCEPTION(ERR_ROLE_NOT_SUPPORT_IB)
+    {
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_IB));
     }
     IDE_EXCEPTION_END;
 
@@ -1191,6 +1256,7 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
     if ( sParseTree->startOption == RP_START_OPTION_SN )
     {
         IDE_TEST_RAISE( ( sReplications.mRole != RP_ROLE_ANALYSIS ) && 
+                        ( sReplications.mRole != RP_ROLE_ANALYSIS_PROPAGATION ) && 
                         ( RPU_REPLICATION_SET_RESTARTSN == 0 ), 
                         ERR_NOT_SUPPORT_AT_SN_CLAUSE );
     }
@@ -1592,7 +1658,8 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
     //replication role 확인
     IDU_FIT_POINT_RAISE( "rpcValidate::validateAlterSetRecovery::Erratic::rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE",
                         ERR_ROLE ); 
-    IDE_TEST_RAISE(sReplications.mRole == RP_ROLE_ANALYSIS, ERR_ROLE);
+    IDE_TEST_RAISE( ( sReplications.mRole == RP_ROLE_ANALYSIS ) ||
+                    ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
     //recovery option 확인
     //alter replication replication_name RECOVERY = 1
     if(sParseTree->replOptions->optionsFlag == RP_OPTION_RECOVERY_SET)
@@ -1682,7 +1749,11 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
-    IDE_TEST_RAISE(sReplications.mRole == RP_ROLE_ANALYSIS, ERR_ROLE);
+    IDE_TEST_RAISE( ( sReplications.mRole == RP_ROLE_ANALYSIS ) || 
+                    ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
+
+    IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_DDL_REPLICATE_MASK ) ==
+                    RP_OPTION_DDL_REPLICATE_SET, ERR_NOT_SUPPORT_DDL_REPLICATE );
 
     //PROJ-1608 recovery from replication
     if((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
@@ -1770,6 +1841,11 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_DDL_REPLICATE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
+                                  "The offline option is not supported with DDL replicate option." ) );
+    }
     IDE_EXCEPTION(ERR_ROLE)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE));
@@ -1912,6 +1988,9 @@ IDE_RC rpcValidate::validateAlterSetParallel(void * aQcStatement)
                                       ID_FALSE )
               != IDE_SUCCESS);
 
+    IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_DDL_REPLICATE_MASK ) ==
+                    RP_OPTION_DDL_REPLICATE_SET, ERR_NOT_SUPPORT_DDL_REPLICATE );
+
     /* ALTER REPLICATION repl_name SET PARALLEL parallel_factor */
     IDE_DASSERT( sParseTree->replOptions->optionsFlag == RP_OPTION_PARALLEL_RECEIVER_APPLY_SET );
 
@@ -1947,6 +2026,11 @@ IDE_RC rpcValidate::validateAlterSetParallel(void * aQcStatement)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_DDL_REPLICATE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
+                                  "The parallel option is not supported with DDL replicate option." ) );
+    }
     IDE_EXCEPTION( ERR_ALEADY_SET )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_ALREADY_PARALLEL_SET ) );
@@ -2032,6 +2116,93 @@ IDE_RC rpcValidate::validateAlterSetGrouping(void * aQcStatement)
     return IDE_FAILURE;
 }
 
+IDE_RC rpcValidate::validateAlterSetDDLReplicate( void * aQcStatement )
+{
+    qriParseTree    * sParseTree      = NULL;
+    SInt              sDDLReplicateFlag = 0;
+    smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
+    rpdReplications   sReplications;
+
+    sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
+    IDE_DASSERT( sParseTree->replOptions != NULL );
+
+    // check grant
+    IDE_TEST( qciMisc::checkDDLReplicationPriv( aQcStatement )
+              != IDE_SUCCESS);
+
+    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+
+    IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
+                                      sReplications.mRepName,
+                                      &sReplications,
+                                      ID_FALSE )
+              != IDE_SUCCESS);
+
+    IDE_TEST_RAISE( ( sReplications.mRole == RP_ROLE_ANALYSIS ) || 
+                    ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
+
+    IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_PARALLEL_RECEIVER_APPLY_MASK ) ==
+                    RP_OPTION_PARALLEL_RECEIVER_APPLY_SET, ERR_NOT_SUPPORT_PARALLEL );
+
+    IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_OFFLINE_MASK ) ==
+                    RP_OPTION_OFFLINE_SET, ERR_NOT_SUPPORT_OFFLINE );
+
+    /* ALTER REPLICATION repl_name SET DDL_REPLICATE */
+    if ( sParseTree->replOptions->optionsFlag == RP_OPTION_DDL_REPLICATE_SET )
+    {
+        IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_DDL_REPLICATE_MASK ) ==
+                        RP_OPTION_DDL_REPLICATE_SET, ERR_ALEADY_SET );
+        sDDLReplicateFlag = RP_OPTION_DDL_REPLICATE_SET;
+    }
+    else 
+    {
+        IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_DDL_REPLICATE_MASK ) ==
+                        RP_OPTION_DDL_REPLICATE_UNSET, ERR_ALEADY_UNSET );
+        sDDLReplicateFlag = RP_OPTION_DDL_REPLICATE_UNSET;
+    }
+
+    /* GAPLESS 옵션 EAGER replication 동시 사용 불가 */
+    IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
+                    ( sDDLReplicateFlag == RP_OPTION_DDL_REPLICATE_SET ),
+                    ERR_OPTION_DDL_REPLICATE_AND_EAGER );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_PARALLEL )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
+                                  "The DDL replicate is not supported with parallel option." ) );    
+    }
+    IDE_EXCEPTION( ERR_ALEADY_SET )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
+                                  "The DDL replicate option already set." ) );    
+    }
+    IDE_EXCEPTION( ERR_ALEADY_UNSET )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
+                                  "The DDL replicate option already unset." ) );    
+    }
+    IDE_EXCEPTION( ERR_OPTION_DDL_REPLICATE_AND_EAGER )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
+                                  "The DDL replicate is not supported with eager mode." ) );    
+    }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_OFFLINE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "The DDL replicate option is not supported with offline option." ) )
+    }
+    IDE_EXCEPTION( ERR_ROLE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "DDL replication option not supported in this role." ) )
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
                                             qcmTableInfo * aPartInfo )
 {
@@ -2098,6 +2269,15 @@ IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
                                             QC_MAX_OBJECT_NAME_LEN + 1 ) 
                             != 0, ERR_PARTITION_NAME_DIFF );
 
+            if ( ( sReplications[i].mOptions & RP_OPTION_DDL_REPLICATE_MASK )
+                 == RP_OPTION_DDL_REPLICATE_SET )
+            {
+                IDE_TEST_RAISE( idlOS::strncmp( sSrcReplItem->mLocalUsername,
+                                                sSrcReplItem->mRemoteUsername,
+                                                QC_MAX_OBJECT_NAME_LEN + 1 ) 
+                                != 0, ERR_USER_NAME_DIFF );
+            }
+
         }
         else
         {
@@ -2131,6 +2311,11 @@ IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
                                                                    sSrcReplItem->mRemoteTablename,
                                                                    sSrcReplItem->mRemotePartname ) );
     }
+    IDE_EXCEPTION( ERR_USER_NAME_DIFF )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                                  "DDL replication must have the same user name with remote." ) )
+    } 
     IDE_EXCEPTION_END;
 
     if ( sIsAlloced == ID_TRUE )

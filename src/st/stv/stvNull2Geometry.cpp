@@ -58,6 +58,7 @@ static const mtcExecute stvExecute = {
     mtf::calculateNA,
     stvCalculate_Null2Geometry,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

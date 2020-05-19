@@ -211,6 +211,7 @@ typedef struct qciValidateReplicationCallback
     IDE_RC    ( * mValidateAlterSetGapless )  ( void        * aQcStatement );
     IDE_RC    ( * mValidateAlterSetParallel ) ( void        * aQcStatement );
     IDE_RC    ( * mValidateAlterSetGrouping ) ( void        * aQcStatement );
+    IDE_RC    ( * mValidateAlterSetDDLReplicate ) ( void    * aQcStatement );
     IDE_RC    ( * mValidateAlterPartition )   ( void        * aQcStatement,
                                                 qcmTableInfo* aPartInfo );
 } qciValidateReplicationCallback;
@@ -237,6 +238,7 @@ typedef struct qciExecuteReplicationCallback
     IDE_RC    ( * mExecuteAlterSetGapless )        ( void        * aQcStatement );
     IDE_RC    ( * mExecuteAlterSetParallel )       ( void        * aQcStatement );
     IDE_RC    ( * mExecuteAlterSetGrouping )       ( void        * aQcStatement );
+    IDE_RC    ( * mExecuteAlterSetDDLReplicate )   ( void        * aQcStatement );
     IDE_RC    ( * mExecuteAlterSplitPartition )    ( void        * aQcStatement,
                                                      qcmTableInfo   * aTableInfo,
                                                      qcmTableInfo   * aSrcPartInfo,
@@ -251,9 +253,8 @@ typedef struct qciExecuteReplicationCallback
                                                     qcmTableInfo   * aTableInfo,
                                                     qcmTableInfo   * aSrcPartInfo );
     /*------------------- DCL -------------------*/
-    IDE_RC    ( * mExecuteStop )                   ( smiStatement * aSmiStmt,
-                                                     SChar        * aReplName,
-                                                     idvSQL       * aStatistics );
+    IDE_RC    ( * mExecuteStop )                   ( void         * aQcStatement,
+                                                     SChar        * aReplName );                                                    
     IDE_RC    ( * mExecuteFlush )                  ( smiStatement  * aSmiStmt,
                                                      SChar         * aReplName,
                                                      rpFlushOption * aFlushOption,
@@ -298,8 +299,15 @@ typedef struct qciManageReplicationCallback
 
 } qciManageReplicationCallback;
 
-typedef qcmTableInfo qciTableInfo;
+typedef qcmAccessOption qciAccessOption;
 
+#define QCI_ACCESS_OPTION_NONE        QCM_ACCESS_OPTION_NONE
+#define QCI_ACCESS_OPTION_READ_ONLY   QCM_ACCESS_OPTION_READ_ONLY
+#define QCI_ACCESS_OPTION_READ_WRITE  QCM_ACCESS_OPTION_READ_WRITE
+#define QCI_ACCESS_OPTION_READ_APPEND QCM_ACCESS_OPTION_READ_APPEND
+
+typedef qcmTableInfo qciTableInfo;
+typedef qcmPartitionInfoList  qciPartitionInfoList;
 // PROJ-1624 non-partitioned index
 typedef qmsIndexTableRef qciIndexTableRef;
 
@@ -425,6 +433,14 @@ typedef enum qciDisableTCP
     QCI_DISABLE_TCP_TRUE
 } qciDisableTCP;
 
+/* PROJ-2705 fast simple memory Partition table */
+typedef enum qciSimpleLevel
+{
+    QCI_SIMPLE_LEVEL_NONE = 0,
+    QCI_SIMPLE_LEVEL_TABLE,
+    QCI_SIMPLE_LEVEL_PARTITION
+} qciSimpleLevel;
+
 /* PROJ-2474 SSL/TLS Support */
 typedef enum qciConnectType
 {
@@ -434,6 +450,7 @@ typedef enum qciConnectType
     QCI_CONNECT_IPC,                           // CMI_LINK_IMPL_IPC
     QCI_CONNECT_SSL,                           // CMI_LINK_IMPL_SSL
     QCI_CONNECT_IPCDA,                         // CMI_LINK_IMPL_IPCDA
+    QCI_CONNECT_IB,                            // CMI_LINK_IMPL_IB
     QCI_CONNECT_INVALID,                       // CMI_LINK_IMPL_INVALID
     QCI_CONNECT_BASE    = QCI_CONNECT_TCP,     // CMI_LINK_IMPL_BASE
     QCI_CONNECT_MAX     = QCI_CONNECT_INVALID  // CMI_LINK_IMPL_MAX
@@ -860,6 +877,7 @@ typedef struct qciSQLPlanCacheContext
     void                  * mPrepPrivateTemplate;
     qciPlanProperty       * mPlanEnv;
     qciPlanBindInfo         mPlanBindInfo;             // PROJ-2163
+    idBool                  mPlanCacheKeep; // BUG-46137
 } qciSQLPlanCacheContext;
 
 // BUG-36203 PSM Optimize
@@ -873,9 +891,11 @@ typedef struct qciSwapTransContext
 {
     void     * mmSession;
     void     * mmStatement;
-    smiTrans * newTrans;
-    smiTrans * oriTrans;
-    void     * oriSmiStmt;
+    smiTrans * mNewSmiTrans;
+    void     * mNewMmcTrans;
+    void     * mOriMmcTrans;
+    void     * mOriSmiStmt;
+    idBool     mIsExecSuccess;
 } qciSwapTransactionContext;
 
 /* BUG-41452 Built-in functions for getting array binding info. */
@@ -1405,8 +1425,6 @@ public:
     static IDE_RC getShardAnalyzeInfo( qciStatement         * aStatement,
                                        qciShardAnalyzeInfo ** aAnalyzeInfo );
 
-    static void getShardNodeInfo( qciShardNodeInfo * aNodeInfo );
-
     /*************************************************************************
      *
      * DCL 실행 함수들
@@ -1774,9 +1792,11 @@ public:
     static void setInplaceUpdateDisable( idBool aTrue );
     static idBool getInplaceUpdateDisable( void );
 
-    // PROJ-2638
-    static idBool isShardMetaEnable();
-    static idBool isShardCoordinator( qcStatement * aStatement );
+    /* BUG-46090 Meta Node SMN 전파 */
+    static void clearShardDataInfo( qciStatement * aStatement );
+
+    /* PROJ-2701 Sharding online data rebuild */
+    static IDE_RC checkShardPlanRebuild( qcStatement * aStatement );
 };
 
 /*****************************************************************************
@@ -2113,6 +2133,11 @@ public:
                                      SChar        * aSqlStr,
                                      vSLong       * aRowCnt );
 
+    /* PROJ-2701 Sharding online data rebuild */
+    static IDE_RC runSQLforShardMeta( smiStatement * aSmiStmt,
+                                      SChar        * aSqlStr,
+                                      vSLong       * aRowCnt );
+
     static IDE_RC selectCount( smiStatement        * aSmiStmt,
                                const void          * aTable,
                                vSLong              * aSelectedRowCount,  /* OUT */
@@ -2240,6 +2265,9 @@ public:
                                 SInt     aJob,
                                 void   * aSession );
 
+    /* BUG-45783 */
+    static void resetInitialJobState( void );
+
     static idBool isExecuteForNatc( void );
 
     static UInt getConcExecDegreeMax( void );
@@ -2296,7 +2324,7 @@ public:
                                    qmnValueInfo     * aSimpleValues,
                                    UInt               aSimpleValueCount );
 
-    static idBool checkExecFast( qcStatement  * aStatement );
+    static idBool checkExecFast( qcStatement  * aStatement, qmnPlan * aPlan );
 
     /* BUG-41696 */
     static IDE_RC checkRunningEagerReplicationByTableOID( qcStatement  * aStatement,
@@ -2315,6 +2343,40 @@ public:
                                                    smOID          * aOldTableOID,
                                                    smOID          * aNewTableOID,
                                                    UInt             aTableCount );
+   
+    /* PROJ-2677 DDL synchronization */
+    static void     restoreTempInfoForPartition( qciTableInfo * aTableInfo,
+                                                 qciTableInfo * aPartInfo );
+
+    static void     restoreTempInfo( qciTableInfo         * aTableInfo,
+                                     qciPartitionInfoList * aPartInfoList,
+                                     qdIndexTableList     * aIndexTableList );
+
+    static idBool   existGlobalNonPartitionedIndice( qciTableInfo * aTableInfo );
+
+    static smOID    getDDLReplTableOID( qciStatement * aQciStatement );
+
+    static smOID  * getDDLReplPartTableOID( qciStatement * aQciStatement );
+
+    static IDE_RC   validateAndLockPartitionInfoList( qciStatement         * aQciStatement,
+                                                      qciPartitionInfoList * aPartInfoList,
+                                                      smiTBSLockValidType    aTBSLvType,
+                                                      smiTableLockMode       aLockMode,
+                                                      ULong                  aLockWaitMicroSec );
+
+    static IDE_RC   runDDLforDDLSync( idvSQL       * aStatistics,
+                                      smiStatement * aSmiStmt,
+                                      UInt           aUserID,
+                                      SChar        * aSqlStr );
+
+    static idBool   isReplicableDDL( qciStatement * aQciStatement );
+
+    static void     getSmiStmt( qciStatement *aQciStatement, smiStatement ** aSmiStatement );
+    static void     setSmiStmt( qciStatement *aQciStatement, smiStatement * aSmiStatement );
+
+    static idBool   isDDLSync( qciStatement * aQciStatement );
+
+    static idBool   isDDLSync( void * aQcStatement );
 };
 
 #endif /* _O_QCI_H_ */

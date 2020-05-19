@@ -325,8 +325,7 @@ IDE_RC buildRecordForVolTablespaceDesc(
 
     while( sCurTBS != NULL )
     {
-        if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE ) 
+        if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) 
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -443,8 +442,7 @@ IDE_RC buildRecordForVolTBSFreePageList(
 
     while( sCurTBS != NULL )
     {
-        if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE )
+        if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID) != ID_TRUE )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdQueue.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpdQueue.h 82773 2018-04-11 02:16:47Z returns $
  **********************************************************************/
 
 #ifndef _O_RPD_QUEUE_H_
@@ -105,9 +105,11 @@ class rpdQueue
 {
 public:
     IDE_RC initialize(SChar *aRepName);
-    void   finalize();
+    void   destroy();
 
-    void read(rpdXLog **aXLogPtr, smSN *aTailLogSN);
+    void   setExitFlag();
+
+    IDE_RC read( rpdXLog **aXLogPtr, UInt  aTimeoutSec );
     void read(rpdXLog **aXLogPtr);
     void write(rpdXLog *aXLogPtr);
     UInt getSize();

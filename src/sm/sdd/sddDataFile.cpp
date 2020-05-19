@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddDataFile.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddDataFile.cpp 84556 2018-12-10 00:02:18Z emlee $
  *
  * Description :
  *
@@ -474,7 +474,7 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
     IDE_TEST( aDataFileNode->mFile.setFileName(aDataFileNode->mName) != IDE_SUCCESS );
 
     /* BUGBUG - ERROR MSG - datafile이 존재하면 reuse 그렇지 않으면 생성 */
-    if (idf::access(aDataFileNode->mName, F_OK) == 0)
+    if ( idf::access(aDataFileNode->mName, F_OK) == 0 )
     {
         IDE_TEST( open( aDataFileNode ) != IDE_SUCCESS );
         sState = 1;
@@ -483,11 +483,14 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
 
         sCurrSize = (ULong)((sFileSize - SM_DBFILE_METAHDR_PAGE_SIZE) / SD_PAGE_SIZE);
 
-        if (sCurrSize > aDataFileNode->mInitSize)
+        if ( sCurrSize > aDataFileNode->mInitSize )
         {
-            IDE_TEST( aDataFileNode->mFile.truncate(
-                          SDD_CALC_PAGEOFFSET(aDataFileNode->mInitSize) )
+            IDE_TEST( aDataFileNode->mFile.truncate( SDD_CALC_PAGEOFFSET(aDataFileNode->mInitSize) )
                       != IDE_SUCCESS );
+        }
+        else
+        {
+            /* nothing to do */
         }
 
         /* ===========================================================
@@ -514,6 +517,7 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
     else
     {
         aDataFileNode->mCreateMode = SMI_DATAFILE_CREATE;
+
         IDE_TEST( create(aStatistics, aDataFileNode) != IDE_SUCCESS );
     }
 
@@ -521,7 +525,7 @@ IDE_RC sddDataFile::reuse( idvSQL          * aStatistics,
 
     IDE_EXCEPTION_END;
 
-    if (sState != 0)
+    if ( sState != 0 )
     {
         (void)close( aDataFileNode );
     }
@@ -706,9 +710,10 @@ IDE_RC sddDataFile::open( sddDataFileNode* aDataFileNode )
     IDE_DASSERT( aDataFileNode->mIsOpened != ID_TRUE );
     IDE_DASSERT( getIOCount(aDataFileNode) == 0 );
 
-    IDE_TEST( aDataFileNode->mFile.open(
-                  ((smuProperty::getIOType() == 0) ?
-                   ID_FALSE : ID_TRUE)) != IDE_SUCCESS );
+    IDU_FIT_POINT( "BUG-46596@sddDataFile::open::exceptionTest");
+    IDE_TEST( aDataFileNode->mFile.openUntilSuccess(
+               ( (smuProperty::getIOType() == 0) ? ID_FALSE : ID_TRUE) ) 
+              != IDE_SUCCESS );
 
     aDataFileNode->mIsOpened = ID_TRUE;
 

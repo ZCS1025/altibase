@@ -566,7 +566,9 @@ IDE_RC stnmrRTree::prepareFreeNodeMem( const smnIndexModule* )
     if(sIsInit == ID_FALSE)
     {
         sIsInit = ID_TRUE;
-        IDE_TEST( gSmnrNodePool.initialize( ID_SIZEOF(stnmrNode), 
+        IDE_TEST( gSmnrNodePool.initialize( IDU_MEM_SM_INDEX,
+                                            "STNMR_RTREE_NODE_POOL",
+                                            ID_SIZEOF(stnmrNode), 
                                             STNMR_NODE_POOL_MAXIMUM,
                                             STNMR_NODE_POOL_CACHE )
                   != IDE_SUCCESS );
@@ -696,10 +698,9 @@ IDE_RC stnmrRTree::create( idvSQL*               /*aStatistics*/,
               != IDE_SUCCESS );
     sStage = 3;
 
-    IDE_TEST( sHeader->mNodePool.initialize( ID_SIZEOF(stnmrNode),  
-                                          SMM_SLOT_LIST_MAXIMUM_DEFAULT, 
-                                          SMM_SLOT_LIST_CACHE_DEFAULT,
-                                          &gSmnrNodePool )
+    IDE_TEST( gSmnrNodePool.makeChild( SMM_SLOT_LIST_MAXIMUM_DEFAULT, 
+                                       SMM_SLOT_LIST_CACHE_DEFAULT,
+                                       &sHeader->mNodePool )
               != IDE_SUCCESS );
         
     sHeader->mRoot         = NULL;
@@ -2229,6 +2230,8 @@ IDE_RC stnmrRTree::fetchNextU( stnmrIterator* aIterator,
     ULong       sVersion;
     ULong       sCurNodeVersion;
     const smiCallBack* sCallBack;
+    idBool     sCanReusableRollback = ID_TRUE;
+    smxTrans * sTrans               = (smxTrans*)aIterator->mTrans;
     
     sCallBack = &(aIterator->mKeyRange->maximum);
         
@@ -2238,6 +2241,8 @@ IDE_RC stnmrRTree::fetchNextU( stnmrIterator* aIterator,
          aIterator->mSlot <= aIterator->mHighFence;
          aIterator->mSlot++ )
     {
+        sCanReusableRollback = ID_TRUE;
+
         aIterator->mCurRecPtr      = (SChar*)(aIterator->mSlot);
         aIterator->mLstFetchRecPtr = aIterator->mCurRecPtr;
         *aRow = aIterator->mCurRecPtr;
@@ -2248,7 +2253,8 @@ IDE_RC stnmrRTree::fetchNextU( stnmrIterator* aIterator,
                       SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*aRow ) );
 
         if(smnManager::checkSCN((smiIterator*)aIterator,
-                                (const smpSlotHeader*)*aRow ) == ID_TRUE)
+                                (const smpSlotHeader*)*aRow,
+                                &sCanReusableRollback ) == ID_TRUE )
         {
             IDE_TEST(aIterator->mRowFilter->callback( &sResult,
                                                       *aRow,
@@ -2259,6 +2265,11 @@ IDE_RC stnmrRTree::fetchNextU( stnmrIterator* aIterator,
                      != IDE_SUCCESS );
             if(sResult == ID_TRUE)
             {
+                if( sCanReusableRollback == ID_FALSE )
+                {     
+                    sTrans->mIsReusableRollback = ID_FALSE;
+                }
+
                 smnManager::updatedRow((smiIterator*)aIterator);
                 
                 *aRow = aIterator->mCurRecPtr;
@@ -2321,6 +2332,8 @@ IDE_RC stnmrRTree::fetchNextU( stnmrIterator* aIterator,
 
                 for(i = 0, j = -1; i < sSlotCount; i++)
                 {
+                    sCanReusableRollback = ID_TRUE;
+
                     sPtr = aIterator->mNode->mSlots[i].mPtr;
 
                     if(sPtr == NULL)
@@ -2339,9 +2352,15 @@ IDE_RC stnmrRTree::fetchNextU( stnmrIterator* aIterator,
                     if( sResult==ID_TRUE )
                     {
                         if(smnManager::checkSCN((smiIterator*)aIterator,
-                                            (const smpSlotHeader*)sPtr) 
+                                                (const smpSlotHeader*)sPtr,
+                                                &sCanReusableRollback ) 
                             == ID_TRUE)
                         {
+                            if( sCanReusableRollback == ID_FALSE )
+                            {     
+                                sTrans->mIsReusableRollback = ID_FALSE;
+                            }
+
                             j++;
                             aIterator->mRows[j] = (SChar*)sPtr;
                         }
@@ -2426,6 +2445,8 @@ IDE_RC stnmrRTree::fetchNextR( stnmrIterator* aIterator )
     ULong          sCurNodeVersion;
     idBool         sResult;
     const smiCallBack* sCallBack;
+    idBool         sCanReusableRollback = ID_TRUE;
+    smxTrans     * sTrans = (smxTrans*)aIterator->mTrans;
     
     sCallBack = &(aIterator->mKeyRange->maximum);
 
@@ -2435,6 +2456,8 @@ IDE_RC stnmrRTree::fetchNextR( stnmrIterator* aIterator )
         aIterator->mSlot <= aIterator->mHighFence;
         aIterator->mSlot++)
     {
+        sCanReusableRollback = ID_TRUE;
+
         aIterator->mCurRecPtr      = *aIterator->mSlot;
         aIterator->mLstFetchRecPtr =  aIterator->mCurRecPtr;
         
@@ -2445,7 +2468,7 @@ IDE_RC stnmrRTree::fetchNextR( stnmrIterator* aIterator )
                       SMP_SLOT_GET_PID( (smpSlotHeader*)sRow ),
                       SMP_SLOT_GET_OFFSET( (smpSlotHeader*)sRow ) );
         
-        if(smnManager::checkSCN((smiIterator*)aIterator, sRow) == ID_TRUE)
+        if(smnManager::checkSCN((smiIterator*)aIterator, sRow, &sCanReusableRollback ) == ID_TRUE)
         {
             IDE_TEST(aIterator->mRowFilter->callback( &sResult,
                                                       sRow,
@@ -2456,6 +2479,11 @@ IDE_RC stnmrRTree::fetchNextR( stnmrIterator* aIterator )
                      != IDE_SUCCESS);
             if(sResult == ID_TRUE)
             {
+                if( sCanReusableRollback == ID_FALSE )
+                {     
+                    sTrans->mIsReusableRollback = ID_FALSE;
+                }
+
                 IDE_TEST(smnManager::lockRow((smiIterator*)aIterator)
                          != IDE_SUCCESS );
             }
@@ -2508,6 +2536,8 @@ IDE_RC stnmrRTree::fetchNextR( stnmrIterator* aIterator )
                 
                 for(i = 0, j = -1; i < sSlotCount; i++)
                 {
+                    sCanReusableRollback = ID_TRUE;
+
                     sPtr = aIterator->mNode->mSlots[i].mPtr;
 
                     if(sPtr == NULL)
@@ -2527,9 +2557,15 @@ IDE_RC stnmrRTree::fetchNextR( stnmrIterator* aIterator )
                     {
                     
                         if(smnManager::checkSCN((smiIterator*)aIterator,
-                                                (const smpSlotHeader*)sPtr) 
+                                                (const smpSlotHeader*)sPtr,
+                                                &sCanReusableRollback ) 
                            == ID_TRUE)
                         {
+                            if( sCanReusableRollback == ID_FALSE )
+                            {     
+                                sTrans->mIsReusableRollback = ID_FALSE;
+                            }
+
                             j++;
                             aIterator->mRows[j] = (SChar*)sPtr;
                         }
@@ -2627,6 +2663,8 @@ void stnmrRTree::beforeFirstInternal( stnmrIterator* aIterator )
     const smiRange*  sRange;
     void*            sPtr;
     idBool           sResult;
+    idBool           sCanReusableRollback = ID_TRUE;
+    smxTrans       * sTrans = (smxTrans*)aIterator->mTrans;
 
     aIterator->mVersion   = ID_ULONG_MAX;
     
@@ -2675,6 +2713,8 @@ void stnmrRTree::beforeFirstInternal( stnmrIterator* aIterator )
             
             for(i = 0, j = -1; i < sSlotCount; i++)
             {
+                sCanReusableRollback = ID_TRUE;
+
                 sPtr = sCurNode->mSlots[i].mPtr;
 
                 if(sPtr == NULL)
@@ -2683,7 +2723,8 @@ void stnmrRTree::beforeFirstInternal( stnmrIterator* aIterator )
                 }
                 
                 if(smnManager::checkSCN((smiIterator*)aIterator,
-                                        (const smpSlotHeader*)sPtr) == ID_TRUE)
+                                        (const smpSlotHeader*)sPtr,
+                                        NULL ) == ID_TRUE)
                 {
                     // Fix BUG-15293 to set key range. 
                     sRange->maximum.callback( &sResult,
@@ -2695,6 +2736,11 @@ void stnmrRTree::beforeFirstInternal( stnmrIterator* aIterator )
                     
                     if(sResult == ID_TRUE)
                     {
+                        if( sCanReusableRollback == ID_FALSE )
+                        {     
+                            sTrans->mIsReusableRollback = ID_FALSE;
+                        }
+
                         j++;
                         aIterator->mRows[j] = (SChar*)sPtr;
                     }
@@ -2758,6 +2804,8 @@ IDE_RC stnmrRTree::fetchNext( stnmrIterator* aIterator,
     ULong       sCurNodeVersion;
     idBool      sResult;
     const smiCallBack* sCallBack;
+    idBool      sCanReusableRollback = ID_TRUE;
+    smxTrans  * sTrans = (smxTrans*)aIterator->mTrans;
     
     sCallBack = &(aIterator->mKeyRange->maximum);
     
@@ -2860,9 +2908,15 @@ IDE_RC stnmrRTree::fetchNext( stnmrIterator* aIterator,
                     if( sResult==ID_TRUE )
                     {
                         if(smnManager::checkSCN((smiIterator*)aIterator,
-                                                (const smpSlotHeader*)sPtr) 
+                                                (const smpSlotHeader*)sPtr,
+                                                &sCanReusableRollback ) 
                            == ID_TRUE)
                         {
+                            if( sCanReusableRollback == ID_FALSE )
+                            {     
+                                sTrans->mIsReusableRollback = ID_FALSE;
+                            }
+
                             j++;
                             aIterator->mRows[j] = (SChar*)sPtr;
                         }
@@ -3757,9 +3811,14 @@ IDE_RC stnmrRTree::buildRecordForMemRTreeNodePool(idvSQL              * /*aStati
     stnmrNodePool4PerfV   sIndexNodePool4PerfV;
     smnFreeNodeList     * sFreeNodeList = (smnFreeNodeList*)gSmnrFreeNodeList;
 
-    sIndexNodePool4PerfV.mTotalPageCount = gSmnrNodePool.getPageCount();
-    sIndexNodePool4PerfV.mTotalNodeCount =
-        gSmnrNodePool.getPageCount() * gSmnrNodePool.getSlotPerPage();
+    UInt sSlotPerPage    = gSmnrNodePool.getSlotPerPage();
+    UInt sAllocSlotCount = gSmnrNodePool.getAllocSlotCount();
+
+    /* BUG-46402 : 페이지 개념이 없어졌으나, 호환성을 위해서 계산함 */
+    sIndexNodePool4PerfV.mTotalPageCount = ( sSlotPerPage == 0 ) ? 0 
+                                           : ( ( sAllocSlotCount + sSlotPerPage - 1 ) / sSlotPerPage );
+
+    sIndexNodePool4PerfV.mTotalNodeCount = sAllocSlotCount;
     sIndexNodePool4PerfV.mFreeNodeCount  = gSmnrNodePool.getFreeSlotCount();
     sIndexNodePool4PerfV.mUsedNodeCount  =
         sIndexNodePool4PerfV.mTotalNodeCount - sIndexNodePool4PerfV.mFreeNodeCount;

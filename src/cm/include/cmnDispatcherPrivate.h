@@ -45,6 +45,10 @@ UInt   cmnDispatcherSizeIPC();
 IDE_RC cmnDispatcherMapIPCDA(cmnDispatcher *aDispatcher);
 UInt   cmnDispatcherSizeIPCDA();
 
+/* PROJ-2681 */
+IDE_RC cmnDispatcherMapIB(cmnDispatcher *aDispatcher);
+UInt   cmnDispatcherSizeIB();
+
 /*
  * WaitLink Functions Implemented by Each Subclasses
  */
@@ -68,6 +72,11 @@ IDE_RC cmnDispatcherWaitLinkIPC(cmnLink *aLink,
 IDE_RC cmnDispatcherWaitLinkIPCDA(cmnLink *aLink,
                                   cmnDirection aDirection,
                                   PDL_Time_Value *aTimeout);
+
+/* PROJ-2681 */
+IDE_RC cmnDispatcherWaitLinkIB(cmnLink        *aLink,
+                               cmnDirection    aDirection,
+                               PDL_Time_Value *aTimeout);
 
 /*
  * CheckHandle Functions for SOCK Implemented by Each Subclasses

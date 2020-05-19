@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: Field.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: Field.cpp 82790 2018-04-15 23:41:55Z bethy $
  ******************************************************************************/
 
 #include <utdb.h>
@@ -166,6 +166,8 @@ bool Field::comparePhysical(Field * f, idBool aUseFraction)
 
     mtdDateType  sAtbDateA;     // BUG-20128
     mtdDateType  sAtbDateB;
+    bit_t       *sBitA = NULL;
+    bit_t       *sBitB = NULL;
 
     /* BUG-13681 */
     if(isNull() && f->isNull())
@@ -242,6 +244,32 @@ bool Field::comparePhysical(Field * f, idBool aUseFraction)
             ret = idlOS::strncmp(mValue,f->getValue(), mWidth);
             break;
 
+        /* BUG-45958 Need to support BIT/VARBIT type */
+        case SQL_BIT:
+        case SQL_VARBIT:
+            sBitA = (bit_t *)mValue;
+            sBitB = (bit_t *)(f->getValue());
+
+            /*
+             * mValueLength: SQLBindCol을 통해서 받은 값의 바이트 길이
+             * sBitA->mPrecision: BIT 단위 길이
+             */
+            if ( (mValueLength == f->getValueLength()) &&
+                 (sBitA->mPrecision == sBitB->mPrecision) )
+            {
+                /*
+                 * 데이터에 해당하는 길이만큼만 비교
+                 */
+                ret = idlOS::memcmp(sBitA->mData,
+                                    sBitB->mData,
+                                    mValueLength - ID_SIZEOF(UInt));
+            }
+            else
+            {
+                ret = 1;
+            }
+            break;
+
         default:
             ret = idlOS::memcmp(mValue,f->getValue(), mWidth);
             break;
@@ -308,11 +336,24 @@ IDE_RC Field::makeAtbDate(SQL_TIMESTAMP_STRUCT * aFrom, mtdDateType * aTo)
 SInt Field::getSChar(SChar       *s,
                      UInt aBuffSize)
 {
+    SInt sWidth = 0;
+
     if( isNull() )
     {
         return idlOS::sprintf(s,"NULL");
     }
-    return getSChar(realSqlType, s, aBuffSize, mValue, mWidth);
+
+    /* BUG-45958 Need to support BIT/VARBIT type */
+    if (realSqlType == SQL_BIT || realSqlType == SQL_VARBIT)
+    {
+        sWidth = mValueLength;
+    }
+    else
+    {
+        sWidth = mWidth;
+    }
+
+    return getSChar(realSqlType, s, aBuffSize, mValue, sWidth);
 }
 
 SInt Field::getSChar(SInt   sqlType,
@@ -408,6 +449,38 @@ SInt Field::getSChar(SInt   sqlType,
         case SQL_BIGINT  : n = idlOS::sprintf(s, "%"ID_INT64_FMT    , *((SLong* ) val) ); break;
         case SQL_REAL    : n = idlOS::sprintf(s, "%"ID_FLOAT_G_FMT  , *((SFloat*) val) ); break;
         case SQL_DOUBLE  : n = idlOS::sprintf(s, "%"ID_DOUBLE_G_FMT , *((SDouble*)val) ); break;
+
+        /**
+         * BUG-45958 Need to support BIT/VARBIT type
+         *     Convert byte to bit string
+         **/
+        case SQL_BIT     :
+        case SQL_VARBIT  :
+        {
+            UChar  sTmp;
+            bit_t *sBitVal = (bit_t *)val;
+            int    i, j;
+            int    offset;
+            int    shift;
+            int    sByteLen = aWidth - ID_SIZEOF(UInt);
+            int    sBitLen = sBitVal->mPrecision;
+
+            offset = 0;
+            for (i=0; i < sByteLen; i++)
+            {
+                sTmp = sBitVal->mData[i];
+                for ( j = 0, shift = 7;
+                      (j < 8) && (i * 8 + j < sBitLen);
+                      j++, shift-- )
+                {
+                    offset += idlOS::sprintf(s + offset,
+                            "%d", (sTmp >> shift) & 1);
+                }
+            }
+            s[offset] = '\0';
+        }
+        break;
+
         default          :
         {
             const static SChar map[]={ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};

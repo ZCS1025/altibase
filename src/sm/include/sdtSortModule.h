@@ -150,13 +150,14 @@ private:
     static IDE_RC storeSortedRun(smiTempTableHeader * aHeader);
     static IDE_RC copyRowByPtr( smiTempTableHeader * aHeader,
                                 UChar              * aSrcPtr,
-                                sdtCopyPurpose      aPurpose,
+                                scGRID               aSrcGRID,
+                                sdtCopyPurpose       aPurpose,
                                 sdtTempPageType      aPageType,
                                 scGRID               aChildGRID,
                                 sdtTRInsertResult  * aTRPInfo );
     static IDE_RC copyRowByGRID( smiTempTableHeader * aHeader,
                                  scGRID               aSrcGRID,
-                                 sdtCopyPurpose      aPurpose,
+                                 sdtCopyPurpose       aPurpose,
                                  sdtTempPageType      aPageType,
                                  scGRID               aChildGRID,
                                  sdtTRInsertResult  * aTRPInfo );

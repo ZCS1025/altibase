@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idp.h 80488 2017-07-13 06:39:29Z jinku.ko $
+ * $Id: idp.h 84709 2019-01-10 07:06:14Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_IDP_H_
@@ -47,6 +47,27 @@ struct idvSQL;
 #define IDP_MAX_VERIFY_INDEX_COUNT   (16)
 
 #define IDP_REPLICATION_MAX_EAGER_PARALLEL_FACTOR (512)
+
+
+typedef enum
+{
+    IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_DEFAULT = 1,    /* = ULN_CONN_RETRY_COUNT_DEFAULT */
+    IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_MIN     = 0,    /* = ULN_CONN_RETRY_COUNT_MIN */
+    IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_MAX     = 1024, /* = ULN_CONN_RETRY_COUNT_MAX */
+
+    IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_DEFAULT = 1,    /* = ULN_CONN_RETRY_DELAY_DEFAULT */
+    IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_MIN     = 0,    /* = ULN_CONN_RETRY_DELAY_MIN */
+    IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_MAX     = 3600, /* = ULN_CONN_RETRY_DELAY_MAX */
+
+    IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_DEFAULT = 0,            /* = ULN_CONN_TMOUT_DEFAULT */
+    IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_MIN     = 0,            /* = ULN_TMOUT_MIN */
+    IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_MAX     = ID_UINT_MAX,  /* = ULN_TMOUT_MAX */
+
+    IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_DEFAULT      = 60,           /* = ULN_LOGIN_TMOUT_DEFAULT */
+    IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_MIN          = 0,            /* = ULN_TMOUT_MIN */
+    IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_MAX          = ID_UINT_MAX,  /* = ULN_TMOUT_MAX */
+} idpShardInternalConnAttrConst;
+
 
 class idp
 {

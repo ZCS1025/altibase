@@ -470,6 +470,7 @@ static const mtcExecute mtfMedianExecuteFloat = {
     mtfMedianFinalizeFloat,
     mtfMedianCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -670,6 +671,7 @@ static const mtcExecute mtfMedianExecuteDouble = {
     mtfMedianFinalizeDouble,
     mtfMedianCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -836,6 +838,7 @@ static const mtcExecute mtfMedianExecuteBigint = {
     mtfMedianFinalizeBigint,
     mtfMedianCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1003,6 +1006,7 @@ static const mtcExecute mtfMedianExecuteDate = {
     mtfMedianFinalizeDate,
     mtfMedianCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

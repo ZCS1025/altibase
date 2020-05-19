@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLPreLexer.l 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iSQLPreLexer.l 84945 2019-02-28 04:10:58Z bethy $
  **********************************************************************/
 
 /* ======================================================
@@ -279,6 +279,7 @@ createObj   ("AGENTEVENT"|"INDEX"|"QUEUE"|"REPLICATION"|"SEQUENCE"|"TABLE"|"UNIQ
 set         ("SET")
 isqlOption  ("HEADING"|"COLSIZE"|"LINESIZE"|"NUM"|"NUMWIDTH"|"PAGESIZE"|"TERM"|"TIMESCALE"|"TIMING"|"VERBOSE"|"FEEDBACK"|"FOREIGNKEYS"|"CHECKCONSTRAINTS"|"FULLNAME"|"LOBOFFSET"|"LOBSIZE"|"VERTICAL"|"PLANCOMMIT"|"QUERYLOGGING"|"ECHO"|"SQLP"|"SQLPROMPT"|"DEFINE"|"PARTITIONS"|"VERIFY"|"PREFETCHROWS"|"ASYNCPREFETCH")
 adminCom    ("STARTUP"|"SHUTDOWN")
+anonymBlock ("BEGIN"|"DECLARE"|"<<")
 
 %%
 
@@ -391,6 +392,10 @@ adminCom    ("STARTUP"|"SHUTDOWN")
 <xhyphen4>[^\n]*\r?\n                   { BEGIN xcreate;   PLN();  }
 <xhyphen3>\r?\n                         { BEGIN xcreate;   PLN();  }
 
+{anonymBlock}                           { 
+                                          /* BUG-46733 Need to support Anomymous Block */
+                                          BEGIN xproc;     g_IsProc = ID_TRUE;
+                                                           APD();  }
 <xcreate>[ \t]*{createProc}             { // create procedure command
                                           BEGIN xproc;     g_IsProc = ID_TRUE;
                                                            APD();  }

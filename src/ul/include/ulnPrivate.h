@@ -171,6 +171,10 @@ typedef struct ulsdModule   ulsdModule;
 #include <ulsdnBindData.h>
 #include <ulnShard.h>
 
+/* BUG-46785 Shard statement partial rollback */
+#include <ulnSavepoint.h>
+#include <ulsdnStmt.h>
+
 /*
  * SQLBindFileToParam() 과 SQLBindFileToCol() 함수에서 쓰이는 SQL_C_ 타입
  * BUGBUG : 15 의 값이 적절한 값인지 체크할 필요가 있다.

@@ -69,6 +69,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfNth_elementCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -86,6 +87,7 @@ static const mtcExecute mtfExecuteList = {
     mtf::calculateNA,
     mtfNth_elementCalculateList,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

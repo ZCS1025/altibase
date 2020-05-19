@@ -60,8 +60,8 @@ FALSE             { return TR_FALSE;             }
 NULL              { return TR_NULL;              }
 
 
-"\""[^'"]+"\"" |
-"'"[^']+"'"                           { return TI_QUOTED_IDENTIFIER;    }
+"\""[^'"]*"\"" |
+"'"[^']*"'"                           { return TI_QUOTED_IDENTIFIER;    }
 
 
 [0-9]+                                { return TL_INTEGER;      }

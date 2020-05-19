@@ -78,17 +78,18 @@ public class CmExecutionResult extends CmStatementIdResult
         mBatchMode = aMode;
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }
 
-    void setResultSetCount(int aResultSetCount)
+    // BUG-46513 smn 오류일때 에러메세지로 부터 결과를 파싱하여 셋팅하기 때문에 public으로 변경
+    public void setResultSetCount(int aResultSetCount)
     {
         mResultSetCount = aResultSetCount;
     }
-    
-    void setUpdatedRowCount(long aUpdatedRowCount)
+
+    public void setUpdatedRowCount(long aUpdatedRowCount)
     {
         if (isBatchMode())
         {

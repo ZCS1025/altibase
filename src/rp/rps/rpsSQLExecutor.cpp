@@ -594,28 +594,22 @@ IDE_RC rpsSQLExecutor::bind( qciStatement     * aQciStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC rpsSQLExecutor::rebuild( qciStatement            * aQciStatement,
-                                smiStatement            * aParentSmiStatement,
-                                smiStatement            * aSmiStatement,
-                                idBool                  * aIsBegun,
-                                qciSQLPlanCacheContext  * aPlanCacheContext,
-                                SChar                   * aSQLBuffer,
-                                UInt                      aSQLBufferLength )
+IDE_RC rpsSQLExecutor::hardRebuild( idvSQL                  * aStatistics,
+                                    qciStatement            * aQciStatement,
+                                    smiStatement            * aParentSmiStatement,
+                                    smiStatement            * aSmiStatement,
+                                    idBool                  * aIsBegun,
+                                    qciSQLPlanCacheContext  * aPlanCacheContext,
+                                    SChar                   * aSQLBuffer,
+                                    UInt                      aSQLBufferLength,
+                                    UInt                      aStmtFlag )
 {
-    idBool      sIsBegun = *aIsBegun;
-
-    IDE_TEST( qci::closeCursor( aQciStatement,
-                                aSmiStatement )
-              != IDE_SUCCESS );
-
-    sIsBegun = ID_FALSE;
-    IDE_TEST( aSmiStatement->end( SMI_STATEMENT_RESULT_FAILURE )
-              != IDE_SUCCESS );
+    idBool sIsBegun = ID_FALSE;
 
     idlOS::memset( aSmiStatement, 0x00, ID_SIZEOF( smiStatement ) );
-    IDE_TEST( aSmiStatement->begin( NULL,
+    IDE_TEST( aSmiStatement->begin( aStatistics,
                                     aParentSmiStatement,
-                                    SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+                                    aStmtFlag )
               != IDE_SUCCESS );
     sIsBegun = ID_TRUE;
 
@@ -638,9 +632,9 @@ IDE_RC rpsSQLExecutor::rebuild( qciStatement            * aQciStatement,
                   != IDE_SUCCESS );
 
         idlOS::memset( aSmiStatement, 0x00, ID_SIZEOF( smiStatement ) );
-        IDE_TEST( aSmiStatement->begin( NULL,
+        IDE_TEST( aSmiStatement->begin( aStatistics,
                                         aParentSmiStatement,
-                                        SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+                                        aStmtFlag )
                   != IDE_SUCCESS );
         sIsBegun = ID_TRUE;
     }
@@ -668,6 +662,46 @@ IDE_RC rpsSQLExecutor::rebuild( qciStatement            * aQciStatement,
     *aIsBegun = sIsBegun;
 
     IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpsSQLExecutor::rebuild( qciStatement            * aQciStatement,
+                                smiStatement            * aParentSmiStatement,
+                                smiStatement            * aSmiStatement,
+                                idBool                  * aIsBegun,
+                                qciSQLPlanCacheContext  * aPlanCacheContext,
+                                SChar                   * aSQLBuffer,
+                                UInt                      aSQLBufferLength )
+{
+    idBool sIsBegun = *aIsBegun;
+
+    IDE_TEST( qci::closeCursor( aQciStatement,
+                                aSmiStatement )
+              != IDE_SUCCESS );
+
+    sIsBegun = ID_FALSE;
+    IDE_TEST( aSmiStatement->end( SMI_STATEMENT_RESULT_FAILURE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( hardRebuild( NULL,
+                           aQciStatement,
+                           aParentSmiStatement,
+                           aSmiStatement,
+                           &sIsBegun,
+                           aPlanCacheContext,
+                           aSQLBuffer,
+                           aSQLBufferLength,
+                           SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
+
+    *aIsBegun = sIsBegun;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aIsBegun = sIsBegun;
 
     return IDE_FAILURE;
 }

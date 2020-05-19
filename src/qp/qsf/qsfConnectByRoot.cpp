@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfConnectByRoot.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsfConnectByRoot.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * CONNECT_BY_ROOT ( ColumName )
  *  지정된 컬럼의 Hierarchy에서 레벨 1인 Root Node의 값을 보여준다.
@@ -71,6 +71,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfConnectByRootCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

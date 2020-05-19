@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxEnv.h 82152 2018-01-29 09:32:47Z khkwak $
+ * $Id: qsxEnv.h 83637 2018-08-07 05:40:38Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QSX_ENV_H_
@@ -145,6 +145,10 @@ typedef struct qsxEnvInfo
 
     // BUG-44856
     qcNamePosition         mSqlInfo;
+
+    // BUG-46074 Multiple trigger event
+    qcmColumn               * mTriggerUptColList;
+    UInt                      mTriggerEventType;
 } qsxEnvInfo;
 
 /* PROJ-2197 PSM Renewal
@@ -211,6 +215,27 @@ typedef struct qsxEnvParentInfo
 // fix BUG-32565
 #define QSX_FIX_ERROR_MESSAGE( env ) \
     ( qsxEnv::fixErrorMessage( env ) )
+
+// BUG-45990
+#define QSX_ENV_SET_STMT_FLAG( stmt )                                                              \
+   {                                                                                               \
+       if ( (stmt)->myPlan->parseTree->stmtKind == QCI_STMT_SELECT )                               \
+       {                                                                                           \
+           (stmt)->spxEnv->mFlag |= QSX_ENV_DURING_SELECT;                                         \
+       }                                                                                           \
+       else if ((stmt)->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE)                 \
+       {                                                                                           \
+           (stmt)->spxEnv->mFlag |= QSX_ENV_DURING_SELECT_FOR_UPDATE;                              \
+       }                                                                                           \
+       else if ( ((stmt)->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DML ) \
+       {                                                                                           \
+           (stmt)->spxEnv->mFlag |= QSX_ENV_DURING_DML;                                            \
+       }                                                                                           \
+       else if ( ((stmt)->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DDL ) \
+       {                                                                                           \
+           (stmt)->spxEnv->mFlag |= QSX_ENV_DURING_DDL;                                            \
+       }                                                                                           \
+   }
 
 class qsxEnv
 {
@@ -287,14 +312,7 @@ class qsxEnv
     
     // PROJ-1075 function에서 return된 array변수의 할당 해제
     static void freeReturnArray( qsxEnvInfo * aEnv );
-    
-    // print statement.
-    static IDE_RC print(
-        qsxEnvInfo         * aEnv,
-        qcStatement        * aQcStmt,
-        UChar              * aMsg,
-        UInt                 aLength);
-    
+
     /* REAL static functions that does not require qsxEnvInfo */
     // critical errors are not catched by others clause
     static idBool isCriticalError(UInt aErrorCode);

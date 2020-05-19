@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProperty.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLProperty.h 84322 2018-11-12 02:04:29Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLPROPERTY_H_
@@ -213,6 +213,11 @@ public:
                          SInt         *aColSize,
                          UChar       **aToken);
 
+#ifdef USE_READLINE
+    /* BUG-45145 Need to enhance history */
+    SChar * GetHistFile();
+#endif
+
 private:
     void   parseSqlPrompt( SChar * aSqlPrompt ); /* BUG-41163 */
 
@@ -286,6 +291,10 @@ private:
     SChar           mCustPrompt[SQL_PROMPT_MAX*2];
 
     isqlFmtNode    *mColFmtList; /* BUG-40246 */
+
+#ifdef USE_READLINE
+    SChar           mHistFile[WORD_LEN]; /* BUG-45145 */
+#endif
 };
 
 #endif // _O_ISQLPROPERTY_H_

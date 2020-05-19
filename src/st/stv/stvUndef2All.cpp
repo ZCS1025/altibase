@@ -59,6 +59,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,          // finalize
     stvCalculate_Undef2All,      // calculate
     NULL,                      // additional info for calculate (NA)
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

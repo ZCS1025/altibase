@@ -26,6 +26,8 @@ public class NumericColumn extends CommonNumericColumn
     NumericColumn()
     {
         super();
+        addMappedJdbcTypeSet(AltibaseTypes.NUMERIC);
+        addMappedJdbcTypeSet(AltibaseTypes.DECIMAL);
     }
 
     public int getDBColumnType()
@@ -33,11 +35,6 @@ public class NumericColumn extends CommonNumericColumn
         return ColumnTypes.NUMERIC;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.NUMERIC, AltibaseTypes.DECIMAL };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "NUMERIC";

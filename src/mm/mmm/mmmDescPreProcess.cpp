@@ -79,6 +79,7 @@ static mmmPhaseAction *gPreProcessActions[] =
     &gMmmActInitOS,
     // &gMmmActInitNLS,
     &gMmmActInitQueryProfile,
+    &gMmmActInitSD,
     &gMmmActInitService,
 
     &gMmmActEndPreProcess,

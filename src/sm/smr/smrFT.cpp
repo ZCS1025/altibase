@@ -89,10 +89,8 @@ smrFT::buildRecordForStableMemDataFiles(idvSQL	    * /* aStatistics */,
             /* do nothing */
         }       
 
-        if((sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID)
-            != ID_TRUE) ||
-           ( sCurTBS->mRestoreType ==
-             SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
+        if( ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) ||
+            ( sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
         {
             sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
             continue;
@@ -432,6 +430,7 @@ IDE_RC smrFT::buildRecordOfLFGForFixedTable( idvSQL              * /*aStatistics
 {
     smrLFGInfo        sPerfLFG;
     smrLogAnchor    * sLogAnchorPtr;
+    UInt              sDelLogCnt = 0;
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
@@ -461,8 +460,17 @@ IDE_RC smrFT::buildRecordOfLFGForFixedTable( idvSQL              * /*aStatistics
     sPerfLFG.mLstPrepareLFNo  = smrLogMgr::getLogFileMgr().getLstPrepareLFNo();
 
     sPerfLFG.mEndLSN          = sLogAnchorPtr->mMemEndLSN;
-    sPerfLFG.mFstDeleteFileNo = sLogAnchorPtr->mFstDeleteFileNo;
-    sPerfLFG.mLstDeleteFileNo = sLogAnchorPtr->mLstDeleteFileNo;
+
+    //BUG-46266: FIRST_DELETED_LOGFILE, LAST_DELETED_LOGFILE 컬럼 값을 바르게 출력
+    sDelLogCnt = sLogAnchorPtr->mFstDeleteFileNo - sLogAnchorPtr->mLstDeleteFileNo;
+
+    sPerfLFG.mFstDeleteFileNo =
+        ( sLogAnchorPtr->mFstDeleteFileNo == 0 ) ?
+        0 : ( sLogAnchorPtr->mLstDeleteFileNo - sDelLogCnt );
+    sPerfLFG.mLstDeleteFileNo =
+        ( sLogAnchorPtr->mLstDeleteFileNo == 0 ) ?
+        0 : ( sLogAnchorPtr->mLstDeleteFileNo - 1 );
+
     sPerfLFG.mResetLSN        = sLogAnchorPtr->mResetLSN;
 
     sPerfLFG.mUpdateTxCount = smrLogMgr::getUpdateTxCount();

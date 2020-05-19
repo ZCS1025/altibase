@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmProc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmProc.cpp 84060 2018-09-21 02:18:40Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -1631,10 +1631,19 @@ IDE_RC qcmProc::relInsert(
     SChar  sRelObjectName [ QC_MAX_OBJECT_NAME_LEN + 1 ];
     SChar *sBuffer;
 
-    IDE_TEST( qcmUser::getUserID( aStatement,
-                                  aRelatedObjList->userName.name,
-                                  aRelatedObjList->userName.size,
-                                  & sRelUserID ) != IDE_SUCCESS );
+    // BUG-46395 public synonym을 고려한다.
+    if ( ( aRelatedObjList->objectType == QS_SYNONYM ) &&
+         ( aRelatedObjList->userName.size == 0 ) )
+    {
+        sRelUserID = QC_PUBLIC_USER_ID;
+    }
+    else
+    {
+        IDE_TEST( qcmUser::getUserID( aStatement,
+                                      aRelatedObjList->userName.name,
+                                      aRelatedObjList->userName.size,
+                                      & sRelUserID ) != IDE_SUCCESS );
+    }
 
     idlOS::memcpy(sRelObjectName,
                   aRelatedObjList-> objectName.name,
@@ -1648,18 +1657,35 @@ IDE_RC qcmProc::relInsert(
                                     &sBuffer)
              != IDE_SUCCESS);
 
-    idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
-                     "INSERT INTO SYS_PROC_RELATED_ VALUES ( "
-                     QCM_SQL_UINT32_FMT", "                     // 1
-                     QCM_SQL_BIGINT_FMT", "                     // 2
-                     QCM_SQL_INT32_FMT", "                      // 3
-                     QCM_SQL_CHAR_FMT", "                       // 4
-                     QCM_SQL_INT32_FMT") ",                     // 5
-                     aProcParse-> userID,                       // 1
-                     QCM_OID_TO_BIGINT( aProcParse-> procOID ), // 2
-                     sRelUserID,                                // 3
-                     sRelObjectName,                            // 4
-                     aRelatedObjList-> objectType );            // 5
+    if ( sRelUserID != QC_PUBLIC_USER_ID )
+    {
+        idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
+                         "INSERT INTO SYS_PROC_RELATED_ VALUES ( "
+                         QCM_SQL_UINT32_FMT", "                     // 1
+                         QCM_SQL_BIGINT_FMT", "                     // 2
+                         QCM_SQL_INT32_FMT", "                      // 3
+                         QCM_SQL_CHAR_FMT", "                       // 4
+                         QCM_SQL_INT32_FMT") ",                     // 5
+                         aProcParse-> userID,                       // 1
+                         QCM_OID_TO_BIGINT( aProcParse-> procOID ), // 2
+                         sRelUserID,                                // 3
+                         sRelObjectName,                            // 4
+                         aRelatedObjList-> objectType );            // 5
+    }
+    else
+    {
+        idlOS::snprintf( sBuffer, QD_MAX_SQL_LENGTH,
+                         "INSERT INTO SYS_PROC_RELATED_ VALUES ( "
+                         QCM_SQL_UINT32_FMT", "                     // 1
+                         QCM_SQL_BIGINT_FMT", "                     // 2
+                         "NULL, "                                   // NULL value
+                         QCM_SQL_CHAR_FMT", "                       // 4
+                         QCM_SQL_INT32_FMT") ",                     // 5
+                         aProcParse-> userID,                       // 1
+                         QCM_OID_TO_BIGINT( aProcParse-> procOID ), // 2
+                         sRelObjectName,                            // 4
+                         aRelatedObjList-> objectType );            // 5
+    }
 
     IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
                                  sBuffer,
@@ -1717,12 +1743,47 @@ IDE_RC qcmModifyStatusOfRelatedProcToInvalid (
     return IDE_FAILURE;
 }
 
+// BUG-46416
+IDE_RC qcmModifyStatusOfRelatedProcToInvalidTx (
+    idvSQL              * /* aStatistics */,
+    const void          * aRow,
+    qcStatement         * aStatement )
+{
+    qsOID           sProcOID;
+    SLong           sSLongOID;
+    mtcColumn     * sProcIDMtcColumn;
+
+    IDE_TEST( smiGetTableColumns( gQcmProcRelated,
+                                  QCM_PROC_RELATED_PROCOID_COL_ORDER,
+                                  (const smiColumn**)&sProcIDMtcColumn )
+              != IDE_SUCCESS );
+
+    qcm::getBigintFieldValue (
+        aRow,
+        sProcIDMtcColumn,
+        & sSLongOID );
+    // BUGBUG 32bit machine에서 동작 시 SLong(64bit)변수를 uVLong(32bit)변수로
+    // 변환하므로 데이터 손실 가능성 있음
+    sProcOID = (qsOID)sSLongOID;
+
+    IDE_TEST( qsxProc::makeStatusInvalidTx( aStatement,
+                                            sProcOID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qcmProc::relSetInvalidProcOfRelated(
     qcStatement    * aStatement,
     UInt             aRelatedUserID,
     SChar          * aRelatedObjectName,
     UInt             aRelatedObjectNameSize,
-    qsObjectType     aRelatedObjectType)
+    qsObjectType     aRelatedObjectType,
+    idBool           aIsUseTx )
 {
     smiRange              sRange;
     qtcMetaRangeColumn    sFirstMetaRange;
@@ -1735,7 +1796,7 @@ IDE_RC qcmProc::relSetInvalidProcOfRelated(
     qcNameCharBuffer      sObjectNameBuffer;
     mtdCharType         * sObjectName = ( mtdCharType * ) & sObjectNameBuffer ;
     mtcColumn           * sFirstMtcColumn;
-    mtcColumn           * sSceondMtcColumn;
+    mtcColumn           * sSecondMtcColumn;
     mtcColumn           * sThirdMtcColumn;
 
     sUserIdData = (mtdIntegerType) aRelatedUserID;
@@ -1754,7 +1815,7 @@ IDE_RC qcmProc::relSetInvalidProcOfRelated(
 
     IDE_TEST( smiGetTableColumns( gQcmProcRelated,
                                   QCM_PROC_RELATED_RELATEDOBJECTNAME_COL_ORDER,
-                                  (const smiColumn**)&sSceondMtcColumn )
+                                  (const smiColumn**)&sSecondMtcColumn )
               != IDE_SUCCESS );
 
     IDE_TEST( smiGetTableColumns( gQcmProcRelated,
@@ -1762,17 +1823,50 @@ IDE_RC qcmProc::relSetInvalidProcOfRelated(
                                   (const smiColumn**)&sThirdMtcColumn )
               != IDE_SUCCESS );
 
-    qcm::makeMetaRangeTripleColumn(
-        & sFirstMetaRange,
-        & sSecondMetaRange,
-        & sThirdMetaRange,
-        sFirstMtcColumn,
-        & sUserIdData,
-        sSceondMtcColumn,
-        (const void*) sObjectName,
-        sThirdMtcColumn,
-        & sObjectTypeIntData,
-        & sRange );
+    // BUG-46395 public synonym을 고려한다.
+    // Public synonym은 user id가 NULL이다.
+    // 검색 조건
+    qtc::initializeMetaRange( &sRange,
+                              MTD_COMPARE_MTDVAL_MTDVAL );  // Meta is memory table
+
+    if ( aRelatedUserID != QC_PUBLIC_USER_ID )
+    {
+        qtc::setMetaRangeColumn( &sFirstMetaRange,
+                                 sFirstMtcColumn,
+                                 & sUserIdData,
+                                 SMI_COLUMN_ORDER_ASCENDING,
+                                 0 );  // First column of Index
+    }
+    else
+    {
+        qtc::setMetaRangeIsNullColumn(
+            &sFirstMetaRange,
+            sFirstMtcColumn,
+            0 );  // First column of Index
+    }
+
+    qtc::addMetaRangeColumn( &sRange,
+                             &sFirstMetaRange );
+
+    qtc::setMetaRangeColumn( &sSecondMetaRange,
+                             sSecondMtcColumn,
+                             (const void*) sObjectName,
+                             SMI_COLUMN_ORDER_ASCENDING,
+                             1 );  // Second column of Index
+
+    qtc::addMetaRangeColumn( &sRange,
+                             &sSecondMetaRange );
+
+    qtc::setMetaRangeColumn( &sThirdMetaRange,
+                             sThirdMtcColumn,
+                             & sObjectTypeIntData,
+                             SMI_COLUMN_ORDER_ASCENDING,
+                             2 );  // Third column of Index
+
+    qtc::addMetaRangeColumn( &sRange,
+                             &sThirdMetaRange );
+
+    qtc::fixMetaRange( &sRange );
 
     IDE_TEST( qcm::selectRow(
                   QC_SMI_STMT( aStatement ),
@@ -1781,7 +1875,8 @@ IDE_RC qcmProc::relSetInvalidProcOfRelated(
                   & sRange,
                   gQcmProcRelatedIndex
                   [ QCM_PROC_RELATED_RELUSERID_RELOBJNAME_RELOBJTYPE ],
-                  (qcmSetStructMemberFunc )qcmModifyStatusOfRelatedProcToInvalid,
+                  (aIsUseTx == ID_FALSE)?(qcmSetStructMemberFunc )qcmModifyStatusOfRelatedProcToInvalid:
+                                         (qcmSetStructMemberFunc )qcmModifyStatusOfRelatedProcToInvalidTx,
                   aStatement, /* argument to qcmSetStructMemberFunc */
                   0,          /* aMetaStructDistance.
                                  0 means do not change pointer to aStatement */

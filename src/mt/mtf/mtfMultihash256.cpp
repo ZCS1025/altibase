@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfMultihash256.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfMultihash256.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <idsSHA256.h>
@@ -67,6 +67,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfMultihash256Calculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -84,6 +85,7 @@ const mtcExecute mtfExecuteFast = {
     mtf::calculateNA,
     mtfMultihash256CalculateFast,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

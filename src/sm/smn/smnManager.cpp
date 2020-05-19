@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnManager.cpp 84923 2019-02-25 04:54:35Z djin $
  **********************************************************************/
 
 #include <ide.h>
@@ -63,7 +63,8 @@ IDE_RC smnManager::initialize( void )
                                             SD_PAGE_SIZE,				/* AlignByte */
                                             ID_FALSE,					/* ForcePooling */
                                             ID_TRUE,					/* GarbageCollection */
-                                            ID_TRUE )					/* HWCacheLine */
+                                            ID_TRUE, 					/* HWCacheLine */
+                                            IDU_MEMPOOL_TYPE_TIGHT )    /* mempoool type */
               != IDE_SUCCESS );
 
     //-------------------------------
@@ -2380,6 +2381,8 @@ void smnManager::initIndexHeader( void                * aIndexHeader,
         }
         else
         {
+            IDE_ASSERT( ( sctTableSpaceMgr::isMemTableSpace( sColumn->colSpace ) == ID_TRUE ) ||
+                        ( sctTableSpaceMgr::isVolatileTableSpace( sColumn->colSpace ) == ID_TRUE ) ); 
             // nothing to do
         }
 

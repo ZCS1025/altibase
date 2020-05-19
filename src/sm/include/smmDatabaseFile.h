@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: smmDatabaseFile.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmDatabaseFile.h 85250 2019-04-16 07:15:32Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMM_DATABASE_FILE_H_
@@ -84,13 +84,13 @@ private:
                PDL_OFF_T  aWhere,
                void*      aBuffer,
                size_t     aSize);
-        
-    // Direct I/O를 위해 Disk Sector Size로 Align된 Buffer를 통해
-    // File Write수행
-    IDE_RC writeDIO(
-               PDL_OFF_T aWhere,
-               void*     aBuffer,
-               size_t    aSize);
+
+//    // Direct I/O를 위해 Disk Sector Size로 Align된 Buffer를 통해
+//    // File Write수행
+//    IDE_RC writeDIO(
+//               PDL_OFF_T aWhere,
+//               void*     aBuffer,
+//               size_t    aSize);
 
     // Direct I/O를 이용하여 write하기 위해 Align된 Buffer에 데이터 복사
     IDE_RC copyDataForDirectWrite(

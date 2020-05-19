@@ -51,7 +51,7 @@ public class CmBindParamDataOutResult extends CmStatementIdResult
         }
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

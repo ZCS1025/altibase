@@ -785,18 +785,19 @@ void printRecord( smcTableHeader   * aTableHeader,
 void initPCH()
 {
     IDE_ASSERT( gPageMemPool.initialize(
-            IDU_MEM_SM_SMU,
-            (SChar*)"TEMP_MEMORY_POOL",
-            1, /* MemList Count */
-            SM_PAGE_SIZE,
-            smuProperty::getTempPageChunkCount(),
-            IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
-            ID_TRUE,							/* UseMutex */
-            IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
-            ID_FALSE,							/* ForcePooling */
-            ID_TRUE,							/* GarbageCollection */
-            ID_TRUE )							/* HWCacheLie */
-        == IDE_SUCCESS);
+                    IDU_MEM_SM_SMU,
+                    (SChar*)"TEMP_MEMORY_POOL",
+                    1, /* MemList Count */
+                    SM_PAGE_SIZE,
+                    smuProperty::getTempPageChunkCount(),
+                    IDU_AUTOFREE_CHUNK_LIMIT,           /* ChunkLimit */
+                    ID_TRUE,                            /* UseMutex */
+                    IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,    /* AlignByte */
+                    ID_FALSE,                           /* ForcePooling */
+                    ID_TRUE,                            /* GarbageCollection */
+                    ID_TRUE,                            /* HWCacheLine */
+                    IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */)
+                 == IDE_SUCCESS);
 }     
 
 void finalizePCH()

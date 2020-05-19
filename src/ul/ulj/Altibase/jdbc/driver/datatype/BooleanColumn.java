@@ -40,16 +40,12 @@ public class BooleanColumn extends AbstractColumn
     
     BooleanColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.BOOLEAN);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.BOOLEAN;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.BOOLEAN };
     }
 
     public String getDBColumnTypeName()

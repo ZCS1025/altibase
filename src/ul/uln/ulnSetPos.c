@@ -1539,7 +1539,7 @@ SQLRETURN ulnSetPos(ulnStmt      *aStmt,
     ULN_FLAG(sNeedFinPtContext);
 
     ulnFnContext  sFnContext;
-    ulnDbc       *sParentDbc = aStmt->mParentDbc;
+    ulnDbc       *sParentDbc = NULL;
 
     ACP_UNUSED(aLockType);
 
@@ -1547,6 +1547,8 @@ SQLRETURN ulnSetPos(ulnStmt      *aStmt,
 
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
+
+    sParentDbc = aStmt->mParentDbc;  /* BUG-46885 */
 
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
                                           &(sParentDbc->mPtContext),

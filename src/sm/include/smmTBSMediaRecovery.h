@@ -78,12 +78,11 @@ public :
     static UInt   getLstCreatedDBFile( smmTBSNode    * aTBSNode )
                   { return aTBSNode->mLstCreatedDBFile; }
 
-
-    // 테이블스페이스의 N번째 데이타파일의 페이지 구간 반환
-    static void getPageRangeOfNthFile( smmTBSNode * aTBSNode, 
-                                       UInt         aFileNum,
-                                       scPageID   * aFstPageID, 
-                                       scPageID   * aLstPageID );
+//    // 테이블스페이스의 N번째 데이타파일의 페이지 구간 반환
+//    static void getPageRangeOfNthFile( smmTBSNode * aTBSNode, 
+//                                       UInt         aFileNum,
+//                                       scPageID   * aFstPageID, 
+//                                       scPageID   * aLstPageID );
 
     ////////////////////////////////////////////////////////////////////
     // Backup 관련 함수

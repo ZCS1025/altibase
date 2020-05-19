@@ -199,6 +199,9 @@ qcg::allocStatement( qcStatement * aStatement,
     /* TASK-6744 */
     aStatement->mRandomPlanInfo = NULL;
 
+    /* BUG-45899 */
+    SDI_INIT_PRINT_INFO( &(aStatement->mShardPrintInfo) );
+
     //--------------------------------------------
     // 각종 Memory Manager를 위한 Memory 할당
     //--------------------------------------------
@@ -515,6 +518,12 @@ qcg::allocStatement( qcStatement * aStatement,
                   & aStatement->qmeStackPosition )
               != IDE_SUCCESS );
 
+    /* PROJ-2677 DDL synchronization */
+    qrc::setDDLReplInfo( aStatement,
+                         SM_OID_NULL,
+                         SM_OID_NULL,
+                         SM_OID_NULL );
+
     aStatement->allocFlag = ID_TRUE;
 
     return IDE_SUCCESS;
@@ -736,7 +745,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement * aStatement,
     // BUG-41944
     sTemplate->tmplate.arithmeticOpMode    = MTC_ARITHMETIC_OPERATION_DEFAULT;
     sTemplate->tmplate.arithmeticOpModeRef = ID_FALSE;
-    
+
     // PROJ-2527 WITHIN GROUP AGGR
     sTemplate->tmplate.funcData = NULL;
     sTemplate->tmplate.funcDataCnt = 0;
@@ -891,7 +900,7 @@ IDE_RC qcg::allocPrivateTemplate( qcStatement   * aStatement,
     // BUG-41944
     sTemplate->tmplate.arithmeticOpMode    = MTC_ARITHMETIC_OPERATION_DEFAULT;
     sTemplate->tmplate.arithmeticOpModeRef = ID_FALSE;
-    
+
     // PROJ-2527 WITHIN GROUP AGGR
     sTemplate->tmplate.funcData = NULL;
     sTemplate->tmplate.funcDataCnt = 0;
@@ -1057,7 +1066,7 @@ IDE_RC qcg::allocSharedTemplate( qcStatement * aStatement,
     // BUG-41944
     sTemplate->tmplate.arithmeticOpMode    = MTC_ARITHMETIC_OPERATION_DEFAULT;
     sTemplate->tmplate.arithmeticOpModeRef = ID_FALSE;
-    
+
     // PROJ-2527 WITHIN GROUP AGGR
     sTemplate->tmplate.funcData = NULL;
     sTemplate->tmplate.funcDataCnt = 0;
@@ -1448,6 +1457,15 @@ IDE_RC qcg::freeStatement( qcStatement * aStatement )
 
         /* TASK-6744 */
         aStatement->mRandomPlanInfo = NULL;
+
+        /* PROJ-2677 DDL synchronization */
+        qrc::setDDLReplInfo( aStatement,
+                             SM_OID_NULL,
+                             SM_OID_NULL,
+                             SM_OID_NULL );
+
+        /* BUG-45899 */
+        SDI_INIT_PRINT_INFO( &(aStatement->mShardPrintInfo) );
     }
 
     return IDE_SUCCESS;
@@ -1738,6 +1756,11 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
 
     aStatement->sharedFlag = ID_FALSE;
 
+    qrc::setDDLReplInfo( aStatement,
+                         SM_OID_NULL,
+                         SM_OID_NULL,
+                         SM_OID_NULL );
+
     /* PROJ-2206 withStmtList manager alloc
      * PROJ-2415 Grouping Sets Clause
      * withStmtList manager clear -> stmtList manager clear for Re-parsing */    
@@ -1771,6 +1794,9 @@ IDE_RC qcg::clearStatement( qcStatement * aStatement, idBool aRebuild )
     
     /* TASK-6744 */
     aStatement->mRandomPlanInfo = NULL;
+
+    /* BUG-45899 */
+    SDI_INIT_PRINT_INFO( &(aStatement->mShardPrintInfo) );
 
     //----------------------------------
     // qci::initializeStatement()시에 mm으로부터 넘겨받은
@@ -2071,6 +2097,11 @@ qcg::fixAfterValidation( qcStatement * aStatement )
                                        QC_SHARED_TMPLATE(aStatement) )
               != IDE_SUCCESS );
 
+    if ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_EXEC_AB )
+    {
+        IDE_TEST( fixAfterValidationAB(aStatement) != IDE_SUCCESS );
+    }
+
     //---------------------------------------------------------
     // [Cursor Flag의 보정]
     // Validation이 끝나면 질의문이 접근하는 Table의 유형에 따라
@@ -2098,6 +2129,46 @@ qcg::fixAfterValidation( qcStatement * aStatement )
 
     return IDE_FAILURE;
     
+}
+IDE_RC qcg::fixAfterValidationAB( qcStatement * aQcStmt )
+{
+    UInt i;
+    UInt sFlag;
+    mtcTemplate * sDstTemplate;
+
+    sDstTemplate = &(QC_SHARED_TMPLATE(aQcStmt)->tmplate);
+
+    for (i = 0; i < sDstTemplate->rowCount; i++)
+    {
+        sFlag = sDstTemplate->rows[i].lflag;
+
+        if ( (sFlag & MTC_TUPLE_ROW_ALLOCATE_TRUE) &&
+             (sDstTemplate->rows[i].rowMaximum > 0) )
+        {
+            /* BUG-44382 clone tuple 성능개선 */
+            if ( sFlag & MTC_TUPLE_ROW_MEMSET_TRUE )
+            {
+                // BUG-15548
+                IDE_TEST( QC_QMP_MEM(aQcStmt)->cralloc(
+                              ID_SIZEOF(SChar) * sDstTemplate->rows[i].rowMaximum,
+                              (void**)&(sDstTemplate->rows[i].row))
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                IDE_TEST( QC_QMP_MEM(aQcStmt)->alloc(
+                              ID_SIZEOF(SChar) * sDstTemplate->rows[i].rowMaximum,
+                              (void**)&(sDstTemplate->rows[i].row))
+                          != IDE_SUCCESS);
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC
@@ -2822,6 +2893,40 @@ ULong qcg::getSessionShardPIN( qcStatement  * aStatement )
     return sShardPIN;
 }
 
+ULong qcg::getSessionShardMetaNumber( qcStatement * aStatement )
+{
+    ULong  sShardMetaNumber = ID_ULONG(0);
+
+    if ( aStatement->session->mMmSession != NULL )
+    {
+        sShardMetaNumber = qci::mSessionCallback.mGetShardMetaNumber(
+            aStatement->session->mMmSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sShardMetaNumber;
+}
+
+idBool qcg::getSessionIsShardDataSession( qcStatement * aStatement )
+{
+    idBool sIsShardDataSession = ID_FALSE;
+
+    if ( aStatement->session->mMmSession != NULL )
+    {
+        sIsShardDataSession = qci::mSessionCallback.mIsShardDataSession(
+            aStatement->session->mMmSession );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return sIsShardDataSession;
+}
+
 SChar* qcg::getSessionShardNodeName( qcStatement  * aStatement )
 {
     SChar  * sNodeName;
@@ -2839,7 +2944,7 @@ SChar* qcg::getSessionShardNodeName( qcStatement  * aStatement )
     return sNodeName;
 }
 
-UChar qcg::getSessionGetExplainPlan( qcStatement  * aStatement )
+UChar qcg::getSessionExplainPlan( qcStatement  * aStatement )
 {
     UChar  sExplainPlan;
 
@@ -2854,6 +2959,40 @@ UChar qcg::getSessionGetExplainPlan( qcStatement  * aStatement )
     }
 
     return sExplainPlan;
+}
+
+UInt qcg::getSessionDBLinkGTXLevel( qcStatement * aStatement )
+{
+    UInt sDBLinkGTXLevel = 0;
+
+    if ( aStatement->session->mMmSession != NULL )
+    {
+        sDBLinkGTXLevel = qci::mSessionCallback.mGetDBLinkGTXLevel( aStatement->session->mMmSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sDBLinkGTXLevel;
+}
+
+UInt qcg::getReplicationDDLSync( qcStatement * aStatement )
+{
+    UInt sDDLSync;
+
+    if ( aStatement->session->mMmSession != NULL )
+    {
+        sDDLSync = qci::mSessionCallback.mGetReplicationDDLSync(
+            aStatement->session->mMmSession );
+    }
+    else
+    {
+        sDDLSync = 0;
+    }
+
+    return sDDLSync;
+
 }
 
 // BUG-23780 TEMP_TBS_MEMORY 힌트 적용여부를 property로 제공
@@ -3083,6 +3222,23 @@ UInt qcg::getSessionRecyclebinEnable( qcStatement * aStatement )
     return sRecyclebinEnable;
 }
 
+UInt qcg::getSessionPrintOutEnable( qcStatement * aStatement )
+{
+    UInt sPrintOutEnable = 1;
+
+    if ( aStatement->session->mMmSession != NULL )
+    {
+        sPrintOutEnable = qci::mSessionCallback.mGetPrintOutEnable(
+            aStatement->session->mMmSession );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sPrintOutEnable;
+}
+
 // BUG-41398 use old sort
 UInt qcg::getSessionUseOldSort( qcStatement * aStatement )
 {
@@ -3259,57 +3415,37 @@ idBool qcg::isInitializedMetaCaches()
     return mInitializedMetaCaches;
 }
 
-idBool qcg::isShardCoordinator( qcStatement * aStatement )
+/* PROJ-2632 */
+UInt qcg::getSerialExecuteMode( qcStatement * aStatement )
 {
-    idBool   sIsShard = ID_FALSE;
-    SChar  * sNodeName;
+    UInt sMode;
 
-    // shard_meta enable이어야 하고
-    // data node connection이 아니어야 한다. (shard_node_name이 없어야 한다.)
-    if ( QCU_SHARD_META_ENABLE == 1 )
+    if ( aStatement->session->mMmSession != NULL )
     {
-        sNodeName = getSessionShardNodeName( aStatement );
-
-        if ( sNodeName == NULL )
-        {
-            sIsShard = ID_TRUE;
-        }
-        else
-        {
-            if ( sNodeName[0] == '\0' )
-            {
-                sIsShard = ID_TRUE;
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
+        sMode = qci::mSessionCallback.mGetSerialExecuteMode( aStatement->session->mMmSession );
     }
     else
     {
-        // Nothing to do.
+        sMode = QCU_SERIAL_EXECUTE_MODE;
     }
 
-    return sIsShard;
+    return sMode;
 }
 
-UInt qcg::getShardLinkerChangeNumber( qcStatement * aStatement )
+UInt qcg::getSessionTrclogDetailInformation( qcStatement * aStatement )
 {
-    UInt sChangeNumber = 0;
+    UInt sMode;
 
-    if ( isShardCoordinator( aStatement ) == ID_TRUE )
+    if (aStatement->session->mMmSession != NULL)
     {
-        sChangeNumber = sdi::getShardLinkerChangeNumber();
-
-        IDE_DASSERT( sChangeNumber > 0 );
+        sMode = qci::mSessionCallback.mGetTrclogDetailInformation( aStatement->session->mMmSession );
     }
     else
     {
-        // Nothing to do.
+        sMode = QCU_TRCLOG_DETAIL_INFORMATION;
     }
 
-    return sChangeNumber;
+    return sMode;
 }
 
 IDE_RC
@@ -3827,6 +3963,93 @@ qcg::setBindData( qcStatement  * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC qcg::runDDLforDDLSync( idvSQL        * aStatistics,
+                              smiStatement  * aSmiStmt,
+                              UInt            aUserID,
+                              SChar         * aSqlStr )
+{
+    idBool        sIsAlloc = ID_FALSE;
+    qcStatement   sStatement;
+
+    // make qcStatement : alloc the members of qcStatement
+    IDE_TEST( allocStatement( & sStatement,
+                              NULL,
+                              NULL,
+                              aStatistics ) != IDE_SUCCESS );
+    sIsAlloc = ID_TRUE;
+
+    qsxEnv::initialize( sStatement.spxEnv, NULL );
+
+    qcg::setSmiStmt( &sStatement, aSmiStmt );
+
+    sStatement.session->mQPSpecific.mFlag |= QC_SESSION_INTERNAL_DDL_SYNC_TRUE;
+    /* PROJ-2677  remote 에서 DDL 수행시 SQL 만을 전송받기 때문에 User 정보가 없으므로
+     * User ID 를 직접 지정하여 수행한다. */
+    sStatement.session->mUserID = aUserID;
+    
+    sStatement.myPlan->stmtText         = aSqlStr;
+    sStatement.myPlan->stmtTextLen      = idlOS::strlen( aSqlStr );
+    sStatement.myPlan->encryptedText    = NULL;   /* PROJ-2550 PSM Encryption */
+    sStatement.myPlan->encryptedTextLen = 0;      /* PROJ-2550 PSM Encryption */
+    sStatement.myPlan->parseTree        = NULL;
+    sStatement.myPlan->plan             = NULL;
+    sStatement.myPlan->graph            = NULL;
+    sStatement.myPlan->scanDecisionFactors = NULL;
+
+    // parsing
+    IDE_TEST( qcpManager::parseIt( &sStatement ) != IDE_SUCCESS );
+
+    IDE_TEST( sStatement.myPlan->parseTree->parse( &sStatement )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qtc::fixAfterParsing( QC_SHARED_TMPLATE( &sStatement ) )
+              != IDE_SUCCESS );
+
+    // validation
+    IDE_TEST( sStatement.myPlan->parseTree->validate( &sStatement )
+              != IDE_SUCCESS );    
+    IDE_TEST( qtc::fixAfterValidation( QC_QMP_MEM( &sStatement ),
+                                       QC_SHARED_TMPLATE( &sStatement ) )
+              != IDE_SUCCESS );
+
+    // optimizaing
+    IDE_TEST( sStatement.myPlan->parseTree->optimize( &sStatement )
+              != IDE_SUCCESS );
+
+    IDE_TEST( setPrivateArea( &sStatement ) != IDE_SUCCESS );
+
+    IDE_TEST( stepAfterPVO( &sStatement ) != IDE_SUCCESS );
+
+    // execution
+    IDE_TEST( sStatement.myPlan->parseTree->execute( &sStatement )
+              != IDE_SUCCESS );
+    // set success
+    QC_PRIVATE_TMPLATE( &sStatement )->flag &= ~QC_TMP_EXECUTION_MASK;
+    QC_PRIVATE_TMPLATE( &sStatement )->flag |= QC_TMP_EXECUTION_SUCCESS;
+
+    IDE_TEST( qcg::freeStatement( &sStatement ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsAlloc == ID_TRUE )
+    {
+        sIsAlloc = ID_FALSE;
+        (void)qcg::freeStatement( &sStatement );
+    }
+    else
+    {
+        // Nothing to do
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qcg::runDMLforDDL( smiStatement  * aSmiStmt,
                           SChar         * aSqlStr,
                           vSLong        * aRowCnt )
@@ -3890,6 +4113,81 @@ IDE_RC qcg::runDMLforInternal( smiStatement  * aSmiStmt,
     //IDE_TEST(qtc::fixAfterOptimization(QC_QMP_MEM(&sStatement),
     //                                   QC_SHARED_TMPLATE(&sStatement))
     //         != IDE_SUCCESS);
+
+    IDE_TEST(setPrivateArea(&sStatement) != IDE_SUCCESS);
+
+    IDE_TEST(stepAfterPVO(&sStatement) != IDE_SUCCESS);
+
+    // execution
+    IDE_TEST(sStatement.myPlan->parseTree->execute(&sStatement)
+             != IDE_SUCCESS);
+
+    // set success
+    QC_PRIVATE_TMPLATE(&sStatement)->flag &= ~QC_TMP_EXECUTION_MASK;
+    QC_PRIVATE_TMPLATE(&sStatement)->flag |= QC_TMP_EXECUTION_SUCCESS;
+
+    *aRowCnt = QC_PRIVATE_TMPLATE(&sStatement)->numRows;
+
+    IDE_TEST( qcg::freeStatement(&sStatement) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    (void) qcg::freeStatement(&sStatement);
+
+    return IDE_FAILURE;
+    
+}
+
+IDE_RC qcg::runSQLforShardMeta( smiStatement  * aSmiStmt,
+                                SChar         * aSqlStr,
+                                vSLong        * aRowCnt )
+{
+    qcStatement   sStatement;
+
+    // make qcStatement : alloc the members of qcStatement
+    IDE_TEST( allocStatement( & sStatement,
+                              NULL,
+                              NULL,
+                              NULL ) != IDE_SUCCESS );
+
+    qsxEnv::initialize( sStatement.spxEnv, NULL );
+
+    qcg::setSmiStmt( &sStatement, aSmiStmt );
+
+    sStatement.myPlan->stmtText         = aSqlStr;
+    sStatement.myPlan->stmtTextLen      = idlOS::strlen(aSqlStr);
+    sStatement.myPlan->encryptedText    = NULL;   /* PROJ-2550 PSM Encryption */
+    sStatement.myPlan->encryptedTextLen = 0;      /* PROJ-2550 PSM Encryption */
+    sStatement.myPlan->parseTree        = NULL;
+    sStatement.myPlan->plan             = NULL;
+    sStatement.myPlan->graph            = NULL;
+    sStatement.myPlan->scanDecisionFactors = NULL;
+
+    /* Shard meta information을 생성하는 시점에는 SMN validatation을 수행하지 말아야 한다. */
+    sStatement.session->mQPSpecific.mFlag &= ~QC_SESSION_ALTER_META_MASK;
+    sStatement.session->mQPSpecific.mFlag |= QC_SESSION_ALTER_META_ENABLE;
+
+    // parsing
+    IDE_TEST(qcpManager::parseIt(&sStatement) != IDE_SUCCESS);
+
+    IDE_TEST(sStatement.myPlan->parseTree->parse(&sStatement)
+             != IDE_SUCCESS);
+
+    IDE_TEST(qtc::fixAfterParsing(QC_SHARED_TMPLATE(&sStatement))
+             != IDE_SUCCESS);
+
+    // validation
+    IDE_TEST( sStatement.myPlan->parseTree->validate(&sStatement)
+              != IDE_SUCCESS);
+    IDE_TEST(qtc::fixAfterValidation(QC_QMP_MEM(&sStatement),
+                                     QC_SHARED_TMPLATE(&sStatement))
+             != IDE_SUCCESS);
+
+    // optimizaing
+    IDE_TEST(sStatement.myPlan->parseTree->optimize(&sStatement)
+             != IDE_SUCCESS);
 
     IDE_TEST(setPrivateArea(&sStatement) != IDE_SUCCESS);
 
@@ -4777,8 +5075,9 @@ IDE_RC qcg::startupPreProcess( idvSQL *aStatistics )
                                            IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                            ID_FALSE,						/* ForcePooling */
                                            ID_TRUE,							/* GarbageCollection */
-                                           ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                           ID_TRUE,                         /* HWCacheLine */
+                                           IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/) 
+              != IDE_SUCCESS);			
 
     IDE_TEST(mIduMemoryPool.initialize(IDU_MEM_QCI,
                                        (SChar*)"QP_MEMORY_POOL",
@@ -4790,8 +5089,9 @@ IDE_RC qcg::startupPreProcess( idvSQL *aStatistics )
                                        IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                        ID_FALSE,						/* ForcePooling */
                                        ID_TRUE,							/* GarbageCollection */
-                                       ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                       ID_TRUE,                         /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/) 
+              != IDE_SUCCESS);			
 
     IDE_TEST(mSessionPool.initialize(IDU_MEM_QCI,
                                      (SChar*)"QP_SESSION_POOL",
@@ -4803,8 +5103,9 @@ IDE_RC qcg::startupPreProcess( idvSQL *aStatistics )
                                      IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                      ID_FALSE,							/* ForcePooling */
                                      ID_TRUE,							/* GarbageCollection */
-                                     ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                     ID_TRUE,                           /* HWCacheLine */
+                                     IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     IDE_TEST(mStatementPool.initialize(IDU_MEM_QCI,
                                        (SChar*)"QP_STATEMENT_POOL",
@@ -4816,8 +5117,12 @@ IDE_RC qcg::startupPreProcess( idvSQL *aStatistics )
                                        IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                        ID_FALSE,						/* ForcePooling */
                                        ID_TRUE,							/* GarbageCollection */
-                                       ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                       ID_TRUE,                         /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/) 
+             != IDE_SUCCESS);			
+
+    /* BUG-46179 SD 관련 Property Load */
+    IDE_TEST( sduProperty::initProperty( aStatistics ) != IDE_SUCCESS );
 
     // QP TRCLOG 관련 Property Load
     IDE_TEST( qcuProperty::initProperty( aStatistics ) != IDE_SUCCESS );
@@ -5022,6 +5327,9 @@ IDE_RC qcg::startupShutdown( idvSQL * aStatistics )
 
     IDE_TEST( qcuProperty::finalProperty( aStatistics ) != IDE_SUCCESS );
 
+    /* BUG-46179 */
+    IDE_TEST( sduProperty::finalProperty( aStatistics ) != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -5167,13 +5475,23 @@ IDE_RC qcg::buildPerformanceView( idvSQL * aStatistics )
     IDE_TEST( qcmFixedTable::makeAndSetQcmTableInfo( aStatistics, (SChar *) "D$" )
               != IDE_SUCCESS );
 
-    IDE_TEST( qcmPerformanceView::registerPerformanceView( aStatistics )
+    IDE_TEST( qcmPerformanceView::registerPerformanceView( aStatistics, QCM_PV_TYPE_NORMAL )
               != IDE_SUCCESS );
 
     (void)smiFixedTable::initializeStatic( (SChar *) "V$" );
 
     IDE_TEST( qcmFixedTable::makeAndSetQcmTableInfo( aStatistics, (SChar *) "V$" )
               != IDE_SUCCESS );
+
+    /* BUG-45646 */
+    if ( sdi::isShardEnable() == ID_TRUE )
+    {
+        IDE_TEST( qcmPerformanceView::registerPerformanceView( aStatistics, QCM_PV_TYPE_SHARD )
+                  != IDE_SUCCESS );
+        (void)smiFixedTable::initializeStatic( (SChar *)"S$" );
+        IDE_TEST( qcmFixedTable::makeAndSetQcmTableInfo( aStatistics, (SChar *) "S$" )
+                  != IDE_SUCCESS );
+    }
 #endif
 
     return IDE_SUCCESS;
@@ -5953,7 +6271,7 @@ IDE_RC qcg::allocTemplate4Pkg( qcSessionPkgInfo * aSessionPkg, iduMemory * aMemo
     // BUG-41944
     sTemplate->tmplate.arithmeticOpMode    = MTC_ARITHMETIC_OPERATION_DEFAULT;
     sTemplate->tmplate.arithmeticOpModeRef = ID_FALSE;
-    
+
     // PROJ-2527 WITHIN GROUP AGGR
     sTemplate->tmplate.funcData = NULL;
     sTemplate->tmplate.funcDataCnt = 0;
@@ -7620,3 +7938,16 @@ void qcg::prsCopyStrDupAppo( SChar * aDest,
     *aDest = '\0';    
 }
 
+/* BUG-45899 */
+UInt qcg::getSessionTrclogDetailShard( qcStatement * aStatement )
+{
+    UInt sTrclogDetailShard = SDU_TRCLOG_DETAIL_SHARD;
+
+    if ( aStatement->session->mMmSession != NULL )
+    {
+        sTrclogDetailShard =
+            qci::mSessionCallback.mGetTrclogDetailShard( aStatement->session->mMmSession );
+    }
+
+    return sTrclogDetailShard;
+}

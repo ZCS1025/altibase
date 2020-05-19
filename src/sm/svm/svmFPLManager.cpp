@@ -1583,7 +1583,7 @@ IDE_RC svmFPLManager::aggregateTotalPageCountAction(
 {
     scPageID * sTotalPageCount = (scPageID*) aActionArg;
 
-    if(sctTableSpaceMgr::isVolatileTableSpace(aTBSNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isVolatileTableSpace(aTBSNode->mID) == ID_TRUE )
     {
         if ( sctTableSpaceMgr::hasState( aTBSNode,
                                          SCT_SS_SKIP_COUNTING_TOTAL_PAGES )

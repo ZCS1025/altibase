@@ -667,6 +667,7 @@ IDE_RC sdtSortModule::traverseInMemoryScan( smiTempTableHeader * aHeader,
                                        (vULong*)&sPtr )
                   != IDE_SUCCESS );
 
+        SC_MAKE_NULL_GRID( sTRPInfo.mTRPHGRID );
         IDE_TEST( sdtTempRow::fetch( sWASeg,
                                      SDT_WAGROUPID_NONE,
                                      sPtr,
@@ -775,6 +776,7 @@ IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
                                    &sIsValidSlot );
             IDE_ERROR( sIsValidSlot == ID_TRUE );
 
+            SC_COPY_GRID( aCursor->mGRID, sTRPInfo.mTRPHGRID );
             IDE_TEST( sdtTempRow::fetch( sWASeg,
                                          aCursor->mWAGroupID,
                                          sPtr,
@@ -1122,6 +1124,7 @@ IDE_RC sdtSortModule::fetchIndexScanForward( void    * aCursor,
         {
             if ( SM_IS_FLAG_ON( ( (sdtTRPHeader*)sPtr )->mTRFlag, SDT_TRFLAG_HEAD ) )
             {
+                SC_COPY_GRID( sCursor->mGRID, sTRPInfo.mTRPHGRID );
                 IDE_TEST( sdtTempRow::fetch( sWASeg,
                                              sCursor->mWAGroupID,
                                              sPtr,
@@ -1230,6 +1233,7 @@ IDE_RC sdtSortModule::fetchIndexScanBackward( void    * aCursor,
 
             if ( SM_IS_FLAG_ON( ( (sdtTRPHeader*)sPtr )->mTRFlag, SDT_TRFLAG_HEAD ) )
             {
+                SC_COPY_GRID( sCursor->mGRID, sTRPInfo.mTRPHGRID );
                 IDE_TEST( sdtTempRow::fetch( sWASeg,
                                              sCursor->mWAGroupID,
                                              sPtr,
@@ -1529,6 +1533,7 @@ IDE_RC sdtSortModule::restoreCursorMergeScan( void * aCursor,
     smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
     smiTempTableHeader * sHeader = sCursor->mTTHeader;
     smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
+    idBool               sIsValidSlot;
 
     IDE_ERROR( sPosition->mOwner == sCursor );
     IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_MERGESCAN );
@@ -1536,18 +1541,47 @@ IDE_RC sdtSortModule::restoreCursorMergeScan( void * aCursor,
     IDE_TEST( makeMergeRuns( sHeader,
                              sPosition->mExtraInfo )
               != IDE_SUCCESS );
-    sCursor->mGRID      = sPosition->mGRID;
-    sCursor->mRowPtr    = sPosition->mRowPtr;
+    sCursor->mGRID = sPosition->mGRID;
+
     /* 테이블에서 마지막으로 접근한 GRID
      * 정확하게는 smiTempTable::restoreCursor에서 sHeader->mGRID 갱신됨.
      *
      * 이전에 패치된 GRID와 테이블에서 마지막으로 접근한 GRID가 다르면
      * 커서에 매달린 런정보를 이용해 map 을 재구축 하는 과정이 필요하므로 
      * mRowPtr 을 보고 페이지만 다시 읽는 작업은 하지 않는다. */
-    sHeader->mGRID      = sPosition->mGRID;
+    sHeader->mGRID = sPosition->mGRID;
 
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
-                              SDT_TRFLAG_HEAD ) );
+    if ( sPosition->mRowPtr == NULL )
+    {
+        sCursor->mRowPtr = NULL;
+    }
+    else
+    {
+        // mRowPtr이 Null이 아니어야 확인가능
+        if ( SC_MAKE_PID( sCursor->mGRID ) ==
+             sdtTempPage::getPID( sdtTempPage::getPageStartPtr( sPosition->mRowPtr ) ))
+        {
+            sCursor->mRowPtr = sPosition->mRowPtr;
+        }
+        else
+        {
+            // BUG-46322 makeMergeRuns에서 run page들을 모두 load하였다.
+            // GRID에서 가리키는 page는 load되었어야 한다.
+            // 만약 이미 load되어 있다면 Slot을 찾아오고,
+            // 만약 해당 page가 없다면 WA GroupID가 NONE이므로 오류 반환한다.
+            // 추가로, MerceScan은 page를 fix하지는 않는다.
+            IDE_ERROR( sdtWASegment::getPagePtrByGRID( (sdtWASegment*)sHeader->mWASegment,
+                                                       SDT_WAGROUPID_NONE,
+                                                       sCursor->mGRID,
+                                                       &sCursor->mRowPtr,
+                                                       &sIsValidSlot ) == IDE_SUCCESS );
+            IDE_ERROR( sIsValidSlot == ID_TRUE );
+        }
+
+        IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+                                  SDT_TRFLAG_HEAD ) );
+
+    }
 
     return IDE_SUCCESS;
 
@@ -1582,6 +1616,7 @@ IDE_RC sdtSortModule::storeCursorIndexScan( void * aCursor,
     sPosition->mRowPtr    = sCursor->mRowPtr;
     sPosition->mWAPagePtr = sCursor->mWAPagePtr;
     sPosition->mSlotCount = sCursor->mSlotCount;
+    sPosition->mWPID      = sCursor->mWPID;
 
     sdtWASegment::convertFromWGRIDToNGRID( sWASeg,
                                            sPosition->mGRID,
@@ -1647,7 +1682,14 @@ IDE_RC sdtSortModule::restoreCursorIndexScan( void * aCursor,
     }
     else
     {
-        /* nothing to do */
+        // BUG-46384 sCursor->mWPID는 fix된 page를 나타낸다.
+        // 복원하려는 WPID와 다르다면 다시 fix 해 준다.
+        if ( sCursor->mWPID != sPosition->mWPID )
+        {
+            sdtWASegment::unfixPage( sWASeg, sCursor->mWPID );
+            sCursor->mWPID = sPosition->mWPID;
+            sdtWASegment::fixPage( sWASeg, sCursor->mWPID );
+        }
     }
 
     IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
@@ -1682,9 +1724,10 @@ IDE_RC sdtSortModule::storeCursorScan( void * aCursor,
     IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
-    sPosition->mGRID      = sCursor->mGRID;
-    sPosition->mRowPtr    = sCursor->mRowPtr;
-    sPosition->mPinIdx    = sCursor->mPinIdx;
+    sPosition->mGRID   = sCursor->mGRID;
+    sPosition->mRowPtr = sCursor->mRowPtr;
+    sPosition->mPinIdx = sCursor->mPinIdx;
+    sPosition->mWPID   = sCursor->mWPID;
 
     sdtWASegment::convertFromWGRIDToNGRID( sWASeg,
                                            sPosition->mGRID,
@@ -1751,7 +1794,14 @@ IDE_RC sdtSortModule::restoreCursorScan( void * aCursor,
     }
     else
     {
-        /* nothing to do */
+        // BUG-46384 sCursor->mWPID는 fix된 page를 나타낸다.
+        // 복원하려는 WPID와 다르다면 다시 fix 해 준다.
+        if ( sCursor->mWPID != sPosition->mWPID )
+        {
+            sdtWASegment::unfixPage( sWASeg, sCursor->mWPID );
+            sCursor->mWPID = sPosition->mWPID;
+            sdtWASegment::fixPage( sWASeg, sCursor->mWPID );
+        }
     }
 
     IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
@@ -2576,6 +2626,9 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
     IDE_TEST( aHeader->mSortStack.push(ID_FALSE, /*Lock*/
                                        &sCurStack) != IDE_SUCCESS );
 
+    SC_MAKE_NULL_GRID( sPivotTRPInfo.mTRPHGRID ); /*RowGRID, WA Map이어서 Fix 하지 않아도 된다.*/
+    SC_MAKE_NULL_GRID( sTargetTRPInfo.mTRPHGRID );
+
     sEmpty = ID_FALSE;
     while( 1 )
     {
@@ -2769,6 +2822,9 @@ IDE_RC sdtSortModule::mergeSort( smiTempTableHeader * aHeader,
     IDE_TEST( sdtWAMap::getvULong( sMapHdr, sRight, &sRightPtr )
               != IDE_SUCCESS );
 
+    SC_MAKE_NULL_GRID( sLeftTRPInfo.mTRPHGRID ); /*RowGRID, WA Map이어서 Fix 하지 않아도 된다.*/
+    SC_MAKE_NULL_GRID( sRightTRPInfo.mTRPHGRID );
+
     IDE_TEST( sdtTempRow::fetch( sWASeg,
                                  SDT_WAGROUPID_NONE,
                                  (UChar*)sLeftPtr,
@@ -2954,6 +3010,7 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
     smiValueInfo        sValueInfo2;
     idBool              sIsNull1;
     idBool              sIsNull2;
+    UInt                sColumnCount = 0;
 
     *aResult = 0;
 
@@ -2965,6 +3022,8 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
     sColumn = aHeader->mKeyColumnList;
     while( sColumn != NULL )
     {
+        IDE_ERROR( ++sColumnCount <= aHeader->mColumnCount );
+
         sValueInfo1.column = &sColumn->mColumn;
         sValueInfo2.column = &sColumn->mColumn;
 
@@ -3038,6 +3097,10 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 /**************************************************************************
@@ -3235,6 +3298,7 @@ IDE_RC sdtSortModule::storeSortedRun( smiTempTableHeader * aHeader )
 
         IDE_TEST( copyRowByPtr( aHeader,
                                 sSrcPtr,
+                                SC_NULL_GRID, /* SrcGRID, WA Map이어서 밀려나지 않는다. */
                                 SDT_COPY_NORMAL,
                                 SDT_TEMP_PAGETYPE_SORTEDRUN,
                                 SC_NULL_GRID, /* ChildRID */
@@ -3332,6 +3396,7 @@ IDE_RC sdtSortModule::copyRowByGRID( smiTempTableHeader * aHeader,
 
     IDE_TEST( copyRowByPtr( aHeader,
                             sCursor,
+                            aSrcGRID,
                             aPurpose,
                             aPageType,
                             aChildGRID,
@@ -3361,7 +3426,8 @@ IDE_RC sdtSortModule::copyRowByGRID( smiTempTableHeader * aHeader,
  ***************************************************************************/
 IDE_RC sdtSortModule::copyRowByPtr(smiTempTableHeader * aHeader,
                                    UChar              * aSrcPtr,
-                                   sdtCopyPurpose      aPurpose,
+                                   scGRID               aSrcGRID,
+                                   sdtCopyPurpose       aPurpose,
                                    sdtTempPageType      aPageType,
                                    scGRID               aChildGRID,
                                    sdtTRInsertResult  * aTRInsertResult )
@@ -3399,6 +3465,7 @@ IDE_RC sdtSortModule::copyRowByPtr(smiTempTableHeader * aHeader,
     }
 
     /*************** SortGroup에서 해당 Row를 가져옴 ********************/
+    SC_COPY_GRID( aSrcGRID, sTRPInfo4Select.mTRPHGRID );
     IDE_TEST( sdtTempRow::fetch( sWASeg,
                                  sSrcGroupID,
                                  aSrcPtr,
@@ -3916,6 +3983,11 @@ IDE_RC sdtSortModule::readRunPage( smiTempTableHeader   * aHeader,
         sWAPagePtr = sdtWASegment::getWAPagePtr( sWASeg,
                                                  SDT_WAGROUPID_SORT,
                                                  sWPID );
+
+        // BUG-46383 Disk Sort Temp에서 moveNPage가 skip되는 경우가 있습니다.
+        // 즉 readNPage에서 NPID를 WPID 에 옮놓지 못하는 경우가 있음.
+        // 제대로 읽어 왔는지 확인해야 함.
+        IDE_ERROR( sdtTempPage::getPID( sWAPagePtr ) == sRunNPID );
 
         /* 다음에 읽을 Page를 읽은다. 다만 Page에게 있어,
          * NextPID 링크를 따라갈지, PrevPID 링크를 따라갈지는

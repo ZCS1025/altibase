@@ -84,7 +84,7 @@ inline static qciAuditOperation *getCondition( qciAuditOperation *aSearch,
                                                UInt               aMetaInfoCount,
                                                PDL_COMPARE_FUNC   aCompareFunc )
 {
-    qciAuditOperation *sCondition=NULL;
+    qciAuditOperation *sCondition = NULL;
 
     if( aMetaInfoCount > 0 )
     {
@@ -94,10 +94,6 @@ inline static qciAuditOperation *getCondition( qciAuditOperation *aSearch,
                             aMetaInfoCount,
                             ID_SIZEOF(qciAuditOperation), 
                             aCompareFunc );
-    }
-    else
-    {
-        sCondition = NULL;
     }
 
     return sCondition;

@@ -92,6 +92,7 @@ static const mtcExecute mtfDecodeVarianceListExecute = {
     mtfDecodeVarianceListFinalize,
     mtfDecodeVarianceListCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

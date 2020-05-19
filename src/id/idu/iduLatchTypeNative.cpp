@@ -217,7 +217,7 @@ IDE_RC iduLatchNative::lockWrite(void* aStatSQL, void* aWeArgs)
     return IDE_SUCCESS;
 }
 
-IDE_RC iduLatchNative::unlock()
+IDE_RC iduLatchNative::unlock( idBool *aIsUnlockedAll )
 {
     holdNativeMutex(&mMutex, mSpinCount);
 
@@ -235,12 +235,29 @@ IDE_RC iduLatchNative::unlock()
         mMode++; /*   Decrease write latch count */
         if (mMode == 0)
         {
+            if ( aIsUnlockedAll != NULL )
+            {
+                *aIsUnlockedAll = ID_TRUE;
+            }
             mWriteThreadID = 0;
         }
     }
 
     IDL_MEM_BARRIER;
     releaseNativeMutex(&mMutex);
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC iduLatchNative::unlockWriteAll()
+{
+    idBool sIsUnlockedAll = ID_FALSE;
+
+    do
+    {
+        unlock( &sIsUnlockedAll );
+    }
+    while ( sIsUnlockedAll != ID_TRUE );
 
     return IDE_SUCCESS;
 }

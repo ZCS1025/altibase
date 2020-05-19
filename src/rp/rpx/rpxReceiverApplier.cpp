@@ -44,6 +44,7 @@ void rpxReceiverApplier::initialize( rpxReceiver           * aReceiver,
     mProcessedLogCount = 0;
     mIsDoneInitializeThread = ID_FALSE;
     mSNMapMgr = NULL;
+    mIsWait = ID_FALSE;
 }
 
 void rpxReceiverApplier::finalize( void )
@@ -54,7 +55,11 @@ void rpxReceiverApplier::finalize( void )
     {
         mApply.finalizeInLocalMemory();
 
-        mQueue.finalize();
+        mQueue.setExitFlag();
+
+        releaseQueue();
+
+        mQueue.destroy();
 
         if ( mThreadJoinCV.destroy() != IDE_SUCCESS )
         {
@@ -176,7 +181,7 @@ IDE_RC rpxReceiverApplier::initializeThread( void )
         case 7:
             mApply.finalizeInLocalMemory();
         case 6:
-            mQueue.finalize();
+            mQueue.destroy();
         case 5:
             mApply.shutdown();
         case 4:
@@ -208,7 +213,7 @@ void rpxReceiverApplier::updateProcessedSN( rpdXLog  * aXLog )
      * Incoming SN should be old SN but old SN must not set Processed sName
      * It may cause infinite loop  
      */
-    if ( mProcessedSN < aXLog->mSN ) 
+    if ( mProcessedSN < aXLog->mSN )
     {
         mProcessedSN = aXLog->mSN;
     }
@@ -223,74 +228,40 @@ void rpxReceiverApplier::releaseQueue( void )
     rpdXLog         * sXLog     = NULL;
 
     /* Queue 에 남은 모든 XLog 를 Receiver 의 FreeQueue 로 보낸다. */
-    dequeue( &sXLog );
+    mQueue.read( &sXLog );
     while( sXLog != NULL )
     {
         mReceiver->enqueueFreeXLogQueue( sXLog );
         sXLog = NULL;
     
-        dequeue( &sXLog );
+        mQueue.read( &sXLog );
     }
 }
 
 void rpxReceiverApplier::run( void )
 {
     rpdXLog         * sXLog = NULL;
-    PDL_Time_Value    sCheckTime;
-    idBool            sIsLocked = ID_FALSE;
     idBool            sIsEnd = ID_FALSE;
 
     IDE_CLEAR();
 
-    sCheckTime.initialize();
-
     ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_IS_START, mReceiver->mRepName, mMyIndex );
-
-    IDE_ASSERT( mMutex.lock( NULL ) == IDE_SUCCESS );
-    sIsLocked = ID_TRUE;
 
     while ( mExitFlag != ID_TRUE )
     {
         IDE_CLEAR();
 
-        mStatus = RECV_APPLIER_STATUS_IDLE;
+        mStatus = RECV_APPLIER_STATUS_DEQUEUEING;
 
-        sCheckTime.set( idlOS::time() + RPX_RECEIVER_APPLIER_SLEEP_SEC, 0 );
+        IDE_TEST( dequeue( &sXLog ) != IDE_SUCCESS );
 
-        if ( mCV.timedwait( &mMutex, &sCheckTime, IDU_IGNORE_TIMEDOUT ) == IDE_SUCCESS )
-        {
-            mStatus = RECV_APPLIER_STATUS_DEQUEUEING;
+        IDE_TEST( processXLog( sXLog,
+                               &sIsEnd ) 
+                  != IDE_SUCCESS );
 
-            dequeue( &sXLog );
-
-            while ( ( sXLog != NULL ) &&
-                    ( mExitFlag != ID_TRUE ) )
-            {
-                sIsLocked = ID_FALSE;
-                IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
-
-                IDE_TEST( processXLog( sXLog,
-                                       &sIsEnd ) 
-                          != IDE_SUCCESS );
-
-                IDE_ASSERT( mMutex.lock( NULL ) == IDE_SUCCESS );
-                sIsLocked = ID_TRUE;
-
-                mStatus = RECV_APPLIER_STATUS_DEQUEUEING;
-                dequeue( &sXLog );
-            }
-
-        }
-        else
-        {
-            IDE_WARNING( IDE_RP_1, RP_TRC_X_APPLIER_TIMEWAIT_ERROR );
-        }
+        mReceiver->enqueueFreeXLogQueue( sXLog );
+        sXLog = NULL;
     }
-
-    sIsLocked = ID_FALSE;
-    IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
-
-    releaseQueue();
 
     ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_PROCESSED_XLOG_COUNT, 
                            mReceiver->mRepName, mMyIndex, mProcessedLogCount );
@@ -309,6 +280,10 @@ void rpxReceiverApplier::run( void )
 
     ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_REMAINED_QUEUE_INFO, mReceiver->mRepName, mMyIndex, mQueue.getSize() );
 
+    ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_LAST_PROCESSED_SN, mReceiver->mRepName, mMyIndex, mApply.getApplyXSN() );
+
+    mStatus = RECV_APPLIER_STATUS_STOP;
+
     return;
 
     IDE_EXCEPTION_END;
@@ -317,68 +292,9 @@ void rpxReceiverApplier::run( void )
 
     ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_GOT_FAILURE, mReceiver->mRepName, mMyIndex );
 
-    if ( sIsLocked == ID_TRUE )
-    {
-        sIsLocked = ID_FALSE;
-        IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
-    }
-    else
-    {
-        /* nothing to do */
-    }
+    ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_REMAINED_QUEUE_INFO, mReceiver->mRepName, mMyIndex, mQueue.getSize() );
 
-    releaseQueue();
-
-    mReceiver->shutdown();
-
-    return;
-}
-
-IDE_RC rpxReceiverApplier::processXLog( rpdXLog    * aXLog,
-                                        idBool     * aIsEnd )
-{
-    rpdXLog   * sXLog = NULL;
-
-    sXLog = aXLog;
-
-    while ( ( sXLog != NULL ) &&
-            ( mExitFlag != ID_TRUE ) )
-    {
-        mStatus = RECV_APPLIER_STATUS_WORKING;
-
-        IDE_TEST( mReceiver->checkAndWaitApplier( sXLog->mWaitApplierIndex,
-                                                  sXLog->mWaitSNFromOtherApplier )
-                  != IDE_SUCCESS );
-
-        IDU_FIT_POINT( "rpxReceiverApplier::run::apply::mApply",
-                       rpERR_ABORT_RP_INTERNAL_ARG,
-                       "mApply.apply" );
-        IDE_TEST( mApply.apply( sXLog ) != IDE_SUCCESS );
-        mProcessedLogCount++;
-
-        updateProcessedSN( sXLog );
-
-        if ( sXLog->mType == RP_X_REPL_STOP )
-        {
-            ideLog::log( IDE_RP_0, RP_TRC_R_STOP_MSG_ARRIVED );
-            mExitFlag = ID_TRUE;
-            *aIsEnd = ID_TRUE;
-        }
-        else
-        {
-            /* do nothing */
-        }
-
-        mReceiver->enqueueFreeXLogQueue( sXLog );
-        sXLog = NULL;
-
-        mStatus = RECV_APPLIER_STATUS_DEQUEUEING;
-        dequeue( &sXLog );
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
+    ideLog::log( IDE_RP_0, RP_TRC_X_APPLIER_LAST_PROCESSED_SN, mReceiver->mRepName, mMyIndex, mApply.getApplyXSN() );
 
     if ( sXLog != NULL )
     {
@@ -389,30 +305,72 @@ IDE_RC rpxReceiverApplier::processXLog( rpdXLog    * aXLog,
         /* do nothing */
     }
 
+    mReceiver->shutdown();
+
+    mStatus = RECV_APPLIER_STATUS_STOP;
+
+    return;
+}
+
+IDE_RC rpxReceiverApplier::processXLog( rpdXLog    * aXLog,
+                                        idBool     * aIsEnd )
+{
+    mStatus = RECV_APPLIER_STATUS_WAITING;
+    IDE_TEST( mReceiver->checkAndWaitApplier( aXLog->mWaitApplierIndex,
+                                              aXLog->mWaitSNFromOtherApplier,
+                                              &mMutex,
+                                              &mCV,
+                                              &mIsWait )
+              != IDE_SUCCESS );
+
+    mStatus = RECV_APPLIER_STATUS_WORKING;
+
+    IDU_FIT_POINT( "rpxReceiverApplier::run::apply::mApply",
+                   rpERR_ABORT_RP_INTERNAL_ARG,
+                   "mApply.apply" );
+    IDE_TEST( mApply.apply( aXLog ) != IDE_SUCCESS );
+    mProcessedLogCount++;
+
+    updateProcessedSN( aXLog );
+
+    switch( aXLog->mType )
+    {
+        case RP_X_COMMIT:
+        case RP_X_ABORT:
+            mReceiver->wakeupReceiverApplier();
+            break;
+
+        case RP_X_REPL_STOP:
+            ideLog::log( IDE_RP_0, RP_TRC_R_STOP_MSG_ARRIVED );
+            mExitFlag = ID_TRUE;
+            *aIsEnd = ID_TRUE;
+            break;
+
+        default:
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
     return IDE_FAILURE;
 }
 
 void rpxReceiverApplier::enqueue( rpdXLog     * aXLog )
 {
     mQueue.write( aXLog );
-
-    IDE_ASSERT( mMutex.lock( NULL ) == IDE_SUCCESS );
-
-    if ( mStatus == RECV_APPLIER_STATUS_WORKING )
-    {
-        /* do nothing */
-    }
-    else
-    {
-        IDE_ASSERT( mCV.signal() == IDE_SUCCESS );
-    }
-
-    IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
 }
 
-void rpxReceiverApplier::dequeue( rpdXLog    ** aXLog )
+IDE_RC rpxReceiverApplier::dequeue( rpdXLog    ** aXLog )
 {
-    mQueue.read( aXLog );
+    IDE_TEST( mQueue.read( aXLog, RPX_RECEIVER_APPLIER_SLEEP_SEC ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 void rpxReceiverApplier::setTransactionFlagReplReplicated( void )
@@ -491,9 +449,7 @@ void rpxReceiverApplier::setExitFlag( void )
 
     if ( mIsDoneInitializeThread == ID_TRUE )
     {
-        IDE_ASSERT( mMutex.lock( NULL ) == IDE_SUCCESS );
-        IDE_ASSERT( mCV.signal() == IDE_SUCCESS );
-        IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
+        mQueue.setExitFlag();
     }
     else
     {
@@ -531,6 +487,7 @@ void rpxReceiverApplier::setParallelApplyInfo( rpxReceiverParallelApplyInfo * aA
     aApplierInfo->mDeleteFailureCount = mApply.getDeleteFailureCount();
     aApplierInfo->mCommitCount = mApply.getCommitCount();
     aApplierInfo->mAbortCount = mApply.getAbortCount();
+    aApplierInfo->mStatus = mStatus;
 }
 
 
@@ -575,3 +532,21 @@ IDE_RC rpxReceiverApplier::buildRecordForReplReceiverTransTbl( void             
 
     return IDE_FAILURE;
 }
+
+void rpxReceiverApplier::wakeup( void )
+{
+    IDE_ASSERT( mMutex.lock( NULL ) == IDE_SUCCESS );
+
+    if ( mIsWait == ID_TRUE )
+    {
+        mCV.signal();
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
+}
+
+

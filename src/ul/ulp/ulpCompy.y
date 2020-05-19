@@ -197,6 +197,7 @@ extern int COMPlineno;
 %token C_LE_OP
 %token C_GE_OP
 %token C_APRE_BINARY
+%token C_APRE_BINARY2
 %token C_APRE_BIT
 %token C_APRE_BYTES
 %token C_APRE_VARBYTES
@@ -421,6 +422,7 @@ extern int COMPlineno;
 %token TR_LINK                  /* BUG-37100 */
 %token TR_ROLE                  /* PROJ-1812 ROLE */
 %token TR_WITHIN                // PROJ-2527 WITHIN GROUP AGGR
+%token TR_LOGGING               /* BUG-46157 */
 
 %token TK_BETWEEN
 %token TK_EXISTS
@@ -476,6 +478,7 @@ extern int COMPlineno;
 %token TA_SECOND
 %token TA_MILLISECOND
 %token TA_MICROSECOND
+%token TA_ANALYSIS_PROPAGATION       /* BUG-46157 */
 
 %token TI_NONQUOTED_IDENTIFIER
 %token TI_QUOTED_IDENTIFIER
@@ -1261,6 +1264,12 @@ type_specifier
         gUlpParseInfo.mSaveId = ID_TRUE;
 
         gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType = H_BINARY;
+    }
+    | C_APRE_BINARY2  /* BUG-46418 */
+    {
+        gUlpParseInfo.mSaveId = ID_TRUE;
+
+        gUlpParseInfo.mHostValInfo[gUlpParseInfo.mStructDeclDepth]->mType = H_BINARY2;
     }
     | C_APRE_BIT
     {
@@ -4262,6 +4271,7 @@ direct_sql_stmt
     | drop_synonym_statement
     /* Queue */
     | create_queue_statement
+    | alter_queue_statement /* BUG-45921 */
     | drop_queue_statement
     /* PROJ-2211 Materialized View */
     | create_materialized_view_statement
@@ -4826,19 +4836,38 @@ alter_system_statement
     | TR_ALTER SES_V_IDENTIFIER SES_V_IDENTIFIER TO_ACCESS SES_V_IDENTIFIER
     /* ALTER SYSTEM RELOAD ACCESS LIST */
     {
-        if(idlOS::strncasecmp("SYSTEM", $<strval>2, 6) != 0)
-        if(idlOS::strncasecmp("RELOAD", $<strval>3, 6) != 0 ||
-           idlOS::strncasecmp("LIST", $<strval>5, 4) != 0)
+        if (( idlOS::strncasecmp("SYSTEM", $<strval>2, 6) != 0 ) ||
+            ( idlOS::strncasecmp("RELOAD", $<strval>3, 6) != 0 ) ||
+            ( idlOS::strncasecmp("LIST", $<strval>5, 4) != 0 ))
         {
             // error 처리
-
             ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
                              ulpERR_ABORT_COMP_Unterminated_String_Error );
             gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
             COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
         }
     }
+    | TR_ALTER SES_V_IDENTIFIER SES_V_IDENTIFIER TA_SHARD SES_V_IDENTIFIER SES_V_IDENTIFIER opt_local
+    /* ALTER SYSTEM RELOAD SHARD META NUMBER */
+    {
+        if ( ( idlOS::strncasecmp( "SYSTEM", $<strval>2, 6 ) != 0 ) ||
+             ( idlOS::strncasecmp( "RELOAD", $<strval>3, 6 ) != 0 ) ||
+             ( idlOS::strncasecmp( "META",   $<strval>5, 4 ) != 0 ) ||
+             ( idlOS::strncasecmp( "NUMBER", $<strval>6, 6 ) != 0 ) )
+        {
+            // error 처리
+            ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                             ulpERR_ABORT_COMP_Unterminated_String_Error );
+            gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+            COMPerror( ulpGetErrorMSG( &gUlpParseInfo.mErrorMgr ) );
+        }
+    }
     ;
+
+opt_local
+  : /* empty */
+  | TR_LOCAL
+  ;
 
 archivelog_start_option
     : TR_START
@@ -5369,10 +5398,12 @@ replication_statement
       /* ALTER REPLICATION replication_name SET RECOVERY ENABLE/DISABLE */
       /* ALTER REPLICATION replication_name SET GAPLESS ENABLE/DISABLE */
       /* ALTER REPLICATION replication_name SET GROUPING ENABLE/DISABLE */
+      /* ALTER REPLICATION replication_name SET DDL_REPLICATE ENABLE/DISABLE */
     {
         if ( ( idlOS::strncasecmp("RECOVERY", $<strval>5, 8 ) != 0 ) &&
              ( idlOS::strncasecmp("GAPLESS", $<strval>5, 7 ) != 0 ) &&
-             ( idlOS::strncasecmp("GROUPING", $<strval>5, 8 ) != 0 ) )
+             ( idlOS::strncasecmp("GROUPING", $<strval>5, 8 ) != 0 ) &&
+             ( idlOS::strncasecmp("DDL_REPLICATE", $<strval>5, 13 ) != 0 ) ) // BUG-46525
         {
             // error 처리
 
@@ -5459,7 +5490,11 @@ repl_option
     {
         if ( ( idlOS::strncasecmp("RECOVERY", $<strval>1, 8 ) != 0 ) &&
              ( idlOS::strncasecmp("GAPLESS", $<strval>1, 7 ) != 0 ) &&
-             ( idlOS::strncasecmp("GROUPING", $<strval>1, 8 ) != 0 ) )
+             ( idlOS::strncasecmp("GROUPING", $<strval>1, 8 ) != 0 ) &&
+             ( idlOS::strncasecmp("DDL_REPLICATE", $<strval>1, 13 ) != 0 ) && // BUG-46525
+             /* BUG-46528 Apply __REPLICATION_USE_V6_PROTOCOL to each replication. */
+             ( idlOS::strncasecmp("V6_PROTOCOL", $<strval>1, 11 ) != 0 ) )            
+
         {
             // error 처리
 
@@ -5522,14 +5557,59 @@ replication_hosts
     ;
 
 repl_host
-    : SES_V_LITERAL TS_COMMA SES_V_INTEGER
+    : SES_V_LITERAL TS_COMMA SES_V_INTEGER opt_using_conntype
     ;
+
+/* BUG-46209 IB support on Replication */
+opt_using_conntype
+    : /* empty */
+    | TR_USING SES_V_IDENTIFIER 
+    {
+        if( idlOS::strncasecmp("TCP", $<strval>2, 3) != 0 && 
+            idlOS::strncasecmp("IB", $<strval>2, 2) != 0 )
+        {
+            // error 처리
+
+            ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                             ulpERR_ABORT_COMP_Unterminated_String_Error );
+            gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+            COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
+        }
+    }
+    | TR_USING SES_V_IDENTIFIER SES_V_INTEGER /* USING conn_type ib_latency*/
+    {
+        if( idlOS::strncasecmp("IB", $<strval>2, 2) != 0 ) 
+        {
+            // error 처리
+
+            ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                             ulpERR_ABORT_COMP_Unterminated_String_Error );
+            gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+            COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
+        }
+    }
+    ;
+
 
 opt_role
     : /* empty */
+    | TR_FOR TA_ANALYSIS_PROPAGATION
     | TR_FOR SES_V_IDENTIFIER
     {
-        if(idlOS::strncasecmp("ANALYSIS", $<strval>2, 8) != 0)
+        if( (idlOS::strncasecmp("ANALYSIS", $<strval>2, 8) != 0) &&
+            (idlOS::strncasecmp("PROPAGATION", $<strval>2, 11) != 0) )
+        {
+            // error 처리
+
+            ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                             ulpERR_ABORT_COMP_Unterminated_String_Error );
+            gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+            COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
+        }
+    }
+    | TR_FOR SES_V_IDENTIFIER TR_LOGGING
+    {
+        if( idlOS::strncasecmp("PROPAGABLE", $<strval>2, 10) != 0 )
         {
             // error 처리
 
@@ -5862,6 +5942,7 @@ alter_table_statement
     opt_index_storage opt_lob_storage
   /* PROJ-2600 Online DDL for Tablespace Alteration */
   | TR_ALTER TR_TABLE user_object_name TO_REPLACE user_object_name
+    opt_partition
     opt_using_prefix
     opt_rename_force
     opt_ignore_foreign_key_child
@@ -6501,6 +6582,7 @@ create_queue_statement
     opt_in_row
     TS_CLOSING_PARENTHESIS
     opt_table_maxrows
+    tablespace_name_option
   | TR_CREATE
     TR_QUEUE
     user_object_name
@@ -6508,6 +6590,7 @@ create_queue_statement
     column_def_commalist
     TS_CLOSING_PARENTHESIS
     opt_table_maxrows
+    tablespace_name_option
   ;
 
 create_view_statement
@@ -6671,6 +6754,33 @@ get_condition_statement
   : TR_RETURN expression
   ;
 
+/* BUG-45921 */
+alter_queue_statement
+    : TR_ALTER TR_QUEUE user_object_name SES_V_IDENTIFIER
+    {
+        if ( idlOS::strncasecmp( "COMPACT", $<strval>4, 7 ) != 0 )
+        {
+            /* error 처리 */
+            ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                             ulpERR_ABORT_COMP_Unterminated_String_Error );
+            gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+            COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
+        }
+    }
+    | TR_ALTER TR_QUEUE user_object_name SES_V_IDENTIFIER SES_V_IDENTIFIER
+    {
+        if ( ( idlOS::strncasecmp( "MSGID", $<strval>4, 5 ) != 0 ) ||
+             ( idlOS::strncasecmp( "RESET", $<strval>5, 5 ) != 0 ) )
+        {
+            /* error 처리 */
+            ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                             ulpERR_ABORT_COMP_Unterminated_String_Error );
+            gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+            COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
+        }
+    }
+    ;
+
 /* Queue */
 drop_queue_statement
   : TR_DROP TR_QUEUE user_object_name
@@ -6698,13 +6808,13 @@ delete_statement
     ;
 
 insert_statement 
-  : TR_INSERT opt_hints TR_INTO dml_table_reference TR_DEFAULT TR_VALUES
-  | TR_INSERT opt_hints TR_INTO dml_table_reference
-    opt_column_commalist TR_VALUES multi_rows_list
-  | TR_INSERT opt_hints TR_INTO dml_table_reference
+  : TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name TR_DEFAULT TR_VALUES
+  | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+    opt_table_column_commalist TR_VALUES multi_rows_list
+  | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
   select_or_with_select_statement
-  | TR_INSERT opt_hints TR_INTO dml_table_reference
-      TS_OPENING_PARENTHESIS column_commalist TS_CLOSING_PARENTHESIS
+  | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+      TS_OPENING_PARENTHESIS table_column_commalist TS_CLOSING_PARENTHESIS
       select_or_with_select_statement
   | TR_INSERT opt_hints TR_ALL multi_insert_value_list
       select_or_with_select_statement
@@ -6847,9 +6957,16 @@ when_condition
   ;
 
 then_action
-  : TR_UPDATE TR_SET assignment_commalist opt_limit_clause
+  : TR_UPDATE TR_SET assignment_commalist opt_where_clause opt_limit_clause
+    opt_delete_where_clause
   | TR_INSERT opt_table_column_commalist
     TR_VALUES TS_OPENING_PARENTHESIS insert_atom_commalist TS_CLOSING_PARENTHESIS
+    opt_where_clause
+  ;
+
+opt_delete_where_clause
+  : /* empty */
+  | TR_DELETE opt_where_clause opt_limit_clause
   ;
 
 table_column_commalist
@@ -6896,11 +7013,11 @@ select_or_with_select_statement
   ;
   
 select_statement
-  : query_exp opt_order_by_clause opt_limit_clause
+  : query_exp opt_order_by_clause opt_limit_or_loop_clause
   ;
 
 with_select_statement
-  : subquery_factoring_clause query_exp opt_order_by_clause opt_limit_clause
+  : subquery_factoring_clause query_exp opt_order_by_clause opt_limit_or_loop_clause
   ;
   
 set_op
@@ -6961,11 +7078,11 @@ select_or_with_select_statement_4emsql
   ;
   
 select_statement_4emsql
-  : query_exp_4emsql opt_order_by_clause opt_limit_clause
+  : query_exp_4emsql opt_order_by_clause opt_limit_or_loop_clause
   ;
   
 with_select_statement_4emsql
-  : subquery_factoring_clause_4emsql query_exp_4emsql opt_order_by_clause opt_limit_clause
+  : subquery_factoring_clause_4emsql query_exp_4emsql opt_order_by_clause opt_limit_or_loop_clause
   ;
   
   
@@ -7305,7 +7422,12 @@ group_concatenation
 group_concatenation_element
   : rollup_cube_clause
   | grouping_sets_clause
-  | arithmetic_expression
+  | arithmetic_expression opt_with_rollup
+  ;
+
+opt_with_rollup
+  : /* empty */
+  | TR_WITH SES_V_ROLLUP
   ;
 
 opt_having_clause
@@ -7373,10 +7495,32 @@ opt_order_by_clause
   ;
 
 opt_limit_clause
-  : /* empty */
-  | TR_LIMIT limit_value
-  | TR_LIMIT limit_value TS_COMMA limit_value
-  ;
+    : /* empty */
+    | limit_clause
+    ;
+
+limit_clause
+    : TR_LIMIT limit_values
+    ;
+
+limit_values
+    : limit_values TS_COMMA expression
+    | limit_values SES_V_IDENTIFIER expression
+    {
+      if ( idlOS::strncasecmp("OFFSET", $<strval>2, 6 ) != 0 )
+      {
+          ulpSetErrorCode( &gUlpParseInfo.mErrorMgr,
+                           ulpERR_ABORT_COMP_Unterminated_String_Error );
+          gUlpCOMPErrCode = ulpGetErrorSTATE( &gUlpParseInfo.mErrorMgr );
+          COMPerror( ulpGetErrorMSG(&gUlpParseInfo.mErrorMgr) );
+      }
+      else
+      {
+          /* Nothing to do */
+      }
+
+    }
+    | expression
 
 limit_value
     : SES_V_INTEGER
@@ -7405,6 +7549,16 @@ limit_value
         gUlpCodeGen.ulpGenAddHostVarArr( 1 );
     }
     | column_name
+    ;
+
+opt_limit_or_loop_clause
+    : /* empty */
+    | limit_clause
+    | loop_clause
+    ;
+
+loop_clause
+    : TR_LOOP expression
     ;
 
 opt_for_update_clause
@@ -7470,6 +7624,10 @@ lock_table_statement
   : TA_LOCK TR_TABLE object_name
       TR_IN table_lock_mode TO_MODE opt_wait_clause opt_until_next_ddl_clause
   | TA_LOCK TR_TABLE object_name TS_PERIOD object_name
+      TR_IN table_lock_mode TO_MODE opt_wait_clause opt_until_next_ddl_clause
+  | TA_LOCK TR_TABLE object_name opt_partition_name
+      TR_IN table_lock_mode TO_MODE opt_wait_clause opt_until_next_ddl_clause
+  | TA_LOCK TR_TABLE object_name TS_PERIOD object_name opt_partition_name
       TR_IN table_lock_mode TO_MODE opt_wait_clause opt_until_next_ddl_clause
   ;
 
@@ -7990,7 +8148,7 @@ list_expression
   ;
 
 subquery
-  : TS_OPENING_PARENTHESIS opt_subquery_factoring_clause subquery_exp opt_limit_clause TS_CLOSING_PARENTHESIS
+  : TS_OPENING_PARENTHESIS opt_subquery_factoring_clause subquery_exp opt_limit_or_loop_clause TS_CLOSING_PARENTHESIS
   ;
 
 subquery_exp
@@ -8792,6 +8950,8 @@ SP_exec_or_execute
 SP_ident_opt_simple_arglist
     : SP_ident_opt_arglist
     | object_name TS_PERIOD SP_ident_opt_arglist
+    /* BUG-46600 user.package.psm 이 가능하도록 추가 */
+    | object_name TS_PERIOD object_name TS_PERIOD SP_ident_opt_arglist
     ;
 
 assign_return_value
@@ -11013,6 +11173,7 @@ idBool ulpCOMPCheckArray( ulpSymTElement *aSymNode )
             case H_BIT:
             case H_BYTES:
             case H_BINARY:
+            case H_BINARY2:  /* BUG-46418 */
             case H_CHAR:
             case H_NCHAR:
             case H_CLOB_FILE:

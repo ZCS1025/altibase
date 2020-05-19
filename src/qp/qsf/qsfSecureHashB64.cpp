@@ -61,6 +61,7 @@ const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfSecureHashB64Calculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

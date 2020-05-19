@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdReal.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtdReal.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -34,8 +34,9 @@
 extern mtdModule mtdReal;
 extern mtdModule mtdDouble;
 
-static const UInt mtdRealNull = ( MTD_REAL_EXPONENT_MASK|
-                                  MTD_REAL_FRACTION_MASK );
+/* PROJ-2632 */
+const UInt mtdRealNull = ( MTD_REAL_EXPONENT_MASK|
+                           MTD_REAL_FRACTION_MASK );
 
 static IDE_RC mtdInitialize( UInt aNo );
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qc.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qc.h 85332 2019-04-26 01:19:42Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QC_H_
@@ -29,6 +29,7 @@
 #include <iduVarMemList.h>
 #include <idv.h>
 #include <mtcDef.h>
+#include <sdiTypes.h>
 #include <qcuError.h>
 #include <qmcCursor.h>
 #include <qmcTempTableMgr.h>
@@ -53,7 +54,7 @@ struct sdiClientInfo;
 
 // for mm
 #define QC_MAX_NAME_LEN                               (40)
-#define QC_MAX_OBJECT_NAME_LEN                        (128) //BUG-39579
+#define QC_MAX_OBJECT_NAME_LEN                        (SMI_MAX_NAME_LEN) //BUG-39579
 
 /* _NEXT_MSG_ID */
 #define QC_MAX_SEQ_NAME_LEN                          (QC_MAX_OBJECT_NAME_LEN + 13)
@@ -65,7 +66,7 @@ struct sdiClientInfo;
 
 // PROJ-1502 PARTITIONED DISK TABLE
 #define QC_MAX_PARTKEY_COND_COUNT                  (2000)
-#define QC_MAX_PARTKEY_COND_VALUE_LEN              (4000)
+#define QC_MAX_PARTKEY_COND_VALUE_LEN              (SMI_MAX_PARTKEY_COND_VALUE_LEN) //BUG-45943
 
 // PROJ-1638 Selection Replication
 #define QC_CONDITION_LEN                           (1000)
@@ -92,6 +93,9 @@ struct sdiClientInfo;
 /* PROJ-1090 Function-based Index */
 /* ~$IDX32 */
 #define QC_MAX_FUNCTION_BASED_INDEX_NAME_LEN       (QC_MAX_OBJECT_NAME_LEN - 6)
+
+/* PROJ-2677 DDL synchronization 에서 Partition 관련 DDL 의  OID 는 최대 2개까지 올 수 있다  */
+#define QC_DDL_REPL_PART_OID_COUNT                 (2)
 
 /* BUG-11561
  * 함수의 로컬변수로 Char sBuffer [ QC_MAX_OBJECT_NAME_LEN + 2 ] 로 버퍼를 잡아서
@@ -229,6 +233,30 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_SHARD_TRANSFORM_DISABLE       (0x00000800)
 #define QC_TMP_SHARD_TRANSFORM_ENABLE        (0x00000000)
 
+// BUG-46137
+#define QC_TMP_PLAN_CACHE_KEEP_MASK          (0x00001000)
+#define QC_TMP_PLAN_CACHE_KEEP_FALSE         (0x00000000)
+#define QC_TMP_PLAN_CACHE_KEEP_TRUE          (0x00001000)
+
+// BUG-46498
+#define QC_TMP_RECOMPILE_VIEW_MASK           (0x00002000)
+#define QC_TMP_RECOMPILE_VIEW_FALSE          (0x00000000)
+#define QC_TMP_RECOMPILE_VIEW_TRUE           (0x00002000)
+
+#define QC_TMP_UNNEST_SUBQUERY_MASK          (0x00004000)
+#define QC_TMP_UNNEST_SUBQUERY_FALSE         (0x00000000)
+#define QC_TMP_UNNEST_SUBQUERY_TRUE          (0x00004000)
+
+/* BUG-46544 Unnesting hint */
+#define QC_TMP_UNNEST_COMPATIBILITY_1_MASK   (0x00008000)
+#define QC_TMP_UNNEST_COMPATIBILITY_1_FALSE  (0x00000000)
+#define QC_TMP_UNNEST_COMPATIBILITY_1_TRUE   (0x00008000)
+
+/* PROJ-2632 */
+#define QC_TMP_DISABLE_SERIAL_FILTER_MASK    (0x00010000)
+#define QC_TMP_DISABLE_SERIAL_FILTER_FALSE   (0x00000000)
+#define QC_TMP_DISABLE_SERIAL_FILTER_TRUE    (0x00010000)
+
 // PROJ-2551 simple query 최적화
 // simple query인가
 // qcStatement.mFlag
@@ -259,6 +287,14 @@ typedef struct qcCondValueCharBuffer {
 #define QC_STMT_SHARD_OBJ_MASK               (0x00000010)
 #define QC_STMT_SHARD_OBJ_ABSENT             (0x00000000)
 #define QC_STMT_SHARD_OBJ_EXIST              (0x00000010)
+
+// PROJ-2701 Sharding online date rebuild
+// Rebuild transformation로 인해
+// Execution phase에서 plan rebuild가 필요한가
+// qcStatement.mFlag
+#define QC_STMT_SHARD_REBUILD_FORCE_MASK     (0x00000020)
+#define QC_STMT_SHARD_REBUILD_FORCE_FALSE    (0x00000000)
+#define QC_STMT_SHARD_REBUILD_FORCE_TRUE     (0x00000020)
 
 // for qcSession.flag
 #define QC_SESSION_ALTER_META_MASK           (0x00000001)
@@ -303,6 +339,11 @@ typedef struct qcCondValueCharBuffer {
 #define QC_SESSION_PLAN_CACHE_MASK           (0x00000040)
 #define QC_SESSION_PLAN_CACHE_ENABLE         (0x00000000)
 #define QC_SESSION_PLAN_CACHE_DISABLE        (0x00000040)
+
+/* PROJ-2677 DDL synchronization 내부적으로 DDL 을 수행하기 위하여 Mask 추가 */
+#define QC_SESSION_INTERNAL_DDL_SYNC_MASK        (0x00000080)
+#define QC_SESSION_INTERNAL_DDL_SYNC_FALSE       (0x00000000)
+#define QC_SESSION_INTERNAL_DDL_SYNC_TRUE        (0x00000080)
 
 #define SET_POSITION(_DESTINATION_, _SOURCE_)       \
 {                                                   \
@@ -451,6 +492,7 @@ typedef struct qcCondValueCharBuffer {
     (_dst_)->mFlag                       = (_src_)->mFlag;                  \
     (_dst_)->mStmtList                   = (_src_)->mStmtList;              \
     (_dst_)->mRandomPlanInfo             = (_src_)->mRandomPlanInfo;        \
+    (_dst_)->mShardPrintInfo             = (_src_)->mShardPrintInfo;        \
 }
 
 #define QC_SET_INIT_PARSE_TREE(_dst_, _stmtPos_)                    \
@@ -908,12 +950,39 @@ typedef struct qcSessionCallback
 
     /* PROJ-2624 [기능성] MM - 유연한 access_list 관리방법 제공 */
     IDE_RC       (*mReloadAccessList)();
-                                            
+
+    /* PROJ-2701 Sharding online data rebuild */
+    idBool       (*mIsShardDataSession)(void * aMmSession);
     // PROJ-2638
     ULong        (*mGetShardPIN)(void * aMmSession);
+    ULong        (*mGetShardMetaNumber)(void * aMmSession);
     SChar       *(*mGetShardNodeName)(void * aMmSession);
-    IDE_RC       (*mSetShardLinker)(void * aMmSession);
+    IDE_RC       (*mReloadShardMetaNumber)(void   * aMmSession,
+                                           idBool   aIsLocalOnly);
+    /* BUG-45899 */
+    UInt         (*mGetTrclogDetailShard)(void * aMmSession);
     UChar        (*mGetExplainPlan)(void * aMmSession);
+
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+    UInt         (*mGetDBLinkGTXLevel)( void * aMmSession );
+
+    /* PROJ-2677 DDL synchronization */
+    UInt         (*mGetReplicationDDLSync)( void *aMmSession );
+
+    UInt         (*mGetPrintOutEnable)( void *aMmSession );    
+
+    /* BUG-46158 PLAN_CACHE_KEEP */
+    IDE_RC       (*mPlanCacheKeep)(void *aMmStatement, SChar *aSQLTextID, idBool aIsKeep);
+
+    /* BUG-46092 */
+    UInt         (*mIsShardClient)( void *aMmSession );
+    void       * (*mGetShardStmt)( void * aUserContext );    
+    void         (*mFreeShardStmt)( void *aMmSession, UInt aNodeId, UChar aMode );    
+    UInt         (*mGetShardFailoverType)( void *aMmSession, UInt aNodeId );
+
+    /* PROJ-2632 */
+    UInt         (*mGetSerialExecuteMode)( void * aMmSession );
+    UInt         (*mGetTrclogDetailInformation)(void * aMmSession );
 } qcSessionCallback;
 
 /*
@@ -970,6 +1039,10 @@ typedef struct qcDatabaseLinkCallback
                                      void   * aDataNode );
 
     void   (* mDelShardTransaction)( void * aDataNode );
+
+    /* BUG-46092 */
+    IDE_RC (* mSetTransactionBrokenOnGlobalCoordinator)( void  * aDataNode,
+                                                         smTID   aTransID );
 
 } qcDatabaseLinkCallback;
 
@@ -1241,8 +1314,14 @@ enum qcPlanPropertyKind
     PLAN_PROPERTY_OPTIMIZER_DBMS_STAT_POLICY,
     PLAN_PROPERTY_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY,  /* BUG-44850 */
     PLAN_PROPERTY_OPTIMIZER_SEMI_JOIN_REMOVE,
-    PLAN_PROPERTY_SHARD_LINKER_CHANGE_NUMBER,
+    PLAN_PROPERTY_SHARD_META_NUMBER_FOR_DATA,    /* PROJ-2701 */
+    PLAN_PROPERTY_SHARD_META_NUMBER_FOR_SESSION, /* PROJ-2701 */
+    PLAN_PROPERTY_SHARD_IS_DATA_SESSION,         /* PROJ-2701 */
     PLAN_PROPERTY_SHARD_AGGREGATION_TRANSFORM_DISABLE,
+    PLAN_PROPERTY_KEY_PRESERVED_TABLE,
+    PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY,
+    PLAN_PROPERTY_SERIAL_EXECUTE_MODE,
+    PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE,  /* BUG-46932 */
     PLAN_PROPERTY_MAX
 };
 
@@ -1462,18 +1541,37 @@ typedef struct qcPlanProperty
     /* BUG-44850 Index NL , Inverse index NL 조인 최적화 수행시 비용이 동일하면 primary key를 우선적으로 선택. */
     idBool optimizerIndexNLJoinAccessMethodPolicyRef;
     UInt   optimizerIndexNLJoinAccessMethodPolicy;
-    
+
     idBool optimizerSemiJoinRemoveRef;
     UInt   optimizerSemiJoinRemove;
 
-    /* BUG-44710 */
-    idBool mShardLinkerChangeNumberRef;
-    UInt   mShardLinkerChangeNumber;
+    /* PROJ-2701 Sharding online data rebuild */
+    idBool mSMNForDataNodeRef;
+    ULong  mSMNForDataNode;
+    idBool mSMNForSessionRef;
+    ULong  mSMNForSession;
+    idBool mIsShardDataSessionRef;
+    idBool mIsShardDataSession;
 
     /* PROJ-2687 */
     idBool mShardAggregationTransformDisableRef;
     UInt   mShardAggregationTransformDisable;
 
+    // key preserved property
+    idBool mKeyPreservedTableRef;
+    UInt   mKeyPreservedTable;
+
+    /* BUG-46544 */
+    idBool mUnnestCompatibilityRef;
+    UInt   mUnnestCompatibility;
+
+    /* PROJ-2632 */
+    idBool mSerialExecuteModeRef;
+    UInt   mSerialExecuteMode;
+
+    /* BUG-46932 */ 
+    idBool mInverseJoinEnableRef;
+    UInt   mInverseJoinEnable;
 } qcPlanProperty;
 
 typedef struct qcTemplate
@@ -1708,6 +1806,12 @@ typedef struct qcSharedPlan
     qcBindNode               * bindNode;
 } qcSharedPlan;
 
+typedef struct qcDDLReplInfo
+{
+    smOID   mTableOID;
+    smOID   mPartTableOID[QC_DDL_REPL_PART_OID_COUNT];
+} qcDDLReplInfo;
+
 typedef struct qcStatement
 {
     // PROJ-1436 shared plan
@@ -1801,6 +1905,12 @@ typedef struct qcStatement
 
     /* TASK-6744 */
     struct qmgRandomPlanInfo * mRandomPlanInfo;
+
+    /* PROJ-2677 DDL synchronization */
+    qcDDLReplInfo              mDDLReplInfo;
+
+    /* BUG-45899 */
+    sdiPrintInfo               mShardPrintInfo;
 } qcStatement;
 
 #define QC_SMI_STMT( _QcStmt_ )  ( ( _QcStmt_ )->stmtInfo->mSmiStmtForExecute )
@@ -2035,5 +2145,13 @@ typedef struct qcSimpleResult
     UInt              idx;     // 클라이언트에서 fetch할 record index
     qcSimpleResult  * next;
 } qcSimpleResult;
+
+
+// BUG-44667 Support STANDARD package.
+extern qcNamePosition gSysName;
+extern qcNamePosition gStandardName;
+
+// BUG-46074 PSM Trigger with multiple triggering events
+extern qcNamePosition gDBMSStandardName;
 
 #endif /* _O_QC_H_ */

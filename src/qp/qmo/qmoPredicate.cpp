@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoPredicate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoPredicate.cpp 83334 2018-06-22 07:50:32Z donovan.seo $
  *
  * Description :
  *     Predicate Manager
@@ -3222,7 +3222,8 @@ qmoPred::extractPartKeyRange4Column( qcmColumn        * aPartKeyColumns,
 
     // hash partition method인 경우 모든 partition key column을 포함해야 한다.
     // 또한 모두 equality 연산이어야 한다.
-    if ( aPartitionMethod == QCM_PARTITION_METHOD_HASH )
+    if ( ( aPartitionMethod == QCM_PARTITION_METHOD_HASH ) ||
+         ( aPartitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
     {
         for ( sKeyColumn  = aPartKeyColumns;
               sKeyColumn != NULL;
@@ -4711,7 +4712,8 @@ qmoPred::isPartitionPrunableOnePred( qcStatement        * aStatement,
             else
             {
                 if ( ( aPartitionMethod == QCM_PARTITION_METHOD_HASH ) ||
-                     ( aPartitionMethod == QCM_PARTITION_METHOD_LIST ) )
+                     ( aPartitionMethod == QCM_PARTITION_METHOD_LIST ) ||
+                     ( aPartitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH ) )
                 {
                     // list, hash는 equality연산과 isnull연산 빼고는 모두 불가능.
                     sIsPartitionPrunablePred = ID_FALSE;

@@ -144,6 +144,7 @@ static const mtcExecute gFunctionExecute = {
     mtf::calculateNA,
     dkifCalculateFunction,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

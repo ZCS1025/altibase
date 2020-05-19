@@ -16,7 +16,7 @@
  
 
 /*****************************************************************************
- * $Id: qcuProperty.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qcuProperty.h 85332 2019-04-26 01:19:42Z ahra.cho $
  *
  * QP에서 사용하는 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 처리한다.
@@ -45,10 +45,6 @@
 #define QCU_SPM_MASK_VERVOSE1 (1<<1)
 #define QCU_SPM_MASK_VERVOSE2 (1<<2)
 #define QCU_SPM_MASK_VERVOSE3 (1<<3)
-
-#define QCU_SHARD_META_ENABLE                   ( QCU_PROPERTY(mShardMetaEnable) )
-#define QCU_SHARD_TEST_ENABLE                   ( QCU_PROPERTY(mShardTestEnable) )
-#define QCU_SHARD_AGGREGATION_TRANSFORM_DISABLE ( QCU_PROPERTY(mShardAggrTransformDisable) )
 
 #define QCU_TRCLOG_DML_SENTENCE        ( QCU_PROPERTY(mTraceLog_DML_Sentence) )
 #define QCU_TRCLOG_DETAIL_PREDICATE    ( QCU_PROPERTY(mTraceLog_Detail_Predicate) )
@@ -415,6 +411,20 @@
 
 #define QCU_OPTIMIZER_SEMI_JOIN_REMOVE ( QCU_PROPERTY( mOptimizerSemiJoinRemove ) )
 
+#define QCU_PRINT_OUT_ENABLE           ( QCU_PROPERTY(mPrintOutEnable) )
+
+#define QCU_KEY_PRESERVED_TABLE        ( QCU_PROPERTY(mKeyPreservedTable) )
+
+/* BUG-46544 Unnest hit */
+#define QCU_OPTIMIZER_UNNEST_COMPATIBILITY ( QCU_PROPERTY(mOptimizerUnnestCompatibility) )
+
+/* PROJ-2632 */
+#define QCU_SERIAL_EXECUTE_MODE ( QCU_PROPERTY( mSerialExecuteMode ) )
+#define QCU_TRCLOG_DETAIL_INFORMATION ( QCU_PROPERTY( mTraceLogDetailInformation ) )
+
+/* BUG-46932 */ 
+#define QCU_OPTIMIZER_INVERSE_JOIN_ENABLE ( QCU_PROPERTY(mOptimizerInverseJoinEnable) )
+
 // 참조 : mmuPropertyArgument
 typedef struct qcuPropertyArgument
 {
@@ -427,14 +437,6 @@ typedef struct qcuPropertyArgument
 typedef struct qcuProperties
 {
     idShmAddr mAddrSelf;
-
-    //----------------------------------------------
-    // Shard 관련 Properties
-    //----------------------------------------------
-
-    UInt   mShardMetaEnable;
-    UInt   mShardTestEnable;
-    UInt   mShardAggrTransformDisable;
 
     //----------------------------------------------
     // Trace Log 관련 Properties
@@ -849,6 +851,17 @@ typedef struct qcuProperties
     UInt mOptimizerIndexNLJoinAccessMethodPolicy;
     
     UInt mOptimizerSemiJoinRemove;
+    UInt mPrintOutEnable;
+    UInt mKeyPreservedTable;
+
+    UInt mOptimizerUnnestCompatibility;
+
+    /* PROJ-2632 */
+    UInt mSerialExecuteMode;
+    UInt mTraceLogDetailInformation;
+
+    /* BUG-46932 */ 
+    UInt mOptimizerInverseJoinEnable;
 } qcuProperties;
 
 class qcuProperty
@@ -1697,12 +1710,43 @@ public:
                                                    void  * aNewValue,
                                                    void  * /* aArg */);
 
-    /* PROJ-2687 Shard aggregation transform */
-    static IDE_RC changeSHARD_AGGREGATION_TRANSFORM_DISABLE( idvSQL* /* aStatistics */,
-                                                             SChar * /* aName */,
-                                                             void  * /* aOldValue */,
-                                                             void  * aNewValue,
-                                                             void  * /* aArg */);
+    static IDE_RC change__PRINT_OUT_ENABLE( idvSQL* /* aStatistics */,
+                                            SChar * aName,
+                                            void  * aOldValue,
+                                            void  * aNewValue,
+                                            void  * aArg );
+
+    static IDE_RC change__KEY_PRESERVED_TABLE( idvSQL* /* aStatistics */,
+                                               SChar * aName,
+                                               void  * aOldValue,
+                                               void  * aNewValue,
+                                               void  * aArg );
+
+    static IDE_RC change__OPTIMIZER_UNNEST_COMPATIBILITY( idvSQL* /* aStatistics */,
+                                                          SChar * aName,
+                                                          void  * aOldValue,
+                                                          void  * aNewValue,
+                                                          void  * aArg );
+
+    /* PROJ-2632 */
+    static IDE_RC changeSERIAL_EXECUTE_MODE( idvSQL * /* aStatistics */,
+                                             SChar  * aName,
+                                             void   * aOldValue,
+                                             void   * aNewValue,
+                                             void   * aArg );
+
+    static IDE_RC changeTRCLOG_DETAIL_INFORMATION( idvSQL * /* aStatistics */,
+                                                   SChar  * aName,
+                                                   void   * aOldValue,
+                                                   void   * aNewValue,
+                                                   void   * aArg );
+
+    /* BUG-46932 */
+    static IDE_RC changeOPTIMIZER_INVERSE_JOIN_ENABLE( idvSQL* /* aStatistics */,
+                                                       SChar * aName,
+                                                       void  * aOldValue,
+                                                       void  * aNewValue,
+                                                       void  * aArg );
 };
 
 #endif /* _O_QCU_PROPERTY_H_ */

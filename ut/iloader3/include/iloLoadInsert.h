@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoadInsert.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloLoadInsert.h 84290 2018-11-05 07:37:51Z bethy $
  **********************************************************************/
 
 /***********************************************************************
@@ -54,7 +54,9 @@ inline IDE_RC iloLoad::InitContextData(iloLoadInsertContext *aData)
 
     aData->mArrayCount = (m_pProgOption->m_ArrayCount == 0) ?
                          1 : m_pProgOption->m_ArrayCount;
-    aData->mLoad       = 1;
+    aData->mTotal      = 0;
+    aData->mLoad4Sleep = 0;
+    aData->mRealCount  = 0;
     aData->mOptionUsed = ILO_FALSE;       // BUG-24583
 
     iloMutexLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
@@ -144,62 +146,116 @@ inline IDE_RC iloLoad::FiniContextData(iloLoadInsertContext *aData)
     return IDE_SUCCESS;
 }
 
-inline SInt iloLoad::ReadOneRecord(iloLoadInsertContext *aData)
+/* BUG-46486 Improve lock wait
+ * 레코드 단위 락킹에서 array 단위 락킹으로 변경
+ */
+inline SInt iloLoad::ReadRecord(iloLoadInsertContext *aData)
 {
-    SInt           sRet;
+    SInt           sRet = READ_ERROR;
+    SInt           sLogCallback = 0;
     SInt           sConnIndex = aData->mConnIndex;
-    SInt           sRealCount = aData->mRealCount;
+    SInt           sArrayCount = aData->mArrayCount;
     iloaderHandle *sHandle    = aData->mHandle;
     uteErrorMgr   *sErrorMgr  = aData->mErrorMgr;
 
-    aData->mNextAction = NONE;
+    aData->mRealCount = 0;
+    sLogCallback = ( sHandle->mUseApi == SQL_TRUE ) && ( sHandle->mLogCallback != NULL );
 
     iloMutexLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
 
-    // BUG-24898 iloader 파싱에러 상세화
-    // 에러메시지를 clear 한다.
-    if (uteGetErrorCODE(sHandle->mErrorMgr) != 0x00000)
+    while ( aData->mRealCount < sArrayCount )
     {
-        uteClearError(sHandle->mErrorMgr);
-    } 
+        aData->mNextAction = NONE;
 
-    sRet = m_DataFile.ReadOneRecordFromCBuff(sHandle, 
-            &m_pTableInfo[sConnIndex],
-            sRealCount);
+        // BUG-24898 iloader 파싱에러 상세화
+        // 에러메시지를 clear 한다.
+        if (uteGetErrorCODE(sHandle->mErrorMgr) != 0x00000)
+        {
+            uteClearError(sHandle->mErrorMgr);
+        } 
 
-    if (sRet != READ_SUCCESS)
-    {
-        idlOS::memcpy(sErrorMgr, sHandle->mErrorMgr, ID_SIZEOF(uteErrorMgr));
+        sRet = m_DataFile.ReadOneRecordFromCBuff(sHandle, 
+                &m_pTableInfo[sConnIndex],
+                aData->mRealCount);
+
+        if (sRet != READ_SUCCESS)
+        {
+            idlOS::memcpy(sErrorMgr, sHandle->mErrorMgr, ID_SIZEOF(uteErrorMgr));
+        }
+
+        // BUG-24879 errors 옵션 지원
+        // recordcount 를 정확히 출력하기 위해서 eof 일때는 count 하지 않는다.
+        if (sRet != END_OF_FILE)
+        {
+            aData->mRecordNumber[aData->mRealCount] = mReadRecCount += 1; //읽은 Record 수
+        }
+
+        // BUG-28208: malloc 등에 실패했을 때 iloader 바로 종료 
+        if ( (sRet == SYS_ERROR) ||
+             (m_pProgOption->m_bExist_L &&
+              (aData->mRecordNumber[aData->mRealCount] > m_pProgOption->m_LastRow)) )
+        {
+            if (aData->mRealCount == 0)
+            {
+                aData->mNextAction = BREAK;
+            }
+            break;
+        }
+
+        if (sRet == END_OF_FILE && aData->mRealCount == 0)
+        {
+            aData->mNextAction = CONTINUE;
+            break;
+        }
+
+        if ( (sRet != END_OF_FILE) &&
+             (aData->mRecordNumber[aData->mRealCount] < m_pProgOption->m_FirstRow) )
+        {
+            aData->mNextAction = CONTINUE;
+            continue;
+        }
+
+        if (sRet != END_OF_FILE)
+        {
+            aData->mTotal ++;
+            mLoadCount++;   // for progress
+
+            //진행 상황 표시
+            // BUG-27938: 중간에 continue, break를 하는 경우가 있으므로 여기서 찍어줘야한다.
+            if ( sHandle->mUseApi != SQL_TRUE )
+            {
+                if ((mLoadCount % 100) == 0)
+                {
+                    PrintProgress( sHandle, mLoadCount );
+                }
+            }
+        }
+
+        if (sRet == READ_ERROR)
+        {
+            LogError(aData, aData->mRealCount);
+            continue;
+        }
+
+        if (sRet == END_OF_FILE) break;
+
+        // BUG-24890 error 가 발생하면 sRealCount를 증가하면 안된다.
+        // sRealCount 는 array 의 갯수이다. 따라서 잘못된 메모리를 읽게된다.
+        aData->mRealCount++;
+
+        aData->mLoad4Sleep++; // for sleep, BUG-18707
+
+        if (sLogCallback)
+        {
+            if (Callback4Api(aData) != IDE_SUCCESS)
+            {
+                aData->mNextAction = BREAK;
+                break;
+            }
+        }
     }
-
-    // BUG-24879 errors 옵션 지원
-    // recordcount 를 정확히 출력하기 위해서 eof 일때는 count 하지 않는다.
-    if (sRet != END_OF_FILE)
-    {
-        aData->mRecordNumber[sRealCount] = mReadRecCount += 1; //읽은 Record 수
-    }
-
     iloMutexUnLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
 
-    // BUG-28208: malloc 등에 실패했을 때 iloader 바로 종료 
-    if ( (sRet == SYS_ERROR) ||
-         (m_pProgOption->m_bExist_L &&
-          (aData->mRecordNumber[sRealCount] > m_pProgOption->m_LastRow)) )
-    {
-        aData->mNextAction = BREAK;
-    }
-
-    if (sRet == END_OF_FILE && sRealCount == 0)
-    {
-        aData->mNextAction = CONTINUE;
-    }
-
-    if ( (sRet != END_OF_FILE) &&
-         (aData->mRecordNumber[sRealCount] < m_pProgOption->m_FirstRow) )
-    {
-        aData->mRealCount = 0;
-        aData->mNextAction = CONTINUE;
-    }
     return sRet;
 }
 
@@ -229,15 +285,19 @@ inline IDE_RC iloLoad::LogError(iloLoadInsertContext *aData,
     return IDE_SUCCESS;
 }
 
-inline void iloLoad::Sleep(SInt aLoad)
+inline void iloLoad::Sleep(iloLoadInsertContext *aData)
 {
     PDL_Time_Value sSleepTime;
 
     if ((m_pProgOption->mExistWaitTime == SQL_TRUE) &&
             (m_pProgOption->mExistWaitCycle == SQL_TRUE))
     {
-        if ( (aLoad % m_pProgOption->mWaitCycle) == 0)
+        /* BUG-46486 Improve lock wait, record lock -> array lock
+         * array 단위로 체크하게 되어 % 연산자 사용 불가
+         */
+        if ( aData->mLoad4Sleep >= m_pProgOption->mWaitCycle )
         {
+            aData->mLoad4Sleep = 0;
             sSleepTime.initialize(0, m_pProgOption->mWaitTime * 1000);
             idlOS::sleep( sSleepTime );
         }
@@ -530,4 +590,38 @@ inline IDE_RC iloLoad::Commit(iloLoadInsertContext *aData)
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/* BUG-46486 Improve lock wait */
+inline
+void iloLoad::PrintProgress( ALTIBASE_ILOADER_HANDLE aHandle,
+                             SInt aLoadCount )
+{
+    SChar sTableName[MAX_OBJNAME_LEN];
+
+    iloaderHandle *sHandle = (iloaderHandle *) aHandle;
+    
+    if ((aLoadCount % 5000) == 0)
+    {
+       /* BUG-32114 aexport must support the import/export of partition tables.
+        * ILOADER IN/OUT TABLE NAME이 PARTITION 일경우 PARTITION NAME으로 변경 */
+        if( sHandle->mProgOption->mPartition == ILO_TRUE )
+        {
+            idlOS::printf("\n%d record load(%s / %s)\n\n", 
+                    aLoadCount,
+                    m_pTableInfo[0].GetTransTableName(sTableName,(UInt)MAX_OBJNAME_LEN),
+                    sHandle->mParser.mPartitionName );
+        }
+        else
+        {
+            idlOS::printf("\n%d record load(%s)\n\n", 
+                    aLoadCount,
+                    m_pTableInfo[0].GetTransTableName(sTableName,(UInt)MAX_OBJNAME_LEN));
+        }
+    }
+    else
+    {
+        putchar('.');
+    }
+    idlOS::fflush(stdout);
 }

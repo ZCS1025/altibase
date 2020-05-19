@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduLatch.cpp 80654 2017-07-31 07:33:22Z yoonhee.kim $
+ * $Id: iduLatch.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -407,3 +407,22 @@ IDE_RC iduLatch::freeLatch(iduLatchObj* aPtr)
     return IDE_FAILURE;
 }
 
+void iduLatch::unlockWriteAllMyThread()
+{
+    iduLatchObj*    sBase;
+    iduLatchObj*    sRoot;
+    ULong           sMyThreadID = idlOS::getThreadID();
+
+    sRoot = (iduLatchObj*)iduLatch::getFirstInfo();
+    IDE_DASSERT( sRoot != NULL );
+
+    for( sBase  = (iduLatchObj*)sRoot->getNextInfo();
+         sBase != NULL;
+         sBase  = (iduLatchObj*)sBase->getNextInfo() )
+    {
+        if( sMyThreadID == sBase->mWriteThreadID )
+        {
+            sBase->unlockWriteAll();
+        }
+    }
+}

@@ -23,23 +23,19 @@
 
 #include <rp.h>
 
-typedef enum
-{
-    RPN_MESSENGER_SOCKET_TYPE_TCP  = 0,
-
-    RPN_MESSENGER_SOCKET_TYPE_UNIX = 1
-
-} RPN_MESSENGER_SOCKET_TYPE;
+#define RPN_STOP_MSG_NETWORK_TIMEOUT_SEC    (600)
 
 class rpnMessenger
 {
 
 private:
 
-    RPN_MESSENGER_SOCKET_TYPE mSocketType;
+
+    RP_SOCKET_TYPE     mSocketType;
 
     cmiLink          * mLink;
     cmiProtocolContext mProtocolContext;
+    rpdReplications  * mReplication;
 
     idBool           * mExitFlag;
 
@@ -64,15 +60,18 @@ public:
     SChar              mRemoteIP[IDL_IP_ADDR_MAX_LEN];
     SInt               mRemotePort;
 
+    rpIBLatency        mIBLatency;
+
+
 private:
     void getVersionFromAck( SChar      *aMsg,
                             UInt       aMsgLen,
                             rpdVersion *aVersion );
     IDE_RC connect( cmiConnectArg * aConnectArg );
 
-    void initializeNetworkAddress( RPN_MESSENGER_SOCKET_TYPE aSocketType );
+    void initializeNetworkAddress( RP_SOCKET_TYPE aSocketType );
     
-    IDE_RC initializeCmLink( RPN_MESSENGER_SOCKET_TYPE aSocketType );
+    IDE_RC initializeCmLink( RP_SOCKET_TYPE aSocketType );
     void   destroyCmLink( void );
     IDE_RC initializeCmBlock( void );
     void destroyCmBlock( void );
@@ -141,14 +140,16 @@ public:
 
     rpnMessenger( void );
 
-    IDE_RC initialize( RPN_MESSENGER_SOCKET_TYPE  aSocketType,
+    IDE_RC initialize( RP_SOCKET_TYPE             aSocketType,
                        idBool                   * aExitFlag,
+                       rpdReplications          * aReplication,
                        void                     * aHBTResource,
                        idBool                     aNeedLock );
     void destroy( void );
 
     IDE_RC connectThroughTcp( SChar * aHostIp, UInt aPortNo );
     IDE_RC connectThroughUnix( SChar * aFileName );
+    IDE_RC connectThroughIB( SChar * aHostIp, UInt aPortNo, rpIBLatency aIBLatency );
     void disconnect( void );
 
     IDE_RC handshake( rpdMeta * aMeta );
@@ -156,18 +157,22 @@ public:
                                    rpMsgReturn  * aRC,
                                    SChar        * aRCMsg,
                                    SInt           aRCMsgLen,
+                                   idBool         aMetaInitFlag,
                                    SInt         * aFailbackStatus,
-                                   smSN         * aXSN );
+                                   smSN         * aReceiverXSN );
 
     void setRemoteTcpAddress( SChar * aRemoteIP, SInt aRemotePort );
+    void setRemoteIBAddress( SChar * aRemoteIP, SInt aRemotePort, rpIBLatency aIBLatency );
 
-    void updateTcpAddress( void );
+    void updateAddress( void );
 
     void setSnMapMgr( rprSNMapMgr * aSNMapMgr );
 
     void setHBTResource( void * aHBTResource );
 
-    IDE_RC sendStop( smSN aRestartSN );
+    IDE_RC sendStop( smSN         aRestartSN,
+                     idBool     * aExitFlag,
+                     UInt         aTimeoutSec );
     IDE_RC sendStopAndReceiveAck( void );
 
     IDE_RC receiveAckDummy( void );
@@ -241,6 +246,25 @@ public:
     
     ULong getSendDataSize( void );
     ULong getSendDataCount( void );
+
+    /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    IDE_RC sendDDLASyncStart( UInt aType );
+
+    IDE_RC recvDDLASyncStartAck( UInt * aType );
+
+    IDE_RC sendDDLASyncExecute( UInt    aType,
+                                SChar * aUserName,
+                                UInt    aDDLEnableLevel,
+                                UInt    aTargetCount,
+                                SChar * aTargetTableName,
+                                SChar * aTargetPartNames,
+                                smSN    aDDLCommitSN,
+                                SChar * aDDLStmt );
+
+    IDE_RC recvDDLASyncExecuteAck( UInt  * aType,
+                                   UInt  * aIsSuccess, 
+                                   UInt  * aErrCode,
+                                   SChar * aErrMsg );
 };
 
 #endif /* _O_RPN_MESSENGER_H_ */

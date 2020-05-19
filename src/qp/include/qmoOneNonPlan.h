@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoOneNonPlan.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmoOneNonPlan.h 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     Plan Generator
@@ -810,6 +810,15 @@ private:
     
     static IDE_RC checkSimpleDETE( qcStatement  * aStatement,
                                    qmncDETE     * aDETE );
+
+    /* PROJ-2632 */
+    static IDE_RC buildSerialFilterInfo(  qcStatement          * aStatement,
+                                          qmsHints             * aHints,
+                                          qtcNode              * aFilter,
+                                          UInt                 * aFilterSize,
+                                          UInt                 * aFilterCount,
+                                          mtxSerialFilterInfo ** aInfo );
+
 };
 
 #endif /* _O_QMO_ONE_CHILD_NON_MATER_H_ */

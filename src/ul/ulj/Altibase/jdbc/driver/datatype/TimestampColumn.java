@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import Altibase.jdbc.driver.AltibaseTypes;
@@ -30,16 +31,12 @@ public class TimestampColumn extends CommonDateTimeColumn
 {
     TimestampColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.TIMESTAMP);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.TIMESTAMP;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.TIMESTAMP };
     }
 
     public String getObjectClassName()
@@ -79,7 +76,30 @@ public class TimestampColumn extends CommonDateTimeColumn
 
     protected String getStringSub() throws SQLException
     {
-        return getTimestampSub().toString();
+        String sResult;
+        Timestamp sTimestamp = getTimestampSub();
+        String sDateFormat = getDateFormat();
+        /* BUG-46513 date_format이 null이라면 timestamp의 toString을 호출하고 그렇지 않은 경우에는
+           SimpleDateFormat으로 값을 formatting한다.  */
+        if (sDateFormat == null)
+        {
+            sResult = sTimestamp.toString();
+        }
+        else
+        {
+            try
+            {
+                SimpleDateFormat sFormat = new SimpleDateFormat(sDateFormat);
+                sResult = sFormat.format(sTimestamp);
+            }
+            catch (IllegalArgumentException aEx)
+            {
+                // BUG-46513 formatting시 오류가 발생한 경우에는 원본 timestamp객체의 toString을 호출한다.
+                sResult = sTimestamp.toString();
+            }
+        }
+
+        return sResult;
     }
 
     protected Object getObjectSub() throws SQLException

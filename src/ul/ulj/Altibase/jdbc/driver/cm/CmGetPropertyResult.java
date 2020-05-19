@@ -50,7 +50,7 @@ public class CmGetPropertyResult extends CmResult
         return (sColumn == null) ? null : sColumn.getString();
     }
 
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

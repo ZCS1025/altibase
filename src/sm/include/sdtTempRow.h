@@ -405,12 +405,12 @@ IDE_RC sdtTempRow::appendRowPiece( sdtWASegment      * aWASegment,
                       aSlotNo );
 
         sdtWASegment::convertFromWGRIDToNGRID(
-            aWASegment,
-            aTRInsertResult->mHeadRowpieceGRID,
-            &aTRInsertResult->mHeadRowpieceGRID );
+                                        aWASegment,
+                                        aTRInsertResult->mHeadRowpieceGRID,
+                                        &aTRInsertResult->mHeadRowpieceGRID );
 
         aTRInsertResult->mTailRowpieceGRID =
-            aTRInsertResult->mHeadRowpieceGRID;
+                                           aTRInsertResult->mHeadRowpieceGRID;
 
         aTRPInfo->mTRPHeader.mNextGRID = SC_NULL_GRID;
     }
@@ -470,9 +470,9 @@ IDE_RC sdtTempRow::appendRowPiece( sdtWASegment      * aWASegment,
                       aSlotNo );
 
         sdtWASegment::convertFromWGRIDToNGRID(
-            aWASegment,
-            aTRInsertResult->mHeadRowpieceGRID,
-            &aTRInsertResult->mHeadRowpieceGRID );
+                                            aWASegment,
+                                            aTRInsertResult->mHeadRowpieceGRID,
+                                            &aTRInsertResult->mHeadRowpieceGRID );
 
         /* Tail을 먼저 삽입하고 Head를 늦게 삽입한다. 따라서 Tail이 NULL로
          * 설정되지 않았으면, 첫 삽입이기 때문에 현 GRID를 설정하면 된다. */
@@ -692,7 +692,7 @@ IDE_RC sdtTempRow::fetch( sdtWASegment         * aWASegment,
     aTRPInfo->mTRPHeader = (sdtTRPHeader*)aRowPtr;
     sFlag                = aTRPInfo->mTRPHeader->mTRFlag;
 
-    IDE_DASSERT( SM_IS_FLAG_ON( ( (sdtTRPHeader*)aRowPtr)->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_ERROR( SM_IS_FLAG_ON( ( (sdtTRPHeader*)aRowPtr)->mTRFlag, SDT_TRFLAG_HEAD ) );
 
     if ( SM_IS_FLAG_ON( sFlag, SDT_TRFLAG_NEXTGRID ) )
     {
@@ -795,6 +795,7 @@ IDE_RC sdtTempRow::filteringAndFetch( smiTempCursor  * aTempCursor,
     sWASeg  = (sdtWASegment*)sHeader->mWASegment;
     IDE_DASSERT( SM_IS_FLAG_ON( ((sdtTRPHeader*)aTargetPtr)->mTRFlag, SDT_TRFLAG_HEAD ) );
 
+    SC_COPY_GRID( aTempCursor->mGRID, sTRPInfo.mTRPHGRID );
     IDE_TEST( fetch( sWASeg,
                      aTempCursor->mWAGroupID,
                      aTargetPtr,

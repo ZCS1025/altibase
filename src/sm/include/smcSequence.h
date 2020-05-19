@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcSequence.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcSequence.h 82844 2018-04-19 00:41:18Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_SMC_SEQUENCE_H_
@@ -48,7 +48,11 @@ public:
                                  SLong             aMinSequence,
                                  UInt              aFlag,
                                  SLong*            aLastSyncSeq );
-    
+
+    /* BUG-45929 */
+    static IDE_RC resetSequence( void                * aTrans,
+                                 smcTableHeader      * aTableHeader );
+
     static IDE_RC readSequenceCurr( smcTableHeader  * aTableHeader,
                                     SLong           * aValue );
 

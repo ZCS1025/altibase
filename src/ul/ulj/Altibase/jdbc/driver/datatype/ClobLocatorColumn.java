@@ -55,16 +55,12 @@ public class ClobLocatorColumn extends LobLocatorColumn
     
     ClobLocatorColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.CLOB);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.CLOB_LOCATOR;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.CLOB };
     }
 
     public String getDBColumnTypeName()
@@ -169,6 +165,7 @@ public class ClobLocatorColumn extends LobLocatorColumn
             // BUGBUG need to consider reusable byte array
             sLobByteCache = new byte[sLength.intValue()];
             aChannel.readBytes(sLobByteCache);
+            aChannel.checkDecodingBuffer(sLength.intValue());  /* BUG-46411 */
             String sCachedStr = aChannel.readString(sLobByteCache);
             sLobCharCache = sCachedStr.toCharArray();
         }

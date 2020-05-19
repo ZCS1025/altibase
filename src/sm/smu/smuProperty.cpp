@@ -43,7 +43,7 @@ ULong smuProperty::mDataFileWriteUnitSize;
 UInt  smuProperty::mMaxOpenFDCount4File;
 
 //sdb
-UInt smuProperty::mValidateBuffer;
+//UInt smuProperty::mValidateBuffer;
 UInt smuProperty::mUseDWBuffer;
 UInt smuProperty::mDPathBuffFThreadSyncInterval;
 UInt smuProperty::mBulkIOPageCnt4DPInsert;
@@ -73,8 +73,8 @@ UInt smuProperty::mBufferFlusherCnt;
 UInt smuProperty::mBufferIOBufferSize;
 ULong smuProperty::mBufferAreaSize;
 ULong smuProperty::mBufferAreaChunkSize;
-UInt smuProperty::mBufferPinningCount;
-UInt smuProperty::mBufferPinningHistoryCount;
+//UInt smuProperty::mBufferPinningCount;
+//UInt smuProperty::mBufferPinningHistoryCount;
 UInt smuProperty::mDefaultFlusherWaitSec;
 UInt smuProperty::mMaxFlusherWaitSec;
 ULong smuProperty::mCheckpointFlushCount;
@@ -283,7 +283,7 @@ ULong  smuProperty::mLogFileSize;
 UInt   smuProperty::mZeroSizeLogFileAutoDelete;
 UInt   smuProperty::mLogFilePrepareCount;
 UInt   smuProperty::mLogFilePreCreateInterval;
-UInt   smuProperty::mMaxKeepLogFile;
+//UInt   smuProperty::mMaxKeepLogFile;
 UInt   smuProperty::mShmDBKey;
 UInt   smuProperty::mShmPageCountPerKey;
 
@@ -381,7 +381,7 @@ UInt smuProperty::mIndexBuildMinRecordCount;
 UInt smuProperty::mIndexBuildThreadCount;
 UInt smuProperty::mParallelLoadFactor;
 UInt smuProperty::mIteratorMemoryParallelFactor;
-UInt smuProperty::mIndexStatParallelFactor;
+//UInt smuProperty::mIndexStatParallelFactor;
 UInt smuProperty::mIndexRebuildAtStartup;
 UInt smuProperty::mIndexRebuildParallelFactorAtSartup;
 UInt smuProperty::mMMDBDefIdxType;
@@ -640,9 +640,10 @@ void smuProperty::loadForSDD()
 
 void smuProperty::loadForSDB()
 {
-    IDE_ASSERT( idp::read( "VALIDATE_BUFFER",
-                           &mValidateBuffer )
-                == IDE_SUCCESS );
+
+//    IDE_ASSERT( idp::read( "VALIDATE_BUFFER",
+//                           &mValidateBuffer )
+//                == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( "USE_DW_BUFFER",
                            &mUseDWBuffer )
@@ -737,13 +738,13 @@ void smuProperty::loadForSDB()
                            &mBufferAreaChunkSize )
                 == IDE_SUCCESS );
 
-    IDE_ASSERT( idp::read( "BUFFER_PINNING_COUNT",
-                           &mBufferPinningCount )
-                == IDE_SUCCESS );
+//    IDE_ASSERT( idp::read( "BUFFER_PINNING_COUNT",
+//                           &mBufferPinningCount )
+//                == IDE_SUCCESS );
 
-    IDE_ASSERT( idp::read( "BUFFER_PINNING_HISTORY_COUNT",
-                           &mBufferPinningHistoryCount )
-                == IDE_SUCCESS );
+//    IDE_ASSERT( idp::read( "BUFFER_PINNING_HISTORY_COUNT",
+//                           &mBufferPinningHistoryCount )
+//                == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( "DEFAULT_FLUSHER_WAIT_SEC",
                            &mDefaultFlusherWaitSec )
@@ -1744,9 +1745,9 @@ void smuProperty::loadForSMN()
                          &mIteratorMemoryParallelFactor)
                == IDE_SUCCESS);
 
-    IDE_ASSERT(idp::read("__INDEX_STAT_PARALLEL_FACTOR",
-                         &mIndexStatParallelFactor)
-               == IDE_SUCCESS);
+//    IDE_ASSERT(idp::read("__INDEX_STAT_PARALLEL_FACTOR",
+//                         &mIndexStatParallelFactor)
+//               == IDE_SUCCESS);
 
     // PROJ-1629 Memory Index Build
     IDE_ASSERT(idp::read("MEMORY_INDEX_BUILD_RUN_SIZE",
@@ -2211,9 +2212,6 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback("__DIRECT_BUFFER_FLUSH_THREAD_SYNC_INTERVAL",
                                   callbackDPathBufferFlushThreadInterval);
 
-    idp::setupAfterUpdateCallback("CHECKSUM_METHOD",
-                                  callbackCheckSumMethod);
-
     idp::setupAfterUpdateCallback("LOGICAL_AGER_COUNT_",
                                   callbackSetAgerCount );
 
@@ -2309,6 +2307,10 @@ void smuProperty::registCallbacks()
 
     idp::setupAfterUpdateCallback("SYNC_INTERVAL_MSEC_",
                                   callbackSyncIntervalMSec );
+
+    // BUG-45598: CHECKSUM_METHOD 수정
+    idp::setupAfterUpdateCallback("CHECKSUM_METHOD",
+                                  callbackSMChecksumMethod );
 
     idp::setupAfterUpdateCallback("__SM_CHECKSUM_DISABLE",
                                   callbackSMChecksumDisable );
@@ -3812,11 +3814,11 @@ IDE_RC smuProperty::callbackBufferAreaSize( idvSQL * /*aStatistics*/,
 
     IDE_TEST( smxTransMgr::alloc(&sTrans) !=  IDE_SUCCESS );
 
-    IDE_TEST( sTrans->begin( NULL,
-                             (SMI_TRANSACTION_REPL_NONE |
-                              SMI_COMMIT_WRITE_NOWAIT),
-                             SMX_NOT_REPL_TX_ID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( sTrans->begin( NULL,
+                               (SMI_TRANSACTION_REPL_NONE |
+                                SMI_COMMIT_WRITE_NOWAIT),
+                               SMX_NOT_REPL_TX_ID )
+                == IDE_SUCCESS );
 
     sdbBufferMgr::lockBufferMgrMutex(NULL);
     sLocked = ID_TRUE;
@@ -4367,6 +4369,17 @@ IDE_RC smuProperty::callbackSyncIntervalMSec( idvSQL * /*aStatistics*/,
                                               void   * /*aArg*/ )
 {
     mSyncIntervalMSec = *((UInt *)aNewValue);
+    return IDE_SUCCESS;
+}
+
+// BUG-45598: CHECKSUM_METHOD 콜백
+IDE_RC smuProperty::callbackSMChecksumMethod( idvSQL * /*aStatistics*/,
+                                              SChar  * /*aName*/,
+                                              void   * /*aOldValue*/,
+                                              void   * aNewValue,
+                                              void   * /*aArg*/ )
+{
+    mCheckSumMethod  = *((UInt *)aNewValue);
     return IDE_SUCCESS;
 }
 

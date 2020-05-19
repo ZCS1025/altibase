@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCommand.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLCommand.cpp 85096 2019-03-28 04:04:46Z bethy $
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -43,15 +43,6 @@ iSQLCommand::iSQLCommand()
     }
     idlOS::memset(m_CommandStr, 0x00, gProperty.GetCommandLen());
 
-    /* BUG-37166 isql does not consider double quotation
-     * when it parses stored procedure's arguments */
-    if ( (m_ArgList = (SChar*)idlOS::malloc(gProperty.GetCommandLen())) == NULL )
-    {
-        idlOS::fprintf(stderr, "Memory allocation error!!! --- (%d, %s)\n", __LINE__, __FILE__);
-        Exit(0);
-    }
-    idlOS::memset(m_ArgList, 0x00, gProperty.GetCommandLen());
-
     reset();
 }
 
@@ -67,14 +58,6 @@ iSQLCommand::~iSQLCommand()
     {
         idlOS::free(m_CommandStr);
         m_CommandStr = NULL;
-    }
-    
-    /* BUG-37166 isql does not consider double quotation
-     * when it parses stored procedure's arguments */
-    if ( m_ArgList != NULL )
-    {
-        idlOS::free(m_ArgList);
-        m_ArgList = NULL;
     }
 }
 
@@ -95,12 +78,6 @@ iSQLCommand::reset()
         m_CommandStr[0] = '\0';
     }
     
-    /* BUG-37166 isql does not consider double quotation
-     * when it parses stored procedure's arguments */
-    if (m_ArgList != NULL)
-    {
-        m_ArgList[0] = '\0';
-    }
     idlOS::memset(m_ShellCommand, 0x00, ID_SIZEOF(m_ShellCommand));
     idlOS::memset(m_FileName, 0x00, ID_SIZEOF(m_FileName));
     idlOS::memset(m_UserName, 0x00, ID_SIZEOF(m_UserName));
@@ -147,9 +124,6 @@ iSQLCommand::setAll( iSQLCommand * a_SrcCommand,
     idlOS::strcpy(a_DesCommand->m_Query, a_SrcCommand->m_Query);
     idlOS::strcpy(a_DesCommand->m_CommandStr, a_SrcCommand->m_CommandStr);
     
-    /* BUG-37166 isql does not consider double quotation
-     * when it parses stored procedure's arguments */
-    idlOS::strcpy(a_DesCommand->m_ArgList, a_SrcCommand->m_ArgList);
     idlOS::strcpy(a_DesCommand->m_ShellCommand, a_SrcCommand->m_ShellCommand);
 
     a_DesCommand->m_OnOff = a_SrcCommand->m_OnOff;
@@ -234,22 +208,6 @@ iSQLCommand::SetCommandStr( SChar * a_CommandStr1,
         idlOS::strcat(m_CommandStr, a_CommandStr2);
     }
 }
-
-/* BUG-37166 isql does not consider double quotation
- * when it parses stored procedure's arguments */
-void
-iSQLCommand::SetArgList( SChar * a_ArgList )
-{
-    if (a_ArgList != NULL)
-    {
-        idlOS::strcpy(m_ArgList, a_ArgList);
-    }
-    else
-    {
-        m_ArgList[0] = '\0';
-    }
-}
-
 
 void
 iSQLCommand::SetOtherCommand( SChar * a_OtherCommandStr )

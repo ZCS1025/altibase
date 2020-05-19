@@ -107,7 +107,7 @@ public class CmFetchResult extends CmStatementIdResult
         return mFetchRemains;
     }
 
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

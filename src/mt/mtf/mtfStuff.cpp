@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfStuff.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfStuff.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -64,6 +64,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfStuffCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

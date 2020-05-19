@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmx.cpp 82174 2018-02-02 02:28:16Z andrew.shin $
+ * $Id: qmx.cpp 85343 2019-04-30 01:50:33Z returns $
  **********************************************************************/
 
 #include <cm.h>
@@ -1668,8 +1668,9 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
 IDE_RC qmx::executeLockTable(qcStatement *aStatement)
 {
     qmmLockParseTree     * sParseTree;
-    qcmPartitionInfoList * sPartInfoList = NULL;
-    idBool                 sIsReadOnly   = ID_FALSE;
+    qcmPartitionInfoList * sPartInfoList  = NULL;
+    idBool                 sIsReadOnly    = ID_FALSE;
+    smiTableLockMode       sTableLockMode = SMI_TABLE_NLOCK;
 
     sParseTree = (qmmLockParseTree*) aStatement->myPlan->parseTree;
 
@@ -1692,45 +1693,89 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
         /* Nothing to do */
     }
 
-    // To fix PR-4159
-    IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
-                                         sParseTree->tableHandle,
-                                         sParseTree->tableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation 옵션
-                                         sParseTree->tableLockMode,
-                                         (ULong)(((UInt)sParseTree->lockWaitMicroSec)),
-                                         ID_TRUE ) // BUG-28752 명시적 Lock과 내재적 Lock을 구분합니다.
-              != IDE_SUCCESS );
-
-    // PROJ-1502 PARTITIONED DISK TABLE
-    if ( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+    /* BUG-46273 Lock Partition */
+    if ( QC_IS_NULL_NAME( sParseTree->partitionName ) == ID_FALSE )
     {
-        IDE_TEST( qcmPartition::getPartitionInfoList(
-                      aStatement,
-                      QC_SMI_STMT( aStatement ),
-                      aStatement->qmxMem,
-                      sParseTree->tableInfo->tableID,
-                      & sPartInfoList )
+        switch ( sParseTree->tableLockMode )
+        {
+            case SMI_TABLE_LOCK_S :
+                /* fall through */
+            case SMI_TABLE_LOCK_IS :
+                sTableLockMode = SMI_TABLE_LOCK_IS;
+                break;
+
+            case SMI_TABLE_LOCK_X :
+                /* fall through */
+            case SMI_TABLE_LOCK_IX :
+                /* fall through */
+            case SMI_TABLE_LOCK_SIX :
+                sTableLockMode = SMI_TABLE_LOCK_IX;
+                break;
+
+            default :
+                break;
+        }
+
+        IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
+                                             sParseTree->tableHandle,
+                                             sParseTree->tableSCN,
+                                             SMI_TBSLV_DDL_DML, // TBS Validation 옵션
+                                             sTableLockMode,
+                                             sParseTree->lockWaitMicroSec,
+                                             ID_TRUE ) // BUG-28752 명시적 Lock과 내재적 Lock을 구분합니다.
                   != IDE_SUCCESS );
 
-        // 파티션드 테이블과 같은 종류의 LOCK을 잡는다.
-        for ( ;
-              sPartInfoList != NULL;
-              sPartInfoList = sPartInfoList->next )
-        {
-            IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
-                                                 sPartInfoList->partHandle,
-                                                 sPartInfoList->partSCN,
-                                                 SMI_TBSLV_DDL_DML, // TBS Validation 옵션
-                                                 sParseTree->tableLockMode,
-                                                 (ULong)(((UInt)sParseTree->lockWaitMicroSec)),
-                                                 ID_TRUE ) // BUG-28752 명시적 Lock과 내재적 Lock을 구분합니다.
-                      != IDE_SUCCESS );
-        }
+        IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
+                                             sParseTree->partitionHandle,
+                                             sParseTree->partitionSCN,
+                                             SMI_TBSLV_DDL_DML, // TBS Validation 옵션
+                                             sParseTree->tableLockMode,
+                                             sParseTree->lockWaitMicroSec,
+                                             ID_TRUE ) // BUG-28752 명시적 Lock과 내재적 Lock을 구분합니다.
+                  != IDE_SUCCESS );
     }
     else
     {
-        // Nothing to do
+        // To fix PR-4159
+        IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
+                                             sParseTree->tableHandle,
+                                             sParseTree->tableSCN,
+                                             SMI_TBSLV_DDL_DML, // TBS Validation 옵션
+                                             sParseTree->tableLockMode,
+                                             sParseTree->lockWaitMicroSec,
+                                             ID_TRUE ) // BUG-28752 명시적 Lock과 내재적 Lock을 구분합니다.
+                  != IDE_SUCCESS );
+
+        // PROJ-1502 PARTITIONED DISK TABLE
+        if ( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            IDE_TEST( qcmPartition::getPartitionInfoList(
+                          aStatement,
+                          QC_SMI_STMT( aStatement ),
+                          aStatement->qmxMem,
+                          sParseTree->tableInfo->tableID,
+                          & sPartInfoList )
+                      != IDE_SUCCESS );
+
+            // 파티션드 테이블과 같은 종류의 LOCK을 잡는다.
+            for ( ;
+                  sPartInfoList != NULL;
+                  sPartInfoList = sPartInfoList->next )
+            {
+                IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
+                                                     sPartInfoList->partHandle,
+                                                     sPartInfoList->partSCN,
+                                                     SMI_TBSLV_DDL_DML, // TBS Validation 옵션
+                                                     sParseTree->tableLockMode,
+                                                     sParseTree->lockWaitMicroSec,
+                                                     ID_TRUE ) // BUG-28752 명시적 Lock과 내재적 Lock을 구분합니다.
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            // Nothing to do
+        }
     }
 
     /* BUG-42853 LOCK TABLE에 UNTIL NEXT DDL 기능 추가 */
@@ -1958,10 +2003,17 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
                                MTC_COLUMN_NOTNULL_MASK )
                              == MTC_COLUMN_NOTNULL_TRUE )
                         {
-                            IDE_TEST( smiLob::getLength( *(smLobLocator*)sValue,
-                                                         & sLobLen,
-                                                         & sIsNullLob )
-                                      != IDE_SUCCESS );
+                            if ( *(smLobLocator*)sValue != MTD_LOCATOR_NULL )
+                            {
+                                IDE_TEST( smiLob::getLength( *(smLobLocator*)sValue,
+                                                             & sLobLen,
+                                                             & sIsNullLob )
+                                          != IDE_SUCCESS );
+                            }
+                            else
+                            {
+                                sIsNullLob = ID_TRUE;
+                            }
 
                             IDE_TEST_RAISE( sIsNullLob == ID_TRUE, ERR_NOT_ALLOW_NULL );
                         }
@@ -2330,10 +2382,17 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
                                MTC_COLUMN_NOTNULL_MASK )
                              == MTC_COLUMN_NOTNULL_TRUE )
                         {
-                            IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
-                                                         & sLobLen,
-                                                         & sIsNullLob )
-                                      != IDE_SUCCESS );
+                            if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
+                            {
+                                IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
+                                                             & sLobLen,
+                                                             & sIsNullLob )
+                                          != IDE_SUCCESS );
+                            }
+                            else
+                            {
+                                sIsNullLob = ID_TRUE;
+                            }
 
                             IDE_TEST_RAISE( sIsNullLob == ID_TRUE,
                                             ERR_NOT_ALLOW_NULL );
@@ -2526,10 +2585,17 @@ IDE_RC qmx::makeSmiValueWithStack( qcmColumn     * aColumn,
             if ( ( sColumn->basicInfo->flag & MTC_COLUMN_NOTNULL_MASK )
                                            == MTC_COLUMN_NOTNULL_TRUE )
             {
-                IDE_TEST( smiLob::getLength( *(smLobLocator*)sValue,
-                                             & sLobLen,
-                                             & sIsNullLob )
-                          != IDE_SUCCESS );
+                if ( *(smLobLocator*)sValue != MTD_LOCATOR_NULL )
+                {
+                    IDE_TEST( smiLob::getLength( *(smLobLocator*)sValue,
+                                                 & sLobLen,
+                                                 & sIsNullLob )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    sIsNullLob = ID_TRUE;
+                }
 
                 IDE_TEST_RAISE( sIsNullLob == ID_TRUE,
                                 ERR_NOT_ALLOW_NULL );
@@ -2816,10 +2882,17 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
                         if ( ( sMetaColumn->basicInfo->flag & MTC_COLUMN_NOTNULL_MASK )
                              == MTC_COLUMN_NOTNULL_TRUE )
                         {
-                            IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
-                                                         & sLobLen,
-                                                         & sIsNullLob )
-                                      != IDE_SUCCESS );
+                            if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
+                            {
+                                IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
+                                                             & sLobLen,
+                                                             & sIsNullLob )
+                                          != IDE_SUCCESS );
+                            }
+                            else
+                            {
+                                sIsNullLob = ID_TRUE;
+                            }
 
                             IDE_TEST_RAISE( sIsNullLob == ID_TRUE,
                                             ERR_NOT_ALLOW_NULL );
@@ -3066,10 +3139,17 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
                 if ( ( sMetaColumn->basicInfo->flag & MTC_COLUMN_NOTNULL_MASK )
                      == MTC_COLUMN_NOTNULL_TRUE )
                 {
-                    IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
-                                                 & sLobLen,
-                                                 & sIsNullLob )
-                              != IDE_SUCCESS );
+                    if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
+                    {
+                        IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
+                                                     & sLobLen,
+                                                     & sIsNullLob )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        sIsNullLob = ID_TRUE;
+                    }
 
                     IDE_TEST_RAISE( sIsNullLob == ID_TRUE,
                                     ERR_NOT_ALLOW_NULL );
@@ -5958,6 +6038,36 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
+    // DELTE를 위한 기본 정보 설정
+    //------------------------------------------
+    
+    if ( sParseTree->deleteStatement != NULL )
+    {
+        //------------------------------------------
+        // STATEMENT GRANULARITY TRIGGER의 수행
+        //------------------------------------------
+        
+        IDE_TEST( fireStatementTriggerOnDeleteCascade(
+                      aStatement,
+                      sTableRef,
+                      sParseTree->deleteParseTree->childConstraints,
+                      QCM_TRIGGER_BEFORE )
+                  != IDE_SUCCESS );
+        
+        idlOS::memcpy( & sTempStatement,
+                       sParseTree->deleteStatement,
+                       ID_SIZEOF( qcStatement ) );
+        setSubStatement( aStatement, & sTempStatement );
+        
+        // PROJ-1446 Host variable을 포함한 질의 최적화
+        IDE_TEST( qmo::optimizeForHost( & sTempStatement ) != IDE_SUCCESS );
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    //------------------------------------------
     // INSERT를 위한 기본 정보 설정
     //------------------------------------------
     
@@ -6095,6 +6205,24 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                                            NULL,  // OLD ROW Column
                                            NULL,  // NEW ROW
                                            NULL ) // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    //------------------------------------------
+    // DELETE STATEMENT GRANULARITY TRIGGER의 수행
+    //------------------------------------------
+    
+    if ( sParseTree->deleteStatement != NULL )
+    {
+        IDE_TEST( fireStatementTriggerOnDeleteCascade(
+                      aStatement,
+                      sTableRef,
+                      sParseTree->deleteParseTree->childConstraints,
+                      QCM_TRIGGER_AFTER )
                   != IDE_SUCCESS );
     }
     else
@@ -6327,6 +6455,9 @@ IDE_RC qmx::executeShardInsert( qcStatement * aStatement )
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    qmnSDIN::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement), 
+                                                     aStatement->myPlan->plan );
 
     QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
 

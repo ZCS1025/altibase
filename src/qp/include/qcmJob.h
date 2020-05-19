@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmJob.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmJob.h 82252 2018-02-13 00:44:29Z donovan.seo $
  *
  * PROJ-1438 Job Scheduler
  **********************************************************************/
@@ -68,6 +68,8 @@ public:
     static IDE_RC isExistJob( smiStatement   * aSmiStmt,
                               qcNamePosition * aJobName,
                               idBool         * aIsExist );
+
+    static IDE_RC updateInitialJobState( smiStatement * aSmiStmt );
 };
 
 #endif /* _O_QCM_JOB_H_ */

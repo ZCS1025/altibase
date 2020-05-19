@@ -71,6 +71,7 @@ static const mtcExecute sdfExecute = {
     mtf::calculateNA,
     sdfCalculate_UnsetShardTableByID,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -155,6 +156,12 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
 
+    // BUG-46366
+    IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
+                    ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DML ) == QCI_STMT_MASK_DML ) ||
+                    ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DCL ) == QCI_STMT_MASK_DCL ),
+                    ERR_INSIDE_QUERY );
+
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
@@ -222,6 +229,10 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INSIDE_QUERY )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
+    }
     IDE_EXCEPTION( ERR_ARGUMENT_NOT_APPLICABLE );
     {
         IDE_SET(ideSetErrorCode(mtERR_ABORT_ARGUMENT_NOT_APPLICABLE));
@@ -241,7 +252,7 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
         case 2:
             if ( sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) != IDE_SUCCESS )
             {
-                IDE_ERRLOG(IDE_QP_1);
+                IDE_ERRLOG(IDE_SD_1);
             }
             else
             {

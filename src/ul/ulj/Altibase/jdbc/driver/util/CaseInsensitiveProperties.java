@@ -134,4 +134,9 @@ public class CaseInsensitiveProperties extends Properties
             }
         }
     }
+
+    public AltibaseProperties getDefaults()
+    {
+        return (AltibaseProperties)defaults;
+    }
 }

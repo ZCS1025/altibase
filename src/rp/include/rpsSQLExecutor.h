@@ -42,6 +42,15 @@ public:
                               idBool           aCompareBeforeImage,
                               SLong          * sRowCount );
 
+    static IDE_RC hardRebuild( idvSQL                  * aStatistics,
+                               qciStatement            * aQciStatement,
+                               smiStatement            * aParentSmiStatement,
+                               smiStatement            * aSmiStatement,
+                               idBool                  * aIsBegun,
+                               qciSQLPlanCacheContext  * aPlanCacheContext,
+                               SChar                   * aSQLBuffer,
+                               UInt                      aSQLBufferLength,
+                               UInt                      aStmtFlag );
 private:
     static IDE_RC rebuild( qciStatement            * aQciStatement,
                            smiStatement            * aParentSmiStatement,

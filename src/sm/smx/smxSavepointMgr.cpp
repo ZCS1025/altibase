@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxSavepointMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxSavepointMgr.cpp 84032 2018-09-19 05:32:05Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -44,7 +44,8 @@ IDE_RC smxSavepointMgr::initializeStatic()
                                IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                ID_FALSE,						/* ForcePooling */
                                ID_TRUE,							/* GarbageCollection */
-                               ID_TRUE);						/* HWCacheLine */
+                               ID_TRUE,                         /* HWCacheLine */
+                               IDU_MEMPOOL_TYPE_LEGACY          /* mempool type */);
 }
 
 IDE_RC smxSavepointMgr::destroyStatic()
@@ -425,7 +426,7 @@ IDE_RC smxSavepointMgr::setImpSavepoint( smxSavepoint ** aSavepoint,
     sNewSavepoint->mOffset        = aOIDNode->mOIDCnt;
     sNewSavepoint->mLockSequence  = aLockSequence;
 
-    /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+    /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
      * Partial Rollback을 지원해야 합니다. */
     sNewSavepoint->mStmtDepth   = aStmtDepth;
 
@@ -535,7 +536,7 @@ IDE_RC smxSavepointMgr::abortToImpSavepoint( smxTrans*     aTrans,
         /* Replication Implicit SVP Log가 기록된적이 있다. */
         ( aSavepoint->mReplImpSvpStmtDepth != SMI_STATEMENT_DEPTH_NULL ) ) // case 3.
     {
-        /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+        /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
          * Partial Rollback을 지원해야 합니다.
 
            Implicit SVP Name: SMR_IMPLICIT_SVP_NAME +

@@ -128,12 +128,12 @@ IDE_RC svmTBSStartupShutdown::prepareTBSAction(idvSQL*            /*aStatistics*
 
     IDE_DASSERT(sTBSNode != NULL);
 
-    if (sctTableSpaceMgr::isVolatileTableSpace(aTBSNode->mID) == ID_TRUE)
+    if ( sctTableSpaceMgr::isVolatileTableSpace(aTBSNode->mID) == ID_TRUE )
     {
         IDE_TEST(svmManager::createTBSPages(
-                     sTBSNode,
-                     sTBSNode->mTBSAttr.mName,
-                     sTBSNode->mTBSAttr.mVolAttr.mInitPageCount )
+                                 sTBSNode,
+                                 sTBSNode->mTBSAttr.mName,
+                                 sTBSNode->mTBSAttr.mVolAttr.mInitPageCount )
               != IDE_SUCCESS );
     }
 
@@ -184,8 +184,7 @@ IDE_RC svmTBSStartupShutdown::destroyAllTBSNode()
                               (void*)sCurrSpaceNode,
                               (void**)&sNextSpaceNode );
 
-        if(sctTableSpaceMgr::isVolatileTableSpace(sCurrSpaceNode->mID)
-           == ID_TRUE)
+        if ( sctTableSpaceMgr::isVolatileTableSpace(sCurrSpaceNode->mID) == ID_TRUE )
         {
 
             sctTableSpaceMgr::removeTableSpaceNode( sCurrSpaceNode );

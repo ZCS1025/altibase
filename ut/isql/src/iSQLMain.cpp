@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLMain.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLMain.cpp 84322 2018-11-12 02:04:29Z bethy $
  **********************************************************************/
 
 #include <idp.h>
@@ -451,6 +451,14 @@ main( int     argc,
 
         gHist = history_init();
         history(gHist, &gEvent, H_SETSIZE, 100);
+
+        /* BUG-45145 Need to enhance history */
+        history(gHist, &gEvent, H_SETUNIQUE, 1);
+        if (gProperty.GetHistFile() != NULL) // BUG-46552
+        {
+            history(gHist, &gEvent, H_LOAD, gProperty.GetHistFile());
+        }
+
         sEditor = idlOS::getenv(ENV_ISQL_EDITOR);
 
         gEdo = el_init(*argv, stdin, stdout, stderr);
@@ -958,6 +966,12 @@ void isqlFinalizeLineEditor( void )
 #ifdef USE_READLINE
     if( ( gProgOption.UseLineEditing() == ID_TRUE ) && ( gEdo != NULL ) )
     {
+        /* BUG-45145 Need to enhance history */
+        if (gProperty.GetHistFile() != NULL) // BUG-46552
+        {
+            history(gHist, &gEvent, H_SAVE, gProperty.GetHistFile());
+        }
+
         el_end( gEdo );
         gEdo = NULL;
     }

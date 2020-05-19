@@ -147,25 +147,48 @@ IDE_RC mmtServiceThread::initializeThread()
 {
     mDispatcher = NULL;
 
-    switch(mInfo.mServiceThreadType)
+    switch (mInfo.mServiceThreadType)
     {
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
             // BUG-24318 IPC 일경우 세션 정보가 잘못 나옵니다.
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_SHARED;
             mMultiPlexingFunc = &mmtServiceThread::multiplexingAsShared;
 
-            IDE_TEST(cmiAllocDispatcher(&mDispatcher,
-                                        CMI_DISPATCHER_IMPL_SOCK,
-                                        mmuProperty::getMaxClient()) != IDE_SUCCESS);
+            /* PROJ-2681 */
+            if ((mmuProperty::getIBEnable() == ID_TRUE) && (mmuProperty::getIBListenerDisable() != ID_TRUE))
+            {
+                IDE_TEST(cmiAllocDispatcher(&mDispatcher,
+                                            CMI_DISPATCHER_IMPL_IB,
+                                            mmuProperty::getMaxClient()) != IDE_SUCCESS);
+            }
+            else
+            {
+                IDE_TEST(cmiAllocDispatcher(&mDispatcher,
+                                            CMI_DISPATCHER_IMPL_SOCK,
+                                            mmuProperty::getMaxClient()) != IDE_SUCCESS);
+            }
             break;
+
         /* PROJ-2108 Dedicated thread mode which uses less CPU */
         case MMC_SERVICE_THREAD_TYPE_DEDICATED:
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_DEDICATED;
             mMultiPlexingFunc = &mmtServiceThread::dedicatedThreadMode;
-            IDE_TEST(cmiAllocDispatcher(&mDispatcher,
-                                        CMI_DISPATCHER_IMPL_SOCK,
-                                        mmuProperty::getMaxClient()) != IDE_SUCCESS);
+
+            /* PROJ-2681 */
+            if ((mmuProperty::getIBEnable() == ID_TRUE) && (mmuProperty::getIBListenerDisable() != ID_TRUE))
+            {
+                IDE_TEST(cmiAllocDispatcher(&mDispatcher,
+                                            CMI_DISPATCHER_IMPL_IB,
+                                            mmuProperty::getMaxClient()) != IDE_SUCCESS);
+            }
+            else
+            {
+                IDE_TEST(cmiAllocDispatcher(&mDispatcher,
+                                            CMI_DISPATCHER_IMPL_SOCK,
+                                            mmuProperty::getMaxClient()) != IDE_SUCCESS);
+            }
             break;
+
         case MMC_SERVICE_THREAD_TYPE_IPC:
             // BUG-24318 IPC 일경우 세션 정보가 잘못 나옵니다.
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_DEDICATED;
@@ -175,6 +198,7 @@ IDE_RC mmtServiceThread::initializeThread()
                                         CMI_DISPATCHER_IMPL_IPC,
                                         1) != IDE_SUCCESS);
             break;
+
         case MMC_SERVICE_THREAD_TYPE_IPCDA:
             // BUG-24318 IPC 일경우 세션 정보가 잘못 나옵니다.
             mInfo.mRunMode           = MMT_SERVICE_THREAD_RUN_DEDICATED;
@@ -184,9 +208,11 @@ IDE_RC mmtServiceThread::initializeThread()
                                         CMI_DISPATCHER_IMPL_IPCDA,
                                         1) != IDE_SUCCESS);
             break;
+
         //fix PROJ-1749
         case MMC_SERVICE_THREAD_TYPE_DA:
             break;
+
         default:
             IDE_ASSERT(0);
     }
@@ -210,7 +236,7 @@ void   mmtServiceThread::finalizeThread()
     //fix PROJ-1749
     if (mInfo.mServiceThreadType != MMC_SERVICE_THREAD_TYPE_DA)
     {
-        IDE_DASSERT(cmiFreeDispatcher(mDispatcher) == IDE_SUCCESS);
+        IDE_ASSERT(cmiFreeDispatcher(mDispatcher) == IDE_SUCCESS);
     }
 }
 
@@ -298,7 +324,7 @@ void mmtServiceThread::run()
         /* do nothing */
     }
 
-    switch(sServiceThreadType)
+    switch (sServiceThreadType)
     {
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
             while (mRun == ID_TRUE)
@@ -312,7 +338,7 @@ void mmtServiceThread::run()
             /* PROJ-2108 Dedicated thread mode which uses less CPU */
         case MMC_SERVICE_THREAD_TYPE_DEDICATED:
             sRC = mServiceThreadCV.wait(&mMutexForServiceThreadSignal);
-            if(sRC != IDE_SUCCESS) 
+            if (sRC != IDE_SUCCESS) 
             {
                 IDE_ASSERT(mMutexForServiceThreadSignal.unlock() == IDE_SUCCESS);
                 IDE_RAISE(CondWaitError);
@@ -424,7 +450,8 @@ void mmtServiceThread::run()
                     {
                         mLoopCounter++;
 
-                        executeTask4IPCDADedicatedMode();
+                        /* BUG-46163 */
+                        executeTask();
 
                         IDV_TIME_GET(&mInfo.mExecuteEnd);
 
@@ -473,88 +500,6 @@ void mmtServiceThread::run()
         IDE_SET(ideSetErrorCode(mmERR_FATAL_THREAD_CONDITION_WAIT));
     }
     IDE_EXCEPTION_END;
-}
-
-/* PROJ-2616 ipc-da executeTask dedicated mode */
-void mmtServiceThread::executeTask4IPCDADedicatedMode()
-{
-    mmcTask      *sTask;
-    mmcTaskState  sTaskState;
-    IDE_RC        sRet;
-
-    cmiProtocolContext *sCtx     = NULL;
-
-    IDE_CLEAR();
-
-    unlockForThread();
-
-    sTask = (mmcTask *)mReadyTaskList.mNext->mObj;
-    IDE_TEST_RAISE(sTask == NULL, TaskNull);
-
-    sCtx = sTask->getProtocolContext();
-    IDE_TEST_RAISE(sCtx->mIsDisconnect == ID_TRUE, Disconnected);
-    IDE_TEST_RAISE(sCtx->mModule->mModuleID != CMP_MODULE_DB, ExecuteFail);
-    setTask(sTask);
-    sTask->setThread(this);
-
-    while(1)
-    {
-        sTaskState = sTask->getTaskState();
-        switch (sTaskState)
-        {
-            case MMC_TASK_STATE_READY:
-                setState(MMT_SERVICE_THREAD_STATE_EXECUTE);
-                IDV_TIME_GET(&mInfo.mExecuteBegin);
-                sTask->setTaskState(MMC_TASK_STATE_EXECUTING);
-                mErrorFlag = ID_FALSE;
-                sRet = cmiRecvIPCDA(sCtx,
-                                    this, 
-                                    mmuProperty::getIPCDASleepTime());
-
-                IDE_TEST_RAISE(sRet != IDE_SUCCESS, ExecuteFail);
-
-                sTask->setTaskState(MMC_TASK_STATE_READY);
-                break;
-            default:
-                IDE_CALLBACK_FATAL("invalid task state in mmtServiceThread::executeTask()");
-                break;
-        }
-    }
-
-    lockForThread();
-
-    return;
-
-    IDE_EXCEPTION(Disconnected);
-    {
-        lockForThread();
-        /*fix PROJ-1749 */
-        IDU_LIST_REMOVE(sTask->getThreadListNode());
-        addReadyTaskCount(-1);
-        terminateTask(sTask);
-    }
-    IDE_EXCEPTION(ExecuteFail);
-    {
-        lockForThread();
-        /*fix PROJ-1749 */
-        IDU_LIST_REMOVE(sTask->getThreadListNode());
-        addReadyTaskCount(-1);
-        terminateTask(sTask);
-    }
-    /* bug-36875: null-checking for task object is necessary.
-     *        client 잘못으로 프로토콜이 async로 날라오는 경우
-     *               task가 null일 수 있다. 방어하자 */
-    IDE_EXCEPTION(TaskNull);
-    {
-        ideLog::log(IDE_SERVER_0,
-                    "executeTask: NULL task ignored. mReadyTaskCount: %u",
-                    mInfo.mReadyTaskCount);
-        lockForThread();
-        mInfo.mReadyTaskCount = 0;
-    }
-    IDE_EXCEPTION_END;
-
-    return;
 }
 
 void mmtServiceThread::stop()
@@ -997,7 +942,7 @@ void mmtServiceThread::executeTask()
 
     setTask(sTask);
 
-    switch(mInfo.mServiceThreadType)
+    switch (mInfo.mServiceThreadType)
     {
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
         /* PROJ-2108 Dedicated thread mode which uses less CPU */
@@ -1096,6 +1041,7 @@ QUEUE_READY:
             }//switch
             break;
         case MMC_SERVICE_THREAD_TYPE_IPC:
+        case MMC_SERVICE_THREAD_TYPE_IPCDA: /* BUG-46163 */
         case MMC_SERVICE_THREAD_TYPE_DA: //fix PROJ-1749
             unlockForThread();
             sTask->setThread(this);
@@ -1143,7 +1089,8 @@ QUEUE_READY:
         lockForThread();
         //fix PROJ-1749
         if( (MMC_SERVICE_THREAD_TYPE_IPC == mInfo.mServiceThreadType) ||
-            (MMC_SERVICE_THREAD_TYPE_DA == mInfo.mServiceThreadType) )
+            (MMC_SERVICE_THREAD_TYPE_DA == mInfo.mServiceThreadType) ||
+            (MMC_SERVICE_THREAD_TYPE_IPCDA == mInfo.mServiceThreadType) )
         {
             IDU_LIST_REMOVE(sTask->getThreadListNode());
             addReadyTaskCount(-1);
@@ -1242,7 +1189,8 @@ IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewSta
     // fix BUG-29073 task executing 상태 로갱신하는 시점이
     //잘못되었다.
     // BUG-24318 IPC 일경우 세션 정보가 잘못 나옵니다.
-    if(mInfo.mServiceThreadType != MMC_SERVICE_THREAD_TYPE_IPC)
+    if ((mInfo.mServiceThreadType != MMC_SERVICE_THREAD_TYPE_IPC) &&
+        (mInfo.mServiceThreadType != MMC_SERVICE_THREAD_TYPE_IPCDA))
     {
         aTask->setTaskState(MMC_TASK_STATE_EXECUTING);
     }
@@ -1251,7 +1199,16 @@ IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewSta
     sCtx = aTask->getProtocolContext();
     if (cmiGetPacketType(sCtx) != CMP_PACKET_TYPE_A5)
     {
-        sRet = cmiRecv(sCtx, this, NULL, aTask);
+        if ( cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA )
+        {
+            sRet = cmiRecvIPCDA(sCtx,
+                                this,
+                                mmuProperty::getIPCDASleepTime());
+        }
+        else
+        {
+            sRet = cmiRecv(sCtx, this, NULL, aTask);
+        }
     }
     else
     {
@@ -1275,13 +1232,21 @@ IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewSta
             break;
 
         case IDE_SUCCESS:
-            if (aTask->isShutdownTask() != ID_TRUE)
+            if ( aTask->isShutdownTask() != ID_TRUE )
             {
                 /* proj_2160 cm_type removal */
                 if (cmiGetPacketType(sCtx) != CMP_PACKET_TYPE_A5)
                 {
-                    IDE_TEST_RAISE(cmiSend(sCtx, ID_TRUE)
-                                   != IDE_SUCCESS, FlushFail);
+                    if ( cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA )
+                    {
+                        /* BUG-46502 함수 이름 변경 */
+                        IDE_TEST_RAISE( cmiLinkPeerFinalizeSvrForIPCDA(sCtx) != IDE_SUCCESS, CommunicationFail);
+                    }
+                    else
+                    {
+                        IDE_TEST_RAISE(cmiSend(sCtx, ID_TRUE)
+                                       != IDE_SUCCESS, FlushFail);
+                    }
                 }
                 else
                 {
@@ -1295,8 +1260,15 @@ IDE_RC mmtServiceThread::executeTask_READY(mmcTask *aTask, mmcTaskState *aNewSta
 
         case IDE_FAILURE:
         default:
+        {
+            /* BUG-46390 cmiLinkPeerFinalizeSvrForIPCDA는 반드시 호출되어야 함 */
+            if ( cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA )
+            {
+                /* BUG-46502 함수 이름 변경 */
+                cmiLinkPeerFinalizeSvrForIPCDA(sCtx);
+            }
             IDE_RAISE(CommunicationFail);
-            break;
+        }
     }
 
     return IDE_SUCCESS;
@@ -1379,6 +1351,7 @@ IDE_RC mmtServiceThread::executeTask_QUEUEREADY(mmcTask *aTask, mmcTaskState *aN
     }
     else
     {
+        /* BUG-46163 IPCDA의 경우 Pending은 사용되지 않음 (무조건 FALSE) */
         if (cmiProtocolContextHasPendingRequest(sCtx) == ID_TRUE)
         {
             IDE_TEST(executeTask_READY(aTask, aNewState) != IDE_SUCCESS);
@@ -1388,8 +1361,16 @@ IDE_RC mmtServiceThread::executeTask_QUEUEREADY(mmcTask *aTask, mmcTaskState *aN
             // proj_2160 cm_type removal
             if (sPacketType != CMP_PACKET_TYPE_A5)
             {
-                IDE_TEST_RAISE(cmiSend(sCtx, ID_TRUE)
-                               != IDE_SUCCESS, FlushFail);
+                if ( cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA )
+                {
+                    /* BUG-46502 함수 이름 변경 */
+                    IDE_TEST_RAISE( cmiLinkPeerFinalizeSvrForIPCDA(sCtx) != IDE_SUCCESS, CommunicationFail);
+                }
+                else
+                {
+                    IDE_TEST_RAISE(cmiSend(sCtx, ID_TRUE)
+                                   != IDE_SUCCESS, FlushFail);
+                }
             }
             else
             {
@@ -1436,15 +1417,6 @@ IDE_RC mmtServiceThread::executeTask_QUEUEREADY(mmcTask *aTask, mmcTaskState *aN
 void mmtServiceThread::terminateTask(mmcTask *aTask)
 {
     IDE_RC sRC;
-
-    /*PROJ-2616*/
-    cmiProtocolContext *sCtx    = aTask->getProtocolContext();
-
-    /* PROJ-2616 remove ipcda client process infomation */
-    if (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
-    {                                                                
-        mmtIPCDAProcMonitor::delIPCDAProcInfo(sCtx);
-    }
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
        Load balance와 동시성이 관련되어 있어서,

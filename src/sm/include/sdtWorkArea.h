@@ -100,9 +100,7 @@ public:
     static void     flusherRun( void * aParam );
     static IDE_RC   flushTempPages( sdtWAFlushQueue * aWAFlushQueue );
 
-    static IDE_RC   flushTempPagesInternal( idvSQL            * aStatistics,
-                                            smiTempTableStats * aStats,
-                                            sdtWASegment      * aWASegment,
+    static IDE_RC   flushTempPagesInternal( sdtWAFlushQueue   * aWAFlushQueue,
                                             sdtWCB            * aWCBPtr,
                                             UInt                aPageCount );
 

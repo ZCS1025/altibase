@@ -6,7 +6,7 @@ is -f schema.sql -o schema.out
 
 make clean
 make  
-clobSample  MemoryDBMS.txt out.txt 
+clobSample 1 MemoryDBMS.txt out.txt 
 diff  MemoryDBMS.txt out.txt    > run.diff
 is -f drop_schema.sql
 

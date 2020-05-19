@@ -32,6 +32,10 @@
 #include <dktDtxInfo.h>
 #include <sdi.h>
 
+#define DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK      (0x00000001)
+#define DKT_COORD_FLAG_TRANSACTION_BROKEN_FALSE     (0x00000000)
+#define DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE      (0x00000001)
+
 class dktGlobalCoordinator
 {
 private:
@@ -47,6 +51,7 @@ private:
     iduList          mRTxList;                     /* remote Tx list */
     iduList          mSavepointList;               /* savepoint list */
     iduMutex         mDktRTxMutex;
+    UInt             mFlag;                        /* Flags */
 
     void setAllRemoteTxStatus( dktRTxStatus aRemoteTxStatus );
     IDE_RC freeAndDestroyAllRemoteStmt( dksSession *aSession, UInt  aSessionId );
@@ -185,6 +190,7 @@ public:
 
     void removeDtxInfo();
     void removeDtxInfo( dktDtxBranchTxInfo * aDtxBranchTxInfo );
+    void removeDtxInfo( ID_XID * aXID );
     IDE_RC setLSNDtxInfo( UInt aLocalTxId, 
                           UInt aGlobalTxId, 
                           smLSN aPrepareLSN );
@@ -218,6 +224,9 @@ public:
     inline dktGTxStatus    getGTxStatus();
 
     inline dktLinkerType   getLinkerType();
+
+    inline void setFlag( UInt aMask, UInt aValue );
+    inline UInt getFlag( UInt aMask );
 };
 
 inline dktGTxStatus dktGlobalCoordinator::getGTxStatus()
@@ -278,5 +287,15 @@ inline dktLinkerType dktGlobalCoordinator::getLinkerType()
     return mLinkerType;
 }
 
+inline void dktGlobalCoordinator::setFlag( UInt aMask, UInt aValue )
+{
+    mFlag &= ~aMask;
+    mFlag |= aValue;
+}
+
+inline UInt dktGlobalCoordinator::getFlag( UInt aMask )
+{
+    return ( mFlag & aMask );
+}
 #endif /* _O_DKT_GLOBAL_COORDINATOR_H_ */
 

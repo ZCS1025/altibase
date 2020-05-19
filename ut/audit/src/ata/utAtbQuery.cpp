@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbQuery.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utAtbQuery.cpp 82790 2018-04-15 23:41:55Z bethy $
  ******************************************************************************/
 
 #include <uto.h>
@@ -182,8 +182,6 @@ IDE_RC utAtbQuery::clear()
 
 IDE_RC utAtbQuery::execute(bool)
 {
-    SQLLEN sRowCount = 0;
-
     if(mIsPrepared != ID_TRUE)
     {
         IDE_TEST(prepare() != IDE_SUCCESS);
@@ -212,6 +210,28 @@ IDE_RC utAtbQuery::execute(bool)
             }
         }
     }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if(mErrNo == SQL_SUCCESS)
+    {
+        mErrNo            = SQL_ERROR;
+        _conn->error_stmt = _stmt;
+        _conn->error(_stmt);
+    }
+
+    return IDE_FAILURE;
+}
+
+/*
+ * BUG-45909 Improve LOB Processing
+ *     It has been moved from execute()
+ */
+IDE_RC utAtbQuery::close4DML()
+{
+    SQLLEN sRowCount = 0;
 
     // BUG-18732 : close for DML
     IDE_TEST(SQLRowCount(_stmt, &sRowCount) == SQL_ERROR);
@@ -280,34 +300,136 @@ IDE_RC utAtbQuery::execute(const SChar * aSQL, ...)
     return IDE_FAILURE;
 }
 
-IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
+/* BUG-45909 Improve LOB Processing */
+void utAtbQuery::printError()
+{
+    _conn->setErrNo(SQL_ERROR);
+    uteSetErrorCode(&gErrorMgr,
+                    utERR_ABORT_AUDIT_DB_Error,
+                    _conn->error(_stmt));
+    utePrintfErrorCode(stderr, &gErrorMgr);
+}
+
+SQLUBIGINT utAtbQuery::getBindLobLoc(UShort aPos)
+{
+    binds_t    * sBind;
+    SQLUBIGINT   sLobLoc = 0;
+
+    for(sBind = _binds; sBind; sBind = sBind->next)
+    {
+        if (sBind->mPos == aPos)
+        {
+            sLobLoc = sBind->mLobLoc;
+            break;
+        }
+    }
+
+    return sLobLoc;
+}
+
+IDE_RC utAtbQuery::putLob(UShort aPos, Field *aField)
+{
+    SQLUINTEGER  sLen;
+    SQLUINTEGER  sLobLen;
+    SQLUINTEGER  sOffset;
+    SQLSMALLINT  locatorCType;
+    SQLSMALLINT  sourceCType;
+    SQLUBIGINT   sLobLoc;
+    utAtbLob    *sGetLob = NULL;
+    utAtbField  *sGetF = (utAtbField*)aField;
+
+    sGetF->initLob();
+
+    sGetLob = sGetF->getLob();
+    sLobLen = sGetLob->getLobLength();
+
+    if(aField->getSQLType() == SQL_BLOB)
+    {
+        locatorCType = SQL_C_BLOB_LOCATOR;
+        sourceCType = SQL_C_BINARY;
+    }
+    else // SQL_CLOB
+    {
+        locatorCType = SQL_C_CLOB_LOCATOR;
+        sourceCType = SQL_C_CHAR;
+    }
+    sOffset = 0;
+    sLobLoc = getBindLobLoc(aPos);
+    IDE_TEST_RAISE(sLobLoc == 0, noLoc_err);
+
+    while(sLobLen - sOffset > 0)
+    {
+        IDE_TEST(sGetLob->next(&sLen) != IDE_SUCCESS);
+
+        if (sLen == 0) break;
+
+        /* PUT LOB */
+        IDE_TEST_RAISE(SQLPutLob(_stmt,
+                           locatorCType,
+                           sLobLoc,
+                           sOffset,
+                           0,
+                           sourceCType,
+                           sGetLob->getValue(),
+                           sLen)
+                 != SQL_SUCCESS, putLob_err);
+
+        sOffset += sLen;
+    }
+    
+    SQLFreeLob(_stmt, sLobLoc);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(noLoc_err);
+    {
+        /* cannot be here */
+        idlOS::fprintf(stderr,
+                "This column(%s) has not been bound.\n",
+                aField->getName());
+    }
+    IDE_EXCEPTION(putLob_err);
+    {
+        mErrNo            = SQL_ERROR;
+        _conn->error_stmt = _stmt;
+        _conn->error(_stmt);
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC utAtbQuery::lobAtToAt(Query * aGetLob,
+                             Query * aPutLob,
+                             SChar * aTableNameA,
+                             SChar * aTableNameB)
 {
     UInt         i, lobColCount, fromPosition;
     SInt         tempCount, diff; 
     SChar        selectSql[QUERY_BUFSIZE], temp[BUF_LEN];
-    SChar       *lobColName, *colName, *sTblName = NULL;
+    SChar       *lobColName, *colName;
     metaColumns *sTCM;
     Field       *f;
     
-    SQLHSTMT     getLobStmt;
-    SQLHSTMT     putLobStmt;
+    SQLHSTMT     getLobStmt = NULL;
+    SQLHSTMT     putLobStmt = NULL;
     SQLHDBC      getConn;
     SQLHDBC      putConn;
 
     SQLPOINTER   buf[BUF_LEN], compareBuf[BUF_LEN];
-    SQLUINTEGER   getForLength, putForLength;
+    SQLUINTEGER  getForLength, putForLength;
 
     SInt         sSqlType[MAX_COL_CNT];
     SInt         locatorCType[MAX_COL_CNT];
     SQLSMALLINT  sourceCType[MAX_COL_CNT];
-    SQLUBIGINT   getLobLoc[MAX_COL_CNT], putLobLoc[MAX_COL_CNT];
-    SQLUINTEGER   getLobLength[MAX_COL_CNT], putLobLength[MAX_COL_CNT];
+    SQLUBIGINT   getLobLoc[MAX_COL_CNT] = {0, };
+    SQLUBIGINT   putLobLoc[MAX_COL_CNT] = {0, };
+    SQLUINTEGER  getLobLength[MAX_COL_CNT], putLobLength[MAX_COL_CNT];
     SQLINTEGER   ALobLength[MAX_COL_CNT], BLobLength[MAX_COL_CNT];
     
     /* Get Meta Info */
     if(!(sTCM = aGetLob->getConn()->getTCM()))
     {
-        sTblName = tblName;
         sTCM = aPutLob->getConn()->getTCM();
     }
     
@@ -334,7 +456,7 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
     }
     strcat(selectSql, " FROM ");
-    strcat(selectSql, (sTblName == NULL) ? sTCM->getTableName() : sTblName);
+    strcat(selectSql, aTableNameA);
     strcat(selectSql, " WHERE ");
 
     for(i = sTCM->getPKSize(); sTCM->getPK(i); --i)
@@ -350,25 +472,28 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
     }
     
-    strcat(selectSql, " FOR UPDATE");
-    i = idlOS::strlen(selectSql);
-    selectSql[i] = '\0';
+    if (aGetLob->lobCompareMode == false)
+    {
+        strcat(selectSql, " FOR UPDATE");
+    }
     
     /* Fetch LOB */
     getConn = aGetLob->getConn()->getDbchp();
 
-    IDE_TEST(SQLAllocStmt(getConn, &getLobStmt) != SQL_SUCCESS);
+    IDE_TEST_RAISE(SQLAllocStmt(getConn, &getLobStmt) != SQL_SUCCESS,
+                   AllocStmt_Err);
 
-    IDE_TEST(SQLExecDirect(getLobStmt, (SQLCHAR*)selectSql, SQL_NTS)
-             != SQL_SUCCESS);
+    IDE_TEST_RAISE(SQLExecDirect(getLobStmt, (SQLCHAR*)selectSql, SQL_NTS)
+             != SQL_SUCCESS, getLobStmt_Err);
 
     for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
     {
         sSqlType[tempCount] = 0;
+        lobColName = sTCM->getCL(tempCount + 1, true);
+
         for(i = 1, f = aGetLob->getRow()->getField(1);
             f; f = aGetLob->getRow()->getField(++i))
         {
-            lobColName = sTCM->getCL(tempCount + 1, true);
             colName = f->getName();
             if(idlOS::strcmp(lobColName, colName) == 0)
             {
@@ -388,33 +513,33 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
         else
         {
+            /* cannot be here */
+            idlOS::fprintf(stderr,
+                    "The type of % column is not LOB.\n",
+                    lobColName);
             return IDE_FAILURE;
         }
-        IDE_TEST(SQLBindCol(getLobStmt,
+        IDE_TEST_RAISE(SQLBindCol(getLobStmt,
                             tempCount + 1,
                             locatorCType[tempCount],
                             &getLobLoc[tempCount],
                             0,
                             NULL)
-                 != SQL_SUCCESS);
+                 != SQL_SUCCESS, getLobStmt_Err);
     }
 
-    if (SQLFetch(getLobStmt) != SQL_SUCCESS)
-    {
-        return IDE_FAILURE;
-    }
-
+    IDE_TEST_RAISE (SQLFetch(getLobStmt) != SQL_SUCCESS, getLobStmt_Err);
     
     /* LOBLength for GET */
 
     for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
     {
         /* BUG-30301 */
-        IDE_TEST(SQLGetLobLength(getLobStmt,
+        IDE_TEST_RAISE(SQLGetLobLength(getLobStmt,
                                  getLobLoc[tempCount],
                                  locatorCType[tempCount],
                                  &getLobLength[tempCount])
-                 != SQL_SUCCESS);
+                       != SQL_SUCCESS, getLobStmt_Err);
     }
 
     /**********************************************/
@@ -435,7 +560,7 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
     }
     strcat(selectSql, " FROM ");
-    strcat(selectSql, (sTblName == NULL) ? sTCM->getTableName() : sTblName);
+    strcat(selectSql, aTableNameB);
     strcat(selectSql, " WHERE ");
 
     for(i = sTCM->getPKSize(); sTCM->getPK(i); --i)
@@ -457,19 +582,19 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
     }
     
-    strcat(selectSql, " FOR UPDATE");
-    i = idlOS::strlen(selectSql);
-    selectSql[i] = '\0';
+    if (aGetLob->lobCompareMode == false)
+    {
+        strcat(selectSql, " FOR UPDATE");
+    }
 
     /* Fetch LOB */
     putConn = aPutLob->getConn()->getDbchp();
 
-    IDE_TEST(SQLAllocStmt(putConn, &putLobStmt) != SQL_SUCCESS);
+    IDE_TEST_RAISE(SQLAllocStmt(putConn, &putLobStmt) != SQL_SUCCESS,
+                   AllocStmt_Err);
 
-    if(SQLExecDirect(putLobStmt, (SQLCHAR*)selectSql, SQL_NTS) != SQL_SUCCESS)
-    {
-        return IDE_FAILURE;
-    }
+    IDE_TEST_RAISE(SQLExecDirect(putLobStmt, (SQLCHAR*)selectSql, SQL_NTS)
+                   != SQL_SUCCESS, putLobStmt_Err);
 
     for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
     {
@@ -496,37 +621,35 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
         else
         {
+            /* cannot be here */
+            idlOS::fprintf(stderr,
+                    "The type of % column is not LOB.\n",
+                    lobColName);
             return IDE_FAILURE;
         }
-        IDE_TEST(SQLBindCol(putLobStmt,
+        IDE_TEST_RAISE(SQLBindCol(putLobStmt,
                             tempCount + 1,
                             locatorCType[tempCount],
                             &putLobLoc[tempCount],
                             0,
                             NULL)
-                 != SQL_SUCCESS);
+                       != SQL_SUCCESS, putLobStmt_Err);
     }
 
-    if (SQLFetch(putLobStmt) != SQL_SUCCESS)
-    {
-        return IDE_FAILURE;
-    }
+    IDE_TEST_RAISE (SQLFetch(putLobStmt) != SQL_SUCCESS, putLobStmt_Err);
 
     /* LOBLength for PUT */
     for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
     {
-        if(SQLGetLobLength(putLobStmt,
-                           putLobLoc[tempCount],
-                           locatorCType[tempCount],
-                           &putLobLength[tempCount])
-           != SQL_SUCCESS)
-        {
-           return IDE_FAILURE;
-        }
+        IDE_TEST_RAISE(SQLGetLobLength(putLobStmt,
+                    putLobLoc[tempCount],
+                    locatorCType[tempCount],
+                    &putLobLength[tempCount])
+                != SQL_SUCCESS, putLobStmt_Err);
     }
 
     //Lob Compare Mode
-    if(aGetLob->lobCompareMode || aPutLob->lobCompareMode) 
+    if (aGetLob->lobCompareMode)
     {
         for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
         {
@@ -549,11 +672,11 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                 getForLength = (ALobLength[tempCount] <= BUF_LEN)
                     ? ALobLength[tempCount] : BUF_LEN;
 
-                putForLength = (ALobLength[tempCount] <= BUF_LEN)
-                    ? putLobLength[tempCount] : BUF_LEN;
+                putForLength = (BLobLength[tempCount] <= BUF_LEN)
+                    ? BLobLength[tempCount] : BUF_LEN;
 
                 /* GET LOB A */
-                IDE_TEST(SQLGetLob(getLobStmt,
+                IDE_TEST_RAISE(SQLGetLob(getLobStmt,
                                    locatorCType[tempCount],
                                    getLobLoc[tempCount],
                                    fromPosition,
@@ -562,9 +685,9 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                                    buf,
                                    BUF_LEN,
                                    &getForLength)
-                         != SQL_SUCCESS);
+                         != SQL_SUCCESS, getLobStmt_Err);
                 /* GET LOB B */
-                IDE_TEST(SQLGetLob(putLobStmt,
+                IDE_TEST_RAISE(SQLGetLob(putLobStmt,
                                    locatorCType[tempCount],
                                    putLobLoc[tempCount],
                                    fromPosition,
@@ -572,8 +695,8 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                                    sourceCType[tempCount],
                                    compareBuf,
                                    BUF_LEN,
-                                   &getForLength)
-                         != SQL_SUCCESS);
+                                   &putForLength)
+                         != SQL_SUCCESS, putLobStmt_Err);
 
                 diff = idlOS::memcmp(buf,compareBuf, BUF_LEN);
                 if(diff != 0)
@@ -595,7 +718,7 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         idlOS::memset(buf, 0x00, sizeof(buf));
         for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
         {
-            IDE_TEST(SQLPutLob(putLobStmt,
+            IDE_TEST_RAISE(SQLPutLob(putLobStmt,
                                locatorCType[tempCount],
                                putLobLoc[tempCount],
                                0,
@@ -603,7 +726,7 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                                sourceCType[tempCount],
                                buf,
                                0)
-                     != SQL_SUCCESS);
+                     != SQL_SUCCESS, putLobStmt_Err);
         }
 
         /**********************************************/
@@ -624,7 +747,7 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                     ? putLobLength[tempCount] : BUF_LEN;
 
                 /* GET LOB */
-                IDE_TEST(SQLGetLob(getLobStmt,
+                IDE_TEST_RAISE(SQLGetLob(getLobStmt,
                                    locatorCType[tempCount],
                                    getLobLoc[tempCount],
                                    fromPosition,
@@ -633,9 +756,9 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                                    buf,
                                    BUF_LEN,
                                    &getForLength)
-                         != SQL_SUCCESS);
+                         != SQL_SUCCESS, getLobStmt_Err);
                 /* PUT LOB */
-                IDE_TEST(SQLPutLob(putLobStmt,
+                IDE_TEST_RAISE(SQLPutLob(putLobStmt,
                                    locatorCType[tempCount],
                                    putLobLoc[tempCount],
                                    fromPosition,
@@ -643,7 +766,7 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
                                    sourceCType[tempCount],
                                    buf,
                                    getForLength)
-                         != SQL_SUCCESS);
+                         != SQL_SUCCESS, putLobStmt_Err);
 
                 fromPosition += getForLength;
                 getLobLength[tempCount] -= getForLength;
@@ -651,12 +774,60 @@ IDE_RC utAtbQuery::lobAtToAt(Query* aGetLob, Query * aPutLob, SChar * tblName)
         }
     }
     
+    for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
+    {
+        SQLFreeLob(getLobStmt, getLobLoc[tempCount]);
+        SQLFreeLob(putLobStmt, putLobLoc[tempCount]);
+    }
     IDE_TEST(SQLFreeStmt(getLobStmt, SQL_DROP) != SQL_SUCCESS);
     IDE_TEST(SQLFreeStmt(putLobStmt, SQL_DROP) != SQL_SUCCESS);
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(AllocStmt_Err);
+    {
+        uteSetErrorCode(&gErrorMgr,
+                        utERR_ABORT_AUDIT_Alloc_Handle_Error,
+                        "SQLAllocStmt");
+        utePrintfErrorCode(stderr, &gErrorMgr);
+    }
+    IDE_EXCEPTION(getLobStmt_Err);
+    {
+        aGetLob->getConn()->setErrNo(SQL_ERROR);
+        uteSetErrorCode(&gErrorMgr,
+                        utERR_ABORT_AUDIT_DB_Error,
+                        aGetLob->getConn()->error(getLobStmt));
+        utePrintfErrorCode(stderr, &gErrorMgr);
+    }
+    IDE_EXCEPTION(putLobStmt_Err);
+    {
+        aPutLob->getConn()->setErrNo(SQL_ERROR);
+        uteSetErrorCode(&gErrorMgr,
+                        utERR_ABORT_AUDIT_DB_Error,
+                        aPutLob->getConn()->error(putLobStmt));
+        utePrintfErrorCode(stderr, &gErrorMgr);
+    }
     IDE_EXCEPTION_END;
+
+    for(tempCount = 0; tempCount < (SInt)lobColCount; tempCount ++)
+    {
+        if (getLobLoc[tempCount] != 0)
+        {
+            SQLFreeLob(getLobStmt, getLobLoc[tempCount]);
+        }
+        if (putLobLoc[tempCount] != 0)
+        {
+            SQLFreeLob(putLobStmt, putLobLoc[tempCount]);
+        }
+    }
+    if (getLobStmt != NULL)
+    {
+        SQLFreeStmt(getLobStmt, SQL_DROP);
+    }
+    if (putLobStmt != NULL)
+    {
+        SQLFreeStmt(putLobStmt, SQL_DROP);
+    }
 
     return IDE_FAILURE;
 }
@@ -726,6 +897,8 @@ IDE_RC utAtbQuery::bind(const UInt aPosition, void *aBuff,UInt aWidth, SInt sqlT
     sBinds->sqlType       = sqlType;
     sBinds->scale         =  0     ;
     sBinds->columnSize    =  aWidth; // disable aWidth
+    sBinds->mPos          =  aPosition;
+    sBinds->mLobLoc       =  0     ;
 
     switch(sCType)
     {
@@ -757,6 +930,7 @@ IDE_RC utAtbQuery::bind(const UInt aPosition, void *aBuff,UInt aWidth, SInt sqlT
          * utAtbQuery::lobAtToAt 함수에서 lob 칼럼을 별도로 처리하고 있음.
          */
         pType = SQL_PARAM_OUTPUT;
+        mLobInd = 0;
 
         mErrNo = SQLBindParameter(_stmt,
                                   (SQLUSMALLINT)aPosition,
@@ -765,12 +939,18 @@ IDE_RC utAtbQuery::bind(const UInt aPosition, void *aBuff,UInt aWidth, SInt sqlT
                                   (SQLSMALLINT) locatorType, // SQL TYPE
                                   0, // column size
                                   0, // Scale
-                                  &mLobLoc,
+                                  &(sBinds->mLobLoc), // BUG-45909
                                   0,
                                   &mLobInd); 
     }
     else
     {
+        /* BUG-45958 Need to support BIT/VARBIT type */
+        if(sqlType == SQL_BIT || sqlType == SQL_VARBIT)
+        {
+            sBinds->columnSize = ((bit_t *)aBuff)->mPrecision;
+            sBinds->valueLength = aValueLength;
+        }
         mErrNo = SQLBindParameter(_stmt,
                                   (SQLUSMALLINT)aPosition,
                                   (SQLSMALLINT) pType, //TODO get from statement ????

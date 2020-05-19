@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLExecuteCommand.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLExecuteCommand.cpp 84891 2019-02-15 05:17:06Z bethy $
  **********************************************************************/
 
 #include <iSQL.h>
@@ -408,7 +408,12 @@ iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_CommandStr,
             sTableCnt++;
         }
     }
-    IDE_TEST_RAISE(sTableCnt == 0, table_no_exist);
+
+    /* BUG-45646 */
+    if ( idlOS::strcmp( a_PrefixName, "S$" ) != 0 )
+    {
+        IDE_TEST_RAISE( sTableCnt == 0, table_no_exist );
+    }
 
     PrintCount(sTableCnt, SELECT_COM);
 
@@ -493,8 +498,13 @@ iSQLExecuteCommand::DisplaySequenceList( SChar * a_CommandStr )
     IDE_TEST_RAISE(sColCnt < 0, invalidColCnt);
     
     ColSize     = new SInt [sColCnt];
+    IDE_TEST(ColSize == NULL); /* BUG-46048 Codesonar warning */
+
     Header_row  = new SInt [sColCnt];
+    IDE_TEST(Header_row == NULL); /* BUG-46048 Codesonar warning */
+
     space       = new SInt [sColCnt];
+    IDE_TEST(space == NULL); /* BUG-46048 Codesonar warning */
 
     for (i=0; i < sColCnt; i++)
     {
@@ -632,6 +642,7 @@ iSQLExecuteCommand::DisplayAttributeList( SChar * a_CommandStr,
          * with the table name has a special character '$' */
         if (idlOS::strncmp(a_TableName, "\"D$", 3) ==0 ||
             idlOS::strncmp(a_TableName, "\"X$", 3) ==0 ||
+            idlOS::strncmp(a_TableName, "\"S$", 3) ==0 ||   /* BUG-45646 */
             idlOS::strncmp(a_TableName, "\"V$", 3) ==0)
         {
             sIsDollar = ID_TRUE;
@@ -1919,6 +1930,7 @@ iSQLExecuteCommand::ExecuteDDLStmt( SChar           * a_CommandStr,
         break;
         
     default :
+        idlOS::sprintf( m_Spool->m_Buf, "" );
         break;
     }
     m_Spool->Print();
@@ -2069,8 +2081,13 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
     IDE_TEST_RAISE(sColCnt < 0, invalidColCnt);
 
     ColSize     = new int [sColCnt];
+    IDE_TEST(ColSize == NULL); /* BUG-46048 Codesonar warning */
+
     Header_row  = new int [sColCnt];
+    IDE_TEST(Header_row == NULL); /* BUG-46048 Codesonar warning */
+
     space       = new int [sColCnt];
+    IDE_TEST(space == NULL); /* BUG-46048 Codesonar warning */
 
     /* BUG-37926 To enhance isql performance when termout are deactivated. */
     if( ( gProperty.GetTerm()        == ID_TRUE ) ||
@@ -3370,8 +3387,6 @@ iSQLExecuteCommand::printRow(idBool    aPrepare,
     SInt      sLen = 0;
     SChar    *sSpoolBuf = NULL;
 
-    sToCol = 0;
-    j = 0;
     bRowPrintComplete = ID_FALSE;
     while (bRowPrintComplete == ID_FALSE)
     {

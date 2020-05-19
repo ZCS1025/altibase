@@ -86,6 +86,7 @@ static const mtcExecute mtfExecute = {
     mtfRankFinalize,
     mtfRankCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

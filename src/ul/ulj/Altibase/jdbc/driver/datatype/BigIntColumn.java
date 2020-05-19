@@ -34,13 +34,14 @@ import Altibase.jdbc.driver.util.LongDynamicArray;
 
 public class BigIntColumn extends AbstractColumn
 {
-    private static final long NULL_VALUE = (long)0x8000000000000000L;
+    public static final long NULL_VALUE = (long)0x8000000000000000L;
     private static final int LONG_BYTE_SIZE = 8;
     
     private long mLongValue = 0;
 
     BigIntColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.BIGINT);
     }
 
     public BigIntColumn(long aValue)
@@ -51,11 +52,6 @@ public class BigIntColumn extends AbstractColumn
     public int getDBColumnType()
     {
         return ColumnTypes.BIGINT;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.BIGINT };
     }
 
     public String getDBColumnTypeName()

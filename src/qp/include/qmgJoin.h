@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgJoin.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgJoin.h 84921 2019-02-25 00:42:11Z donovan.seo $
  *
  * Description :
  *     Join Graph를 위한 정의
@@ -288,5 +288,8 @@ private:
                                           UInt                 aJoinMethodCnt,
                                           qmoJoinMethod      * aJoinMethods,
                                           qmoJoinMethodCost ** aSelected );
+
+    static void moveConstantPred( qmgJOIN * aMyGraph, idBool aIsInverse );
+
 #endif /* _O_QMG_JOIN_H_ */
 };

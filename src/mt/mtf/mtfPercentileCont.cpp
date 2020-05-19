@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfPercentileCont.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfPercentileCont.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -519,6 +519,7 @@ static const mtcExecute mtfPercentileContExecuteFloat = {
     mtfPercentileContFinalizeFloat,
     mtfPercentileContCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -756,6 +757,7 @@ static const mtcExecute mtfPercentileContExecuteDouble = {
     mtfPercentileContFinalizeDouble,
     mtfPercentileContCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -955,6 +957,7 @@ static const mtcExecute mtfPercentileContExecuteBigint = {
     mtfPercentileContFinalizeBigint,
     mtfPercentileContCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1155,6 +1158,7 @@ static const mtcExecute mtfPercentileContExecuteDate = {
     mtfPercentileContFinalizeDate,
     mtfPercentileContCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

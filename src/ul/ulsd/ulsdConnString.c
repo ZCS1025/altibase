@@ -192,6 +192,10 @@ ACI_RC ulsdMakeNodeBaseConnStr(ulnFnContext    *aFnContext,
 {
     acpCStrCpy(aOutConnString, ULSD_MAX_CONN_STR_LEN + 1, aConnString, aConnStringLength);
 
+    ACI_TEST_RAISE( ulsdRemoveConnStrAttribute( aOutConnString, "Conntype" )
+                     != ACI_SUCCESS,
+                    LABEL_NODE_CONNECTION_STRING_MAKE_FAIL );
+
     ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "Dsn")
                     != ACI_SUCCESS,
                    LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
@@ -228,19 +232,19 @@ ACI_RC ulsdMakeNodeBaseConnStr(ulnFnContext    *aFnContext,
                     != ACI_SUCCESS,
                    LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
 
+    ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "ShardSessionId")
+                    != ACI_SUCCESS,
+                   LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
+
+    ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "ShardLibType")
+                    != ACI_SUCCESS,
+                   LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
+
     ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "AlternateServers")
                     != ACI_SUCCESS,
                    LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
 
     ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "Alternate_Servers")
-                    != ACI_SUCCESS,
-                   LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
-
-    ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "ConnectionRetryCount")
-                    != ACI_SUCCESS,
-                   LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
-
-    ACI_TEST_RAISE(ulsdRemoveConnStrAttribute(aOutConnString, "ConnectionRetryDelay")
                     != ACI_SUCCESS,
                    LABEL_NODE_CONNECTION_STRING_MAKE_FAIL);
 

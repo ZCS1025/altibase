@@ -16,7 +16,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 436
+# Last Number = 437
 
 SECTION = 1
 
@@ -132,7 +132,7 @@ SECTION = 1
 # *Cause: The system cannot get a free page.
 # *Action: Increase the buffer pool size.
 
-28,smERR_FATAL_PageCorrupted = A page is corrupt. ( Current Space ID : <0%d>, Current Page ID : <1%d> )
+28,smERR_FATAL_PageCorrupted = A page is corrupt. ( Current Space ID : <0%d>, Current Page ID : <1%d>, The corresponding page has been dumped to "$ALTIBASE_HOME/trc/altibase_dump.log". )
 # *Cause: The page was not completely written.
 # *Action: Recover the tablespace that contains the corrupt page using backup and recovery utilities.
 
@@ -1139,7 +1139,7 @@ SECTION = 1
 # *Cause: Cannot read/modify an object after modifying it in parallel.
 # *Action: Repeat this action after commit.
 
-287,smERR_ABORT_PageCorrupted = A page is corrupt. ( Current Space ID : <0%d>, Current Page ID : <1%d> )
+287,smERR_ABORT_PageCorrupted = A page is corrupt. ( Current Space ID : <0%d>, Current Page ID : <1%d>, The corresponding page has been dumped to "$ALTIBASE_HOME/trc/altibase_dump.log". )
 # *Cause: The page was not written completely.
 # *Action: Recover the tablespace that contains the corrupt page with backup and recovery utilities.
 
@@ -1740,6 +1740,9 @@ SECTION = 1
 # *Cause: The filesystem(or kernel) containing the file does not support this operation.
 # *Action: Set the LOG_CREATE_METHOD property value to 0 and restart the server.
 
+437, smERR_ABORT_ERR_LOG_CONSISTENCY = Incomplete media recovery aborted due to log consistency failure. ( <0%s> ).
+# *Cause: A log file has been lost. If Incomplete media recovery continues, data may be lost.
+# *Action: Copy a valid log file to [LOG_DIR] or move log files that are not needed for recovery to another directory.
 
 
 #  Server Internal Message
@@ -1753,27 +1756,27 @@ SM_TRC_SAMPLE = "\n signed int = <%d>\n unsigned int = <%u>\n"
 
 SM_TRC_DPAGE_WARNNING1 SM_TRC_STATE = "sState: <%u>\n";
 
-SM_TRC_DAGER_WARNNING = "Index PID=<%u>: Tablespace(<%u>) has been removed; Skip index-segment free\n";
+#SM_TRC_DAGER_WARNNING = "Index PID=<%u>: Tablespace(<%u>) has been removed; Skip index-segment free\n";
 
-SM_TRC_DAGER_NEXTTSS = "next tail tss rid= <%u>, <%u>, <%u>\n";
+#SM_TRC_DAGER_NEXTTSS = "next tail tss rid= <%u>, <%u>, <%u>\n";
 
-SM_TRC_DAGER_TAILTSS = "tail tss rid= <%u>, <%u>, <%u>\n";
+#SM_TRC_DAGER_TAILTSS = "tail tss rid= <%u>, <%u>, <%u>\n";
 
-SM_TRC_DAGER_CALC_AGING_JOB_COUNT = "Total AgingJob Count At Startup = <%u> (  completed [<%u>], incomplete [<%u>] )\n";
+#SM_TRC_DAGER_CALC_AGING_JOB_COUNT = "Total AgingJob Count At Startup = <%u> (  completed [<%u>], incomplete [<%u>] )\n";
 
-SM_TRC_BUFFER_WARNNING = "The buffer flush thread was aborted and restarted : "
-                         "because of insufficient memory or disk capacity or other problems\n";
+#SM_TRC_BUFFER_WARNNING = "The buffer flush thread was aborted and restarted : "
+#                         "because of insufficient memory or disk capacity or other problems\n";
 
 SM_TRC_BUFFER_CORRUPTED_PAGE = "Recovered corrupted page [TBSID:<%u>, PID:<%u>].\n";
 
-SM_TRC_BUFFER_WARNNING2 = "Buffer pool reached the maximum : "
-                          "may be need to increase the buffer pool size\n";
+#SM_TRC_BUFFER_WARNNING2 = "Buffer pool reached the maximum : "
+#                          "may be need to increase the buffer pool size\n";
 
-SM_TRC_DEBUG_INVALID_ROLLBACK_RID = "Invalid rollback RID: <%u>,<%u>\n";
+#SM_TRC_DEBUG_INVALID_ROLLBACK_RID = "Invalid rollback RID: <%u>,<%u>\n";
 
-SM_TRC_DEBUG_CURRENT_ROW_RID = "Current row RID: <%u>,<%u>,<%u>\n";
+#SM_TRC_DEBUG_CURRENT_ROW_RID = "Current row RID: <%u>,<%u>,<%u>\n";
 
-SM_TRC_DEBUG_INVALID_UPDATE_COL_TYPE_LIST = "Invalid update column type list: <%u>,<%u>\n";
+#SM_TRC_DEBUG_INVALID_UPDATE_COL_TYPE_LIST = "Invalid update column type list: <%u>,<%u>\n";
 
 SM_TRC_DISK_FILE_CREATE = "[FILE-CREATE] <%s> \n";
 
@@ -1783,9 +1786,9 @@ SM_TRC_DISK_FILE_TRUNCATE = "[FILE-TRUNCATE] [<%lu> --> <%lu>] <%s> \n";
 
 SM_TRC_DISK_FILE_EXTENDMODE = "[FILE-ATTR-EXTENDMODE] [<%u> --> <%u>] <%s> \n";
 
-SM_TRC_DISK_FILE_MAXSIZE = "[FILE-ATTR-MAXSIZE] [<%lu> --> <%lu>] <%s> \n";
+#SM_TRC_DISK_FILE_MAXSIZE = "[FILE-ATTR-MAXSIZE] [<%lu> --> <%lu>] <%s> \n";
 
-SM_TRC_DISK_FILE_NEXTSIZE = "[FILE-ATTR-NEXTSIZE] [<%lu> --> <%lu>] <%s> \n";
+#SM_TRC_DISK_FILE_NEXTSIZE = "[FILE-ATTR-NEXTSIZE] [<%lu> --> <%lu>] <%s> \n";
 
 SM_TRC_DISK_FILE_CURRSIZE = "[FILE-ATTR-CURRSIZE] [<%lu> --> <%lu>] <%s> \n";
 
@@ -1797,21 +1800,21 @@ SM_TRC_DISK_FILE_BACKUP_ERROR = "CompleteFileBackup  error, TBSID(<%u>), FILE_ID
 
 SM_TRC_DISK_FILE_SYNC_ERROR = "Sync error.... while sddDiskMgr::updateDataFileState \n";
 
-SM_TRC_DPAGE_PAGE_SIZE_INVALID = "Ext dir page unit size is invalid : \n"
-                                 "  Ext Dir Page's Unit Size = <%u>, Calc Unit Size = <%u>\n";
+#SM_TRC_DPAGE_PAGE_SIZE_INVALID = "Ext dir page unit size is invalid : \n"
+#                                 "  Ext Dir Page's Unit Size = <%u>, Calc Unit Size = <%u>\n";
 
-SM_TRC_DPAGE_PAGE_DESC_COUNT_INVALID = "Ext dir page desc count is invalid : \n"
-                                       "  Ext Dir Page's Desc Count = <%u>, Calc Desc Count = <%u>\n";
+#SM_TRC_DPAGE_PAGE_DESC_COUNT_INVALID = "Ext dir page desc count is invalid : \n"
+#                                       "  Ext Dir Page's Desc Count = <%u>, Calc Desc Count = <%u>\n";
 
-SM_TRC_DPAGE_PAGE_DESC_FREE_INVALID = "Ext dir page free limit is invalid : \n"
-                                      "  Ext Dir Page's Free Limit = <%u>, Calc Free Limit = <%u>\n";
+#SM_TRC_DPAGE_PAGE_DESC_FREE_INVALID = "Ext dir page free limit is invalid : \n"
+#                                      "  Ext Dir Page's Free Limit = <%u>, Calc Free Limit = <%u>\n";
 
-SM_TRC_DPAGE_EXT_DIR_STATE_INVALID = "Ext desc state is invalid : Ext dir state = <%u>\n";
+#SM_TRC_DPAGE_EXT_DIR_STATE_INVALID = "Ext desc state is invalid : Ext dir state = <%u>\n";
 
-SM_TRC_DPAGE_EXT_DESC_LIST_INVALID = "Ext desc list is invalid : pred RID = <%u>, next RID = <%u>\n";
+#SM_TRC_DPAGE_EXT_DESC_LIST_INVALID = "Ext desc list is invalid : pred RID = <%u>, next RID = <%u>\n";
 
-SM_TRC_DPAGE_EXT_DESC_STATE_INVALID = "Ext desc state is invalid (there are free pages) : \n"
-                                      "  Ext desc state = <%u>, Free page index = <%u>\n";
+#SM_TRC_DPAGE_EXT_DESC_STATE_INVALID = "Ext desc state is invalid (there are free pages) : \n"
+#                                      "  Ext desc state = <%u>, Free page index = <%u>\n";
 
 SM_TRC_DPAGE_WARNNING1 = "[SegType: <%u>] [PID:<%u>] The tablespace (ID:<%u>) has been removed; Skip segment initialization\n";
 
@@ -1833,21 +1836,21 @@ SM_TRC_DPAGE_PHY_ERROR4 = "The page free offset is invalid: page id=<%u>:<%u>, p
 
 SM_TRC_DPAGE_PHY_ERROR5 = "The page type is invalid: page id=<%u>:<%u>, page type=<%u>\n";
 
-SM_TRC_DPAGE_SEGMENT_ERROR = "Seg dir page state is invalid: original state=<%u>, current state=<%u>\n";
+#SM_TRC_DPAGE_SEGMENT_ERROR = "Seg dir page state is invalid: original state=<%u>, current state=<%u>\n";
 
-SM_TRC_DPAGE_SEGMENT_ERROR2 = "Segment desc type is invalid : <%u>\n";
+#SM_TRC_DPAGE_SEGMENT_ERROR2 = "Segment desc type is invalid : <%u>\n";
 
-SM_TRC_DPAGE_SEGMENT_ERROR3 = "Segment desc state is invalid : <%u>\n";
+#SM_TRC_DPAGE_SEGMENT_ERROR3 = "Segment desc state is invalid : <%u>\n";
 
-SM_TRC_DPAGE_SEGMENT_ERROR4 = "Segment desc state must be a used state : state=<%u>\n";
+#SM_TRC_DPAGE_SEGMENT_ERROR4 = "Segment desc state must be a used state : state=<%u>\n";
 
-SM_TRC_DPAGE_SEGMENT_ERROR5 = "Ext full list count of segment desc is invalid : list count=<%u>, real count=<%u>\n";
+#SM_TRC_DPAGE_SEGMENT_ERROR5 = "Ext full list count of segment desc is invalid : list count=<%u>, real count=<%u>\n";
 
-SM_TRC_DPAGE_META_ERROR = "Page list of table meta page is invalid : page list head pid=<%u>, used page limit=<%u>\n";
+#SM_TRC_DPAGE_META_ERROR = "Page list of table meta page is invalid : page list head pid=<%u>, used page limit=<%u>\n";
 
 SM_TRC_DPAGE_TABLESPACE_ERROR = "0th page has to be meta type : <%u>\n";
 
-SM_TRC_DPAGE_TABLESPACE_ERROR2 = "0th page ext free list is invalid : page list count=<%u>, real list count=<%u>\n";
+#SM_TRC_DPAGE_TABLESPACE_ERROR2 = "0th page ext free list is invalid : page list count=<%u>, real list count=<%u>\n";
 
 SM_TRC_MTXSTACK_SIZE_OVERFLOW1 = "sdrMtxStack size overflow; Dumping mutex latch items...\n";
 
@@ -1865,7 +1868,7 @@ SM_TRC_MTXSTACK_SIZE_OVERFLOW7 = "[<%u>] (LATCH_OBJ, SDR_MTX_MUTEX_X)\n";
 
 SM_TRC_DRECOVER_WARNNING1 = "Tablespace (ID:<%u>) has been removed; Skip redo\n";
 
-SM_TRC_DRECOVER_IGNORE_CORRUPTED_PAGE = "Ignore corrupt page : TBS=<%s>, PageID=<%u>\n";
+#SM_TRC_DRECOVER_IGNORE_CORRUPTED_PAGE = "Ignore corrupt page : TBS=<%s>, PageID=<%u>\n";
 
 SM_TRC_DRECOVER_ADD_CORRUPTED_PAGE = "Detect and add corrupt page to hash : TBS=<%s>, PageID=<%u>\n";
 
@@ -1911,7 +1914,7 @@ SM_TRC_INTERFACE_ARCHIVE_THREAD_FAILURE = "[FAILURE]\n";
 
 SM_TRC_INTERFACE_ARCHIVE_THREAD_SHUTDOWN = "[ALTER SYSTEM] Archive Thread Shutdown...\n";
 
-SM_TRC_INTERFACE_LOG_FATAL1 = "[ERR UPT AFTER] LSN(<%u>,<%u>), SIZE=<%u>, CCNT=<%u>, CID=<%u>, CLEN=<%u>\n";
+#SM_TRC_INTERFACE_LOG_FATAL1 = "[ERR UPT AFTER] LSN(<%u>,<%u>), SIZE=<%u>, CCNT=<%u>, CID=<%u>, CLEN=<%u>\n";
 
 SM_TRC_INTERFACE_FILE_CREATE = "[FILE-CREATE] <%s> \n";
 
@@ -1988,19 +1991,19 @@ SM_TRC_MINDEX_INDEX_INFO = "TRANS ID:<%u> File:<%s>, Line<%u>: CUR PID:<%lu>, HE
 
 SM_TRC_DINDEX_INDEX_SEG_FREE = "Index segment is free!! Skip table (<%lu>), Index(<%lu>)\n";
 
-SM_TRC_DINDEX_DUMP_LEFT_MOST = "Dump <%u> 's leftmost child <%u>\n";
+#SM_TRC_DINDEX_DUMP_LEFT_MOST = "Dump <%u> 's leftmost child <%u>\n";
 
-SM_TRC_DINDEX_DUMP_RIGHT = "Dump <%u> 's <%u>th child to the right <%u> \n";
+#SM_TRC_DINDEX_DUMP_RIGHT = "Dump <%u> 's <%u>th child to the right <%u> \n";
 
-SM_TRC_DINDEX_DUMP_NODE1 = "=== leaf node (<%u>) dump begin ==\n";
+#SM_TRC_DINDEX_DUMP_NODE1 = "=== leaf node (<%u>) dump begin ==\n";
 
-SM_TRC_DINDEX_DUMP_NODE2 = "=== internal node (<%u>) dump begin ==\n";
+#SM_TRC_DINDEX_DUMP_NODE2 = "=== internal node (<%u>) dump begin ==\n";
 
-SM_TRC_DINDEX_DUMP_NODE3 = "<%s>  <%s>  <%u> \n";
+#SM_TRC_DINDEX_DUMP_NODE3 = "<%s>  <%s>  <%u> \n";
 
-SM_TRC_DINDEX_DUMP_NODE4 = "=== node dump (<%u>) end ==\n";
+#SM_TRC_DINDEX_DUMP_NODE4 = "=== node dump (<%u>) end ==\n";
 
-SM_TRC_DINDEX_TEMP_HASH_CREATE_FATAL = "Temp hash table create Error = space id <%u>\n";
+#SM_TRC_DINDEX_TEMP_HASH_CREATE_FATAL = "Temp hash table create Error = space id <%u>\n";
 
 SM_TRC_MPAGE_ALLOC_SLOT_FATAL1 = "== smpFixedPageList::allocSlotForTempTableHdr ==\n";
 
@@ -2008,11 +2011,11 @@ SM_TRC_MPAGE_ALLOC_SLOT_FATAL2 = "ERROR : sCurFreeSlotHeader->mUsedFlag != SMP_F
 
 SM_TRC_MPAGE_ALLOC_SLOT_FATAL3 = "Page ID: <%lu>, Slot OID: <%lu>\n";
 
-SM_TRC_MPAGE_ALLOC_SLOT_FATAL4 = "== smpFixedPageList::allocSlot ==\n";
+#SM_TRC_MPAGE_ALLOC_SLOT_FATAL4 = "== smpFixedPageList::allocSlot ==\n";
 
-SM_TRC_MPAGE_FREE_SLOT_FATAL1 = "== smpFixedPageList::setFreeSlot ==\n";
+#SM_TRC_MPAGE_FREE_SLOT_FATAL1 = "== smpFixedPageList::setFreeSlot ==\n";
 
-SM_TRC_MPAGE_FREE_SLOT_FATAL2 = "ERROR : sCurSlotHeader->mUsedFlag != SMP_USED_SLOT\n";
+#SM_TRC_MPAGE_FREE_SLOT_FATAL2 = "ERROR : sCurSlotHeader->mUsedFlag != SMP_USED_SLOT\n";
 
 SM_TRC_MPAGE_INVALID_SCN = "RID:<%vu>>, Row SCN:<%lu>, System SCN:<%lu>\n";
 
@@ -2028,8 +2031,8 @@ SM_TRC_MPAGE_INVALID_FREE_SLOT_LIST5 = "Free Slot Tail on Page ==> <%vx>\n";
 
 SM_TRC_MPAGE_INVALID_FREE_SLOT_LIST6 = "Free Slot Tail on List ==> <%vx>\n";
 
-SM_TRC_MPAGE_WARNNING = "Undo Buffer pool reached the maximum : "
-                        "may be need to increase the Undo buffer pool size\n";
+#SM_TRC_MPAGE_WARNNING = "Undo Buffer pool reached the maximum : "
+#                        "may be need to increase the Undo buffer pool size\n";
 
 SM_TRC_MPAGE_DUMP_VAR_COL_HEAD = "Slot Next OID: <%lu>, Slot Length: <%u>, Slot Flag: <%u>\n";
 
@@ -2104,30 +2107,30 @@ SM_TRC_MRECOVERY_CHKP_SLEEP_THREAD =  "Sleep checkpoint thread ( next time : <%u
 SM_TRC_MRECOVERY_CHKP_WARNING = "The checkpoint thread was aborted and restarted : "
                                 "because of insufficient memory or disk capacity or other problems.\n";
 
-SM_TRC_MRECOVERY_CHKP_AIO_INFO = "  =>> CHECK_AIO=<%u>\n";
+#SM_TRC_MRECOVERY_CHKP_AIO_INFO = "  =>> CHECK_AIO=<%u>\n";
 
-SM_TRC_MRECOVERY_CHKP_DUMP_BEGIN = "######### Dirty Page List Begin #########\n";
+#SM_TRC_MRECOVERY_CHKP_DUMP_BEGIN = "######### Dirty Page List Begin #########\n";
 
-SM_TRC_MRECOVERY_CHKP_DUMP_END = "########## Dirty Page List End #########\n";
+#SM_TRC_MRECOVERY_CHKP_DUMP_END = "########## Dirty Page List End #########\n";
 
 SM_TRC_MRECOVERY_DIRTY_PAGE_LIST_FATAL1 = "Insufficient disk space, cannot write page\n";
 
 SM_TRC_MRECOVERY_DIRTY_PAGE_LIST_WARNNING = "DB page write error: Check Disk Space\n";
 
-SM_TRC_MRECOVERY_LFGMGR_LFGID = "The Original Redo LSN : [<%u>,<%u>]\n";
+#SM_TRC_MRECOVERY_LFGMGR_LFGID = "The Original Redo LSN : [<%u>,<%u>]\n";
 
-SM_TRC_MRECOVERY_LFGMGR_BACKWARD_SCANNING =  "*********************************************************\n"
-                                             "Starting Backward File Scanning...\n";
+#SM_TRC_MRECOVERY_LFGMGR_BACKWARD_SCANNING =  "*********************************************************\n"
+#                                             "Starting Backward File Scanning...\n";
 
-SM_TRC_MRECOVERY_LFGMGR_LFGID2 = "LFGID=<%u>\n";
+#SM_TRC_MRECOVERY_LFGMGR_LFGID2 = "LFGID=<%u>\n";
 
-SM_TRC_MRECOVERY_LFGMGR_BACKWARD_SCANNING2 = "Staring Backward Scanning From FileNo #<%u>\n";
+#SM_TRC_MRECOVERY_LFGMGR_BACKWARD_SCANNING2 = "Staring Backward Scanning From FileNo #<%u>\n";
 
-SM_TRC_MRECOVERY_LFGMGR_SKIP_FORWARD_SCANNING = "No more files found. Will skip forward scan. \n"
-                                                "The new redo LSN is [<%u>,<%u>]\n";
+#SM_TRC_MRECOVERY_LFGMGR_SKIP_FORWARD_SCANNING = "No more files found. Will skip forward scan. \n"
+#                                                "The new redo LSN is [<%u>,<%u>]\n";
 
-SM_TRC_MRECOVERY_LFGMGR_EMPTY_LOGFILE = "An empty LogFile detected at [<%u>,<%u>]\n"
-                                        "The record will be ignored and backward scan will continue.\n";
+#SM_TRC_MRECOVERY_LFGMGR_EMPTY_LOGFILE = "An empty LogFile detected at [<%u>,<%u>]\n"
+#                                        "The record will be ignored and backward scan will continue.\n";
 
 SM_TRC_MRECOVERY_LFTHREAD_SYNC_LOGFILE_LIST = "======== sync Log File List =============\n";
 
@@ -2148,7 +2151,7 @@ SM_TRC_MRECOVERY_LOGANC_BACKUP_FAIL = "LogAnchor Backup Incomplete [FAILURE]\n";
 
 SM_TRC_MRECOVERY_LOGANC_BACKUP_ABORT = "While backup, session killed ... so backup aborted !! \n";
 
-SM_TRC_MRECOVERY_LOGFILE_MMAP_ERROR = "Failed to invoke the mmap() system function. (errno:<%u>): But retry...\n";
+#SM_TRC_MRECOVERY_LOGFILE_MMAP_ERROR = "Failed to invoke the mmap() system function. (errno:<%u>): But retry...\n";
 
 SM_TRC_MRECOVERY_LOGFILE_INVALID_LOG1 = "Recovery failure...\n";
 
@@ -2181,15 +2184,15 @@ SM_TRC_MRECOVERY_LOGFILEMGR_INSUFFICIENT_MEMORY = "The log file manager thread w
 
 SM_TRC_MRECOVERY_LOGFILEMGR_CANNOT_REMOVE_LOGFILE = "Can't Remove <%s> In Checkpoint(errno=<%u>)\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_REDOALL_START = "Starting redoall-pass[<%u>,<%u>,<%u>]\n";
+SM_TRC_MRECOVERY_RECOVERYMGR_REDOALL_START = "Starting redoall-pass[<%u>,<%u>]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_SKIP_REDO_LSN = "Skip redo LSN[<%u>,<%u>]\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_REDOALL_SUCCESS = "Success redoall-pass[<%u>,<%u>,<%u>]\n";
+SM_TRC_MRECOVERY_RECOVERYMGR_REDOALL_SUCCESS = "Success redoall-pass[<%u>,<%u>]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_UNDOALL_START = "Starting undoall-pass\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_UNDO_TRANS_ID = "undo transaction id [<%u>] [<%u>,<%u>,<%u>]\n";
+SM_TRC_MRECOVERY_RECOVERYMGR_UNDO_TRANS_ID = "undo transaction id [<%u>] [<%u>,<%u>]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_UNDOALL_SUCCESS = "undoall-pass success\n";
 
@@ -2207,10 +2210,10 @@ SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_DRDB_END = "[DRDB-CHECKPOINT-END]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP0 = "[CHECKPOINT-step0] Dirty pages from DiskBufferPool\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP0_1 = "[Request Synced LSN=<%u>,<%u>]\n";
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP0_2 = "[FLU-DirtyPageCount=<%u>]\n";
+#SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP0_1 = "[Request Synced LSN=<%u>,<%u>]\n";
+#SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP0_2 = "[FLU-DirtyPageCount=<%u>]\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP1 = "[CHECKPOINT-step1] Synchronize Disk TableSpaces with LogAnchor\n";
+#SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_STEP1 = "[CHECKPOINT-step1] Synchronize Disk TableSpaces with LogAnchor\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP1 = "[CHECKPOINT BY SYSTEM]\n";
 
@@ -2222,11 +2225,11 @@ SM_TRC_MRECOVERY_RECOVERYMGR_CHKP4 = "[CHECKPOINT BY USER]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP5 = "[CHECKPOINT-BEGIN]\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP6 = "[CHECKPOINT-step2] Write BeginChkpt Log [<%u>,<%u>,<%u>]\n"
+SM_TRC_MRECOVERY_RECOVERYMGR_CHKP6 = "[CHECKPOINT-step2] Write BeginChkpt Log [<%u>,<%u>]\n"
                                      "Active Tx Recovery LSN [<%u>,<%u>]\n"
                                      "Disk Buffer Oldest LSN [<%u>,<%u>]\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP7 = "[CHECKPOINT-step5] Write End_Chkpt Log [<%u>,<%u>,<%u>]\n";
+SM_TRC_MRECOVERY_RECOVERYMGR_CHKP7 = "[CHECKPOINT-step5] Write End_Chkpt Log [<%u>,<%u>]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP8 = "[CHECKPOINT-summary] "
                 "BeginChkptLSN=[<%u>,<%u>], EndChkptLSN=[<%u>,<%u>], DiskRecLSN=[<%u>,<%u>]\n";
@@ -2247,7 +2250,7 @@ SM_TRC_MRECOVERY_RECOVERYMGR_CHKP15 = "[CHECKPOINT-step8] Update and Flush Log A
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP16 = "[CHECKPOINT-step9] Remove Online Log File\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP17 = "Remove Online Log File at LFG [<%u>]: File[<%u> ~ <%u>]\n";
+SM_TRC_MRECOVERY_RECOVERYMGR_CHKP17 = "Remove Online Log File[<%u> ~ <%u>]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP18 = "[CHECKPOINT-step9] Remove Online Log File[None]\n";
 
@@ -2281,7 +2284,7 @@ SM_TRC_MRECOVERY_RECOVERYMGR_CHKP27 = "[REM-DirtyPageCount=<%lu>]\n";
 
 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP28 = "[CHECKPOINT-step4] sync Database File\n";
 
-SM_TRC_MRECOVERY_RECOVERYMGR_CHKP29 = "[BUFFERMGR=[ <%u>, <%u>, <%u> ]\n";
+SM_TRC_MRECOVERY_RECOVERYMGR_CHKP29 = "[BUFFERMGR=[ <%u>, <%u> ]\n";
 
 SM_TRC_MRECOVERY_CHECK_DB_SID_FID = "[CHECK DATABASE SID=<%u>, FID=<%u>]\n";
 
@@ -2304,13 +2307,13 @@ SM_TRC_MRECOVERY_CHECK_DB_SID_PPID_FID = "[CHECK DATABASE SID=<%u>, PPID=<%u>, F
 SM_TRC_MRECOVER_INVALID_DECOMP_LOG_LSN = "Log decompress failed - invalid log LSN:[<%u>,<%u>]\n";
 
 SM_TRC_MRECOVER_INVALID_DECOMP_LOG_HEAD = "Log decompress failed - invalid log head info\n"
-"    Flag:<%d>, Type:<%d>, Magic:<%d>, Size:<%u>, SN:<%lu>,\n    PrevUndoLSN:[<%u>,<%u>], TransID:<%u>, ReplSPNum:<%d>\n";
+"    Flag:<%d>, Type:<%d>, Magic:<%d>, Size:<%u>, \n    PrevUndoLSN:[<%u>,<%u>], TransID:<%u>, ReplSPNum:<%d>\n";
 
 SM_TRC_INVALID_LOGANCHOR_ATTRTYPE = "Invalid Log anchor buffer attr type <%u>\n";
 
-SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_MEM_TBS  = "Invalid anchor offset in Memory TBS Node [<%u>] - anchor <%u> node <%u>\n";
+#SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_MEM_TBS  = "Invalid anchor offset in Memory TBS Node [<%u>] - anchor <%u> node <%u>\n";
 
-SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_DISK_TBS = "Invalid anchor offset in Disk TBS Node [<%u>] - anchor <%u> node <%u>\n";
+#SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_DISK_TBS = "Invalid anchor offset in Disk TBS Node [<%u>] - anchor <%u> node <%u>\n";
 
 SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_VOL_TBS  = "Invalid anchor offset in Volatile TBS Node [<%u>] - anchor <%u> node <%u>\n";
 
@@ -2320,12 +2323,12 @@ SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_CHKPT_PATH = "Invalid anchor offset in Chk
 
 SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_CHKPT_IMG  = "Invalid anchor offset in Chkpt Image Node [<%u>] - anchor <%u> node <%u>\n";
 
-SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_SECONDARY_BUFFER = "Invalid anchor offset in Secondary Buffer [<%u>/<%u>] - anchor <%u> node <%u>\n";
+SM_TRC_ANCHOR_CHECK_INVALID_OFFSET_IN_SECONDARY_BUFFER = "Invalid anchor offset in Secondary Buffer - anchor <%u> node <%u>\n";
 
 SM_TRC_ANCHOR_CHECK_INVALID_OFFSET  = "Invalid anchor offset - anchor <%u> node <%u>\n";
 
-SM_TRC_ANCHOR_CHECK_CHKPT_PATH_ATTR = "ChkptPathAttrByNode   SpaceID <%u> AttrType <%u> Path <%s>\n"
-                                      "ChkptPathAttrByAnchor SpaceID <%u> AttrType <%u> Path <%s>";
+#SM_TRC_ANCHOR_CHECK_CHKPT_PATH_ATTR = "ChkptPathAttrByNode   SpaceID <%u> AttrType <%u> Path <%s>\n"
+#                                      "ChkptPathAttrByAnchor SpaceID <%u> AttrType <%u> Path <%s>";
 
 SM_TRC_ANCHOR_CHECK_CHKPT_PATH_ATTR_INVALID = "ChkptPathAttr not found SpaceID <%u> AttrType <%u> Path <%s>\n"
                                               " aAnchorOffset <%u> mWriteOffset <%u> aAttrSize <%u>";
@@ -2357,17 +2360,17 @@ SM_TRC_ANCHOR_CHECK_DBFILE_ATTR_BY_ANCHOR = "DBFile By Anchor AttrType <%u> ID <
 SM_TRC_ANCHOR_CHECK_CHKPT_IMG_ATTR = "ChkptImage Node   SpaceID <%u> AttrType <%u> FileNum <%u> CreateDBFileOnDisk[<%u>/<%u>]\n"
                                      "ChkptImage Anchor SpaceID <%u> AttrType <%u> FileNum <%u> CreateDBFileOnDisk[<%u>/<%u>]";
 
-SM_TRC_ANCHOR_CHECK_CRT_LSN_IN_CHKPT_IMG_ATTR = "Chkpt Image Node SpaceID <%u> ArrMemCreateLSN[<%u>] [<%u>/<%u>]\n"
-                                                "Chkpt Image Attr SpaceID <%u> ArrMemCreateLSN[<%u>] [<%u>/<%u>]";
+SM_TRC_ANCHOR_CHECK_CRT_LSN_IN_CHKPT_IMG_ATTR = "Chkpt Image Node SpaceID <%u> ArrMemCreateLSN[<%u>/<%u>]\n"
+                                                "Chkpt Image Attr SpaceID <%u> ArrMemCreateLSN[<%u>/<%u>]";
 
-SM_TRC_ANCHOR_CHECK_SBFILE_ATTR_BY_NODE   = "Secondary Buffer By Node   AttrType <%u> Name <%s> Len <%u> CreateLSN[<%u>/<%u>]";
-SM_TRC_ANCHOR_CHECK_SBFILE_ATTR_BY_ANCHOR = "Secondary Buffer By Anchor AttrType <%u> Name <%s> Len <%u> CreateLSN[<%u>/<%u>]";
-
-
+SM_TRC_ANCHOR_CHECK_SBFILE_ATTR_BY_NODE   = "Secondary Buffer By Node   AttrType <%u> Name <%s> Len <%u> Cnt <%u> State <%u> CreateLSN[<%u>/<%u>]";
+SM_TRC_ANCHOR_CHECK_SBFILE_ATTR_BY_ANCHOR = "Secondary Buffer By Anchor AttrType <%u> Name <%s> Len <%u> Cnt <%u> State <%u> CreateLSN[<%u>/<%u>]";
 
 
 
-SM_TRC_UTIL_RECOVERY_TEST = "Recovery Test Disabled..\n";
+
+
+#SM_TRC_UTIL_RECOVERY_TEST = "Recovery Test Disabled..\n";
 
 SM_TRC_TRANS_DBFILE_UNLINK_ERROR = "DataFile <%s> unlink Error(errno=<%u>)\n";
 
@@ -2377,33 +2380,33 @@ SM_TRC_DPAGE_VERIFY_TBS_SUCCESS = "[SUCCESS] verify tablespace (ID:<%u>)\n";
 
 SM_TRC_DPAGE_VERIFY_TBS_FAILURE = "[FAILURE] verify tablespace (ID:<%u>)\n";
 
-SM_TRC_MEMORY_PAGE_MEMORY_NOT_NULL1 = "Page memory has been allocated, but the page has not been allocated yet. Page ID : <%lu>\n";
+#SM_TRC_MEMORY_PAGE_MEMORY_NOT_NULL1 = "Page memory has been allocated, but the page has not been allocated yet. Page ID : <%lu>\n";
 
-SM_TRC_MEMORY_PAGE_MEMORY_NOT_NULL2 = "Maximum Number of Pages on DB : <%lu>\n";
+#SM_TRC_MEMORY_PAGE_MEMORY_NOT_NULL2 = "Maximum Number of Pages on DB : <%lu>\n";
 
-SM_TRC_MEMORY_PAGE_MEMORY_NOT_NULL3 = "Current Allocated Pages on DB : <%lu>\n";
+#SM_TRC_MEMORY_PAGE_MEMORY_NOT_NULL3 = "Current Allocated Pages on DB : <%lu>\n";
 SM_TRC_MEMORY_CHECKPOINT_IMAGE_NOT_REMOVED = "Failed to remove checkpoint image file, <%s>\n";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT1 = "[VERIFY: Invalid extent state]: In used ext list, invalid ext[<%lu>] state=<%lu>";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT1 = "[VERIFY: Invalid extent state]: In used ext list, invalid ext[<%lu>] state=<%lu>";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT2 = "[VERIFY: Invalid page state]: ext=ins free, ins=<%lu>, free=<%lu>";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT2 = "[VERIFY: Invalid page state]: ext=ins free, ins=<%lu>, free=<%lu>";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT3 = "[VERIFY: Invalid page state]: ext=ins no free, ins=<%lu>";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT3 = "[VERIFY: Invalid page state]: ext=ins no free, ins=<%lu>";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT4 = "[VERIFY: Invalid page state]: ext=no ins free, free=<%lu>";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT4 = "[VERIFY: Invalid page state]: ext=no ins free, free=<%lu>";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT5 = "[VERIFY: Invalid page state]: ext=free, page[<%lu>]=<%lu>";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT5 = "[VERIFY: Invalid page state]: ext=free, page[<%lu>]=<%lu>";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT6 = "[VERIFY: Invalid page state]: ext=full, page[<%lu>]=<%lu>";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT6 = "[VERIFY: Invalid page state]: ext=full, page[<%lu>]=<%lu>";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT7 = "[VERIFY: Invalid page state]: ext=ins no free, page[<%lu>]=free";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT7 = "[VERIFY: Invalid page state]: ext=ins no free, page[<%lu>]=free";
 
-SM_TRC_WARNING_VERIFY_SDP_STRUCT8 = "[VERIFY: Invalid page state]: ext=no ins free, page[<%lu>]=ins";
+#SM_TRC_WARNING_VERIFY_SDP_STRUCT8 = "[VERIFY: Invalid page state]: ext=no ins free, page[<%lu>]=ins";
 
 SM_TRC_MRECOVERY_LFTHREAD_INFO_FOR_SYNC_LOGFILE = "Logfile sync thread synced  [ first: <%u> ~ last: <%u>, count:<%u> ] logfile(s).\n";
 
 SM_TRC_BUFFER_FLUSH_BUFFER_POOL= "[ALTER SYSTEM] Flush Buffer Pool.\n";
-SM_TRC_BUFFER_FLUSH_BUFFER_POOL_SUCCESS= "[ALTER SYSTEM] Flush Buffer Pool Succeeded. [ flush page count : <%u> ]\n";
+#SM_TRC_BUFFER_FLUSH_BUFFER_POOL_SUCCESS= "[ALTER SYSTEM] Flush Buffer Pool Succeeded. [ flush page count : <%u> ]\n";
 SM_TRC_BUFFER_FLUSH_BUFFER_POOL_FAILURE= "[ALTER SYSTEM] Flush Buffer Pool Failed.\n";
 
 SM_TRC_PAGE_PID_INVALID = "SpaceID:<%u> Page: <%lu> is invalid because
@@ -2411,7 +2414,7 @@ it is bigger than Max PID: <%lu>\n";
 
 SM_TRC_BUFFER_POOL_FIXEDBCB_DURING_INVALIDATE = "Fixed BCB is targeted during invalidateDirtyOfBCB. Filter <%u>";
 
-SM_TRC_BUFFER_POOL_FIXEDBCB_DURING_MAKEFREEBCB = "Fixed BCB is targeted during makeFreeBCB";
+#SM_TRC_BUFFER_POOL_FIXEDBCB_DURING_MAKEFREEBCB = "Fixed BCB is targeted during makeFreeBCB";
 
 SM_TRC_BUFFER_MGR_RESIZE = "BUFFER MANAGER RESIZE SUCCESS: askedSize [<%lu>], newSize[<%lu>]";
 
@@ -2435,23 +2438,23 @@ SM_TRC_BUFFER_POOL_BCB_INFO = "BCB Info..\n"
 "mWriteCount <%u>\n";
 
 SM_TRC_BUFFER_FLUSH_SECONDARY_BUFFER= "[ALTER SYSTEM] Flush Secondary Buffer.\n";
-SM_TRC_BUFFER_FLUSH_SECONDARY_BUFFER_SUCCESS= "[ALTER SYSTEM] Flush Secondary Buffer Succeeded. [ flush page count : <%u> ]\n";
+#SM_TRC_BUFFER_FLUSH_SECONDARY_BUFFER_SUCCESS= "[ALTER SYSTEM] Flush Secondary Buffer Succeeded. [ flush page count : <%u> ]\n";
 SM_TRC_BUFFER_FLUSH_SECONDARY_BUFFER_FAILURE= "[ALTER SYSTEM] Flush Secondary Buffer Failed.\n";
 
-SM_TRC_SECONDARY_BUFFER_BCB_INFO = "SECONDARY BCB Info..\n"
-"mID <%u>\n"
-"mState <%u>\n"
-"mSpaceID <%u>\n"
-"mPageID <%u>\n"
-"mRecoveryLSN <%u>,<%u>\n";
+#SM_TRC_SECONDARY_BUFFER_BCB_INFO = "SECONDARY BCB Info..\n"
+#"mID <%u>\n"
+#"mState <%u>\n"
+#"mSpaceID <%u>\n"
+#"mPageID <%u>\n"
+#"mRecoveryLSN <%u>,<%u>\n";
 
 SM_TRC_SDP_INVALID_PAGE_INFO = "Invalid Page Info..\n"
 "mSpaceID <%u>\n"
 "mPageID <%u>\n"
 "mType <%u>";
 
-SM_TRC_SDPSC_INVALID_CIRCULAR_LIST = "[CMS] Mismatch Extent Count Of ExtDir(<%u>)\n"
-"TotExtCnt: (<%u>), MaxExtCnt: (<%u>)\n";
+#SM_TRC_SDPSC_INVALID_CIRCULAR_LIST = "[CMS] Mismatch Extent Count Of ExtDir(<%u>)\n"
+#"TotExtCnt: (<%u>), MaxExtCnt: (<%u>)\n";
 
 SM_TRC_TRANS_DISABLE_MIN_VIEWSCN_BUILDER = "Disable MinViewSCN Builder ...\n";
 

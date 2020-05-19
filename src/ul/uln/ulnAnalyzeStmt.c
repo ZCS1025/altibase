@@ -443,8 +443,6 @@ static ACI_RC ulnAnalyzeStmtSetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
     }
     else
     {
-        sObj = sNode->mObj;
-
         /* Position을 저장할 공간이 있는지 확인하자 */
         if (sObj->mPosCnt % BASE_ARR_CNT == 0)
         {

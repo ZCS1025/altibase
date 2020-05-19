@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnDef.h 85340 2019-04-30 00:15:02Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMN_DEF_H_
@@ -107,8 +107,8 @@ smnNode;
 typedef struct smnSortStack
 {
     void*             mLeftNode;
-    SInt              mLeftPos;
     void*             mRightNode;
+    SInt              mLeftPos;
     SInt              mRightPos;
 }
 smnSortStack;

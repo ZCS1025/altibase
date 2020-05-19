@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSubstrb.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfSubstrb.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -101,6 +101,7 @@ const mtcExecute mtfExecute2 = {
     mtf::calculateNA,
     mtfSubstrbCalculate2,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -112,6 +113,7 @@ const mtcExecute mtfExecute3 = {
     mtf::calculateNA,
     mtfSubstrbCalculate3,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -123,6 +125,7 @@ const mtcExecute mtfExecuteXlobLocator2 = {
     mtf::calculateNA,
     mtfSubstrbCalculateXlobLocator2,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -134,6 +137,7 @@ const mtcExecute mtfExecuteXlobLocator3 = {
     mtf::calculateNA,
     mtfSubstrbCalculateXlobLocator3,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -146,6 +150,7 @@ const mtcExecute mtfExecuteClobValue2 = {
     mtf::calculateNA,
     mtfSubstringCalculateClobValue2,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -158,6 +163,7 @@ const mtcExecute mtfExecuteClobValue3 = {
     mtf::calculateNA,
     mtfSubstringCalculateClobValue3,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

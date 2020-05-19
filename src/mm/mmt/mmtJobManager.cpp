@@ -45,7 +45,7 @@ IDE_RC mmtJobThread::initialize( UInt aIndex, iduQueue * aQueue )
     mIndex     = aIndex;
     mExecCount = 0;
     mQueue     = aQueue;
-    
+
     return IDE_SUCCESS;
 }
 
@@ -103,9 +103,19 @@ void mmtJobThread::finalizeThread()
  */
 void mmtJobThread::signalToJobThread()
 {
-    signalLock();
-    ( void )mThreadCV.signal();
-    signalUnlock();
+    idBool sIsLock = ID_FALSE;
+
+    mMutex.trylock( sIsLock );
+
+    if ( sIsLock == ID_TRUE )
+    {
+        ( void )mThreadCV.signal();
+        signalUnlock();
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 }
 
 /**
@@ -131,7 +141,7 @@ void mmtJobThread::run()
     sUserInfo.loginPassword[0] = '\0';
     sUserInfo.tablespaceID     = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA;
     sUserInfo.tempTablespaceID = SMI_ID_TABLESPACE_SYSTEM_DISK_TEMP;
-    
+
     mRun = ID_TRUE;
 
     signalLock();
@@ -155,10 +165,10 @@ void mmtJobThread::run()
         while ( iduQueueDequeue( mQueue, (void **)&sItem ) == IDE_SUCCESS )
         {
             sJob = (SInt)sItem;
-            
+
             ideLog::log( IDE_SERVER_2, "[JOB SCHEDLER : JOB THREAD %d JOB %d ASSIGNED]",
                          mIndex, sJob );
-            
+
             sSleep = 1;
             while ( mmtSessionManager::allocInternalSession( &mSession, &sUserInfo )
                     != IDE_SUCCESS )
@@ -175,7 +185,7 @@ void mmtJobThread::run()
                         /* Nothing to do */
                     }
                 }
-                
+
                 if ( mRun == ID_FALSE )
                 {
                     break;
@@ -184,7 +194,7 @@ void mmtJobThread::run()
                 {
                     /* Nothing to do */
                 }
-                
+
                 /* Max 1시간( 3600 초 )으로 점점 Sleep 시간이 늘어난다. */
                 if ( sSleep < 3600 )
                 {
@@ -195,7 +205,7 @@ void mmtJobThread::run()
                     sSleep = 3600;
                 }
             }
-        
+
             if ( mRun == ID_FALSE )
             {
                 break;
@@ -204,11 +214,12 @@ void mmtJobThread::run()
             {
                 /* Nothing to do */
             }
-            
+
             /* 1 session에 1 job만 실행한다. */
             qciMisc::executeJobItem( mIndex, sJob, (void *)mSession );
 
             mSession->setSessionState( MMC_SESSION_STATE_END );
+            IDU_FIT_POINT( "mmtJobThread::run::endSession" );
             ( void )mSession->endSession();
             ( void )mmtSessionManager::freeInternalSession( mSession );
 
@@ -266,14 +277,16 @@ void mmtJobThread::stop()
         /* Nothing to do */
     }
 
-    signalToJobThread();
+    signalLock();
+    ( void )mThreadCV.signal();
+    signalUnlock();
 }
 
 IDE_RC mmtJobScheduler::initialize()
 {
     mRun         = ID_FALSE;
     mThreadCount = mmuProperty::getJobThreadCount();
-    
+
     return IDE_SUCCESS;
 }
 
@@ -302,7 +315,7 @@ IDE_RC mmtJobScheduler::initializeThread()
                                   IDU_MEM_MMT )
               != IDE_SUCCESS);
     sInitQueue = ID_TRUE;
-    
+
     for ( i = 0; i < MMT_JOB_MANAGER_MAX_THREADS; i++ )
     {
         mJobThreads[i] = NULL;
@@ -332,10 +345,10 @@ IDE_RC mmtJobScheduler::initializeThread()
     for ( i = 0; i < mThreadCount; i++ )
     {
         IDE_TEST( mJobThreads[i]->waitToStart() != IDE_SUCCESS );
-        
+
         ideLog::log( IDE_SERVER_0, "[JOB SCHEDLER : JOB THREAD %d STARTED]", i );
     }
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_INSUFFICIENT_MEMORY )
@@ -344,7 +357,7 @@ IDE_RC mmtJobScheduler::initializeThread()
     }
 
     IDE_EXCEPTION_END;
-    
+
     for ( i = 0 ; i < mThreadCount; i++ )
     {
         if ( mJobThreads[i] != NULL )
@@ -416,7 +429,7 @@ void mmtJobScheduler::finalizeThread()
         mJobThreads[i]->finalize();
         ( void )iduMemMgr::free( mJobThreads[i] );
     }
-    
+
     ( void )iduQueueFinalize(&mQueue);
 }
 
@@ -450,6 +463,7 @@ void mmtJobScheduler::run()
 
     sCurTime  = idlOS::gettimeofday();
     sTime1    = (time_t)sCurTime.sec();
+    idlOS::memset(&sLocaltime, 0, ID_SIZEOF(struct tm));
 
     if ( ( qciMisc::isExecuteForNatc() == ID_FALSE ) &&
          ( mmuProperty::getJobSchedulerEnable() == 1 ) )
@@ -512,17 +526,32 @@ void mmtJobScheduler::run()
                 {
                     /* Nothing to do */
                 }
-                
+
                 idlOS::thr_yield();
             }
-            
+        }
+
+        if ( sCount > 0 )
+        {
             /* enqueue가 성공하면 전체 broadcast한다. */
             for ( sThreadID = 0; sThreadID < mThreadCount; sThreadID++ )
             {
+                if ( mRun == ID_FALSE )
+                {
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
                 mJobThreads[sThreadID]->signalToJobThread();
             }
         }
-        
+        else
+        {
+            /* Nothing to do */
+        }
+
         sCurTime = idlOS::gettimeofday();
         sTime2   = (time_t)sCurTime.sec();
 
@@ -582,6 +611,8 @@ IDE_RC mmtJobManager::initialize()
 {
     mmtJobScheduler * sScheduler = NULL;
     idBool            sIsInit    = ID_FALSE;
+
+    qciMisc::resetInitialJobState();
 
     if ( mmuProperty::getJobThreadCount() > 0 )
     {

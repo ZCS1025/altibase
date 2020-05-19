@@ -336,7 +336,7 @@ IDE_RC idtCPUSet::relocateCPUs(SInt aCPUCount, SInt aNUMACount)
     SInt sAllocNUMAIndex;
 
     SInt i, j;
-    SInt sMore;
+    SInt sMore = 0;
 
     
     /* Take minimum of the count of NUMA nodes */

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoOneMtrPlan.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoOneMtrPlan.cpp 85262 2019-04-17 01:37:36Z andrew.shin $
  *
  * Description :
  *     Plan Generator
@@ -53,6 +53,9 @@ extern mtfModule mtfLagIgnoreNulls;
 extern mtfModule mtfLead;
 extern mtfModule mtfLeadIgnoreNulls;
 extern mtfModule mtfNtile;
+extern mtfModule mtfGetBlobLocator;
+extern mtfModule mtfGetClobLocator;
+extern mtfModule mtfListagg; /* BUG-46906 */
 
 // ORDER BY절과 같이 sorting 대상 column이 별도로 지정되어있는 경우
 IDE_RC
@@ -252,7 +255,6 @@ qmoOneMtrPlan::initSORT( qcStatement     * aStatement ,
         {
             /* Nothing to do */
         }
-
         /* BUG-35265 wrong result desc connect_by_root, sys_connect_by_path */
         if ( ( sItrAttr->expr->node.lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
                == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
@@ -1705,6 +1707,10 @@ qmoOneMtrPlan::initGRAG( qcStatement       * aStatement ,
     {
         sNode = sAggrNode->aggr;
 
+        /* BUG-46906 */
+        IDE_TEST_RAISE( sNode->node.module == & mtfListagg,
+                        ERR_UNEXPECTED );
+
         while( sNode->node.module == &qtc::passModule )
         {
             // Aggregate function을 having/order by절에 참조하는 경우 pass node가 생성된다.
@@ -1731,6 +1737,12 @@ qmoOneMtrPlan::initGRAG( qcStatement       * aStatement ,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmoOneMtrPlan::initGRAG",
+                                  "mathematics temp is not support a group aggregate plan" ));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -6254,6 +6266,7 @@ IDE_RC qmoOneMtrPlan::findPriorPredAndSortNode( qcStatement  * aStatement,
     qtcNode * sTmpNode1 = NULL;
     qtcNode * sTmpNode2 = NULL;
     UInt      sCount    = 0;
+    idBool    sFind     = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmoOneMtrPlan::findPriorPredAndSortNode::__FT__" );
 
@@ -6299,6 +6312,7 @@ IDE_RC qmoOneMtrPlan::findPriorPredAndSortNode( qcStatement  * aStatement,
 
     for ( ; sOperator != NULL ; sOperator = ( qtcNode * )sOperator->node.next )
     {
+        sFind = ID_FALSE;
         if ( *aFind == ID_TRUE )
         {
             break;
@@ -6360,7 +6374,16 @@ IDE_RC qmoOneMtrPlan::findPriorPredAndSortNode( qcStatement  * aStatement,
             if ( ( sCount == 1 ) &&
                  ( ( *aSortNode )->node.module == &qtc::columnModule ) &&
                  ( ( *aSortNode )->node.conversion == NULL ) &&
-                 ( ( *aSortNode )->node.table == aFromTable ))
+                 ( ( *aSortNode )->node.table == aFromTable ) )
+            {
+                sFind = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            if ( sFind == ID_TRUE )
             {
                 IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                         qtcNode,
@@ -6541,6 +6564,8 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
     qmcMtrNode   * sTmp           = NULL;
     UInt           sCurOffset     = 0;
     qtcNode        sPriorTmp;
+    qmoPredicate * sPred          = NULL;
+    qmoPredicate * sPredMore      = NULL;
 
     qmcAttrDesc  * sItrAttr;
     qmcMtrNode   * sFirstMtrNode  = NULL;
@@ -6615,21 +6640,22 @@ IDE_RC qmoOneMtrPlan::processConnectByPredicate( qcStatement    * aStatement,
      * Connectby predicate에서 prior Node를 찾아서
      * Error가 나는 상황을 체크해야한다.
      */
-    if ( aConnectBy->predicate != NULL )
+    for ( sPred = aConnectBy->predicate; sPred != NULL; sPred = sPred->next )
     {
-        sPriorTmp.node.next = NULL;
-        IDE_TEST( findPriorColumns( aStatement,
-                                    aConnectBy->predicate->node,
-                                    & sPriorTmp )
-                  != IDE_SUCCESS );
-        /* BUG-44759 processPredicae을 수행하기전에 priorNode
-         * 가 있어야한다.
-         */
-        aCNBY->priorNode = (qtcNode *)sPriorTmp.node.next;
-    }
-    else
-    {
-        /* Nothing to do */
+        for ( sPredMore = sPred;
+              sPredMore != NULL;
+              sPredMore = sPredMore->more )
+        {
+            sPriorTmp.node.next = NULL;
+            IDE_TEST( findPriorColumns( aStatement,
+                                        sPredMore->node,
+                                        & sPriorTmp )
+                      != IDE_SUCCESS );
+            /* BUG-44759 processPredicae을 수행하기전에 priorNode
+             * 가 있어야한다.
+             */
+            aCNBY->priorNode = (qtcNode *)sPriorTmp.node.next;
+        }
     }
 
     /* 2. Connect By Predicate 의 처리 */
@@ -6899,8 +6925,10 @@ IDE_RC qmoOneMtrPlan::makeSortNodeOfCNBY( qcStatement * aStatement,
 
     aSortNode->node.table = aCNBY->baseRowID;
 
-    if ( ( aCNBY->flag & QMNC_CNBY_CHILD_VIEW_MASK )
-         == QMNC_CNBY_CHILD_VIEW_FALSE )
+    if ( ( ( aCNBY->flag & QMNC_CNBY_CHILD_VIEW_MASK )
+            == QMNC_CNBY_CHILD_VIEW_FALSE ) &&
+         ( ( aCNBY->flag & QMNC_CNBY_JOIN_MASK )
+           == QMNC_CNBY_JOIN_FALSE ) )
     {
         if ( ( aCNBY->plan.flag & QMN_PLAN_STORAGE_MASK )
              == QMN_PLAN_STORAGE_DISK )
@@ -10174,3 +10202,1065 @@ IDE_RC qmoOneMtrPlan::makeCUBE( qcStatement      * aStatement,
 
     return IDE_FAILURE;
 }
+
+IDE_RC qmoOneMtrPlan::initCNBYForJoin( qcStatement    * aStatement,
+                                       qmsQuerySet    * aQuerySet,
+                                       qmoLeafInfo    * aLeafInfo,
+                                       qmsSortColumns * aSiblings,
+                                       qmnPlan        * aParent,
+                                       qmnPlan       ** aPlan )
+{
+    qmncCNBY       * sCNBY           = NULL;
+    UInt             sDataNodeOffset = 0;
+    UInt             sFlag           = 0;
+    qtcNode        * sNode           = NULL;
+    qmsSortColumns * sSibling        = NULL;
+    qmcAttrDesc    * sItrAttr        = NULL;
+    idBool           sIsTrue         = ID_FALSE;
+
+    IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncCNBY ),
+                                               (void **)& sCNBY )
+              != IDE_SUCCESS );
+
+    idlOS::memset( sCNBY, 0x00, ID_SIZEOF(qmncCNBY));
+    QMO_INIT_PLAN_NODE( sCNBY,
+                        QC_SHARED_TMPLATE( aStatement),
+                        QMN_CNBY,
+                        qmnCNBY,
+                        qmndCNBY,
+                        sDataNodeOffset );
+
+    // CONNECT BY절 추가
+    // PROJ-2469 Optimize View Materialization
+    // BUG FIX : aLeafInfo[0] -> aLeafInfo[1]로 변경
+    //                           CONNECT BY 의 Predicate을 등록하지 않고 START WITH만 두 번
+    //                           등록하고 있었음.
+    IDE_TEST( qmc::appendPredicate( aStatement,
+                                    aQuerySet,
+                                    & sCNBY->plan.resultDesc,
+                                    aLeafInfo[1].predicate,
+                                    sFlag )
+              != IDE_SUCCESS );
+
+    // START WITH절 추가
+    IDE_TEST( qmc::appendPredicate( aStatement,
+                                    aQuerySet,
+                                    & sCNBY->plan.resultDesc,
+                                    aLeafInfo[0].predicate,
+                                    sFlag )
+              != IDE_SUCCESS );
+
+    sFlag &= ~QMC_ATTR_KEY_MASK;
+    sFlag |= QMC_ATTR_KEY_TRUE;
+
+    for ( sSibling  = aSiblings;
+          sSibling != NULL;
+          sSibling  = sSibling->next )
+    {
+        if ( aSiblings->isDESC == ID_FALSE )
+        {
+            sFlag &= ~QMC_ATTR_SORT_ORDER_MASK;
+            sFlag |= QMC_ATTR_SORT_ORDER_ASC;
+        }
+        else
+        {
+            sFlag &= ~QMC_ATTR_SORT_ORDER_MASK;
+            sFlag |= QMC_ATTR_SORT_ORDER_DESC;
+        }
+
+        IDE_TEST( qmc::appendAttribute( aStatement,
+                                        aQuerySet,
+                                        & sCNBY->plan.resultDesc,
+                                        sSibling->sortColumn,
+                                        sFlag,
+                                        QMC_APPEND_EXPRESSION_TRUE,
+                                        ID_FALSE )
+                  != IDE_SUCCESS );
+    }
+
+    /**
+     * select connect_by_root(t1.i1) from t1 left outer join t2 on t1.i2 = t2.i2 + 1 
+     *  connect by prior t2.i1 = t1.i1 order by t1.i1;
+     *  order by 와 connect_by_root or sys_connect_by_path가 같이 사요된경우
+     *  sort에서 쌓아서 처리해야하기 때문에 SEALED_TRUE로 expression을 전체를
+     *  넣게된다. 하지만 이는 sort에서 사용하기 위해서이지 hierarchy query에서는
+     *  아니므로 걸러줘야하기 때문에 아래와 같이 잠시 SEALED_FALSE로 parent를 
+     *  변환했다가 다시 원복시킨다.
+     */
+    for ( sItrAttr = aParent->resultDesc;
+          sItrAttr != NULL;
+          sItrAttr = sItrAttr->next )
+    {
+        if ( ( sItrAttr->expr->node.lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
+               == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
+        {
+            if ( ( sItrAttr->flag & QMC_ATTR_SEALED_MASK )
+                 == QMC_ATTR_SEALED_TRUE )
+            {
+                sIsTrue = ID_TRUE;
+                sItrAttr->flag &= ~QMC_ATTR_SEALED_MASK;
+                sItrAttr->flag |= QMC_ATTR_SEALED_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    IDE_TEST( qmc::pushResultDesc( aStatement,
+                                   aQuerySet,
+                                   ID_FALSE,
+                                   aParent->resultDesc,
+                                   & sCNBY->plan.resultDesc )
+              != IDE_SUCCESS );
+
+    if ( sIsTrue == ID_TRUE )
+    {
+        for ( sItrAttr = aParent->resultDesc;
+              sItrAttr != NULL;
+              sItrAttr = sItrAttr->next )
+        {
+            if ( ( sItrAttr->expr->node.lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
+                   == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
+            {
+                sItrAttr->flag &= ~QMC_ATTR_SEALED_MASK;
+                sItrAttr->flag |= QMC_ATTR_SEALED_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    sFlag &= ~QMC_ATTR_KEY_MASK;
+
+    for ( sItrAttr  = sCNBY->plan.resultDesc;
+          sItrAttr != NULL;
+          sItrAttr  = sItrAttr->next )
+    {
+        if ( ( ( sItrAttr->expr->lflag & QTC_NODE_LEVEL_MASK ) == QTC_NODE_LEVEL_EXIST ) ||
+             ( ( sItrAttr->expr->lflag & QTC_NODE_ISLEAF_MASK ) == QTC_NODE_ISLEAF_EXIST ) )
+        {
+            sItrAttr->flag &= ~QMC_ATTR_TERMINAL_MASK;
+            sItrAttr->flag |= QMC_ATTR_TERMINAL_TRUE;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( ( sItrAttr->expr->lflag & QTC_NODE_PRIOR_MASK ) == QTC_NODE_PRIOR_EXIST )
+        {
+            sItrAttr->flag &= ~QMC_ATTR_TERMINAL_MASK;
+            sItrAttr->flag |= QMC_ATTR_TERMINAL_TRUE;
+
+            IDU_FIT_POINT( "qmoOneMtrPlan::initCNBYForJoin::alloc::sNode",
+                            idERR_ABORT_InsufficientMemory );
+
+            IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
+                                                       (void**)&sNode )
+                      != IDE_SUCCESS );
+
+            idlOS::memcpy( sNode, sItrAttr->expr, ID_SIZEOF( qtcNode ) );
+
+            sNode->lflag &= ~QTC_NODE_PRIOR_MASK;
+            sNode->lflag |= QTC_NODE_PRIOR_ABSENT;
+            sNode->depInfo.depCount = 1;
+            sNode->depInfo.depend[0] = sNode->node.table;
+            IDE_TEST( qmc::appendAttribute( aStatement,
+                                            aQuerySet,
+                                            & sCNBY->plan.resultDesc,
+                                            sNode,
+                                            sFlag,
+                                            0,
+                                            ID_FALSE )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+    }
+
+    *aPlan = (qmnPlan *)sCNBY;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmoOneMtrPlan::makeCNBYForJoin( qcStatement    * aStatement,
+                                       qmsQuerySet    * aQuerySet,
+                                       qmsSortColumns * aSiblings,
+                                       qmoLeafInfo    * aStartWith,
+                                       qmoLeafInfo    * aConnectBy,
+                                       qmnPlan        * aChildPlan,
+                                       qmnPlan        * aPlan )
+{
+    mtcTemplate  * sMtcTemplate    = NULL;
+    qmncCNBY     * sCNBY           = (qmncCNBY *)aPlan;
+    UShort         sPriorID        = 0;
+    UShort         sColumnCount    = 0;
+    UShort         sOrgTable       = 0;
+    UShort         sOrgColumn      = 0;
+    UInt           sDataNodeOffset = 0;
+    UInt           i               = 0;
+    UInt           sCurOffset      = 0;
+    qmcAttrDesc  * sItrAttr        = NULL;
+    qmcMtrNode   * sNewMtrNode     = NULL;
+    qmcMtrNode   * sLastMtrNode    = NULL;
+    qmcMtrNode   * sLastMtrNode2   = NULL;
+    qmoPredicate * sPred           = NULL;
+    qmoPredicate * sPredMore       = NULL;
+    ULong          sFlag           = 0;
+    qtcNode      * sPredicate[9];
+
+    IDE_DASSERT( aStatement != NULL );
+    IDE_DASSERT( aQuerySet  != NULL );
+    IDE_DASSERT( aChildPlan != NULL );
+
+    sMtcTemplate = &QC_SHARED_TMPLATE(aStatement)->tmplate;
+
+    aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
+    sDataNodeOffset = idlOS::align8(aPlan->offset + ID_SIZEOF(qmndCNBY));
+
+    sCNBY->plan.left     = aChildPlan;
+    sCNBY->mtrNodeOffset = sDataNodeOffset;
+
+    sCNBY->flag             = QMN_PLAN_FLAG_CLEAR;
+    sCNBY->plan.flag        = QMN_PLAN_FLAG_CLEAR;
+    sCNBY->plan.flag       |= (aChildPlan->flag & QMN_PLAN_STORAGE_MASK);
+
+    //loop을 찾을 것인지에 대한 결정
+    if ( ( aQuerySet->SFWGH->hierarchy->flag & QMS_HIERARCHY_IGNORE_LOOP_MASK ) ==
+           QMS_HIERARCHY_IGNORE_LOOP_TRUE )
+    {
+        sCNBY->flag &= ~QMNC_CNBY_IGNORE_LOOP_MASK;
+        sCNBY->flag |= QMNC_CNBY_IGNORE_LOOP_TRUE;
+    }
+    else
+    {
+        sCNBY->flag &= ~QMNC_CNBY_IGNORE_LOOP_MASK;
+        sCNBY->flag |= QMNC_CNBY_IGNORE_LOOP_FALSE;
+    }
+
+    sCNBY->flag &= ~QMNC_CNBY_CHILD_VIEW_MASK;
+    sCNBY->flag |= QMNC_CNBY_CHILD_VIEW_FALSE;
+    sCNBY->flag &= ~QMNC_CNBY_JOIN_MASK;
+    sCNBY->flag |= QMNC_CNBY_JOIN_TRUE;
+
+    if ( aSiblings != NULL )
+    {
+        sCNBY->flag &= ~QMNC_CNBY_SIBLINGS_MASK;
+        sCNBY->flag |= QMNC_CNBY_SIBLINGS_TRUE;
+    }
+    else
+    {
+        sCNBY->flag &= ~QMNC_CNBY_SIBLINGS_MASK;
+        sCNBY->flag |= QMNC_CNBY_SIBLINGS_FALSE;
+    }
+    IDE_TEST( qtc::nextTable( &sCNBY->myRowID,
+                              aStatement,
+                              NULL,
+                              ID_FALSE,
+                              MTC_COLUMN_NOTNULL_TRUE )
+              != IDE_SUCCESS );
+    sCNBY->mIndex       = NULL;
+    sCNBY->mTableHandle = NULL;
+    sCNBY->mTableSCN    = 0;
+    sCNBY->baseRowID    = sCNBY->myRowID;
+
+    IDE_TEST( qtc::nextTable( &sPriorID,
+                              aStatement,
+                              NULL,
+                              ID_FALSE,
+                              MTC_COLUMN_NOTNULL_TRUE )
+              != IDE_SUCCESS );
+
+    aQuerySet->SFWGH->hierarchy->priorTable    = sPriorID;
+    sCNBY->priorRowID                          = sPriorID;
+
+    IDE_TEST( setPseudoColumnRowID( aQuerySet->SFWGH->level,
+                                    & sCNBY->levelRowID )
+              != IDE_SUCCESS );
+    IDE_TEST( setPseudoColumnRowID( aQuerySet->SFWGH->isLeaf,
+                                    & sCNBY->isLeafRowID )
+              != IDE_SUCCESS );
+    IDE_TEST( setPseudoColumnRowID( aQuerySet->SFWGH->cnbyStackAddr,
+                                    & sCNBY->stackRowID )
+              != IDE_SUCCESS );
+    IDE_TEST( setPseudoColumnRowID( aQuerySet->SFWGH->rownum,
+                                    & sCNBY->rownumRowID )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qmc::filterResultDesc( aStatement,
+                                     & sCNBY->plan.resultDesc,
+                                     & aChildPlan->depInfo,
+                                     &( aQuerySet->depInfo ) )
+              != IDE_SUCCESS );
+
+    for ( sItrAttr  = sCNBY->plan.resultDesc;
+          sItrAttr != NULL;
+          sItrAttr  = sItrAttr->next )
+    {
+        if ( ( sItrAttr->expr->lflag & QTC_NODE_LOB_COLUMN_MASK ) == QTC_NODE_LOB_COLUMN_EXIST )
+        {
+            sFlag = sMtcTemplate->rows[sItrAttr->expr->node.table].lflag;
+
+            if ( qmg::existBaseTable( sCNBY->mBaseMtrNode,
+                                      qmg::getBaseTableType( sFlag ),
+                                      sItrAttr->expr->node.table )
+                    == ID_TRUE )
+            {
+                continue;
+            }
+            else
+            {
+                IDE_TEST( qmg::makeBaseTableMtrNode( aStatement,
+                                                     sItrAttr->expr,
+                                                     sCNBY->myRowID,
+                                                     &sColumnCount,
+                                                     &sNewMtrNode )
+                          != IDE_SUCCESS );
+
+                if ( sCNBY->mBaseMtrNode == NULL )
+                {
+                    sCNBY->mBaseMtrNode = sNewMtrNode;
+                    sLastMtrNode  = sNewMtrNode;
+                }
+                else
+                {
+                    sLastMtrNode->next = sNewMtrNode;
+                    sLastMtrNode       = sNewMtrNode;
+                }
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    for ( sItrAttr  = sCNBY->plan.resultDesc;
+          sItrAttr != NULL;
+          sItrAttr  = sItrAttr->next )
+    {
+        if ( QTC_IS_PSEUDO( sItrAttr->expr ) == ID_TRUE )
+        {
+            continue;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
+        {
+            continue;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( ( sItrAttr->expr->lflag & QTC_NODE_PRIOR_MASK ) == QTC_NODE_PRIOR_EXIST )
+        {
+            continue;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( ( sItrAttr->expr->lflag & QTC_NODE_LOB_COLUMN_MASK ) == QTC_NODE_LOB_COLUMN_EXIST )
+        {
+            continue;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+        sOrgTable  = sItrAttr->expr->node.baseTable;
+        sOrgColumn = sItrAttr->expr->node.baseColumn;
+        IDE_TEST( qmg::makeColumnMtrNode( aStatement ,
+                                          aQuerySet ,
+                                          sItrAttr->expr,
+                                          ID_FALSE,
+                                          sCNBY->myRowID ,
+                                          0,
+                                          & sColumnCount ,
+                                          & sNewMtrNode )
+                  != IDE_SUCCESS );
+
+        for ( sPred = aStartWith->predicate; sPred != NULL; sPred = sPred->next )
+        {
+            for ( sPredMore = sPred; sPredMore != NULL; sPredMore = sPredMore->more )
+            {
+                changeNodeForCNBYJoin( sPredMore->node,
+                                       sOrgTable,
+                                       sOrgColumn,
+                                       sNewMtrNode->dstNode->node.table,
+                                       sNewMtrNode->dstNode->node.column );
+            }
+        }
+        for ( sPred = aConnectBy->predicate; sPred != NULL; sPred = sPred->next )
+        {
+            for ( sPredMore = sPred; sPredMore != NULL; sPredMore = sPredMore->more )
+            {
+                changeNodeForCNBYJoin( sPredMore->node,
+                                       sOrgTable,
+                                       sOrgColumn,
+                                       sNewMtrNode->dstNode->node.table,
+                                       sNewMtrNode->dstNode->node.column );
+            }
+        }
+        if ( ( sItrAttr->flag & QMC_ATTR_USELESS_RESULT_MASK ) == QMC_ATTR_USELESS_RESULT_TRUE )
+        {
+            // PROJ-2469 Optimize View Materialization
+            // 상위에서 사용되지 않는 MtrNode에 대해서 flag 처리한다.
+            sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
+            sNewMtrNode->flag |= QMC_MTR_TYPE_USELESS_COLUMN;
+        }
+        else
+        {
+            sFlag = QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sNewMtrNode->srcNode->node.table].lflag;
+
+            if ( ( sFlag & MTC_TUPLE_HYBRID_PARTITIONED_TABLE_MASK )
+                   == MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUE )
+            {
+                sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
+                sNewMtrNode->flag |= QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN;
+            }
+            else
+            {
+                //CMTR에서 생성된 qmcMtrNode이므로 복사하도록 한다.
+                sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
+                sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
+            }
+        }
+
+        // PROJ-2179
+        sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
+        sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE;
+
+        // 상위에서 temp table의 값을 참조하도록 변경된 위치를 설정한다.
+        sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
+        sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
+
+        //connect
+        if ( sCNBY->mBaseMtrNode == NULL )
+        {
+            sCNBY->mBaseMtrNode = sNewMtrNode;
+            sLastMtrNode  = sNewMtrNode;
+        }
+        else
+        {
+            sLastMtrNode->next = sNewMtrNode;
+            sLastMtrNode       = sNewMtrNode;
+        }
+    }
+
+    for ( sItrAttr  = sCNBY->plan.resultDesc;
+          sItrAttr != NULL;
+          sItrAttr  = sItrAttr->next )
+    {
+        if ( ( sItrAttr->flag & QMC_ATTR_KEY_MASK ) == QMC_ATTR_KEY_TRUE )
+        {
+            sOrgTable  = sItrAttr->expr->node.baseTable;
+            sOrgColumn = sItrAttr->expr->node.baseColumn;
+            IDE_TEST( qmg::makeColumnMtrNode( aStatement ,
+                                              aQuerySet ,
+                                              sItrAttr->expr,
+                                              ID_FALSE,
+                                              sCNBY->myRowID ,
+                                              0,
+                                              & sColumnCount ,
+                                              & sNewMtrNode )
+                      != IDE_SUCCESS );
+
+            if ( ( sItrAttr->flag & QMC_ATTR_USELESS_RESULT_MASK ) == QMC_ATTR_USELESS_RESULT_TRUE )
+            {
+                // PROJ-2469 Optimize View Materialization
+                // 상위에서 사용되지 않는 MtrNode에 대해서 flag 처리한다.
+                sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
+                sNewMtrNode->flag |= QMC_MTR_TYPE_USELESS_COLUMN;
+            }
+            else
+            {
+                sFlag = QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sNewMtrNode->srcNode->node.table].lflag;
+                if ( ( sFlag & MTC_TUPLE_HYBRID_PARTITIONED_TABLE_MASK )
+                       == MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUE )
+                {
+                    sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
+                    sNewMtrNode->flag |= QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN;
+                }
+                else
+                {
+                    //CMTR에서 생성된 qmcMtrNode이므로 복사하도록 한다.
+                    sNewMtrNode->flag &= ~QMC_MTR_TYPE_MASK;
+                    sNewMtrNode->flag |= QMC_MTR_TYPE_COPY_VALUE;
+                }
+            }
+
+            for ( sPred = aStartWith->predicate; sPred != NULL; sPred = sPred->next )
+            {
+                for ( sPredMore = sPred; sPredMore != NULL; sPredMore = sPredMore->more )
+                {
+                    changeNodeForCNBYJoin( sPredMore->node,
+                                           sOrgTable,
+                                           sOrgColumn,
+                                           sNewMtrNode->dstNode->node.table,
+                                           sNewMtrNode->dstNode->node.column );
+                }
+            }
+            for ( sPred = aConnectBy->predicate; sPred != NULL; sPred = sPred->next )
+            {
+                for ( sPredMore = sPred; sPredMore != NULL; sPredMore = sPredMore->more )
+                {
+                    changeNodeForCNBYJoin( sPredMore->node,
+                                           sOrgTable,
+                                           sOrgColumn,
+                                           sNewMtrNode->dstNode->node.table,
+                                           sNewMtrNode->dstNode->node.column );
+                }
+            }
+            sNewMtrNode->flag &= ~QMC_MTR_SORT_NEED_MASK;
+            sNewMtrNode->flag |= QMC_MTR_SORT_NEED_TRUE;
+
+            // PROJ-2179
+            sNewMtrNode->flag &= ~QMC_MTR_CHANGE_COLUMN_LOCATE_MASK;
+            sNewMtrNode->flag |= QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE;
+
+            if ( ( sItrAttr->flag & QMC_ATTR_SORT_ORDER_MASK )
+                    == QMC_ATTR_SORT_ORDER_ASC )
+            {
+                sNewMtrNode->flag &= ~QMC_MTR_SORT_ORDER_MASK;
+                sNewMtrNode->flag |= QMC_MTR_SORT_ASCENDING;
+            }
+            else
+            {
+                sNewMtrNode->flag &= ~QMC_MTR_SORT_ORDER_MASK;
+                sNewMtrNode->flag |= QMC_MTR_SORT_DESCENDING;
+            }
+
+            /* PROJ-2435 order by nulls first/last */
+            if ( ( sItrAttr->flag & QMC_ATTR_SORT_NULLS_ORDER_MASK )
+                 != QMC_ATTR_SORT_NULLS_ORDER_NONE )
+            {
+                if ( ( sItrAttr->flag & QMC_ATTR_SORT_NULLS_ORDER_MASK )
+                     == QMC_ATTR_SORT_NULLS_ORDER_FIRST )
+                {
+                    sNewMtrNode->flag &= ~QMC_MTR_SORT_NULLS_ORDER_MASK;
+                    sNewMtrNode->flag |= QMC_MTR_SORT_NULLS_ORDER_FIRST;
+                }
+                else
+                {
+                    sNewMtrNode->flag &= ~QMC_MTR_SORT_NULLS_ORDER_MASK;
+                    sNewMtrNode->flag |= QMC_MTR_SORT_NULLS_ORDER_LAST;
+                }
+            }
+            else
+            {
+                sNewMtrNode->flag &= ~QMC_MTR_SORT_NULLS_ORDER_MASK;
+                sNewMtrNode->flag |= QMC_MTR_SORT_NULLS_ORDER_NONE;
+            }
+            // 상위에서 temp table의 값을 참조하도록 변경된 위치를 설정한다.
+            sItrAttr->expr->node.table  = sNewMtrNode->dstNode->node.table;
+            sItrAttr->expr->node.column = sNewMtrNode->dstNode->node.column;
+
+            //connect
+            if ( sCNBY->mBaseMtrNode == NULL )
+            {
+                sCNBY->mBaseMtrNode = sNewMtrNode;
+                sLastMtrNode  = sNewMtrNode;
+            }
+            else
+            {
+                sLastMtrNode->next = sNewMtrNode;
+                sLastMtrNode       = sNewMtrNode;
+            }
+            if ( sCNBY->baseSortNode == NULL )
+            {
+                sCNBY->baseSortNode = sNewMtrNode;
+                sLastMtrNode2  = sNewMtrNode;
+            }
+            else
+            {
+                sLastMtrNode2->next = sNewMtrNode;
+                sLastMtrNode2       = sNewMtrNode;
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    sCurOffset = sCNBY->mtrNodeOffset;
+
+    // 다음 노드가 저장될 시작 지점
+    sCurOffset += idlOS::align8(ID_SIZEOF(qmdMtrNode)) * sColumnCount;
+
+    sCNBY->baseSortOffset = sCurOffset;
+
+    IDE_TEST( qtc::allocIntermediateTuple( aStatement,
+                                           sMtcTemplate,
+                                           sCNBY->myRowID,
+                                           sColumnCount )
+              != IDE_SUCCESS );
+
+    sMtcTemplate->rows[sCNBY->myRowID].lflag &= ~MTC_TUPLE_PLAN_MASK;
+    sMtcTemplate->rows[sCNBY->myRowID].lflag |= MTC_TUPLE_PLAN_TRUE;
+    sMtcTemplate->rows[sCNBY->myRowID].lflag &= ~MTC_TUPLE_PLAN_MTR_MASK;
+    sMtcTemplate->rows[sCNBY->myRowID].lflag |= MTC_TUPLE_PLAN_MTR_TRUE;
+
+    sCNBY->plan.flag &= ~QMN_PLAN_STORAGE_MASK;
+    sCNBY->plan.flag |= QMN_PLAN_STORAGE_MEMORY;
+
+    IDE_TEST( qmg::copyMtcColumnExecute( aStatement, sCNBY->mBaseMtrNode )
+              != IDE_SUCCESS );
+    IDE_TEST( qmg::setColumnLocate( aStatement, sCNBY->mBaseMtrNode )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qtc::allocIntermediateTuple( aStatement,
+                                           sMtcTemplate,
+                                           sCNBY->priorRowID,
+                                           sColumnCount )
+              != IDE_SUCCESS );
+
+    for ( i = 0; i < sMtcTemplate->rows[sCNBY->priorRowID].columnCount; i++ )
+    {
+        idlOS::memcpy( (void *) &(sMtcTemplate->rows[sCNBY->priorRowID].columns[i]),
+                       (void *) &(sMtcTemplate->rows[sCNBY->myRowID].columns[i]),
+                       ID_SIZEOF(mtcColumn) );
+    }
+
+    IDE_TEST( processStartWithPredicate( aStatement,
+                                         aQuerySet,
+                                         sCNBY,
+                                         aStartWith )
+              != IDE_SUCCESS );
+
+    IDE_TEST( processConnectByPredicateForJoin( aStatement,
+                                                aQuerySet,
+                                                sCNBY,
+                                                aConnectBy )
+              != IDE_SUCCESS );
+
+    /* 마무리 작업1 */
+    sPredicate[0] = sCNBY->startWithConstant;
+    sPredicate[1] = sCNBY->startWithFilter;
+    sPredicate[2] = sCNBY->startWithSubquery;
+    sPredicate[3] = sCNBY->startWithNNF;
+    sPredicate[4] = sCNBY->connectByConstant;
+    sPredicate[5] = sCNBY->connectByFilter;
+    /* fix BUG-26770
+     * connect by LEVEL+to_date(:D1,'YYYYMMDD') <= to_date(:D2,'YYYYMMDD')+1;
+     * 질의수행시 서버비정상종료
+     * level filter에 대한 처리가 없어,
+     * level filter에 포한된 host변수를 등록하지 못해 bindParamInfo 설정시, 비정상종료함.
+     */
+    sPredicate[6] = sCNBY->levelFilter;
+
+    /* BUG-39041 The connect by clause is not support subquery. */
+    sPredicate[7] = sCNBY->connectBySubquery;
+
+    /* BUG-39434 The connect by need rownum pseudo column. */
+    sPredicate[8] = sCNBY->rownumFilter;
+
+    for ( i = 0;
+          i < 9;
+          i++ )
+    {
+        IDE_TEST( qmg::changeColumnLocate( aStatement,
+                                           aQuerySet,
+                                           sPredicate[i],
+                                           ID_USHORT_MAX,
+                                           ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+
+    /* dependency 처리 및 subquery의 처리 */
+    IDE_TEST( qmoDependency::setDependency( aStatement ,
+                                            aQuerySet ,
+                                            & sCNBY->plan ,
+                                            QMO_CNBY_DEPENDENCY_FOR_JOIN,
+                                            sCNBY->myRowID,
+                                            NULL,
+                                            9,
+                                            sPredicate,
+                                            0 ,
+                                            NULL )
+              != IDE_SUCCESS );
+
+    /*
+     * PROJ-1071 Parallel Query
+     * parallel degree
+     */
+    sCNBY->plan.mParallelDegree = aChildPlan->mParallelDegree;
+    sCNBY->plan.flag &= ~QMN_PLAN_NODE_EXIST_MASK;
+    sCNBY->plan.flag |= (aChildPlan->flag & QMN_PLAN_NODE_EXIST_MASK);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* PROJ-2509 Connect By Predicate 처리 */
+IDE_RC qmoOneMtrPlan::processConnectByPredicateForJoin( qcStatement    * aStatement,
+                                                        qmsQuerySet    * aQuerySet,
+                                                        qmncCNBY       * aCNBY,
+                                                        qmoLeafInfo    * aConnectBy )
+{
+    qmncScanMethod sMethod;
+    idBool         sIsSubQuery    = ID_FALSE;
+    idBool         sFind          = ID_FALSE;
+    qtcNode      * sNode          = NULL;
+    qtcNode      * sSortNode      = NULL;
+    qtcNode      * sPriorPred     = NULL;
+    qtcNode      * sOptimizedNode = NULL;
+    qmcMtrNode   * sMtrNode       = NULL;
+    qmcMtrNode   * sTmp           = NULL;
+    UInt           sCurOffset     = 0;
+    qtcNode        sPriorTmp;
+    UShort         sColumnCount   = 0;
+    qmoPredicate * sPred          = NULL;
+    qmoPredicate * sPredMore      = NULL;
+    qmcMtrNode   * sNewMtrNode    = NULL;
+
+    aCNBY->levelFilter       = NULL;
+    aCNBY->rownumFilter      = NULL;
+    aCNBY->connectByKeyRange = NULL;
+    aCNBY->connectByFilter   = NULL;
+    aCNBY->priorNode         = NULL;
+
+    /* 1. Level Filter 의 처리 */
+    if ( aConnectBy->levelPredicate != NULL )
+    {
+        IDE_TEST( qmoPred::linkPredicate( aStatement,
+                                          aConnectBy->levelPredicate,
+                                          & sNode )
+                  != IDE_SUCCESS );
+        IDE_TEST( qmoPred::setPriorNodeID( aStatement,
+                                           aQuerySet,
+                                           sNode )
+                  != IDE_SUCCESS );
+
+        /* BUG-17921 */
+        IDE_TEST( qmoNormalForm::optimizeForm( sNode,
+                                                & sOptimizedNode )
+                   != IDE_SUCCESS );
+        aCNBY->levelFilter = sOptimizedNode;
+
+        IDE_TEST( qtc::optimizeHostConstExpression( aStatement,
+                                                    aCNBY->levelFilter )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* BUG-39434 The connect by need rownum pseudo column.
+     * 1-2 Rownum Filter 의 처리
+     */
+    if ( aConnectBy->connectByRownumPred != NULL )
+    {
+        IDE_TEST( qmoPred::linkPredicate( aStatement,
+                                          aConnectBy->connectByRownumPred,
+                                          & sNode )
+                  != IDE_SUCCESS );
+        IDE_TEST( qmoPred::setPriorNodeID( aStatement,
+                                           aQuerySet,
+                                           sNode )
+                  != IDE_SUCCESS );
+
+        /* BUG-17921 */
+        IDE_TEST( qmoNormalForm::optimizeForm( sNode,
+                                               & sOptimizedNode )
+                  != IDE_SUCCESS );
+        aCNBY->rownumFilter = sOptimizedNode;
+
+        IDE_TEST( qtc::optimizeHostConstExpression( aStatement,
+                                                    aCNBY->rownumFilter )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* PROJ-2641 Hierarchy Query Index
+     * Connectby predicate에서 prior Node를 찾아서
+     * Error가 나는 상황을 체크해야한다.
+     */
+    for ( sPred = aConnectBy->predicate; sPred != NULL; sPred = sPred->next )
+    {
+        for ( sPredMore = sPred;
+              sPredMore != NULL;
+              sPredMore = sPredMore->more )
+        {
+            sPriorTmp.node.next = NULL;
+            IDE_TEST( findPriorColumns( aStatement,
+                                        sPredMore->node,
+                                        & sPriorTmp )
+                      != IDE_SUCCESS );
+            /* BUG-44759 processPredicae을 수행하기전에 priorNode
+             * 가 있어야한다.
+             */
+            aCNBY->priorNode = (qtcNode *)sPriorTmp.node.next;
+
+            if ( aCNBY->priorNode != NULL )
+            {
+                aQuerySet->SFWGH->hierarchy->originalTable = aCNBY->priorNode->node.table;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+
+    IDE_TEST( qmoOneNonPlan::processPredicate( aStatement,
+                                               aQuerySet,
+                                               aConnectBy->predicate,
+                                               aConnectBy->constantPredicate,
+                                               aConnectBy->ridPredicate,
+                                               aConnectBy->index,
+                                               aCNBY->myRowID,
+                                               & sMethod.constantFilter,
+                                               & sMethod.filter,
+                                               & sMethod.lobFilter,
+                                               & sMethod.subqueryFilter,
+                                               & sMethod.varKeyRange,
+                                               & sMethod.varKeyFilter,
+                                               & sMethod.varKeyRange4Filter,
+                                               & sMethod.varKeyFilter4Filter,
+                                               & sMethod.fixKeyRange,
+                                               & sMethod.fixKeyFilter,
+                                               & sMethod.fixKeyRange4Print,
+                                               & sMethod.fixKeyFilter4Print,
+                                               & sMethod.ridRange,
+                                               & sIsSubQuery )
+              != IDE_SUCCESS );
+
+    /* 3. constantFilter 지정 */
+    if ( sMethod.constantFilter != NULL )
+    {
+        aCNBY->connectByConstant = sMethod.constantFilter;
+    }
+    else
+    {
+        aCNBY->connectByConstant = NULL;
+    }
+
+    /* BUG-39401 need subquery for connect by clause */
+    if ( sMethod.subqueryFilter != NULL )
+    {
+        aCNBY->connectBySubquery = sMethod.subqueryFilter;
+    }
+    else
+    {
+        aCNBY->connectBySubquery = NULL;
+    }
+
+    if ( ( sMethod.varKeyRange == NULL ) &&
+         ( sMethod.varKeyFilter == NULL ) &&
+         ( sMethod.varKeyRange4Filter == NULL ) &&
+         ( sMethod.varKeyFilter4Filter == NULL ) &&
+         ( sMethod.fixKeyRange == NULL ) &&
+         ( sMethod.fixKeyFilter == NULL ) )
+    {
+        aCNBY->mIndex = NULL;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_TEST_RAISE( sMethod.lobFilter != NULL, ERR_NOT_SUPPORT_LOB_FILTER );
+
+    if ( sMethod.filter != NULL )
+    {
+        aCNBY->connectByFilter = sMethod.filter;
+
+        sPriorTmp.node.next = NULL;
+        IDE_TEST( findPriorColumns( aStatement,
+                                    sMethod.filter,
+                                    & sPriorTmp )
+                  != IDE_SUCCESS );
+        aCNBY->priorNode = (qtcNode *)sPriorTmp.node.next;
+
+        /* 4-2. find Prior predicate and Sort node */
+        IDE_TEST( findPriorPredAndSortNode( aStatement,
+                                            sMethod.filter,
+                                            &sSortNode,
+                                            &sPriorPred,
+                                            aCNBY->myRowID,
+                                            &sFind )
+                  != IDE_SUCCESS );
+
+        if ( ( sFind == ID_TRUE ) &&
+             ( aCNBY->mIndex == NULL ) )
+        {
+            if ( ( aCNBY->flag & QMNC_CNBY_SIBLINGS_MASK )
+                 == QMNC_CNBY_SIBLINGS_TRUE )
+            {
+                IDE_TEST( makeSortNodeOfCNBY( aStatement,
+                                              aQuerySet,
+                                              aCNBY,
+                                              sSortNode )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                for ( sMtrNode  = aCNBY->mBaseMtrNode;
+                      sMtrNode != NULL;
+                      sMtrNode  = sMtrNode->next )
+                {
+                    if ( ( sMtrNode->dstNode->node.table == sSortNode->node.table ) &&
+                         ( sMtrNode->dstNode->node.column == sSortNode->node.column ))
+                    {
+                        IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmcMtrNode, &sNewMtrNode)
+                                  != IDE_SUCCESS);
+                        *sNewMtrNode = *sMtrNode;
+                        aCNBY->baseSortNode = sNewMtrNode;
+                        sNewMtrNode->next = NULL;
+
+                        sNewMtrNode->flag &= ~QMC_MTR_SORT_NEED_MASK;
+                        sNewMtrNode->flag |= QMC_MTR_SORT_NEED_TRUE;
+                        break;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+            }
+            if ( (((qtcNode*)(sPriorPred->node.arguments))->lflag & QTC_NODE_PRIOR_MASK) ==
+                 QTC_NODE_PRIOR_EXIST )
+            {
+                sPriorPred->indexArgument = 1;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            /* CNF sPriorPredicate 를 DNF 형태로 변환 */
+            IDE_TEST( qmoNormalForm::normalizeDNF( aStatement,
+                                                   sPriorPred,
+                                                   &aCNBY->connectByKeyRange)
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    sCurOffset = aCNBY->baseSortOffset;
+    sColumnCount = 0;
+    for ( sTmp = aCNBY->baseSortNode; sTmp != NULL ; sTmp = sTmp->next )
+    {
+        sColumnCount++;
+    }
+    sCurOffset += idlOS::align8(ID_SIZEOF(qmdMtrNode)) * sColumnCount;
+
+    aCNBY->mSortNodeOffset = sCurOffset;
+    sColumnCount = 0;
+    for ( sTmp = aCNBY->sortNode; sTmp != NULL ; sTmp = sTmp->next )
+    {
+        sColumnCount++;
+    }
+    // 다음 노드가 저장될 시작 지점
+    sCurOffset += idlOS::align8(ID_SIZEOF(qmdMtrNode)) * sColumnCount;
+
+    aCNBY->sortMTROffset = sCurOffset;
+    sCurOffset += idlOS::align8(ID_SIZEOF(qmcdSortTemp));
+    aCNBY->mBaseSortMTROffset = sCurOffset;
+    sCurOffset += idlOS::align8(ID_SIZEOF(qmcdSortTemp));
+
+    //data 영역의 크기 계산
+    QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sCurOffset;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_LOB_FILTER )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMO_NOT_ALLOWED_LOB_FILTER ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void qmoOneMtrPlan::changeNodeForCNBYJoin( qtcNode * aNode,
+                                           UShort    aSrcTable,
+                                           UShort    aSrcColumn,
+                                           UShort    aDstTable,
+                                           UShort    aDstColumn )
+{
+    if ( ( aNode->node.module == &qtc::columnModule ) &&
+         ( QTC_IS_PSEUDO( aNode ) == ID_FALSE ) )
+    {
+        if ( ( aNode->node.baseTable == aSrcTable ) &&
+             ( aNode->node.baseColumn == aSrcColumn ) )
+        {
+            aNode->node.table = aDstTable;
+            aNode->node.column = aDstColumn;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( aNode->node.arguments != NULL )
+    {
+        changeNodeForCNBYJoin( (qtcNode *)aNode->node.arguments,
+                               aSrcTable,
+                               aSrcColumn,
+                               aDstTable,
+                               aDstColumn );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( aNode->node.next != NULL )
+    {
+        changeNodeForCNBYJoin( (qtcNode *)aNode->node.next,
+                               aSrcTable,
+                               aSrcColumn,
+                               aDstTable,
+                               aDstColumn );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+

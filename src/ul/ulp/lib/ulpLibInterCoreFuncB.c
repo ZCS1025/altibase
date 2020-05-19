@@ -18,11 +18,11 @@
 
 ACI_RC ulpSetStmtAttrParamCore( ulpLibConnNode *aConnNode,
                                 ulpLibStmtNode *aStmtNode,
-                                SQLHSTMT    *aHstmt,
-                                ulpSqlstmt  *aSqlstmt,
-                                ulpSqlca    *aSqlca,
-                                ulpSqlcode  *aSqlcode,
-                                ulpSqlstate *aSqlstate )
+                                SQLHSTMT       *aHstmt,
+                                ulpSqlstmt     *aSqlstmt,
+                                ulpSqlca       *aSqlca,
+                                ulpSqlcode     *aSqlcode,
+                                ulpSqlstate    *aSqlstate)
 {
 /***********************************************************************
  *
@@ -58,14 +58,26 @@ ACI_RC ulpSetStmtAttrParamCore( ulpLibConnNode *aConnNode,
                             , ERR_CLI_SETSTMT );
         }
 
-        sSqlRes = SQLSetStmtAttr( *aHstmt,
-                                  SQL_ATTR_PARAMSET_SIZE,
-                                  (SQLPOINTER)(acp_slong_t)aSqlstmt->arrsize,
-                                  0 );
+        /* BUG-45779 PSM Array Type을 사용할때는 SQL_ATTR_PARAMSET_SIZE 값이 1을 초과 해서는 안된다 */
+        if( (aStmtNode != NULL) &&
+            (aSqlstmt->stmttype == S_DirectPSM) &&
+            (aStmtNode->mUlpPSMArrInfo.mIsPSMArray == ACP_TRUE) )
+        {
+            sSqlRes = SQLSetStmtAttr( *aHstmt,
+                                       SQL_ATTR_PARAMSET_SIZE,
+                                       (SQLPOINTER)1,
+                                       0 );
+        }
+        else
+        {
+            sSqlRes = SQLSetStmtAttr( *aHstmt,
+                                       SQL_ATTR_PARAMSET_SIZE,
+                                       (SQLPOINTER)(acp_slong_t)aSqlstmt->arrsize,
+                                       0 );
+        }
 
         ACI_TEST_RAISE( ( sSqlRes == SQL_ERROR ) || ( sSqlRes == SQL_INVALID_HANDLE )
                         , ERR_CLI_SETSTMT );
-
     }
     else
     {
@@ -370,6 +382,7 @@ ACI_RC ulpSetStmtAttrDynamicRowCore( ulpLibConnNode *aConnNode,
 
 
 ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
+                         ulpLibStmtNode *aStmtNode,
                          SQLHSTMT       *aHstmt,
                          ulpSqlstmt     *aSqlstmt,
                          ulpHostVar     *aHostVar,
@@ -394,13 +407,17 @@ ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
     SQLULEN     sPrecision;
     acp_bool_t  sFixedInd;
 
+    /* BUG-45779 */
+    ulpPSMArrDataInfo   *sUlpPSMArrDataInfo     = NULL;
+    acp_list_node_t     *sUlpPSMArrDataInfoNode = NULL;
+    SQLULEN              sPSMArraySize          = 0;
+
     sPrecision = 0;
     sFixedInd  = ACP_FALSE;
-    sCType = sSqlType = SQL_UNKNOWN_TYPE;
+    sCType     = sSqlType = SQL_UNKNOWN_TYPE;
 
     if ( aHostVar->mType == H_BLOB_FILE )
     {
-
         sSqlRes = SQLBindFileToParam( *aHstmt,
                                       (SQLSMALLINT)aIndex,
                                       SQL_BLOB,
@@ -427,6 +444,37 @@ ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
 
         ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE)
                         , ERR_CLI_BINDFILEPARAM );
+    }
+    else if( aStmtNode != NULL &&
+             aHostVar->isarr == 1 &&                              /* host 변수가 array이며 */
+             aStmtNode->mUlpPSMArrInfo.mIsPSMArray == ACP_TRUE )  /* psm이 array type의 인자로 정의되어 있으며 */
+    {
+        ACI_TEST( acpMemAlloc((void**)&sUlpPSMArrDataInfo, sizeof(ulpPSMArrDataInfo)) != ACP_RC_SUCCESS);
+
+        sPSMArraySize = sizeof(psmArrayMetaInfo) + (aHostVar->arrsize * aHostVar->mSizeof);
+        ACI_TEST( acpMemAlloc((void**)&sUlpPSMArrDataInfo->mData, sPSMArraySize) != ACP_RC_SUCCESS);
+
+        /* BUG-45779 PSM Array Bind */
+        sSqlRes = SQLBindParameter( *aHstmt,
+                                    (SQLUSMALLINT)aIndex,
+                                     aInOut,
+                                     SQL_C_BINARY,
+                                     SQL_BINARY,
+                                     sPSMArraySize, /* META + host variable size */
+                                     0,
+                                     sUlpPSMArrDataInfo->mData,
+                                     sPSMArraySize, /* META + host variable size */
+                                     NULL );
+
+        ACI_TEST_RAISE( (sSqlRes == SQL_ERROR) || (sSqlRes == SQL_INVALID_HANDLE), ERR_CLI_BINDPARAM );
+
+        /* BUG-45779 Bind 성공한 HostVar정보를 저장 */
+        sUlpPSMArrDataInfo->mUlpHostVar = aHostVar;
+        ACI_TEST( acpMemAlloc((void**)&sUlpPSMArrDataInfoNode, sizeof(acp_list_node_t)) != ACP_RC_SUCCESS);
+
+        acpListInitObj(sUlpPSMArrDataInfoNode, sUlpPSMArrDataInfo);
+        acpListAppendNode(&aStmtNode->mUlpPSMArrInfo.mPSMArrDataInfoList, sUlpPSMArrDataInfoNode);
+
     }
     else
     {
@@ -644,6 +692,18 @@ ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
                 sCType   = SQL_C_BINARY;
                 sPrecision = ACP_SINT32_MAX;
                 break;
+            case H_BINARY2 :  /* BUG-46418 */
+                sSqlType = SQL_BINARY;
+                sCType   = SQL_C_BINARY;
+                if (aHostVar->mLen == 0 && !(aHostVar->mIsDynAlloc))
+                {
+                    sPrecision = 1;
+                }
+                else
+                {
+                    sPrecision = (SQLULEN)(aHostVar->mLen);
+                }
+                break;
             case H_BIT :
                 sSqlType = SQL_VARBIT;
                 sCType   = SQL_C_BINARY;
@@ -802,6 +862,16 @@ ACI_RC ulpBindParamCore( ulpLibConnNode *aConnNode,
     }
     ACI_EXCEPTION_END;
 
+    /* BUG-45779 error 발생시 자원 정리 */
+    if ( sUlpPSMArrDataInfoNode != NULL )
+    {
+        (void)acpMemFree(sUlpPSMArrDataInfoNode);
+    }
+    if ( sUlpPSMArrDataInfo != NULL )
+    {
+        (void)acpMemFree(sUlpPSMArrDataInfo);
+    }
+
     return ACI_FAILURE;
 }
 
@@ -827,8 +897,6 @@ ACI_RC ulpBindColCore( ulpLibConnNode *aConnNode,
     acp_sint32_t sLen;
     SQLRETURN    sSqlRes;
     SQLSMALLINT  sCType = SQL_UNKNOWN_TYPE;
-
-
 
     sLen = aHostVar->mLen;
 
@@ -965,6 +1033,14 @@ ACI_RC ulpBindColCore( ulpLibConnNode *aConnNode,
                     {
                         sLen = ACP_SINT32_MAX;
                     }
+                }
+                break;
+            case H_BINARY2:  /* BUG-46418 */
+                sCType = SQL_C_BINARY;
+                if ( aHostVar->mLen == 0 && !(aHostVar->mIsDynAlloc) )
+                {
+                    sCType = SQL_C_BINARY;
+                    sLen   = 1;
                 }
                 break;
             case H_CLOB   :
@@ -1345,4 +1421,237 @@ ACI_RC ulpAdjustArraySize(ulpSqlstmt *aSqlstmt)
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
+}
+
+ACI_RC ulpPSMArrayWrite(ulpSqlstmt *aSqlstmt, ulpHostVar *aHostVar, void* aBuffer)
+{
+/***********************************************************************
+ * BUG-45779
+ *
+ * Description :
+ *      Server로 전달할 PSM Array Bind를 위한 Meta정보와 Host variable 데이터를 copy한다.
+ *
+ * @param aSqlstmt
+ *        aHostVar        host variable infomation
+ *        aBuffer         meta + host varivable 
+ ***********************************************************************/
+    psmArrayMetaInfo sPsmArrayMetaInfo;
+
+    sPsmArrayMetaInfo.mUlpVersion = APRE_PSM_ARRAY_META_VERSION;
+
+    switch ( aHostVar->mType )
+    {
+        case H_SHORT:
+            sPsmArrayMetaInfo.mUlpSqltype = SQL_C_SHORT;
+            break;
+        case H_INT:
+            sPsmArrayMetaInfo.mUlpSqltype = SQL_C_LONG;
+            break;
+        case H_LONG:
+        case H_LONGLONG:
+            sPsmArrayMetaInfo.mUlpSqltype = SQL_BIGINT;
+            break;
+        case H_FLOAT:
+            sPsmArrayMetaInfo.mUlpSqltype = SQL_C_FLOAT;
+            break;
+        case H_DOUBLE:
+            sPsmArrayMetaInfo.mUlpSqltype = SQL_C_DOUBLE;
+            break;
+        default:
+            /* BUG-45779 지원하지 않는 Type */
+            ACI_RAISE(UnsupportCType);
+    }
+
+    sPsmArrayMetaInfo.mUlpElemCount = aHostVar->arrsize;
+    sPsmArrayMetaInfo.mUlpReturnElemCount = 0;
+    sPsmArrayMetaInfo.mUlpHasNull = 0;
+
+    /* BUG-45779 in, inout type일 경우에만 data를 copy한다. */
+    if ( aHostVar->mInOut == H_IN ||
+         aHostVar->mInOut == H_INOUT )
+    {
+        (void)acpMemCpy( (acp_char_t*)aBuffer,
+                         &sPsmArrayMetaInfo,
+                         sizeof(psmArrayMetaInfo));
+
+        (void)acpMemCpy( (acp_char_t*)aBuffer + sizeof(psmArrayMetaInfo),
+                         (acp_char_t*)aHostVar->mHostVar,
+                         aHostVar->arrsize * aHostVar->mSizeof );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION ( UnsupportCType )
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr, ulpERR_ABORT_Not_Supported_Host_Var_Type );
+        ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
+                               aSqlstmt->sqlcodeerr,
+                               aSqlstmt->sqlstateerr,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               ulpGetErrorCODE(&sErrorMgr),
+                               ulpGetErrorSTATE(&sErrorMgr) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+
+ACI_RC ulpPSMArrayRead(ulpSqlstmt *aSqlstmt, ulpHostVar *aHostVar, void* aBuffer)
+{
+/***********************************************************************
+ * BUG-45779
+ *
+ * Description :
+ *      Server로 부터 전달받은 Meta정보와 Host variable 데이터를 copy한다.
+ *
+ * @param aSqlstmt
+ *        aHostVar        host variable infomation
+ *        aBuffer         meta + host varivable 
+ ***********************************************************************/
+    psmArrayMetaInfo *sPsmArrayMetaInfo;
+
+    sPsmArrayMetaInfo = (psmArrayMetaInfo*)aBuffer;
+
+    ACI_TEST_RAISE( sPsmArrayMetaInfo->mUlpVersion != APRE_PSM_ARRAY_META_VERSION, Invalid_PSM_Array_Version );
+
+    /* BUG-45779 out parameter일 경우 psm array type과 apre 타입을 비교한다. */
+    switch(aHostVar->mType)
+    {
+        case H_SHORT:
+            ACI_TEST_RAISE( sPsmArrayMetaInfo->mUlpSqltype != SQL_C_SHORT, InvalidPSMArrayType);
+            break;
+        case H_INT:
+            ACI_TEST_RAISE( sPsmArrayMetaInfo->mUlpSqltype != SQL_C_LONG, InvalidPSMArrayType);
+            break;
+        case H_LONG:
+        case H_LONGLONG:
+            ACI_TEST_RAISE( sPsmArrayMetaInfo->mUlpSqltype != SQL_BIGINT, InvalidPSMArrayType);
+            break;
+        case H_FLOAT:
+            ACI_TEST_RAISE( sPsmArrayMetaInfo->mUlpSqltype != SQL_C_FLOAT, InvalidPSMArrayType);
+            break;
+        case H_DOUBLE:
+            ACI_TEST_RAISE( sPsmArrayMetaInfo->mUlpSqltype != SQL_C_DOUBLE, InvalidPSMArrayType);
+            break;
+        default:
+            /* BUG-45779 지원하지 않는 Type */
+            ACI_RAISE(UnsupportCType);
+    }
+
+    /* BUG-45779 out array bind에 처리된 값을 indicator에 셋팅한다. */
+    if ( aHostVar->mHostInd != NULL )
+    {
+        *(aHostVar->mHostInd) = (SQLLEN)sPsmArrayMetaInfo->mUlpReturnElemCount;
+    }
+
+    (void)acpMemCpy((acp_char_t*)aHostVar->mHostVar,
+                    ((acp_char_t*)aBuffer + sizeof(psmArrayMetaInfo)),
+                    aHostVar->arrsize * aHostVar->mSizeof );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION ( Invalid_PSM_Array_Version )
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr, ulpERR_ABORT_Invalid_PSM_Array_Version );
+        ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
+                               aSqlstmt->sqlcodeerr,
+                               aSqlstmt->sqlstateerr,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               ulpGetErrorCODE(&sErrorMgr),
+                               ulpGetErrorSTATE(&sErrorMgr) );
+    }
+    ACI_EXCEPTION ( UnsupportCType )
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr, ulpERR_ABORT_Not_Supported_Host_Var_Type );
+        ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
+                               aSqlstmt->sqlcodeerr,
+                               aSqlstmt->sqlstateerr,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               ulpGetErrorCODE(&sErrorMgr),
+                               ulpGetErrorSTATE(&sErrorMgr) );
+    }
+    ACI_EXCEPTION ( InvalidPSMArrayType )
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr, ulpERR_ABORT_Invalid_PSM_Array_Type );
+        ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
+                               aSqlstmt->sqlcodeerr,
+                               aSqlstmt->sqlstateerr,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               ulpGetErrorCODE(&sErrorMgr),
+                               ulpGetErrorSTATE(&sErrorMgr) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulpPSMArrayHasNullCheck(ulpSqlstmt *aSqlstmt, void* aBuffer)
+{
+    psmArrayMetaInfo *sPsmArrayMetaInfo;
+
+    sPsmArrayMetaInfo = (psmArrayMetaInfo*)aBuffer;
+
+    if( sPsmArrayMetaInfo->mUlpHasNull == 1 )
+    {
+        /* BUG-45779 out parameter에 null값이 포함되어 있을경우, 데이터저장후 error로 리턴한다. */
+        ACI_RAISE( HasNull );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION ( HasNull )
+    {
+        ulpErrorMgr sErrorMgr;
+        ulpSetErrorCode( &sErrorMgr, ulpERR_ABORT_Column_Value_Is_Null );
+        ulpSetErrorInfo4PCOMP( aSqlstmt->sqlcaerr,
+                               aSqlstmt->sqlcodeerr,
+                               aSqlstmt->sqlstateerr,
+                               ulpGetErrorMSG(&sErrorMgr),
+                               ulpGetErrorCODE(&sErrorMgr),
+                               ulpGetErrorSTATE(&sErrorMgr) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ /* BUG-45779 stmtNode에 할당된 PSM Array 메모리를 해제한다. */
+ void ulpPSMArrayMetaFree(ulpPSMArrInfo  *aUlpPSMArrInfo)
+ {
+ /***********************************************************************
+ * BUG-45779
+ *
+ * Description :
+ *      Bind된 PSM Array Buffer를 메모리에서 해제한다.
+ *
+ * @param aUlpPSMArrInfo    psm array infomation
+ ***********************************************************************/
+     acp_list_node_t *sPSMMetaIterator;
+     acp_list_node_t *sPSMMetaNodeNext;
+
+     ulpPSMArrDataInfo   *sUlpPSMArrDataInfo;
+
+     ACP_LIST_ITERATE_SAFE(&aUlpPSMArrInfo->mPSMArrDataInfoList, sPSMMetaIterator, sPSMMetaNodeNext)
+     {
+         sUlpPSMArrDataInfo = (ulpPSMArrDataInfo *)sPSMMetaIterator->mObj;
+
+         if( sUlpPSMArrDataInfo->mData != NULL)
+         {
+             (void)acpMemFree( sUlpPSMArrDataInfo->mData );
+             sUlpPSMArrDataInfo->mData = NULL;
+         }
+         if( sUlpPSMArrDataInfo->mUlpHostVar != NULL)
+         {
+             /* User 메모리이므로 해제하지 않음 */
+             sUlpPSMArrDataInfo->mUlpHostVar = NULL;
+         }
+
+         acpListDeleteNode(sPSMMetaIterator);
+         (void)acpMemFree(sPSMMetaIterator);
+     }
 }

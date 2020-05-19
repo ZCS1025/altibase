@@ -112,6 +112,31 @@ qmoUnnesting::doTransform( qcStatement  * aStatement,
     // Subqury Unnesting 수행
     //------------------------------------------
 
+    if ( QCU_OPTIMIZER_UNNEST_SUBQUERY == 0 )
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_SUBQUERY_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_SUBQUERY_FALSE;
+    }
+    else
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_SUBQUERY_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_SUBQUERY_TRUE;
+    }
+
+    /* BUG-46544 unnest hit */
+    if ( QCU_OPTIMIZER_UNNEST_COMPATIBILITY == 1 )
+    {
+        // 기존에 unnest의 경우 hint보다 프로퍼티 가 우선이여서 호환성을 위해
+        // 프로퍼티를 우선하도록 한다.
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_COMPATIBILITY_1_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_TRUE;
+    }
+    else
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_COMPATIBILITY_1_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_FALSE;
+    }
+
     // BUG-43059 Target subquery unnest/removal disable
     sQuerySet = ((qmsParseTree*)(aStatement->myPlan->parseTree))->querySet;
 
@@ -130,6 +155,9 @@ qmoUnnesting::doTransform( qcStatement  * aStatement,
 
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_UNNEST_SUBQUERY );
+
+    qcgPlan::registerPlanProperty( aStatement,
+                                   PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY );
 
     *aChanged = sChanged;
 
@@ -160,6 +188,31 @@ qmoUnnesting::doTransformSubqueries( qcStatement * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoUnnesting::doTransformSubqueries::__FT__" );
 
+    if ( QCU_OPTIMIZER_UNNEST_SUBQUERY == 0 )
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_SUBQUERY_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_SUBQUERY_FALSE;
+    }
+    else
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_SUBQUERY_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_SUBQUERY_TRUE;
+    }
+
+    /* BUG-46544 unnest hit */
+    if ( QCU_OPTIMIZER_UNNEST_COMPATIBILITY == 1 )
+    {
+        // 기존에 unnest의 경우 hint보다 프로퍼티 가 우선이여서 호환성을 위해
+        // 프로퍼티를 우선하도록 한다.
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_COMPATIBILITY_1_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_TRUE;
+    }
+    else
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_COMPATIBILITY_1_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_FALSE;
+    }
+
     IDE_TEST( findAndUnnestSubquery( aStatement,
                                      NULL,
                                      ID_FALSE,
@@ -170,6 +223,8 @@ qmoUnnesting::doTransformSubqueries( qcStatement * aStatement,
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_UNNEST_SUBQUERY );
 
+    qcgPlan::registerPlanProperty( aStatement,
+                                   PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY );
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -335,7 +390,9 @@ qmoUnnesting::doTransformFrom( qcStatement * aStatement,
     }
     else
     {
-        IDE_TEST( doTransformSubqueries( aStatement,
+        IDE_TEST( findAndUnnestSubquery( aStatement,
+                                         NULL,
+                                         ID_FALSE,
                                          aFrom->onCondition,
                                          aChanged )
                   != IDE_SUCCESS );
@@ -936,14 +993,39 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     }
 
     // BUG-43300 no_unnest 힌트 사용시 exists 변환을 막습니다.
-    if ( (QCU_OPTIMIZER_UNNEST_SUBQUERY == 0) ||
-         (sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST) )
+    if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST )
     {
         IDE_CONT( INVALID_FORM );
     }
+    else if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NOT_DEFINED )
+    {
+        if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
+             == QC_TMP_UNNEST_SUBQUERY_FALSE )
+        {
+            IDE_CONT( INVALID_FORM );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
     else
     {
-        // Nothing to do.
+        /* BUG-46544 Unnest hit */
+        // Hint QMO_SUBQUERY_UNNEST_TYPE_UNNEST
+        // hint가 존재하고 Property는 0이고 Compatibility가 1 이면 Property
+        // 우선으로 unnest를 하지 않는다.
+        if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
+               == QC_TMP_UNNEST_SUBQUERY_FALSE ) &&
+             ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_COMPATIBILITY_1_MASK )
+               == QC_TMP_UNNEST_COMPATIBILITY_1_TRUE ) )
+        {
+            IDE_CONT( INVALID_FORM );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     return ID_TRUE;
@@ -1229,14 +1311,39 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    if ( (QCU_OPTIMIZER_UNNEST_SUBQUERY == 0) ||
-         (sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST) )
+    if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST )
     {
         IDE_CONT( INVALID_FORM );
     }
+    else if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NOT_DEFINED )
+    {
+        if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
+             == QC_TMP_UNNEST_SUBQUERY_FALSE )
+        {
+            IDE_CONT( INVALID_FORM );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
     else
     {
-        // Nothing to do.
+        /* BUG-46544 Unnest hit */
+        // Hint QMO_SUBQUERY_UNNEST_TYPE_UNNEST
+        // hint가 존재하고 Property는 0이고 Compatibility가 1 이면 Property
+        // 우선으로 unnest를 하지 않는다.
+        if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
+               == QC_TMP_UNNEST_SUBQUERY_FALSE ) &&
+             ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_COMPATIBILITY_1_MASK )
+               == QC_TMP_UNNEST_COMPATIBILITY_1_TRUE ) )
+        {
+            IDE_CONT( INVALID_FORM );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     if( sSQParseTree->limit != NULL )
@@ -5693,6 +5800,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
     qcDepInfo      sOuterCommonDepInfo;
     idBool         sResult;
     idBool         sIsEquivalent;
+    qmsConcatElement * sGroup;
 
     IDU_FIT_POINT_FATAL( "qmoUnnesting::isRemovableSubquery::__FT__" );
 
@@ -5756,14 +5864,39 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    if ( (QCU_OPTIMIZER_UNNEST_SUBQUERY == 0) ||
-         (sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST) )
+    if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST )
     {
         IDE_CONT( UNREMOVABLE );
     }
+    else if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NOT_DEFINED )
+    {
+        if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
+             == QC_TMP_UNNEST_SUBQUERY_FALSE )
+        {
+            IDE_CONT( UNREMOVABLE );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
     else
     {
-        // Nothing to do.
+        /* BUG-46544 Unnest hit */
+        // Hint QMO_SUBQUERY_UNNEST_TYPE_UNNEST
+        // hint가 존재하고 Property는 0이고 Compatibility가 1 이면 Property
+        // 우선으로 unnest를 하지 않는다.
+        if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
+               == QC_TMP_UNNEST_SUBQUERY_FALSE ) &&
+             ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_COMPATIBILITY_1_MASK )
+               == QC_TMP_UNNEST_COMPATIBILITY_1_TRUE ) )
+        {
+            IDE_CONT( UNREMOVABLE );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     if( ( aSFWGH->hierarchy != NULL ) ||
@@ -5776,7 +5909,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
     {
         // Nothing to do.
     }
-    
+
     if( sSQParseTree->limit != NULL )
     {
         // Subquery에서 LIMIT절 사용한 경우
@@ -6018,6 +6151,22 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
             {
                 // Nothing to do.
             }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+
+    // BUG-45760
+    for ( sGroup = aSFWGH->group;
+         sGroup != NULL;
+         sGroup = sGroup->next )
+    {
+        if ( ( sGroup->type == QMS_GROUPBY_ROLLUP ) ||
+             ( sGroup->type == QMS_GROUPBY_CUBE ) )
+        {
+            IDE_RAISE( UNREMOVABLE );
         }
         else
         {
@@ -6931,6 +7080,17 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
             IDE_TEST( genViewSelect( sSQStatement, sSort->sortColumn, ID_TRUE )
                       != IDE_SUCCESS );
         }
+
+        // BUGBUG
+        /*
+        for ( sGroup = sParseTree->querySet->SFWGH->group;
+             sGroup != NULL;
+             sGroup = sGroup->next )
+        {
+            IDE_TEST( genViewSelect( sSQStatement, sGroup->arithmeticOrList, ID_TRUE )
+                      != IDE_SUCCESS );
+        } 
+        */
     }
     else
     {

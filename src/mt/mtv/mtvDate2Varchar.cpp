@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvDate2Varchar.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtvDate2Varchar.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -33,6 +33,8 @@ extern mtvModule mtvDate2Varchar;
 
 extern mtdModule mtdVarchar;
 extern mtdModule mtdDate;
+
+extern mtxModule mtxFromDateTo; /* PROJ-2632 */
 
 static IDE_RC mtvEstimate( mtcNode*     aNode,
                            mtcTemplate* aTemplate,
@@ -60,6 +62,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Date2Varchar,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -73,6 +76,10 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns+aNode->column;
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxFromDateTo.mGetExecute( mtdVarchar.id, mtdVarchar.id );
 
     /*
     IDE_TEST( mtdVarchar.estimate( aStack[0].column,

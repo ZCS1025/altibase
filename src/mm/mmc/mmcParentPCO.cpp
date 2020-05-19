@@ -57,9 +57,10 @@ IDE_RC mmcParentPCO::initialize(UInt     aSQLTextIdInBucket,
     idlOS::memcpy(mSQLString4HardPrepare ,aSQLString,aSQLStringLen);
     mSQLString4HardPrepare[aSQLStringLen] =0;
     
-    mSQLStringLen = aSQLStringLen;
-    mHashKeyVal =   aHashKeyVal;
-    mBucket    =    aBucket;
+    mSQLStringLen  = aSQLStringLen;
+    mHashKeyVal    = aHashKeyVal;
+    mBucket        = aBucket;
+    mPlanCacheKeep = MMC_PCO_PLAN_CACHE_UNKEEP;  /* BUG-46158 */
 
     idlOS::snprintf(sLatchName,
                     IDU_MUTEX_NAME_LEN,
@@ -70,7 +71,12 @@ IDE_RC mmcParentPCO::initialize(UInt     aSQLTextIdInBucket,
     mChildCreateCnt = 0;
     mChildCnt = 0;
     //fix BUG-21429
-    idlOS::snprintf(mSQLTextIdString,MMC_SQL_CACHE_TEXT_ID_LEN,"%04"ID_UINT32_FMT"%"ID_UINT32_FMT,mBucket,aSQLTextIdInBucket);
+    idlOS::snprintf(mSQLTextId,
+                    MMC_SQL_CACHE_TEXT_ID_LEN,
+                    "%0*"ID_UINT32_FMT"%"ID_UINT32_FMT,
+                    MMC_SQL_CACHE_TEXT_ID_BUCKET_DIGIT,
+                    mBucket,
+                    aSQLTextIdInBucket);
     
     IDU_LIST_INIT(&mUsedChildLst);
     IDU_LIST_INIT(&mUnUsedChildLst);
@@ -189,6 +195,7 @@ void mmcParentPCO::tryLatchPrepareAsExclusive(idBool *aSuccess)
 {
     UInt sTryCnt = mmuProperty::getSqlPlanCacheParentPCOXLatchTryCnt();
 
+    *aSuccess = ID_FALSE;
     while (sTryCnt > 0)
     {
         // PROJ-2408

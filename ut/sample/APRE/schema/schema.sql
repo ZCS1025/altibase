@@ -5,6 +5,9 @@ DROP TABLE EMPLOYEES;
 DROP TABLE DEPARTMENTS;
 DROP TABLE CUSTOMERS;
 DROP TABLE GOODS;
+DROP TABLE PSM_TABLE;
+
+DROP PACKAGE PSM_PKG;
 
 CREATE TABLE DEPARTMENTS (
 DNO            SMALLINT     PRIMARY KEY, 
@@ -53,6 +56,13 @@ QTY            INTEGER      DEFAULT 1,
 ARRIVAL_DATE   DATE,   
 PROCESSING     CHAR(1)      DEFAULT 'O', 
 PRIMARY KEY(ONO, ORDER_DATE) );
+
+CREATE TABLE PSM_TABLE ( 
+SCOL          SMALLINT, 
+ICOL          INTEGER, 
+LCOL          BIGINT,
+RCOL          REAL, 
+DCOL          DOUBLE );
 
 CREATE INDEX EMP_IDX1 ON EMPLOYEES   (DNO ASC);
 CREATE INDEX DEP_IDX1 ON DEPARTMENTS (MGR_NO ASC) INDEXTYPE IS BTREE;
@@ -172,6 +182,61 @@ INSERT INTO ORDERS VALUES (0012310009, '31-DEC-11', 12, BIGINT'5',  'E111100013'
 INSERT INTO ORDERS VALUES (0012310010, '31-DEC-11', 20, BIGINT'6',  'D111100010', 1500 , '03-JAN-12', 'O');
 INSERT INTO ORDERS VALUES (0012310011, '31-DEC-11', 19, BIGINT'15', 'E111100012', 10000, '03-JAN-12', 'O');
 INSERT INTO ORDERS VALUES (0012310012, '31-DEC-11', 19, BIGINT'1',  'C111100001', 250  , '03-JAN-12', 'O');
+
+CREATE OR REPLACE PACKAGE PSM_PKG
+AS
+TYPE PSM_SCOL IS TABLE OF SMALLINT INDEX BY INTEGER;
+TYPE PSM_ICOL IS TABLE OF INTEGER  INDEX BY INTEGER;
+TYPE PSM_LCOL IS TABLE OF BIGINT   INDEX BY INTEGER;
+TYPE PSM_RCOL IS TABLE OF REAL     INDEX BY INTEGER;
+TYPE PSM_DCOL IS TABLE OF DOUBLE   INDEX BY INTEGER;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE PSM3_1(scol in PSM_PKG.PSM_SCOL,
+                                   icol in PSM_PKG.PSM_ICOL,
+                                   lcol in PSM_PKG.PSM_LCOL,
+                                   rcol in PSM_PKG.PSM_RCOL,
+                                   dcol in PSM_PKG.PSM_DCOL)
+AS
+i integer;
+BEGIN
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE PSM_TABLE';
+    i := scol.first();
+    LOOP
+        IF i IS null
+            THEN
+            exit;
+        ELSE
+            INSERT INTO PSM_TABLE (SCOL, ICOL, LCOL, RCOL, DCOL)
+            VALUES (scol(i), icol(i), lcol(i), rcol(i), dcol(i));
+            i := scol.next(i);
+        END IF;
+    END LOOP;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE PSM3_2(scol out PSM_PKG.PSM_SCOL,
+                                   icol out PSM_PKG.PSM_ICOL,
+                                   lcol out PSM_PKG.PSM_LCOL,
+                                   rcol out PSM_PKG.PSM_RCOL,
+                                   dcol out PSM_PKG.PSM_DCOL)
+AS
+BEGIN
+    SELECT * BULK COLLECT INTO scol, icol, lcol, rcol, dcol FROM PSM_TABLE;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE PSM4(scol out PSM_PKG.PSM_SCOL)
+AS
+BEGIN
+    scol(1) := 1;
+    scol(2) := 2;
+    scol(3) := null;
+    scol(4) := 3;
+    scol(5) := 4;
+END;
+/
 
 DROP USER ALTITEST CASCADE;
 CREATE USER ALTITEST IDENTIFIED BY ALTITEST;

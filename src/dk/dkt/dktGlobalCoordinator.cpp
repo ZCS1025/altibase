@@ -28,6 +28,7 @@
 #include <smiMisc.h>
 #include <dktNotifier.h>
 #include <dkuProperty.h>
+#include <dkm.h>
 
 /************************************************************************
  * Description : Global coordinator 를 초기화한다.
@@ -62,6 +63,7 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
     mCurRemoteStmtId    = 0;
     mLinkerType         = DKT_LINKER_TYPE_NONE;
     mDtxInfo            = NULL;
+    mFlag               = 0;
 
     IDE_TEST_RAISE( mCoordinatorDtxInfoMutex.initialize( (SChar *)"DKT_COORDINATOR_MUTEX",
                                                          IDU_MUTEX_KIND_POSIX,
@@ -143,6 +145,7 @@ void dktGlobalCoordinator::finalize()
     mRTxCnt          = 0;
     mCurRemoteStmtId = DK_INVALID_STMT_ID;
     mLinkerType      = DKT_LINKER_TYPE_NONE;
+    mFlag            = 0;
 
     (void) mCoordinatorDtxInfoMutex.destroy();
 
@@ -184,13 +187,14 @@ IDE_RC  dktGlobalCoordinator::createRemoteTx( idvSQL          *aStatistics,
     /* Generate remote transaction id */
     sRemoteTxId = generateRemoteTxId( aLinkObj->mId );
 
-    (void)sRemoteTx->initialize( aSession->mId,
-                                 aLinkObj->mTargetName,
-                                 DKT_LINKER_TYPE_DBLINK,
-                                 NULL,
-                                 mGlobalTxId,
-                                 mLocalTxId,
-                                 sRemoteTxId );
+    IDE_TEST( sRemoteTx->initialize( aSession->mId,
+                                     aLinkObj->mTargetName,
+                                     DKT_LINKER_TYPE_DBLINK,
+                                     NULL,
+                                     mGlobalTxId,
+                                     mLocalTxId,
+                                     sRemoteTxId )
+              != IDE_SUCCESS );
     sIsInited = ID_TRUE;
 
     IDU_LIST_INIT_OBJ( &(sRemoteTx->mNode), sRemoteTx );
@@ -297,13 +301,14 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
     /* Generate remote transaction id */
     sRemoteTxId = generateRemoteTxId( aDataNode->mNodeId );
 
-    sRemoteTx->initialize( aSession->mId,
-                           aDataNode->mNodeName,
-                           DKT_LINKER_TYPE_SHARD,
-                           aDataNode,
-                           mGlobalTxId,
-                           mLocalTxId,
-                           sRemoteTxId );
+    IDE_TEST( sRemoteTx->initialize( aSession->mId,
+                                     aDataNode->mNodeName,
+                                     DKT_LINKER_TYPE_SHARD,
+                                     aDataNode,
+                                     mGlobalTxId,
+                                     mLocalTxId,
+                                     sRemoteTxId ) 
+              != IDE_SUCCESS );
     sIsInited = ID_TRUE;
 
     IDU_LIST_INIT_OBJ( &(sRemoteTx->mNode), sRemoteTx );
@@ -2781,6 +2786,15 @@ void  dktGlobalCoordinator::removeDtxInfo( dktDtxBranchTxInfo * aDtxBranchTxInfo
     return;
 }
 
+void  dktGlobalCoordinator::removeDtxInfo( ID_XID * aXID )
+{
+    IDE_ASSERT( mCoordinatorDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    (void)mDtxInfo->removeDtxBranchTx( aXID );
+    IDE_ASSERT( mCoordinatorDtxInfoMutex.unlock() == IDE_SUCCESS );
+
+    return;
+}
+
 IDE_RC  dktGlobalCoordinator::checkAndCloseRemoteTx( dktRemoteTx * aRemoteTx )
 {
     dktDtxBranchTxInfo  * sDtxBranchInfo = NULL;
@@ -2985,20 +2999,20 @@ IDE_RC dktGlobalCoordinator::writeXaPrepareLog()
     smLSN    sPrepareLSN;
     idBool   sIsAlloced = ID_FALSE;
 
-    sSMBranchTxSize = mDtxInfo->estimateSerializeBranchTx();
-
-    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
-                                       sSMBranchTxSize,
-                                       (void **)&sSMBranchTx,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC );
-    sIsAlloced = ID_TRUE;
-
-    IDE_TEST( mDtxInfo->serializeBranchTx( sSMBranchTx, sSMBranchTxSize )
-              != IDE_SUCCESS );
-
     if ( mGTxStatus < DKT_GTX_STATUS_PREPARE_REQUEST )
     {
+        sSMBranchTxSize = mDtxInfo->estimateSerializeBranchTx();
+
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
+                                           sSMBranchTxSize,
+                                           (void **)&sSMBranchTx,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC );
+        sIsAlloced = ID_TRUE;
+
+        IDE_TEST( mDtxInfo->serializeBranchTx( sSMBranchTx, sSMBranchTxSize )
+                  != IDE_SUCCESS );
+
         /* Write prepare Log */
         IDE_TEST( smiWriteXaPrepareReqLog( mLocalTxId,
                                            mGlobalTxId,
@@ -3006,18 +3020,19 @@ IDE_RC dktGlobalCoordinator::writeXaPrepareLog()
                                            sSMBranchTxSize,
                                            &sPrepareLSN )
                   != IDE_SUCCESS );
+
+        /* Set prepare LSN */
+        idlOS::memcpy( &(mDtxInfo->mPrepareLSN), &sPrepareLSN, ID_SIZEOF( smLSN ) );
+
+        (void)iduMemMgr::free( sSMBranchTx );
+        sSMBranchTx = NULL;
+
     }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    /* Set prepare LSN */
-    idlOS::memcpy( &(mDtxInfo->mPrepareLSN), &sPrepareLSN, ID_SIZEOF( smLSN ) );
-
-    (void)iduMemMgr::free( sSMBranchTx );
-    sSMBranchTx = NULL;
-
+    /*
+     * BUG-46262 
+     *  if  mGTxStatus >= DKT_GTX_STATUS_PREPARE_REQUEST,just return success. 
+     *  because it's a normal case not an error.
+     */
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MEMORY_ALLOC );
@@ -3068,9 +3083,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
     sdiConnectInfo  * sNode     = NULL;
     void            * sCallback = NULL;
     idBool            sSuccess = ID_TRUE;
-    UInt              sErrorCode;
-    SChar             sErrorMsg[MAX_ERROR_MSG_LEN + 256];
-    UInt              sErrorMsgLen = 0;
 
     IDE_TEST( writeXaPrepareLog() != IDE_SUCCESS );
 
@@ -3114,7 +3126,12 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
 
             if ( sNode->mReadOnly == (UChar)1 )
             {
+                removeDtxInfo( &sRemoteTx->mXID );
                 destroyRemoteTx( sRemoteTx );
+
+                sNode->mRemoteTx = NULL;
+                sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+                sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
             }
             else
             {
@@ -3124,32 +3141,11 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
         else
         {
             /* 수행이 실패한 경우 */
-            if ( sSuccess == ID_TRUE )
-            {
-                sSuccess = ID_FALSE;
-                sErrorCode = ideGetErrorCode();
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
-
-            if ( sErrorMsgLen < ID_SIZEOF(sErrorMsg) )
-            {
-                idlOS::snprintf( sErrorMsg + sErrorMsgLen,
-                                 ID_SIZEOF(sErrorMsg) - sErrorMsgLen,
-                                 "\n%s" + ((sErrorMsgLen == 0) ? 1 : 0),
-                                 ideGetErrorMsg() );
-                sErrorMsgLen = idlOS::strlen( sErrorMsg );
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
+            sSuccess = ID_FALSE;
         }
     }
 
-    IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
+    IDE_TEST( sSuccess == ID_FALSE );
 
     sdi::removeCallback( sCallback );
 
@@ -3158,10 +3154,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_END_TRANS )
-    {
-        IDE_SET( ideSetErrorCodeAndMsg( sErrorCode, sErrorMsg ) );
-    }
     IDE_EXCEPTION_END;
 
     sdi::removeCallback( sCallback );
@@ -3174,6 +3166,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommitForShard()
     iduListNode     *sIterator = NULL;
     iduListNode     *sNext     = NULL;
     dktRemoteTx     *sRemoteTx = NULL;
+    sdiConnectInfo  *sNode     = NULL;
+    idBool           sSuccess  = ID_TRUE;
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMIT_WAIT );
     mGTxStatus = DKT_GTX_STATUS_COMMIT_WAIT;
@@ -3181,10 +3175,11 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommitForShard()
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+        sNode     = sRemoteTx->getDataNode();
 
-        if ( sdi::commit( sRemoteTx->getDataNode() ) != IDE_SUCCESS )
+        if ( sdi::commit( sNode ) != IDE_SUCCESS )
         {
-            sdi::freeConnectImmediately( sRemoteTx->getDataNode() );
+            sSuccess = ID_FALSE;
         }
         else
         {
@@ -3192,12 +3187,22 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommitForShard()
         }
 
         destroyRemoteTx( sRemoteTx );
+
+        sNode->mRemoteTx = NULL;
+        sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+        sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
     }
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMITTED );
     mGTxStatus = DKT_GTX_STATUS_COMMITTED;
 
+    IDE_TEST( sSuccess == ID_FALSE );
+
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
@@ -3208,10 +3213,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
     sdiConnectInfo * sNode     = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
-    idBool           sError = ID_FALSE;
-    UInt             sErrorCode;
-    SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
-    UInt             sErrorMsgLen = 0;
 
     mDtxInfo->mResult = SMI_DTX_COMMIT;
 
@@ -3244,64 +3245,36 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
                                   sNode,
                                   (SChar*)"SQLEndTrans",
                                   ID_FALSE )
-             != IDE_SUCCESS )
+             == IDE_SUCCESS )
         {
-            /* 수행이 실패한 경우 */
-            sdi::freeConnectImmediately( sNode );
-            sError = ID_TRUE;
-
-            if ( sSuccess == ID_TRUE )
-            {
-                sSuccess = ID_FALSE;
-                sErrorCode = ideGetErrorCode();
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
-
-            if ( sErrorMsgLen < ID_SIZEOF(sErrorMsg) )
-            {
-                idlOS::snprintf( sErrorMsg + sErrorMsgLen,
-                                 ID_SIZEOF(sErrorMsg) - sErrorMsgLen,
-                                 "\n%s" + ((sErrorMsgLen == 0) ? 1 : 0),
-                                 ideGetErrorMsg() );
-                sErrorMsgLen = idlOS::strlen( sErrorMsg );
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
+            removeDtxInfo( &sRemoteTx->mXID );
         }
         else
         {
-            /* Nothing to do. */
+            /* 수행이 실패한 경우 */
+            sSuccess = ID_FALSE;
         }
 
         destroyRemoteTx( sRemoteTx );
+
+        sNode->mRemoteTx = NULL;
+        sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+        sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
     }
 
     IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
 
     sdi::removeCallback( sCallback );
 
-    if ( sError == ID_FALSE )
-    {
-        removeDtxInfo();
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMITTED );
     mGTxStatus = DKT_GTX_STATUS_COMMITTED;
+
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_END_TRANS )
     {
-        IDE_SET( ideSetErrorCodeAndMsg( sErrorCode, sErrorMsg ) );
+        /* already set error code */
     }
     IDE_EXCEPTION_END;
 
@@ -3315,7 +3288,9 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
     iduListNode     *sIterator = NULL;
     iduListNode     *sNext     = NULL;
     dktRemoteTx     *sRemoteTx = NULL;
+    sdiConnectInfo  *sNode     = NULL;
     UInt             sRollbackNodeCnt = 0;
+    idBool           sSuccess = ID_TRUE;
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
@@ -3323,15 +3298,16 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+        sNode     = sRemoteTx->getDataNode();
 
         if ( aSavepointName != NULL )
         {
             if ( sRemoteTx->findSavepoint( aSavepointName ) != NULL )
             {
-                if ( sdi::rollback( sRemoteTx->getDataNode(),
+                if ( sdi::rollback( sNode,
                                     (const SChar*)aSavepointName ) != IDE_SUCCESS )
                 {
-                    sdi::freeConnectImmediately( sRemoteTx->getDataNode() );
+                    sSuccess = ID_FALSE;
                 }
                 else
                 {
@@ -3343,20 +3319,37 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
             else
             {
                 destroyRemoteTx( sRemoteTx );
+
+                sNode->mRemoteTx = NULL;
+                sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+                sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
             }
         }
         else
         {
-            if ( sdi::rollback( sRemoteTx->getDataNode(), NULL ) != IDE_SUCCESS )
+            if ( sNode->mDbc != NULL )
             {
-                sdi::freeConnectImmediately( sRemoteTx->getDataNode() );
+                if ( sdi::rollback( sNode, NULL ) != IDE_SUCCESS )
+                {
+                    sSuccess = ID_FALSE;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
             }
             else
             {
-                /* Nothing to do */
+                /* Session is disconnected. Do it as success. */
+                IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                             == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
             }
 
             destroyRemoteTx( sRemoteTx );
+
+            sNode->mRemoteTx = NULL;
+            sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+            sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
         }
     }
 
@@ -3389,7 +3382,13 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
         mGTxStatus = DKT_GTX_STATUS_PREPARE_READY;
     }
 
+    IDE_TEST( sSuccess == ID_FALSE );
+
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShard()
@@ -3397,6 +3396,7 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShar
     iduListNode     *sIterator = NULL;
     iduListNode     *sNext     = NULL;
     dktRemoteTx     *sRemoteTx = NULL;
+    sdiConnectInfo  *sNode     = NULL;
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
@@ -3404,17 +3404,24 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShar
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+        sNode     = sRemoteTx->getDataNode();
 
-        if ( sdi::rollback( sRemoteTx->getDataNode(), NULL ) != IDE_SUCCESS )
+        if ( sNode->mDbc != NULL )
         {
-            sdi::freeConnectImmediately( sRemoteTx->getDataNode() );
+            (void)sdi::rollback( sNode, NULL );
         }
         else
         {
-            /* Nothing to do */
+            /* Session is disconnected. Do it as success. */
+            IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                         == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
         }
 
         destroyRemoteTx( sRemoteTx );
+
+        sNode->mRemoteTx = NULL;
+        sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+        sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
     }
 
     removeAllSavepoint();
@@ -3423,6 +3430,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShar
     mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;
 
     return IDE_SUCCESS;
+
+    /* failure 를 리턴하면 안된다. */
 }
 
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
@@ -3433,10 +3442,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
     sdiConnectInfo * sNode     = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
-    idBool           sError = ID_FALSE;
-    UInt             sErrorCode;
-    SChar            sErrorMsg[MAX_ERROR_MSG_LEN + 256];
-    UInt             sErrorMsgLen = 0;
 
     mDtxInfo->mResult = SMI_DTX_ROLLBACK;
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
@@ -3447,10 +3452,19 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
         sNode = sRemoteTx->getDataNode();
 
-        IDE_TEST( sdi::addEndTranCallback( &sCallback,
-                                           sNode,
-                                           ID_FALSE )
-                  != IDE_SUCCESS );
+        if ( sNode->mDbc != NULL )
+        {
+            IDE_TEST( sdi::addEndTranCallback( &sCallback,
+                                               sNode,
+                                               ID_FALSE )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Session is disconnected. Do it as success. */
+            IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                         == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
+        }
     }
 
     sdi::doCallback( sCallback );
@@ -3461,59 +3475,41 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
         sNode = sRemoteTx->getDataNode();
 
-        if ( sdi::resultCallback( sCallback,
-                                  sNode,
-                                  (SChar*)"SQLEndTrans",
-                                  ID_TRUE )
-             != IDE_SUCCESS )
+        if ( sNode->mDbc != NULL )
         {
-            /* 수행이 실패한 경우 */
-            sdi::freeConnectImmediately( sNode );
-            sError = ID_TRUE;
-
-            if ( sSuccess == ID_TRUE )
+            if ( sdi::resultCallback( sCallback,
+                                      sNode,
+                                      (SChar*)"SQLEndTrans",
+                                      ID_TRUE )
+                 == IDE_SUCCESS )
             {
+                removeDtxInfo( &sRemoteTx->mXID );
+            }
+            else
+            {
+                /* 수행이 실패한 경우 */
                 sSuccess = ID_FALSE;
-                sErrorCode = ideGetErrorCode();
-            }
-            else
-            {
-                /* Nothing to do. */
-            }
-
-            if ( sErrorMsgLen < ID_SIZEOF(sErrorMsg) )
-            {
-                idlOS::snprintf( sErrorMsg + sErrorMsgLen,
-                                 ID_SIZEOF(sErrorMsg) - sErrorMsgLen,
-                                 "\n%s" + ((sErrorMsgLen == 0) ? 1 : 0),
-                                 ideGetErrorMsg() );
-                sErrorMsgLen = idlOS::strlen( sErrorMsg );
-            }
-            else
-            {
-                /* Nothing to do. */
             }
         }
         else
         {
-            /* Nothing to do. */
+            /* Session is disconnected. Do it as success. */
+            removeDtxInfo( &sRemoteTx->mXID );
+
+            IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                         == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
         }
 
         destroyRemoteTx( sRemoteTx );
+
+        sNode->mRemoteTx = NULL;
+        sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+        sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
     }
 
     IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
 
     sdi::removeCallback( sCallback );
-
-    if ( sError == ID_FALSE )
-    {
-        removeDtxInfo();
-    }
-    else
-    {
-        /* Nothing to do */
-    }
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACKED );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;
@@ -3522,7 +3518,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
 
     IDE_EXCEPTION( ERR_END_TRANS )
     {
-        IDE_SET( ideSetErrorCodeAndMsg( sErrorCode, sErrorMsg ) );
+        /* already set error code */
     }
     IDE_EXCEPTION_END;
 

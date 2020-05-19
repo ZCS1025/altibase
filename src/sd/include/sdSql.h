@@ -83,6 +83,13 @@ typedef SQLLEN          SQLROWOFFSET;
 #define SQL_FETCH_NORMAL                0
 #define SQL_FETCH_MTDATA                1
 
+#define SQL_SQLSTATE_SIZE               ( 5 )       /* = SQL_SQLSTATE_SIZE of sqlext.h */
+
+
+/* UL Error code defines */
+#define SD_ALTIBASE_FAILOVER_SUCCESS    ( 0x51190 ) /* = ALTIBASE_FAILOVER_SUCCESS */
+
+
 typedef void * LIBHANDLE;
 typedef void * SQLHANDLE;
 typedef SQLSMALLINT SQLRETURN;
@@ -246,6 +253,29 @@ typedef SQLRETURN (*ODBCGetResultCallback)(SQLUINTEGER,
                                            acp_uint8_t);    // 46
 typedef void      (*ODBCRemoveCallback)(SQLPOINTER*);       // 47
 
+typedef void      (*ODBCSetShardMetaNumber)(SQLHDBC, ULong);// 48
+
+typedef ULong     (*ODBCGetSMNOfDataNode)(SQLHDBC);         // 49
+
+typedef SQLRETURN (*ODBCGetNeedFailover)( SQLSMALLINT,
+                                          SQLHANDLE,
+                                          SQLINTEGER *);    // 50
+
+typedef SQLRETURN (*ODBCReconnect)( SQLSMALLINT,
+                                    SQLHANDLE );            // 51
+
+typedef SQLCHAR   (*ODBCGetNeedToDisconnect)(SQLHDBC);      // 52
+
+typedef SQLRETURN (*ODBCSetSavepoint)( SQLHDBC,
+                                       const SQLCHAR *,
+                                       SQLINTEGER );   // 53
+
+typedef SQLRETURN (*ODBCRollbackToSavepoint)( SQLHDBC,
+                                              const SQLCHAR *,
+                                              SQLINTEGER );   // 54
+
+typedef SQLRETURN (*ODBCShardStmtPartialRollback)( SQLHDBC );    // 55
+
 /* SQL Function Name Tag */
 #define STR_SQLAllocHandle                    "SQLAllocHandle"                    // 01
 #define STR_SQLFreeHandle                     "SQLFreeHandle"                     // 02
@@ -290,6 +320,14 @@ typedef void      (*ODBCRemoveCallback)(SQLPOINTER*);       // 47
 #define STR_SQLDoCallback                     "SQLDoCallback"                     // 45
 #define STR_SQLGetResultCallback              "SQLGetResultCallback"              // 46
 #define STR_SQLRemoveCallback                 "SQLRemoveCallback"                 // 47
+#define STR_SQLSetShardMetaNumber             "SQLSetShardMetaNumber"             // 48
+#define STR_SQLGetSMNOfDataNode               "SQLGetSMNOfDataNode"               // 49
+#define STR_SQLGetNeedToDisconnect            "SQLGetNeedToDisconnect"            // 50
+#define STR_SQLGetNeedFailover                "SQLGetNeedFailover"                // 51
+#define STR_SQLReconnect                      "SQLReconnect"                      // 52
+#define STR_SQLSetSavepoint                   "SQLSetSavepoint"                   // 53
+#define STR_SQLRollbackToSavepoint            "SQLRollbackToSavepoint"            // 54
+#define STR_SQLShardStmtPartialRollback       "SQLShardStmtPartialRollback"       // 55
 
 typedef enum sdlTransactionOp
 {

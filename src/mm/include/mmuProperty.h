@@ -181,6 +181,19 @@ public:
     /* PROJ-2626 Snapshot Export */
     static UInt   mSnapshotMemThreshold;
     static UInt   mSnapshotDiskUndoThreshold;
+
+    /* PROJ-2677 DDL synchronization */
+    static UInt   mReplicationDDLSync;
+    static UInt   mReplicationDDLSyncTimeout;
+
+    /* PROJ-2681 */
+    static UInt   mIBEnable;
+    static UInt   mIBPortNo;
+    static UInt   mIBMaxListen;
+    static UInt   mIBListenerDisable;
+    static UInt   mIBLatency;
+    static UInt   mIBConChkSpin;
+
 public:
     static void initialize();
     static void destroy();
@@ -357,6 +370,14 @@ public:
     static UInt  getSnapshotMemThreshold() { return mSnapshotMemThreshold; }
     static UInt  getSnapshotDiskUndoThreshold() { return mSnapshotDiskUndoThreshold; }
 
+    /* PROJ-2681 */
+    static UInt   getIBEnable()                { return mIBEnable; }
+    static UInt   getIBPortNo()                { return mIBPortNo; }
+    static UInt   getIBMaxListen()             { return mIBMaxListen; }
+    static UInt   getIBListenerDisable()       { return mIBListenerDisable; }
+    static UInt   getIBLatency()               { return mIBLatency; }
+    static UInt   getIBConChkSpin()            { return mIBConChkSpin; }
+
     static IDE_RC callbackFrequencyForHotLruRegion(idvSQL * /*aStatistics*/,
                                                    SChar * /*aName*/,
                                                    void  * /*aOldValue*/,
@@ -489,6 +510,22 @@ public:
     static SChar *getIPCDAFilepath()        { return mIPCDAFilepath; }
     static UInt   getIPCDAChannelCount()    { return mIPCDAChannelCount; }
     static ULong  getIPCDASleepTime()       { return mIPCDASleepTime;}
+
+    /* PROJ-2677 */
+    static UInt   getReplicationDDLSync()   { return mReplicationDDLSync; }
+    static IDE_RC callbackReplicationDDLSync( idvSQL * /*aStatistics*/,
+                                              SChar  * /*aName*/,
+                                              void   * /*aOldValue*/,
+                                              void   * aNewValue,
+                                              void   * /*aArg*/ );
+
+    static UInt   getReplicationDDLSyncTimeout()   { return mReplicationDDLSyncTimeout; }
+    static IDE_RC callbackReplicationDDLSyncTimeout( idvSQL * /*aStatistics*/,
+                                                     SChar  * /*aName*/,
+                                                     void   * /*aOldValue*/,
+                                                     void   * aNewValue,
+                                                     void   * /*aArg*/ );
+
 
 private:
     static IDE_RC callbackUpdateMaxLogSize( idvSQL * /*aStatistics*/,

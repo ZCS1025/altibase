@@ -13,7 +13,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 
 /***********************************************************************
  * $Id: qsfSleep.cpp 18910 2006-11-13 01:56:34Z shsuh $
@@ -54,12 +54,18 @@ mtfModule qsfSleepModule = {
 };
 
 
-IDE_RC qsfCalculate_SpSleep( 
+IDE_RC qsfCalculate_SpSleep(
                             mtcNode*     aNode,
                             mtcStack*    aStack,
                             SInt         aRemain,
                             void*        aInfo,
                             mtcTemplate* aTemplate );
+
+IDE_RC qsfCalculate_SpSleep2Args( mtcNode     * aNode,
+                                  mtcStack    * aStack,
+                                  SInt          aRemain,
+                                  void        * aInfo,
+                                  mtcTemplate * aTemplate );
 
 static const mtcExecute qsfExecute = {
     mtf::calculateNA,
@@ -68,6 +74,19 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_SpSleep,
     NULL,
+    mtx::calculateNA,
+    mtk::estimateRangeNA,
+    mtk::extractRangeNA
+};
+
+static const mtcExecute qsfExecute2Args = {
+    mtf::calculateNA,
+    mtf::calculateNA,
+    mtf::calculateNA,
+    mtf::calculateNA,
+    qsfCalculate_SpSleep2Args,
+    NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -79,16 +98,14 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
                     SInt      /* aRemain */,
                     mtcCallBack* aCallBack )
 {
-#define IDE_FN "IDE_RC qsfEstimate"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
-
-    const mtdModule *sModule[1] = { &mtdInteger };
+    UInt              sArgumentCount;
+    const mtdModule * sModule[2] = { &mtdInteger, &mtdInteger };
 
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_QUANTIFIER_MASK ) ==
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
+    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) > 2,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -108,7 +125,16 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute;
+    sArgumentCount = ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK );
+
+    if ( sArgumentCount == 1 )
+    {
+        aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute;
+    }
+    else
+    {
+        aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute2Args;
+    }
 
     return IDE_SUCCESS;
 
@@ -121,25 +147,20 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-
-#undef IDE_FN
 }
 
-IDE_RC qsfCalculate_SpSleep( 
+IDE_RC qsfCalculate_SpSleep(
                      mtcNode*     aNode,
                      mtcStack*    aStack,
                      SInt         aRemain,
                      void*        aInfo,
                      mtcTemplate* aTemplate )
 {
-#define IDE_FN "IDE_RC qsfCalculate_SpSleep"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
-
     qcStatement     * sStatement;
-    
+    mtdIntegerType    sSeconds;
+    SInt              i;
+
     sStatement      = ((qcTemplate*)aTemplate)->stmt ;
-    mtdIntegerType  sSeconds;
-    SInt            i;
 
     IDU_FIT_POINT( "qsfSleep::qsfCalculate_SpSleep" );
     // PSM 내에서만 호출이 가능함
@@ -147,7 +168,7 @@ IDE_RC qsfCalculate_SpSleep(
     IDE_TEST_RAISE( ( (QC_SMI_STMT(sStatement))->isDummy() == ID_FALSE ) &&
                     ( QC_SMI_STMT_SESSION_IS_JOB( sStatement ) == ID_FALSE ),
                     err_sleep_not_allowed );
-    
+
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
@@ -160,9 +181,9 @@ IDE_RC qsfCalculate_SpSleep(
     {
         IDE_RAISE( err_argument_not_applicable );
     }
-    
+
     sSeconds = *(mtdIntegerType *)aStack[1].value;
-  
+
     if( sSeconds <= 0 )
     {
         IDE_RAISE( err_argument_not_applicable );
@@ -174,9 +195,8 @@ IDE_RC qsfCalculate_SpSleep(
         *(mtdIntegerType *)aStack[0].value = idlOS::sleep( 1 );
 
         IDE_TEST( iduCheckSessionEvent( sStatement->mStatistics ) != IDE_SUCCESS );
-
     }
-        
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( err_sleep_not_allowed );
@@ -188,9 +208,99 @@ IDE_RC qsfCalculate_SpSleep(
         IDE_SET(ideSetErrorCode(mtERR_ABORT_ARGUMENT_NOT_APPLICABLE));
     }
     IDE_EXCEPTION_END;
-    
+
     return IDE_FAILURE;
-    
-#undef IDE_FN
 }
- 
+
+// BUG-46481 Sleep during msec
+IDE_RC qsfCalculate_SpSleep2Args( mtcNode     * aNode,
+                                  mtcStack    * aStack,
+                                  SInt          aRemain,
+                                  void        * aInfo,
+                                  mtcTemplate * aTemplate )
+{
+    qcStatement     * sStatement;
+    mtdIntegerType    sSeconds;
+    mtdIntegerType    sUSeconds;
+    SInt              i;
+    PDL_Time_Value    sWaitTime;
+
+    sStatement      = ((qcTemplate*)aTemplate)->stmt ;
+
+    // PSM 내에서만 호출이 가능함
+    // Trigger에서는 호출되어서는 안됨
+    IDE_TEST_RAISE( ( (QC_SMI_STMT(sStatement))->isDummy() == ID_FALSE ) &&
+                    ( QC_SMI_STMT_SESSION_IS_JOB( sStatement ) == ID_FALSE ),
+                    err_sleep_not_allowed );
+
+    IDE_TEST( mtf::postfixCalculate( aNode,
+                                     aStack,
+                                     aRemain,
+                                     aInfo,
+                                     aTemplate )
+              != IDE_SUCCESS );
+
+    if ( (aStack[1].column->module->isNull( aStack[1].column,
+                                            aStack[1].value ) == ID_TRUE) ||
+         (aStack[2].column->module->isNull( aStack[2].column,
+                                            aStack[2].value ) == ID_TRUE) )
+    {
+        IDE_RAISE( err_argument_not_applicable );
+    }
+    else
+    {
+        /* Nothing to do  */
+    }
+
+    sSeconds  = *(mtdIntegerType *)aStack[1].value;
+    sUSeconds = *(mtdIntegerType *)aStack[2].value;
+
+    if ( (sSeconds < 0) || (sUSeconds < 0) || (sUSeconds > 999999) )
+    {
+        IDE_RAISE( err_argument_not_applicable );
+    }
+    else
+    {
+        if ( ( sSeconds == 0 ) && ( sUSeconds == 0 ) )
+        {
+            IDE_RAISE( err_argument_not_applicable );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    // fix BUG-17426
+    for ( i = 0; i < sSeconds; i++ )
+    {
+        *(mtdIntegerType *)aStack[0].value = idlOS::sleep( 1 );
+
+        IDE_TEST( iduCheckSessionEvent( sStatement->mStatistics ) != IDE_SUCCESS );
+    }
+
+    if ( sUSeconds > 0 )
+    {
+        sWaitTime.set( 0, (sUSeconds) );
+        *(mtdIntegerType *)aStack[0].value = idlOS::sleep( sWaitTime );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_sleep_not_allowed );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QSF_FUNCTION_NOT_ALLOWED));
+    }
+    IDE_EXCEPTION( err_argument_not_applicable );
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_ARGUMENT_NOT_APPLICABLE));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

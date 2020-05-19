@@ -49,6 +49,10 @@
 #define IDU_EXTPROC_AGENT_IDLE_TIMEOUT          \
     (iduProperty::getExtprocAgentIdleTimeout())
 
+/* BUG-46531*/
+#define IDU_USE_REQUESTED_SIZE \
+        (idBool)(iduProperty::getUseRequestedSize())
+
 #define IDV_TIMED_STATISTICS_OFF (0)
 #define IDV_TIMED_STATISTICS_ON  (1)
 
@@ -60,6 +64,10 @@ private:
     static IDE_RC checkConstraints();
     
 public:
+
+    static UInt   mUseRequestedSize;
+
+
     static IDE_RC registCallbacks();
 
     static IDE_RC callbackXLatchUseSignal( idvSQL * /*aStatistics*/,
@@ -103,6 +111,14 @@ public:
                                      void  * /*aOldValue*/,
                                      void  *aNewValue,
                                      void  * /*aArg*/);
+
+    /* BUG-46138 */
+    static IDE_RC callbackSdTrcFlag( idvSQL * /*aStatistics*/,
+                                     SChar * /*aName*/,
+                                     void  * /*aOldValue*/,
+                                     void  *aNewValue,
+                                     void  * /*aArg*/);
+
     static IDE_RC callbackRpTrcFlag( idvSQL * /*aStatistics*/,
                                      SChar * /*aName*/,
                                      void  * /*aOldValue*/,
@@ -304,6 +320,12 @@ public:
                                       void   * aNewValue,
                                       void   * /*aArg*/);
 
+    static IDE_RC callbackUseDumpCallstacks( idvSQL * /*aStatistics*/,
+                                             SChar  * /*aName*/,
+                                             void   * /*aOldValue*/,
+                                             void   * aNewValue,
+                                             void   * /*aArg*/);
+
     static IDE_RC callbackShmLatchSpinLockCount( idvSQL * /*aStatistics*/,
                                                  SChar  * /*aName*/,
                                                  void   * /*aOldValue*/,
@@ -324,6 +346,13 @@ public:
                                                       void   * aNewValue,
                                                       void   * /*aArg*/ );
 
+    /* BUG-46892 */
+    static IDE_RC callbackMathTempMemMax( idvSQL * /*aStatistics*/,
+                                          SChar  * /*aName*/,
+                                          void   * /*aOldValue*/,
+                                          void   * aNewValue,
+                                          void   * /*aArg*/ );
+
     /*
      * Loads the properties into the statically allocated memory and
      * sets up iduProperty for accessing the properties.
@@ -334,6 +363,12 @@ public:
     static IDE_RC loadShm( idvSQL *aStatistics );
     static IDE_RC unloadShm( idvSQL *aStatistics );
 #endif
+
+    static IDE_RC callbackUseRequestedSize( idvSQL * /*aStatistics*/,
+                                            SChar * /*aName*/,
+                                            void  * /*aOldValue*/,
+                                            void  *aNewValue,
+                                            void  * /*aArg*/);
 
     static UInt getXLatchUseSignal()
     {
@@ -416,6 +451,17 @@ public:
     static UInt getQpTrcFlag()
     {
         return mProperties->mQpTrcFlag;
+    }
+
+    /* BUG-46138 */
+    static UInt getSdTrcFlag()
+    {
+        return mProperties->mSdTrcFlag;
+    }
+
+    static UInt getSdTrcEnable()
+    {
+        return mProperties->mSdTrcEnable;
     }
 
     static UInt getRpTrcFlag()
@@ -905,6 +951,11 @@ public:
         return mProperties->mUseMemoryPool;
     }
 
+    static idBool getUseDumpCallstacks()
+    {
+        return ( mProperties->mUseDumpCallstacks == 1 ) ? ID_TRUE : ID_FALSE;
+    }
+
     // PROJ-1685
     static UInt getExtprocAgentConnectTimeout()
     {
@@ -933,6 +984,16 @@ public:
         return ( mProperties->mThreadReuseEnable == 1 ) ? ID_TRUE : ID_FALSE;
     }
 
+    static UInt getUseRequestedSize()
+    {
+        return mProperties->mUseRequestedSize;
+    }
+
+    /* BUG-46892 */
+    static ULong getMathTempMemMax()
+    {
+        return mProperties->mMathTempMemMax;
+    }
 
 private:
     struct iduPropertyStore
@@ -966,6 +1027,8 @@ private:
         // fix BUG-21547
         UInt    mUseMemoryPool;
 
+    	UInt    mUseDumpCallstacks; //BUG-45182
+
         idBool  mInspectionLargeHeapThresholdInitialized;
 
         UInt    mXLatchUseSignal;
@@ -981,6 +1044,8 @@ private:
         UInt    mServerTrcFlag;
         UInt    mSmTrcFlag;
         UInt    mQpTrcFlag;
+        UInt    mSdTrcFlag;     /* BUG-46138 */
+        UInt    mSdTrcEnable;   /* BUG-46138 */
         UInt    mRpTrcFlag;
         UInt    mRpConflictTrcFlag;
         UInt    mRpConflictTrcEnable;
@@ -1107,6 +1172,11 @@ private:
         SChar * mExtprocAgentSocketFilepath;
 
         UInt    mThreadReuseEnable;
+
+        UInt    mUseRequestedSize;
+
+        /* BUG-46892 */
+        ULong   mMathTempMemMax;
     };
 
     static iduPropertyStore *mProperties;

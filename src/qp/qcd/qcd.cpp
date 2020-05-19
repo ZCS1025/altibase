@@ -209,6 +209,9 @@ qcd::execute( QCD_HSTMT     aHstmt,
     /* BUG-45678 */
     sExecQcStmt->spxEnv->mFlag = aQcStmt->spxEnv->mFlag;
 
+    // BUG-45990
+    QSX_ENV_SET_STMT_FLAG( sExecQcStmt );
+
     sContext.mmStatement = aHstmt;
     sContext.outBindParamDataList = aOutBindParamDataList;
     sContext.recordExist = ID_FALSE;

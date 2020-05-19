@@ -23,8 +23,7 @@
  *     ALTIBASE SHARD manage ment function
  *
  * Syntax :
- *    CREATE META()
- *
+ *    CREATE META( meta_node_id in integer )
  *    RETURN 0
  *
  **********************************************************************/
@@ -33,6 +32,7 @@
 #include <sdm.h>
 #include <smi.h>
 #include <qcg.h>
+#include <sdmShardPin.h>
 
 extern mtdModule mtdInteger;
 
@@ -71,6 +71,7 @@ static const mtcExecute sdfExecute = {
     mtf::calculateNA,
     sdfCalculate_ShardCreateMeta,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -79,19 +80,33 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     mtcTemplate* aTemplate,
                     mtcStack*    aStack,
                     SInt         /*aRemain*/,
-                    mtcCallBack* /*aCallBack*/ )
+                    mtcCallBack* aCallBack )
 {
+    const mtdModule* sModules[1] =
+    {
+        &mtdInteger  // meta_node_id
+    };
+    const mtdModule* sModule = &mtdInteger;
+
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_QUANTIFIER_MASK ) ==
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 0,
+    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
                     ERR_INVALID_FUNCTION_ARGUMENT );
+
+    IDE_TEST( mtf::makeConversionNodes( aNode,
+                                        aNode->arguments,
+                                        aTemplate,
+                                        aStack + 1,
+                                        aCallBack,
+                                        sModules )
+              != IDE_SUCCESS );
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
-                                     & mtdInteger,
+                                     sModule,
                                      0,
                                      0,
                                      0 )
@@ -131,9 +146,17 @@ IDE_RC sdfCalculate_ShardCreateMeta( mtcNode*     aNode,
  *
  ***********************************************************************/
 
-    qcStatement  * sStatement;
+    qcStatement          * sStatement;
+    mtdIntegerType         sMetaNodeId;
+    sdiLocalMetaNodeInfo   sMetaNodeInfo;
 
     sStatement = ((qcTemplate*)aTemplate)->stmt;
+
+    // BUG-46366
+    IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
+                    ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DML ) == QCI_STMT_MASK_DML ) ||
+                    ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DCL ) == QCI_STMT_MASK_DCL ),
+                    ERR_INSIDE_QUERY );
 
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
@@ -145,16 +168,59 @@ IDE_RC sdfCalculate_ShardCreateMeta( mtcNode*     aNode,
                                      aTemplate )
               != IDE_SUCCESS );
 
-    //---------------------------------
-    // Create Meta
-    //---------------------------------
+    if ( aStack[1].column->module->isNull( aStack[1].column,
+                                           aStack[1].value ) == ID_TRUE )
+    {
+        IDE_RAISE( ERR_ARGUMENT_NOT_APPLICABLE );
+    }
+    else
+    {
+        //---------------------------------
+        // Argument Validation
+        //---------------------------------
 
-    IDE_TEST( sdm::createMeta( sStatement ) != IDE_SUCCESS );
+        // meta node id
+        sMetaNodeId = *(mtdIntegerType*)aStack[1].value;
+        IDE_TEST_RAISE( ( sMetaNodeId > ID_USHORT_MAX ) ||
+                        ( sMetaNodeId < 0 ),
+                        ERR_META_NODE_ID );
+
+        sMetaNodeInfo.mMetaNodeId = sMetaNodeId;
+
+        //---------------------------------
+        // Create Meta
+        //---------------------------------
+
+        IDE_TEST( sdm::createMeta( sStatement ) != IDE_SUCCESS );
+
+        IDE_TEST( sdm::resetMetaNodeId( sStatement, &sMetaNodeInfo )
+                  != IDE_SUCCESS );
+
+        /* sdm::createMeta()에서 'SMN = 1'을 INSERT */
+        sdi::setSMNCacheForMetaNode( ID_ULONG(1) );
+
+        /* PROJ-2701 Sharding online data rebuild */
+        sdi::setSMNForDataNode( ID_ULONG(1) );
+
+        sdmShardPinMgr::loadShardPinInfo();
+    }
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INSIDE_QUERY )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
+    }
+    IDE_EXCEPTION( ERR_META_NODE_ID );
+    {
+        IDE_SET( ideSetErrorCode( mtERR_ABORT_ARGUMENT_NOT_APPLICABLE ) );
+    }
+    IDE_EXCEPTION( ERR_ARGUMENT_NOT_APPLICABLE );
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_ARGUMENT_NOT_APPLICABLE));
+    }
     IDE_EXCEPTION( ERR_NO_GRANT )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NO_GRANT ) );

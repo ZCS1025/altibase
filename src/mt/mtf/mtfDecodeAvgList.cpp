@@ -99,6 +99,7 @@ static const mtcExecute mtfDecodeAvgListExecuteFloat = {
     mtfDecodeAvgListFinalizeFloat,
     mtfDecodeAvgListCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -140,6 +141,7 @@ static const mtcExecute mtfDecodeAvgListExecuteDouble = {
     mtfDecodeAvgListFinalizeDouble,
     mtfDecodeAvgListCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -181,6 +183,7 @@ static const mtcExecute mtfDecodeAvgListExecuteBigint = {
     mtfDecodeAvgListFinalizeBigint,
     mtfDecodeAvgListCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

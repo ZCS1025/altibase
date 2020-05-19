@@ -97,6 +97,12 @@ static cmnLinkAllocInfo gCmnLinkAllocInfoClient[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE
 #endif
     },
 
+    /* IB : PROJ-2681 */
+    {
+        { cmnLinkListenMapIB, cmnLinkListenSizeIB },
+        { cmnLinkPeerMapIB,   cmnLinkPeerSizeIB   },
+        { cmnLinkPeerMapIB,   cmnLinkPeerSizeIB   },
+    }
 };
 
 static acp_uint32_t gCmnLinkFeatureClient[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] =
@@ -125,6 +131,15 @@ static acp_uint32_t gCmnLinkFeatureClient[CMN_LINK_IMPL_MAX][CMN_LINK_TYPE_MAX] 
     /* IPC */
     /* TASK-5894 Permit sysdba via IPC */
     { 0, CMN_LINK_FEATURE_SYSDBA, 0 },
+
+    /* PROJ-2474 SSL/TLS */
+    { 0, 0, 0 },
+
+    /* IPCDA */
+    { 0, 0, 0 },
+
+    /* IB : PROJ-2681 */
+    { 0, CMN_LINK_FEATURE_SYSDBA, 0 },
 };
 
 
@@ -149,6 +164,8 @@ acp_bool_t cmnLinkIsSupportedImpl(cmnLinkImpl aImpl)
 #if !defined(CM_DISABLE_IPCDA)
         case CMN_LINK_IMPL_IPCDA:
 #endif
+        /* PROJ-2681 */    
+        case CMN_LINK_IMPL_IB:
             sIsSupported = ACP_TRUE;
             break;
 

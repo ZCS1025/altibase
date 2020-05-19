@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsv.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsv.h 85120 2019-04-02 01:27:30Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QSV_H_
@@ -85,6 +85,9 @@ public:
     static IDE_RC validateExeProc(qcStatement * aStatement);
 
     static IDE_RC validateExeFunc(qcStatement * aStatement);
+
+    static IDE_RC parseAB(qcStatement * aStatement);
+    static IDE_RC validateAB(qcStatement * aStatement);
 
     static IDE_RC validateArgumentsWithParser(
         qcStatement     * aStatement,

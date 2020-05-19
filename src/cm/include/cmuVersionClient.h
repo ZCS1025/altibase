@@ -23,9 +23,10 @@
 /* 7.1.4 Added protocols ParamDataInListV2, ParamDataInListV2Result, ExecuteV2, ExecuteV2Result */
 /* 7.1.5 Added shard protocols */
 /* 7.1.6 Added shard handshake protocol */
+/* 7.1.7 Added/Modify shard protocol */
 #define CM_MAJOR_VERSION 7
 #define CM_MINOR_VERSION 1
-#define CM_PATCH_VERSION 6
+#define CM_PATCH_VERSION 7
 
 extern const acp_uint64_t  cmProtocolVersion;
 

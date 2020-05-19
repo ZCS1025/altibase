@@ -479,6 +479,15 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
                 if(sPCB->getChildPCO() != NULL)
                 {
                     sChildPCO = sPCB->getChildPCO();
+
+                    /* BUG-46158 */
+                    if ((sParentPCO->getPlanCacheKeep() == MMC_PCO_PLAN_CACHE_KEEP) &&
+                        (sChildPCO->getPlanState() != MMC_CHILD_PCO_PLAN_IS_UNUSED))
+                    {
+                        sParentPCO->releasePrepareLatch();
+                        continue;
+                    }
+
                     sPCOSize = sChildPCO->getSize();
                     sVictimsSize += sPCOSize;
                     //parent PCO에서 삭제.
@@ -709,6 +718,15 @@ void mmcPlanCacheLRUList::compactLRU(idvSQL  *aStatSQL,
                 if(sPCB->getChildPCO() != NULL)
                 {
                     sChildPCO = sPCB->getChildPCO();
+
+                    /* BUG-46158 */
+                    if ((sParentPCO->getPlanCacheKeep() == MMC_PCO_PLAN_CACHE_KEEP) &&
+                        (sChildPCO->getPlanState() != MMC_CHILD_PCO_PLAN_IS_UNUSED))
+                    {
+                        sParentPCO->releasePrepareLatch();
+                        continue;
+                    }
+
                     sPCOSize = sChildPCO->getSize();
                     *aVictimsSize += sPCOSize;
                     //parent PCO에서 삭제.

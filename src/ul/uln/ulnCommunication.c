@@ -25,6 +25,8 @@
 
 #include <ulsdnExecute.h>
 
+#include <ulsdDef.h>
+
 /*
  * ======================================
  * Basic cmi Wrapper functions
@@ -149,6 +151,15 @@ static ulnCmProtocolEntry gUlnCmProtocolTable[CMP_OP_DB_MAX + 1] =
     /* 98 */ { 0, "CMP_OP_DB_ShardPrepareResult" },
     /* 99 */ { 1, "CMP_OP_DB_ShardEndPendingTx" },
     /*100 */ { 0, "CMP_OP_DB_ShardEndPendingTxResult" },
+             /* BUG-46785 Shard statement partial rollback */
+    /*101 */ { 1, "CMP_OP_DB_SetSavepoint" },
+    /*102 */ { 0, "CMP_OP_DB_SetSavepointResult" },
+    /*103 */ { 1, "CMP_OP_DB_RollbackToSavepoint" },
+    /*104 */ { 0, "CMP_OP_DB_RollbackToSavepointResult" },
+    /*105*/  { 1, "CMP_OP_DB_ShardStmtPartialRollback" },
+    /*106*/  { 0, "CMP_OP_DB_ShardStmtPartialRollbackResult" },
+    /*107*/  { 1, "CMP_OP_DB_ShardNodeReport" },
+    /*108*/  { 0, "CMP_OP_DB_ShardNodeReportResult" },
     /* -- */ {-1, "CMP_OP_DB_MAX" }
 };
 
@@ -167,8 +178,9 @@ ACI_RC ulnWriteProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext, cmiP
     if (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
     {
         aPtContext->mNeedReadProtocol += 1;
-        /* Increase protocol-data-count in cmnBlockIPCDA. */
-        ((cmbBlockIPCDA*)sCtx->mWriteBlock)->mOperationCount++;
+
+        /* BUG-46502 */
+        cmiIPCDAIncDataCount(sCtx);
     }
     else
     {
@@ -195,6 +207,9 @@ ACI_RC ulnWriteProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext, cmiP
                                ulERR_ABORT_COMMUNICATION_LINK_FAILURE,
                                "Server closed the connection." );
 
+#ifdef COMPILE_SHARDCLI
+        ulsdModuleOnCmError( aFnContext, sDbc, &sErrorMgr );
+#else
         //PROJ-1645 UL FailOver.
         if (ulnFailoverDoSTF(aFnContext) == ACI_FAILURE)
         {
@@ -209,6 +224,7 @@ ACI_RC ulnWriteProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext, cmiP
                       ulnErrorMgrGetSQLSTATE(&sErrorMgr),
                       ulnErrorMgrGetErrorMessage(&sErrorMgr) );
         }
+#endif /* COMPILE_SHARDCLI */
     }
 
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
@@ -303,6 +319,11 @@ ACI_RC ulnReadProtocolIPCDA(ulnFnContext   *aFnContext,
 
     ACI_EXCEPTION_END;
     
+#ifdef COMPILE_SHARDCLI
+    /* BUG-46092 */
+    ulsdModuleErrorCheckAndAlignDataNode( aFnContext );
+#endif
+
     return ACI_FAILURE;
 }
 
@@ -390,6 +411,9 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
                                ulERR_ABORT_COMMUNICATION_LINK_FAILURE,
                                "Server closed the connection." );
 
+#ifdef COMPILE_SHARDCLI
+        ulsdModuleOnCmError( aFnContext, sDbc, &sErrorMgr );
+#else
         //PROJ-1645 UL FailOver.
         if (ulnFailoverDoSTF(aFnContext) == ACI_FAILURE)
         {
@@ -404,6 +428,7 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
                       ulnErrorMgrGetSQLSTATE(&sErrorMgr),
                       ulnErrorMgrGetErrorMessage(&sErrorMgr) );
         }
+#endif /* COMPILE_SHARDCLI */
     }
 
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
@@ -447,6 +472,11 @@ ACI_RC ulnReadProtocol(ulnFnContext   *aFnContext,
     }
 
     ACI_EXCEPTION_END;
+
+#ifdef COMPILE_SHARDCLI
+    /* BUG-46092 */
+    ulsdModuleErrorCheckAndAlignDataNode( aFnContext );
+#endif
 
     return ACI_FAILURE;
 }
@@ -505,6 +535,9 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
                                ulERR_ABORT_COMMUNICATION_LINK_FAILURE,
                                "Server closed the connection." );
 
+#ifdef COMPILE_SHARDCLI
+        ulsdModuleOnCmError( aFnContext, sDbc, &sErrorMgr );
+#else
         //PROJ-1645 UL FailOver.
         if (ulnFailoverDoSTF(aFnContext) == ACI_FAILURE)
         {
@@ -519,6 +552,7 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
                       ulnErrorMgrGetSQLSTATE(&sErrorMgr),
                       ulnErrorMgrGetErrorMessage(&sErrorMgr) );
         }
+#endif /* COMPILE_SHARDCLI */
     }
 
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
@@ -532,6 +566,9 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
     {
         ulnErrorMgrSetCmError( sDbc, &sErrorMgr, aciGetErrorCode() );
 
+#ifdef COMPILE_SHARDCLI
+        ulsdModuleOnCmError( aFnContext, sDbc, &sErrorMgr );
+#else
         //PROJ-1645 UL FailOver.
         if (ulnFailoverDoSTF(aFnContext) == ACI_FAILURE)
         {
@@ -544,9 +581,15 @@ ACI_RC ulnReadProtocolAsync(ulnFnContext   *aFnContext,
                       ulnErrorMgrGetSQLSTATE(&sErrorMgr),
                       ulnErrorMgrGetErrorMessage(&sErrorMgr) );
         }
+#endif /* COMPILE_SHARDCLI */
     }
 
     ACI_EXCEPTION_END;
+
+#ifdef COMPILE_SHARDCLI
+    /* BUG-46092 */
+    ulsdModuleErrorCheckAndAlignDataNode( aFnContext );
+#endif
 
     return ACI_FAILURE;
 }
@@ -575,7 +618,6 @@ ACI_RC ulnFlushProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
         /* PROJ-2616 */
         sWriteBlock->mBlock.mDataSize = sWriteBlock->mBlock.mCursor;
         sWriteBlock->mBlock.mBlockSize = CMB_BLOCK_DEFAULT_SIZE - sizeof(cmbBlockIPCDA);
-        acpMemBarrier();
         /* Finalize to write data block. */
         (void)cmiFinalizeSendBufferForIPCDA(sCtx);
     }
@@ -890,6 +932,9 @@ ACI_RC ulnWriteParamInfoSetListREQ(ulnFnContext *aFnContext,
          sParamNumber++)
     {
         sDescRecApd = ulnStmtGetApdRec(sStmt, sParamNumber);
+
+        /* BUG-46052 codesonar Null Pointer Dereference */
+        ACI_TEST(sDescRecApd == NULL);
 
         sBindInfo = &(sDescRecApd->mBindInfo);
         sDataType = ulnTypeMap_MTYPE_MTD(sBindInfo->mMTYPE);
@@ -1533,7 +1578,8 @@ ACI_RC ulnWriteLobFreeREQ(ulnFnContext *aFnContext, ulnPtContext *aPtContext, ac
 
     ACI_TEST(cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sPacket.mOpID = CMP_OP_DB_LobFree;
 
@@ -1555,6 +1601,11 @@ ACI_RC ulnWriteLobFreeREQ(ulnFnContext *aFnContext, ulnPtContext *aPtContext, ac
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     if( (sState == 0) && (cmiGetLinkImpl(sCtx) == CMN_LINK_IMPL_IPCDA) )
@@ -1584,7 +1635,8 @@ ACI_RC ulnWriteLobFreeAllREQ(ulnFnContext *aFnContext,
 
     ACI_TEST(cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sPacket.mOpID = CMP_OP_DB_LobFreeAll;
 
@@ -1611,6 +1663,11 @@ ACI_RC ulnWriteLobFreeAllREQ(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     if( (sState == 0) && (cmiGetLinkImpl(sCtx) == CMN_LINK_IMPL_IPCDA) )
@@ -1754,15 +1811,15 @@ ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
                                 ulnPropertyId  aCmPropertyId,
                                 void          *aValuePtr)
 {
-    cmiProtocolContext  *sCtx = &(aPtContext->mCmiPtContext);
-    acp_uint8_t          s8   = 0;
-    acp_uint32_t         s32  = 0;
-    acp_uint64_t         s64  = 0;
-    acp_uint32_t         sLen = 0;
-    cmiProtocol          sPacket;
-    acp_uint16_t         sID             = (acp_uint16_t) aCmPropertyId;
-    acp_uint16_t         sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
-    acp_uint8_t          sState          = 0;
+    cmiProtocolContext       *sCtx = &(aPtContext->mCmiPtContext);
+    acp_uint8_t               s8   = 0;
+    acp_uint32_t              s32  = 0;
+    acp_uint64_t              s64  = 0;
+    acp_uint32_t              sLen = 0;
+    cmiProtocol               sPacket;
+    acp_uint16_t              sID             = (acp_uint16_t) aCmPropertyId;
+    acp_uint16_t              sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
+    acp_uint8_t               sState          = 0;
 
     /* 
      * BUG-41793 Keep a compatibility among tags
@@ -1848,6 +1905,7 @@ ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
             break;
 
         case ULN_PROPERTY_SHARD_PIN: /* PROJ-2660 */
+        case ULN_PROPERTY_SHARD_META_NUMBER: /* BUG-46090 Meta Node SMN 전파 */
             s64 = (acp_uint64_t)((acp_ulong_t)aValuePtr);
             sValueLen = 8;
 
@@ -1910,8 +1968,11 @@ ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
 
         case ULN_PROPERTY_SHARD_LINKER_TYPE: /* PROJ-2638 shard native linker */
         case ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL: /* PROJ-2660 */
+        case ULN_PROPERTY_SHARD_CLIENT:
+        case ULN_PROPERTY_SHARD_SESSION_TYPE:
             s8 = (acp_uint8_t)((acp_ulong_t)aValuePtr);
             CMI_WRITE_CHECK( sCtx, 8 );
+            sState = 1;
             sValueLen = 1;
 
             CMI_WOP( sCtx, CMP_OP_DB_PropertySetV2 );
@@ -1926,12 +1987,18 @@ ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
             sValueLen = sLen + 4; /* data'length + sizeof int */
 
             CMI_WRITE_CHECK( sCtx, ( 7 + sValueLen ) );
+            sState = 1;
 
             CMI_WOP( sCtx, CMP_OP_DB_PropertySetV2 );
             CMI_WR2( sCtx, &sID );
             CMI_WR4( sCtx, &sValueLen );
             CMI_WR4( sCtx, &sLen );
             CMI_WCP( sCtx, aValuePtr, sLen );
+            break;
+
+        case ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT:   /* BUG-46092 */
+            /* BUG-46785 derpecated property */
+            ACI_RAISE(LABEL_INVALID_ATTR_OPTION);
             break;
 
         default:
@@ -2194,6 +2261,82 @@ ACI_RC ulnWriteCancelByCIDREQ(ulnFnContext  *aFnContext,
         ulnError(aFnContext, ulERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE);
         (void)cmiFinalizeSendBufferForIPCDA(sCtx);
     }
+
+    return ACI_FAILURE;
+}
+
+/* BUG-46785 Shard statement partial rollback */
+ACI_RC ulnWriteSetSavepointREQ( ulnFnContext     *aFnContext,
+                                ulnPtContext     *aPtContext,
+                                const acp_char_t *aSavepointName,
+                                acp_uint32_t      aSavepointNameLength )
+{
+    cmiProtocol         sPacket;
+    cmiProtocolContext *sCtx            = &(aPtContext->mCmiPtContext);
+    acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
+    acp_uint8_t         sState          = 0;
+
+    sPacket.mOpID = CMP_OP_DB_SetSavepoint;
+
+    CMI_WRITE_CHECK( sCtx, 1 +                      /* OP */
+                           4 +                      /* length */
+                           aSavepointNameLength );  /* savepoint */
+    sState = 1;
+
+    CMI_WOP( sCtx, CMP_OP_DB_SetSavepoint );
+    CMI_WR4( sCtx, &aSavepointNameLength );
+    CMI_WCP( sCtx, aSavepointName, aSavepointNameLength );
+
+    ACI_TEST( ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    if( (sState == 0) && ( cmiGetLinkImpl( sCtx ) == CMN_LINK_IMPL_IPCDA ) )
+    {
+        ulnError( aFnContext, ulERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE );
+    }
+
+    CMI_SET_CURSOR( sCtx, sOrgWriteCursor );
+
+    return ACI_FAILURE;
+}
+
+/* BUG-46785 Shard statement partial rollback */
+ACI_RC ulnWriteRollbackToSavepointREQ( ulnFnContext     *aFnContext,
+                                       ulnPtContext     *aPtContext,
+                                       const acp_char_t *aSavepointName,
+                                       acp_uint32_t      aSavepointNameLength )
+{
+    cmiProtocol         sPacket;
+    cmiProtocolContext *sCtx            = &(aPtContext->mCmiPtContext);
+    acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
+    acp_uint8_t         sState          = 0;
+
+    sPacket.mOpID = CMP_OP_DB_RollbackToSavepoint;
+
+    CMI_WRITE_CHECK( sCtx, 1 +                      /* OP */
+                           4 +                      /* length */
+                           aSavepointNameLength );  /* savepoint */
+    sState = 1;
+
+    CMI_WOP( sCtx, CMP_OP_DB_RollbackToSavepoint );
+    CMI_WR4( sCtx, &aSavepointNameLength );
+    CMI_WCP( sCtx, aSavepointName, aSavepointNameLength );
+
+    ACI_TEST( ulnWriteProtocol( aFnContext, aPtContext, &sPacket ) != ACI_SUCCESS );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    if( (sState == 0) && ( cmiGetLinkImpl( sCtx ) == CMN_LINK_IMPL_IPCDA ) )
+    {
+        ulnError( aFnContext, ulERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE );
+    }
+
+    CMI_SET_CURSOR( sCtx, sOrgWriteCursor );
 
     return ACI_FAILURE;
 }

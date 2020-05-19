@@ -81,7 +81,6 @@ IDE_RC sdtWASegment::createWASegment(idvSQL             * aStatistics,
 
     /***************************** initialize ******************************/
     sWASeg->mSpaceID                 = aSpaceID;
-    sWASeg->mFlushQueue->mStatsPtr   = aStatsPtr;
     sWASeg->mFlushQueue->mStatistics = aStatistics;
     sWASeg->mStatsPtr                = aStatsPtr;
     sWASeg->mNExtentCount            = 0;
@@ -961,11 +960,11 @@ IDE_RC sdtWASegment::makeInitPage( sdtWASegment * aWASegment,
             sWAPageState = getWAPageState( aWASegment, aWPID );
             if( sWAPageState == SDT_WA_PAGESTATE_IN_FLUSHQUEUE )
             {
-                ideLog::log( IDE_SM_0,
+                ideLog::log( IDE_DUMP_0,
                              "WPID : %u\n",
                              aWPID );
 
-                smuUtility::dumpFuncWithBuffer( IDE_SM_0,
+                smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
                                                 dumpFlushQueue,
                                                 (void*)aWASegment->mFlushQueue );
                 IDE_ERROR( 0 );
@@ -1215,7 +1214,7 @@ IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
 /**************************************************************************
  * Description :
  * WPage를 다른 곳으로 옮긴다. npage, npagehash등을 고려해야 한다.
-
+ *
  * <IN>
  * aWASegment     - 대상 WASegment
  * aSrcWAGroupID  - 원본 Group ID
@@ -1223,11 +1222,11 @@ IDE_RC sdtWASegment::unassignNPage( sdtWASegment * aWASegment,
  * aDstWAGroupID  - 대상 Group ID
  * aDstWPID       - 대상 WPID
  ***************************************************************************/
-IDE_RC sdtWASegment::movePage( sdtWASegment * aWASegment,
-                               sdtWAGroupID   aSrcGroupID,
-                               scPageID       aSrcWPID,
-                               sdtWAGroupID   aDstGroupID,
-                               scPageID       aDstWPID )
+IDE_RC sdtWASegment::moveWPage( sdtWASegment * aWASegment,
+                                sdtWAGroupID   aSrcGroupID,
+                                scPageID       aSrcWPID,
+                                sdtWAGroupID   aDstGroupID,
+                                scPageID       aDstWPID )
 {
     UChar        * sSrcWAPagePtr;
     UChar        * sDstWAPagePtr;
@@ -1235,7 +1234,9 @@ IDE_RC sdtWASegment::movePage( sdtWASegment * aWASegment,
     scSpaceID      sNSpaceID;
     scPageID       sNPageID;
 
-    if( aSrcGroupID != aDstGroupID )
+    // BUG-46383 moveWPage에서 두 Page의 wa group이 같을 때에도 skip되면 안됩니다.
+    // 반대로 WPID가 같은 경우에는 같은 page이므로 skip합니다.
+    if( aSrcWPID != aDstWPID )
     {
         sSrcWAPagePtr = getWAPagePtr( aWASegment, aSrcGroupID, aSrcWPID );
         sDstWAPagePtr = getWAPagePtr( aWASegment, aDstGroupID, aDstWPID );
@@ -1316,13 +1317,13 @@ IDE_RC sdtWASegment::readNPage(sdtWASegment * aWASegment,
     }
     else
     {
-        /* 기존에 있던 페이지니, movePage로 옮긴다. */
+        /* 기존에 있던 페이지니, moveWPage로 옮긴다. */
         sOldWAGroupID = findGroup( aWASegment, sOldWCB->mWPageID );
-        IDE_TEST( movePage( aWASegment,
-                            sOldWAGroupID,
-                            sOldWCB->mWPageID,
-                            aWAGroupID,
-                            aWPID )
+        IDE_TEST( moveWPage( aWASegment,
+                             sOldWAGroupID,
+                             sOldWCB->mWPageID,
+                             aWAGroupID,
+                             aWPID )
                   != IDE_SUCCESS );
     }
 
@@ -1484,6 +1485,9 @@ IDE_RC sdtWASegment::allocFreeNExtent( sdtWASegment * aWASegment )
                     <= aWASegment->mNExtentCount,
                     ERROR_NOT_ENOUGH_NEXTENTSIZE );
 
+    IDU_FIT_POINT_RAISE( "BUG-45857@sdtWASegment::allocFreeNExtent::ERROR_NOT_ENOUGH_NEXTENTSIZE",
+                          ERROR_NOT_ENOUGH_NEXTENTSIZE );
+    
     IDE_TEST( sdtWAMap::getSlotPtr( &aWASegment->mNExtentMap,
                                     aWASegment->mNExtentCount,
                                     sdtWAMap::getSlotSize( &aWASegment->mNExtentMap ),

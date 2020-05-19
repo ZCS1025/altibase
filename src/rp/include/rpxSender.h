@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSender.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSender.h 85321 2019-04-25 04:58:40Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RPX_SENDER_H_
@@ -44,6 +44,8 @@
 #include <rpdLogBufferMgr.h>
 
 #define RPX_SENDER_SVP_NAME           "$$RPX_SENDER_SVPNAME"
+#define RPX_INVALID_SENDER_INDEX      (UINT_MAX)
+
 
 typedef enum
 {
@@ -68,7 +70,6 @@ typedef struct rpxSyncItem
 {
     iduListNode   mNode;
     rpdMetaItem * mTable;
-    ULong         mTotalTuples;
     ULong         mSyncedTuples;
 } rpxSyncItem;
 
@@ -122,7 +123,8 @@ public:
                       rprSNMapMgr     * aSNMapMgr,
                       smSN              aActiveRPRecoverySN,
                       rpdMeta         * aMeta,
-                      UInt              aParallelID );
+                      UInt              aParallelID,
+                      UInt              aSenderListIndex );
 
     void   destroy();
     void   shutdown();
@@ -185,9 +187,6 @@ public:
         { return &mMeta    ; }
     inline SInt          getMode()
         { return mMeta.mReplication.mReplMode;}
-    //BUG-22173 : V$REPSENDER  act_repl_mode 추가
-    inline idBool        getIsExceedRepGap()
-        { return mSenderInfo->getIsExceedRepGap(); }
     inline UInt          getMetaItemCount()
         { return mMeta.mReplication.mItemCount; }
     inline rpdMetaItem * getMetaItem(UInt aIdx)
@@ -247,9 +246,10 @@ public:
      // LFG가 1이고 archive log를 읽을 수 있는 ALA인가.
     inline idBool isArchiveALA()
         {
-            if ((getRole() == RP_ROLE_ANALYSIS) &&
-                (RPU_REPLICATION_LOG_BUFFER_SIZE == 0) &&
-                (smiGetArchiveMode() == SMI_LOG_ARCHIVE) )
+            if ( ( ( getRole() == RP_ROLE_ANALYSIS ) ||
+                   ( getRole() == RP_ROLE_ANALYSIS_PROPAGATION ) ) &&
+                 ( RPU_REPLICATION_LOG_BUFFER_SIZE == 0 ) &&
+                 ( smiGetArchiveMode() == SMI_LOG_ARCHIVE ) )
             {
                 return ID_TRUE;
             }
@@ -265,10 +265,15 @@ public:
         idvManager::applyStatisticsToSystem(&mStatSession, &mOldStatSession);
     }
 
-    void getNetworkAddress( SChar ** aMyIP,
-                            SInt * aMyPort,
-                            SChar ** aPeerIP,
-                            SInt * aPeerPort );
+    void getLocalAddress( SChar ** aMyIP,
+                          SInt * aMyPort );
+
+    void getRemoteAddress( SChar ** aPeerIP,
+                           SInt   * aPeerPort );
+
+    void getRemoteAddressForIB( SChar      ** aPeerIP,
+                                SInt        * aPeerPort,
+                                rpIBLatency * aIBLatency );
 
     IDE_RC    addXLogKeepAlive();
 
@@ -282,6 +287,7 @@ public:
     ULong getSendLogCount( void );
 
     void          setNetworkErrorAndDeactivate( void );
+    void          setRestartErrorAndDeactivate( void );
     IDE_RC        checkHBTFault( void );
 
     IDE_RC buildRecordsForSentLogCount(
@@ -307,6 +313,38 @@ public:
     IDE_RC updateSentLogCount( smOID aNewTableOID,
                                smOID aOldTableOID );
 
+    IDE_RC sendDDLASyncStart( UInt aType );
+
+    IDE_RC recvDDLASyncStartAck( UInt * aType );
+
+    IDE_RC sendDDLASyncExecute( UInt    aType,
+                                SChar * aUserName,
+                                UInt    aDDLEnableLevel,
+                                UInt    aTargetCount,
+                                SChar * aTargetTableName,
+                                SChar * aTargetPartNames,
+                                smSN    aDDLCommitSN,
+                                SChar * aDDLStmt );
+
+    IDE_RC recvDDLASyncExecuteAck( UInt  * aType,
+                                   UInt  * aIsSuccess,
+                                   UInt  * aErrCode,
+                                   SChar * aErrMsg );
+
+    IDE_RC getTargetNamesFromItemMetaEntry( smTID    aTID,
+                                            UInt   * aTargetCount,
+                                            SChar  * aTargetTableName,
+                                            SChar ** aTargetPartNames );
+
+    IDE_RC getDDLInfoFromDDLStmtLog( smTID   aTID,
+                                     SInt    aMaxDDLStmtLen,
+                                     SChar * aUserName,
+                                     SChar * aDDLStmt );
+
+    idBool isSuspended( void );
+
+    void   resume( void );
+
 private:
     IDE_RC    initXSN( smSN aReceiverXSN );
     void      initReadLogCount();
@@ -314,7 +352,7 @@ private:
     IDE_RC    execOnceAtStart();
     IDE_RC    prepareForParallel();
     void      cleanupForParallel();
-    void      initializeTransTbl();
+    void      initializeAssignedTransTbl();
     void      initializeServiceTrans();
 
     IDE_RC    quickStart();
@@ -323,8 +361,8 @@ private:
 
     IDE_RC    connectPeer(SInt aIndex);
     IDE_RC    checkReplAvailable(rpMsgReturn *aRC, 
-                                 SInt *aFailbackStatus,
-                                 smSN        *aXSN);
+                                 SInt        *aFailbackStatus,
+                                 smSN        *aReceiverXSN);
     void      disconnectPeer();
 
     IDE_RC    doReplication();
@@ -359,6 +397,9 @@ private:
     IDE_RC  updateXSN(smSN aSN);
 
     void    sleepForNextConnect();
+    void    checkXSNAndSleep();
+    void    sleepForSenderSleepTime();
+    void    updateOldMaxXSN();
 
     IDE_RC  final_lock()  { return mFinalMtx.lock(NULL /* idvSQL* */); }
     IDE_RC  final_unlock(){ return mFinalMtx.unlock();}
@@ -399,6 +440,12 @@ private:
     IDE_RC sendRebuildIndicesRemoteSyncTables( void );
     IDE_RC sendSyncTableInfo( void );
 
+    IDE_RC ddlASyncStart( void );
+
+    IDE_RC processForExecuteDDLASync( void );
+
+    void   getTargetInfoFromDDLStmtLog( const void * aLogBody, SChar * aDDLStmt );
+
 public: // need public for FIX TABLE
 
     SChar              * mRepName;
@@ -407,12 +454,13 @@ public: // need public for FIX TABLE
     UInt                 mParallelID;
     
     idBool               mStartComplete;
-    idBool               mNetworkError;
+    idBool               mRetryError;
     idBool               mSetHostFlag;
     idBool               mStartError;
 
     /* For Parallel Logging: LSN -> SN으로 변경 */
     smSN                 mXSN;
+    smSN                 mOldMaxXSN;
     smSN                 mCommitXSN;
     smSN                 mSkipXSN;
     UInt                 mReadFileNo;
@@ -450,6 +498,8 @@ public:
     IDE_RC    setHostForNetwork( SChar* aIP, SInt aPort );
 
     IDE_RC    updateRemoteFaultDetectTime();
+
+    IDE_RC    allocAndRebuildNewSentLogCount( void );
 
 private:
 
@@ -535,7 +585,9 @@ private:
     
     IDE_RC allocSentLogCount( void );
     void freeSentLogCount( void );
-    
+
+    void copySentLogCount( rpxSentLogCount * aSrc, UInt aSentLogCountArraySize );
+
     void searchSentLogCount( smOID                  aTableOID,
                              rpxSentLogCount     ** aSentLogCount );
     
@@ -564,6 +616,8 @@ public:
     iduMemAllocator  * mAllocator;
     SInt               mAllocatorState;
 
+    UInt               mSenderListIndex;
+
     /*
      *  PROJ-2453
      */
@@ -571,7 +625,6 @@ private:
     idBool          mIsServiceFail;
     UInt            mTransTableSize;
     rpxSender    ** mAssignedTransTbl;
-    idBool        * mIsServiceTrans;
     iduMutex        mStatusMutex;
     smSN            mFailbackEndSN;
 
@@ -580,32 +633,28 @@ private:
 private:
     IDE_RC          addXLogAckOnDML();
     IDE_RC          replicateLogWithLogPtr( const SChar  * aLogPtr );
-    rpxSender *     getAssignedSender( smTID     aTransID );
+    rpxSender *     getAssignedSender( smTID        aTransID, 
+                                       smSN         aCurrentSN,
+                                       idBool       aIsBeginLog );
+    rpxSender *     assignSenderBySlotIndex( UInt     aSlotIndex,
+                                             smSN     aCurrentSN,
+                                             idBool   aIsBeginLog );
     rpxSender *     getLessBusySender( void );
+    rpxSender *     getLessBusyChildSender( void );
     UInt            getActiveTransCount( void );
 
     void            waitUntilSendingByServiceThr( void );
 
 public:
     void            sendXLog( const SChar * aLogPtr,
-                              smiLogType    aLogType,
                               smTID         aTransID,
                               smSN          aCurrentSN,
                               idBool        aIsBeginLog );
 
     idBool          waitUntilFlushFailbackComplete( void );
 
-    idBool          needSendLogFromServiceThr( smTID  aTransID, 
-                                               smSN   aCurrentSN,
-                                               idBool aIsBeginLog );
-
-    void            setAssignedTransactionInSender( smTID         aTransID );
-
     smSN            getFailbackEndSN( void );
 
-    void            setServiceTrans( smTID aTransID ) ; 
-    void            unSetServiceTrans( smTID aTransID ) ; 
-    
     ULong           getSendDataSize( void );
     ULong           getSendDataCount( void );   
 };

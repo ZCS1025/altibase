@@ -1057,9 +1057,21 @@ void ulpCodeGen::ulpGenGetHostValInfo( idBool          aIsField,
         }
         switch( aHVNode->mType )
         {
-            case H_CLOB:case H_BLOB:case H_NUMERIC:case H_NIBBLE:
-            case H_BIT:case H_BYTES:case H_VARBYTE:case H_BINARY:case H_CHAR:
-            case H_VARCHAR:case H_NCHAR:case H_NVARCHAR:case H_CLOB_FILE:case H_BLOB_FILE:
+            case H_CLOB:
+            case H_BLOB:
+            case H_NUMERIC:
+            case H_NIBBLE:
+            case H_BIT:
+            case H_BYTES:
+            case H_VARBYTE:
+            case H_BINARY:
+            case H_BINARY2:  /* BUG-46418 */
+            case H_CHAR:
+            case H_VARCHAR:
+            case H_NCHAR:
+            case H_NVARCHAR:
+            case H_CLOB_FILE:
+            case H_BLOB_FILE:
                 *aHVInfo|=GEN_HVINFO_IS_STRTYPE; 
                 break;
             default:

@@ -288,8 +288,10 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
     ulnDbcSetNlsNcharCharsetString(aDbc, NULL, 0); // mNlsNcharCharsetString
 
     //PROJ-1645 Failover
-    ulnFailoverClearServerList(aDbc);
     ulnDbcSetAlternateServers(aDbc, NULL, 0);
+    ulnDbcSetFailoverSource(aDbc, NULL, 0);  /* BUG-46599 */
+
+    ulnFailoverFinalize(aDbc);
 
     /* BUG-36256 Improve property's communication */
     ulnConnAttrArrFinal(&aDbc->mUnsupportedProperties);
@@ -299,6 +301,11 @@ ACI_RC ulnDbcDestroy(ulnDbc *aDbc)
     ulnDbcSetSslCaPath(aDbc, NULL, 0);
     ulnDbcSetSslCipher(aDbc, NULL, 0);
     ulnDbcSetSslKey(aDbc, NULL, 0);
+
+#ifdef COMPILE_SHARDCLI
+    /* BUG-46092 */
+    ulnShardDbcContextFinalize( aDbc );
+#endif
 
     /*
      * 만약 mLink 가 살아 있다면 free 한다. 짝은 안맞지만, 안전장치임.
@@ -406,6 +413,7 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
 
     //PROJ-1645 UL Failover.
     aDbc->mAlternateServers     = NULL;
+    aDbc->mLoadBalance          = (acp_bool_t)gUlnConnAttrTable[ULN_CONN_ATTR_LOAD_BALANCE].mDefValue;
     aDbc->mConnectionRetryCnt   = gUlnConnAttrTable[ULN_CONN_ATTR_CONNECTION_RETRY_COUNT].mDefValue;
     aDbc->mConnectionRetryDelay = gUlnConnAttrTable[ULN_CONN_ATTR_CONNECTION_RETRY_DELAY].mDefValue;
     aDbc->mSessionFailover      = (acp_bool_t)gUlnConnAttrTable[ULN_CONN_ATTR_SESSION_FAILOVER].mDefValue;
@@ -593,6 +601,10 @@ ACI_RC ulnDbcInitialize(ulnDbc *aDbc)
     aDbc->mSockBindAddr = NULL; /* BUG-44271 */
 
     aDbc->mAttrPDODeferProtocols = 0;  /* BUG-45286 For PDO Driver */
+
+    /* PROJ-2681 */
+    aDbc->mAttrIBLatency = ALTIBASE_IB_LATENCY_NORMAL;
+    aDbc->mAttrIBConChkSpin = ALTIBASE_IB_CONCHKSPIN_DEFAULT;
 
     ulnShardDbcContextInitialize(aDbc);
 
@@ -887,6 +899,18 @@ ACI_RC ulnDbcSetConnType(ulnDbc *aDbc, ulnConnType aConnType)
 ulnConnType ulnDbcGetConnType(ulnDbc *aDbc)
 {
     return aDbc->mConnType;
+}
+
+ACI_RC ulnDbcSetShardConnType(ulnDbc *aDbc, ulnConnType aConnType)
+{
+    aDbc->mShardDbcCxt.mShardConnType = (ulsdShardConnType)aConnType;
+
+    return ACI_SUCCESS;
+}
+
+ulnConnType ulnDbcGetShardConnType(ulnDbc *aDbc)
+{
+    return (ulnConnType)aDbc->mShardDbcCxt.mShardConnType;
 }
 
 cmiConnectArg *ulnDbcGetConnectArg(ulnDbc *aDbc)
@@ -1243,8 +1267,8 @@ ACI_RC ulnDbcSetSockRcvBufBlockRatio(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    /* BUG-25579 * [CodeSonar::NullPointerDereference] */
-    ACE_ASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /* set socket receive buffer size */
     if (aSockRcvBufBlockRatio == 0)
@@ -1262,6 +1286,11 @@ ACI_RC ulnDbcSetSockRcvBufBlockRatio(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_CM_ERR)
     {
         ulnErrHandleCmError(aFnContext, NULL);
@@ -1278,8 +1307,8 @@ ACI_RC ulnDbcSetAttrSockRcvBufBlockRatio(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    /* BUG-25579 * [CodeSonar::NullPointerDereference] */
-    ACE_ASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /* set socket receive buffer size, if connected */
     if (ulnDbcIsConnected(sDbc) == ACP_TRUE)
@@ -1303,6 +1332,11 @@ ACI_RC ulnDbcSetAttrSockRcvBufBlockRatio(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;

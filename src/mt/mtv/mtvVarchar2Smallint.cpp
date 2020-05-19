@@ -33,6 +33,8 @@ extern mtvModule mtvVarchar2Smallint;
 extern mtdModule mtdSmallint;
 extern mtdModule mtdVarchar;
 
+extern mtxModule mtxFromVarcharTo; /* BUG-2632 */
+
 static IDE_RC mtvEstimate( mtcNode*     aNode,
                            mtcTemplate* aTemplate,
                            mtcStack*    aStack,
@@ -59,6 +61,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Varchar2Smallint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -72,6 +75,10 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns+aNode->column;
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxFromVarcharTo.mGetExecute( mtdSmallint.id, mtdSmallint.id );
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdSmallint,

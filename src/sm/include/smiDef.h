@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiDef.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smiDef.h 84383 2018-11-20 04:18:42Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMI_DEF_H_
@@ -214,7 +214,7 @@ typedef struct smiSegStorageAttr
     UInt     mMaxExtCnt;
 } smiSegStorageAttr;
 
-/* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+/* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
  * Partial Rollback을 지원해야 합니다. */
 
 /* Statment의 Depth가 가질수 있는 최대값 */
@@ -242,10 +242,10 @@ typedef enum
 // 관리 영역을 표시하도록 변경되면 제거 되어야 함
 typedef enum
 {
-    SMI_TBS_MEMORY = 0,
-    SMI_TBS_DISK,
+    SMI_TBS_DISK = 0,
+    SMI_TBS_MEMORY,
     SMI_TBS_VOLATILE,
-    SMI_TBS_LOCATION_MAX
+    SMI_TBS_NONE
 } smiTBSLocation;
 
 #define SMI_TBS_SYSTEM_MASK         ( 0x80000000 )
@@ -256,10 +256,11 @@ typedef enum
 #define SMI_TBS_TEMP_YES            ( 0x40000000 )
 #define SMI_TBS_TEMP_NO             ( 0x00000000 )
 
-#define SMI_TBS_LOCATION_MASK       ( 0x30000000 )
-#define SMI_TBS_LOCATION_MEMORY     ( 0x00000000 )
-#define SMI_TBS_LOCATION_DISK       ( 0x10000000 )
-#define SMI_TBS_LOCATION_VOLATILE   ( 0x20000000 )
+#define SMI_TBS_LOCATION_MASK       ( 0x0F000000 )
+#define SMI_TBS_LOCATION_DISK       ( 0x01000000 )
+#define SMI_TBS_LOCATION_MEMORY     ( 0x02000000 )
+#define SMI_TBS_LOCATION_VOLATILE   ( 0x04000000 )
+#define SMI_TBS_LOCATION_NONE       ( 0x00000000 )
 
 typedef enum
 {
@@ -1003,6 +1004,8 @@ typedef enum
     SMI_LOB_COLUMN_TYPE_CLOB
 } smiLobColumnType;
 
+# define SMI_MAX_NAME_LEN                  (SM_MAX_NAME_LEN)
+# define SMI_MAX_PARTKEY_COND_VALUE_LEN    (SM_MAX_PARTKEY_COND_VALUE_LEN)
 
 /* smiColumn.id                                      */
 # define SMI_COLUMN_ID_MASK                (0x000003FF)

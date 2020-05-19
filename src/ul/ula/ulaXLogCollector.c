@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: ulaXLogCollector.c 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: ulaXLogCollector.c 82803 2018-04-17 00:20:32Z reznoa $
  **********************************************************************/
 
 #include <aclMem.h>
@@ -1830,7 +1830,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
         // Authentication Information 얻기
         acpMemSet(sXLogSenderIP, 0x00, ULA_IP_LEN);
         (void)cmiGetLinkInfo(aCollector->mPeerLink, sXLogSenderIP, ULA_IP_LEN,
-                             CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS);
+                             CMI_LINK_INFO_REMOTE_IP_ADDRESS);
 
         // 비교
         for (sIndex = 0; sIndex < aCollector->mXLogSenderIPCount; sIndex++)
@@ -3933,18 +3933,18 @@ ACI_RC ulaXLogCollectorGetXLogCollectorStatus
             cmiGetLinkInfo(aCollector->mPeerLink,
                            aOutXLogCollectorStatus->mMyIP,
                            ULA_IP_LEN,
-                           CMI_LINK_INFO_TCP_LOCAL_IP_ADDRESS);
+                           CMI_LINK_INFO_LOCAL_IP_ADDRESS);
 
             cmiGetLinkInfo(aCollector->mPeerLink,
                            aOutXLogCollectorStatus->mPeerIP,
                            ULA_IP_LEN,
-                           CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS);
+                           CMI_LINK_INFO_REMOTE_IP_ADDRESS);
 
             acpMemSet(sPort, 0x00, ULA_PORT_LEN);
             cmiGetLinkInfo(aCollector->mPeerLink,
                            sPort,
                            ULA_PORT_LEN,
-                           CMI_LINK_INFO_TCP_LOCAL_PORT);
+                           CMI_LINK_INFO_LOCAL_PORT);
             (void)ulaStrToSInt32(sPort,
                                  ULA_PORT_LEN,
                                  &aOutXLogCollectorStatus->mMyPort);
@@ -3953,7 +3953,7 @@ ACI_RC ulaXLogCollectorGetXLogCollectorStatus
             cmiGetLinkInfo(aCollector->mPeerLink,
                            sPort,
                            ULA_PORT_LEN,
-                           CMI_LINK_INFO_TCP_REMOTE_PORT);
+                           CMI_LINK_INFO_REMOTE_PORT);
             (void)ulaStrToSInt32(sPort,
                                  ULA_PORT_LEN,
                                  &aOutXLogCollectorStatus->mPeerPort);

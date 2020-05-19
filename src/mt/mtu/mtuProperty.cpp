@@ -16,7 +16,7 @@
  
  
 /*****************************************************************************
- * $Id: mtuProperty.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtuProperty.cpp 83585 2018-07-30 09:50:39Z andrew.shin $
  ****************************************************************************/
 #include <idl.h>
 #include <ide.h>
@@ -320,6 +320,11 @@ mtuProperty::load()
                          &MTU_PROPERTY(mMsgQueuePermission) )
                == IDE_SUCCESS );
 
+    /* BUG-46267 */
+    IDE_ASSERT( idp::read( "NUMBER_CONVERSION_MODE",
+                           & MTU_PROPERTY( mNumberConversionMode ) )
+               == IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -382,7 +387,7 @@ mtuProperty::setupUpdateCallback()
     IDE_TEST(idp::setupBeforeUpdateCallback(
                  (const SChar*)"ARITHMETIC_OPERATION_MODE",
                  mtuProperty::changeARITHMETIC_OPERATION_MODE) != IDE_SUCCESS);
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnnModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnnModule.cpp 84923 2019-02-25 04:54:35Z djin $
  **********************************************************************/
 
 /**************************************************************
@@ -699,14 +699,15 @@ static IDE_RC sdnnPrepareIteratorMem( const smnIndexModule* )
     IDE_TEST(sdnnCachePool.initialize( IDU_MEM_SM_SDN,
                                        (SChar*)"SDNN_CACHE_POOL",
                                        sIteratorMemoryParallelFactor,
-                                       SDNN_ROWS_CACHE, /* Cache Size */
-                                       256,             /* Pool Size */
+                                       SDNN_ROWS_CACHE,         /* Cache Size */
+                                       256,                     /* Pool Size */
                                        IDU_AUTOFREE_CHUNK_LIMIT,
-                                       ID_TRUE,			/* UseMutex */
-                                       SD_PAGE_SIZE,    /* Align Size */
-                                       ID_FALSE,		/* ForcePooling */
-                                       ID_TRUE,			/* GarbageCollection */
-                                       ID_TRUE )   		/* HWCacheLine */
+                                       ID_TRUE,                 /* UseMutex */
+                                       SD_PAGE_SIZE,            /* Align Size */
+                                       ID_FALSE,                /* ForcePooling */
+                                       ID_TRUE,                 /* GarbageCollection */
+                                       ID_TRUE,                 /* HWCacheLine */
+                                       IDU_MEMPOOL_TYPE_TIGHT ) /* mempool type */
              != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -1919,9 +1920,19 @@ static IDE_RC sdnnMoveToNxtPage( sdnnIterator* aIterator, idBool aMakeCache )
 
     IDE_EXCEPTION( ERR_INCONSISTENT_PAGE )
     {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_PAGE,
-                                  aIterator->mSpaceID,
-                                  aIterator->mCurPageID) );
+        // BUG-45598: fullscan 모듈 단계에서 발견된 에러 페이지의 예외 처리 코드
+        if ( smrRecoveryMgr::isRestart() == ID_FALSE )
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_PageCorrupted,
+                                      aIterator->mSpaceID,
+                                      aIterator->mCurPageID));
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_PAGE,
+                                      aIterator->mSpaceID,
+                                      aIterator->mCurPageID) );
+        }
     }
     IDE_EXCEPTION_END;
 
@@ -2346,7 +2357,7 @@ IDE_RC sdnnAnalyzePage4GatherStat( idvSQL             * aStatistics,
 
         IDV_TIME_GET(&sBeginTime);
 
-        IDE_TEST( sdcRow::fetch( aStatistics,
+        if( sdcRow::fetch( aStatistics,
                                  NULL, /* aMtx */
                                  NULL, /* aSP */
                                  aTrans,
@@ -2364,7 +2375,33 @@ IDE_RC sdnnAnalyzePage4GatherStat( idvSQL             * aStatistics,
                                  aTableHeader->mRowTemplate,
                                  aRowBuffer,
                                  &sIsRowDeleted,
-                                 &sIsPageLatchReleased ) != IDE_SUCCESS );
+                                 &sIsPageLatchReleased,
+                                 ID_TRUE ) != IDE_SUCCESS )
+        {
+            /* BUG-44264: 여기처럼 Assert skip으로 fetch 할 때( ex. 통계정보 ) 
+             * fetch 함수 내부에서 fetch 실패했을 때 예외처리 중 Page의 Latch를
+             * 해제 한 경우, 다시 획득해야함.  
+             */ 
+            if( sIsPageLatchReleased == ID_TRUE )
+            {
+                sState = 0;
+                IDE_TEST( sdbBufferMgr::getPage( aStatistics,
+                                                 aTableHeader->mSpaceID,
+                                                 aPageID,
+                                                 SDB_S_LATCH,
+                                                 SDB_WAIT_NORMAL,
+                                                 SDB_MULTI_PAGE_READ,
+                                                 (UChar**)&sPageHdr,
+                                                 &sIsSuccess )
+                          != IDE_SUCCESS );
+                IDE_ERROR( sIsSuccess == ID_TRUE );
+                sState = 1;
+                sIsPageLatchReleased = ID_FALSE;
+
+                sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( (UChar*)sPageHdr );
+            }
+            continue;
+        }
 
         IDV_TIME_GET(&sEndTime);
 

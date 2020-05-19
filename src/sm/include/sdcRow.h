@@ -536,7 +536,8 @@ public:
                          smcRowTemplate              *aRowTemplate,
                          UChar                       *aDestRowBuf,
                          idBool                      *aIsRowDeleted,
-                         idBool                      *aIsPageLatchReleased );
+                         idBool                      *aIsPageLatchReleased,
+                         idBool                       aIsSkipAssert = ID_FALSE );
 
 
     static IDE_RC lock( idvSQL       *aStatistics,
@@ -1193,6 +1194,7 @@ public:
     static IDE_RC fetchRowPiece(
                             idvSQL                      *aStatistics,
                             void                        *aTrans,
+                            scSpaceID                    aTableSpaceID,
                             UChar                       *aCurrSlotPtr,
                             idBool                       aIsPersSlot,
                             const smiFetchColumnList    *aFetchColumnList,
@@ -1207,7 +1209,8 @@ public:
                             sdcRowFetchStatus           *aFetchStatus,
                             UChar                       *aDestRowBuf,
                             idBool                      *aIsRowDeleted,
-                            sdSID                       *aNextRowPieceSID );
+                            sdSID                       *aNextRowPieceSID,
+                            idBool                       aIsSkipAssert = ID_FALSE );
 
     static IDE_RC doFetch( UChar               * aColPiecePtr,
                            smcRowTemplate      * aRowTemplate,
@@ -1219,7 +1222,8 @@ public:
                            UChar               * aDestRowBuf,
                            UShort              * aFetchColumnCount,
                            UShort              * aLstFetchedColumnLen,
-                           smiFetchColumnList ** aLstFetchedColumn );
+                           smiFetchColumnList ** aLstFetchedColumn,
+                           idBool                aIsSkipAssert = ID_FALSE );
 
     static IDE_RC doFetchTrailingNull( const smiFetchColumnList * aFetchColumnList,
                                        sdcIndexInfo4Fetch       * aIndexInfo4Fetch,

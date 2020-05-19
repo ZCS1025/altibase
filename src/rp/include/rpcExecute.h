@@ -53,6 +53,8 @@ public:
     static IDE_RC executeAlterSetParallel(void * aQcStatement);
     static IDE_RC executeAlterSetGrouping(void * aQcStatement);
 
+    static IDE_RC executeAlterSetDDLReplicate( void * aQcStatement );
+
     /* BUG-42851 */
     static IDE_RC executeAlterSplitPartition( void         * aQcStatement,
                                               qcmTableInfo * aTableInfo,
@@ -71,9 +73,8 @@ public:
                                              qcmTableInfo  * aSrcPartInfo );
 
     /*------------------- DCL -------------------*/
-    static IDE_RC executeStop( smiStatement * aSmiStmt,
-                               SChar        * aReplName,
-                               idvSQL       * aStatistics );
+    static IDE_RC executeStop( void         * aQcStatement,
+                               SChar        * aReplName );                              
     static IDE_RC executeFlush( smiStatement  * aSmiStmt,
                                 SChar         * aReplName,
                                 rpFlushOption * aFlushOption,

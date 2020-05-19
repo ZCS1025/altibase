@@ -642,15 +642,16 @@ int ABIGetSqlText( ABISqlText **aHandle, int aStmtID )
     if (aStmtID != 0)
     {
         ACI_TEST_RAISE( ( SQLBindParameter( gResourceManagerPtr->mHStmt,
-                        1,
-                        SQL_PARAM_INPUT,
-                        SQL_C_SLONG,
-                        SQL_INTEGER,
-                        0,
-                        0,
-                        (SQLPOINTER)&aStmtID,
-                        0,
-                        NULL ) != SQL_SUCCESS ), ERR_BIND_PARAMETER );
+                                            1,
+                                            SQL_PARAM_INPUT,
+                                            SQL_C_SLONG,
+                                            SQL_INTEGER,
+                                            0,
+                                            0,
+                                            (SQLPOINTER)&aStmtID,
+                                            0,
+                                            NULL ) != SQL_SUCCESS ),
+                        ERR_BIND_PARAMETER );
     }
 
     // BUGBUG: 상위 레이어에서 return 값 검사만 잘해줘도 되는데, 그렇지 않은 경우를 위한 방어 코드.
@@ -660,6 +661,17 @@ int ABIGetSqlText( ABISqlText **aHandle, int aStmtID )
     /* BUG-41825 */
     sSqlText->mQueryStartTime = 0;
     sSqlText->mExecuteFlag = 0;
+    sSqlText->mSqlCacheTextID[0] = '\0';
+    /* BUG-46436 */
+    sSqlText->mParseTime = 0;
+    sSqlText->mSoftPrepareTime = 0;
+    sSqlText->mLastQueryStartTime = 0;
+    sSqlText->mExecuteTime = 0;
+    sSqlText->mFetchTime = 0;
+    sSqlText->mFetchStartTime = 0;
+    sSqlText->mTotalTime = 0;
+    sSqlText->mValidateTime = 0;
+    sSqlText->mOptimizeTime = 0;
 
     ACI_TEST( ulmExecute( ACI_SIZEOF( ABISqlText ), &sRowCount ) != ACI_SUCCESS );
 

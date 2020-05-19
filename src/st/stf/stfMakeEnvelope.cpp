@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: stfMakeEnvelope.cpp 81983 2018-01-03 02:00:49Z andrew.shin $
+ * $Id: stfMakeEnvelope.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -53,6 +53,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfMakeEnvelopeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

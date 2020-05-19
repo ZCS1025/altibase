@@ -20,7 +20,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import Altibase.jdbc.driver.cm.CmChannel;
+import Altibase.jdbc.driver.cm.CmSocket;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.util.AltibaseProperties;
@@ -38,7 +38,7 @@ class SemiAsyncPrefetch
 
     private SemiAsyncPrefetchAutoTuner   mAutoTuner;
     private JniExt                       mJniExt;
-    private int                          mSocketFD = CmChannel.INVALID_SOCKTFD;
+    private int                          mSocketFD = CmSocket.INVALID_SOCKTFD;
 
     private transient Logger             mLogger;
     private transient Logger             mAsyncLogger;
@@ -157,33 +157,7 @@ class SemiAsyncPrefetch
      */
     private boolean checkJniExtModule()
     {
-        // check OS
-        String sOSName = System.getProperty("os.name");
-        if (!"Linux".equals(sOSName))
-        {
-            return false;
-        }
-
-        // check to load JNI ext. module
-        if (JniLoader.shouldLoadExtModule())
-        {
-            try
-            {
-                JniLoader.loadExtModule();
-            }
-            catch (Throwable e)
-            {
-                // ignore exceptions including SecurityException, NullPointerException
-                // ignore runtime error including UnsatisfiedLinkError (if the library does not exist)
-
-                if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
-                {                
-                    mLogger.log(Level.WARNING, "Cannot load JNI ext. module", e);
-                }
-            }
-        }
-
-        if (!JniLoader.isLoadedExtModule())
+        if (!JniExtLoader.checkLoading())
         {
             return false;
         }
@@ -200,8 +174,8 @@ class SemiAsyncPrefetch
     {
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
         {
-            if (JniLoader.isLoadedExtModule() &&
-                mSocketFD != CmChannel.INVALID_SOCKTFD)
+            if (JniExtLoader.checkLoading() &&
+                mSocketFD != CmSocket.INVALID_SOCKTFD)
             {
                 try
                 {

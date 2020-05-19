@@ -117,6 +117,7 @@ void printusage(void)
     idlOS::printf("\t SM          : altibase_sm.log\n");
     idlOS::printf("\t RP          : altibase_rp.log\n");
     idlOS::printf("\t QP          : altibase_qp.log\n");
+    idlOS::printf("\t SD          : altibase_sd.log\n");    /* BUG-46138 */
     idlOS::printf("\t DK          : altibase_dk.log\n");
     idlOS::printf("\t XA          : altibase_xa.log\n");
     idlOS::printf("\t MM          : altibase_mm.log\n");
@@ -272,16 +273,40 @@ SInt findOldestHeader(SChar** aRet, time_t* aTime)
     return sMin;
 }
 
-idBool checkHeaderValidity(SChar* aLine)
+idBool checkHeaderValidity(SChar** aLine)
 {
-    IDE_ASSERT(aLine != NULL);
+    IDE_ASSERT(*aLine != NULL);
 
-    if( aLine[0] != '[' ) return ID_FALSE;
-    if( isdigit((SInt)((UChar)aLine[1])) == 0 ) return ID_FALSE;
+    /*BUG-45982*/
+    if( idlOS::strncmp( *gLine, IDU_DUMPSTACKS_PREFIX, 
+                        IDU_DUMPSTACKS_PREFIX_LEN ) == 0 )
+    {
+        idlOS::printf(IDU_DUMPSTACKS_PREFIX);
+        *aLine += IDU_DUMPSTACKS_PREFIX_LEN;
+    }
+
+    if( (*aLine)[0] != '[' ) return ID_FALSE;
+    if( isdigit((SInt)((UChar)(*aLine)[1])) == 0 ) return ID_FALSE;
+
     return ID_TRUE;
 }
 
 #include "map.ic"
+
+void printMap( void )
+{
+    SInt    i = 0;
+
+    idlOS::printf("Total Function Count : %d\n", gNoFunctions );
+    idlOS::printf("Print Function Start\n" );
+
+    for ( i = 0; i < gNoFunctions; i++ )
+    {
+        idlOS::printf( "0x%016x %s\n", gFunctions[i].mAddress, gFunctions[i].mName );
+    }
+
+    idlOS::printf("Print Function End\n" );
+}
 
 SInt findFunction(ULong aAddress)
 {
@@ -361,7 +386,7 @@ void printLines(void)
         {
             gRet = idlOS::fgets(gLine[sIndex], MAXLINELENGTH, gFP[sIndex]);
             if( gRet == NULL ||
-                checkHeaderValidity(gRet) == ID_TRUE )
+                checkHeaderValidity(&gRet) == ID_TRUE )
             {
                 break;
             }
@@ -425,7 +450,7 @@ void traceFile(void)
             {
                 gRet[j] = idlOS::fgets(gLine[j], MAXLINELENGTH, gFP[j]);
             } while(gRet[j] != NULL &&
-                    checkHeaderValidity(gRet[j]) == ID_FALSE);
+                    checkHeaderValidity(&gRet[j]) == ID_FALSE);
 
             j++;
         }
@@ -485,7 +510,7 @@ void traceFile(void)
                                         gFP[sIndex]);
 
             while(gRet[sIndex] != NULL &&
-                  checkHeaderValidity(gRet[sIndex]) == ID_FALSE)
+                  checkHeaderValidity(&gRet[sIndex]) == ID_FALSE)
             {
                 idlOS::fputs(gLine[sIndex], stdout);
                 gRet[sIndex] = idlOS::fgets(gLine[sIndex],
@@ -500,7 +525,7 @@ void traceFile(void)
                                         gFP[sIndex]);
 
             while(gRet[sIndex] != NULL &&
-                  checkHeaderValidity(gRet[sIndex]) == ID_FALSE)
+                  checkHeaderValidity(&gRet[sIndex]) == ID_FALSE)
             {
                 gRet[sIndex] = idlOS::fgets(gLine[sIndex],
                                             MAXLINELENGTH,
@@ -609,6 +634,7 @@ SInt main(SInt aArgc, SChar** aArgv)
     idBool  sPathSet        = ID_FALSE;
     idBool  sLineSet        = ID_FALSE;
     idBool  sVersion        = ID_FALSE;
+    idBool  sIsPrintMap     = ID_FALSE;
 
     struct tm   sTime;
 
@@ -626,7 +652,7 @@ SInt main(SInt aArgc, SChar** aArgv)
         sExclude[i] = ID_FALSE;
     }
 
-    while((sOptVal = idlOS::getopt(aArgc, aArgv, "hai:e:csft:p:n:vH:")) != -1)
+    while((sOptVal = idlOS::getopt(aArgc, aArgv, "hai:e:csft:p:n:vH:m")) != -1)
     {
         sOptCount++;
 
@@ -736,6 +762,9 @@ SInt main(SInt aArgc, SChar** aArgv)
         case 'v':
             sVersion = ID_TRUE;
             break;
+        case 'm':
+            sIsPrintMap = ID_TRUE;
+            break;
         default:
             break;
         }
@@ -793,6 +822,16 @@ SInt main(SInt aArgc, SChar** aArgv)
         idlOS::printf("Error : The options cannot be combined.\n");
         printusage();
         idlOS::exit(0);
+    }
+
+    if ( sIsPrintMap == ID_TRUE )
+    {
+        printMap();
+        idlOS::exit(0);
+    }
+    else
+    {
+        /* do nothing */
     }
 
     if( gPrintTime == ID_TRUE )
@@ -882,4 +921,3 @@ SInt main(SInt aArgc, SChar** aArgv)
     IDE_EXCEPTION_END;
     return -1;
 }
-

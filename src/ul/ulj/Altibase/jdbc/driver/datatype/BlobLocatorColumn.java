@@ -51,16 +51,14 @@ public class BlobLocatorColumn extends LobLocatorColumn
 
     BlobLocatorColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.BLOB);
+        addMappedJdbcTypeSet(AltibaseTypes.VARBINARY);
+        addMappedJdbcTypeSet(AltibaseTypes.LONGVARBINARY);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.BLOB_LOCATOR;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.BLOB, AltibaseTypes.VARBINARY, AltibaseTypes.LONGVARBINARY };
     }
 
     public String getDBColumnTypeName()

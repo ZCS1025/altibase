@@ -163,13 +163,13 @@ SECTION LOG;
 }
 
 {
-    KEY = OAM_ERR_LOGIN_FILE_OPEN;
-    MSG_EN = "Opening oalogin.sql file failed: %1$s";
+    KEY = OAM_ERR_FILE_OPEN;
+    MSG_EN = "Opening %1$s file failed: %2$s";
 }
 
 {
-    KEY = OAM_ERR_LOGIN_FILE_READ;
-    MSG_EN = "Reading oalogin.sql file failed: %1$s";
+    KEY = OAM_ERR_FILE_READ;
+    MSG_EN = "Reading %1$s file failed: %2$s";
 }
 
 {
@@ -180,4 +180,9 @@ SECTION LOG;
 {
     KEY = OAM_ERR_OCI_ERR_SQL;
     MSG_EN = "OCI error sql: %1$s";
+}
+
+{
+    KEY = OAM_ERR_INVALID_SKIP_LIST;
+    MSG_EN = "Invalid Error Codes exist in %1$s file";
 }

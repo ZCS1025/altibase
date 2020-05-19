@@ -21,7 +21,7 @@
 
 /* BUG-18981 */
 IDE_RC mmdXid::initialize(ID_XID           *aUserXid,
-                          smiTrans         *aTrans,
+                          mmcTransObj      *aTrans,
                           mmdXidHashBucket *aBucket)
 {
     iduListNode       *sNode;
@@ -30,7 +30,7 @@ IDE_RC mmdXid::initialize(ID_XID           *aUserXid,
     /* PROJ-2436 ADO.NET MSDTC */
     if (aTrans == NULL)
     {
-        IDE_TEST(mmcTrans::alloc(&mTrans) != IDE_SUCCESS);
+        IDE_TEST(mmcTrans::alloc( NULL, &mTrans ) != IDE_SUCCESS);
     }
     else
     {
@@ -135,7 +135,7 @@ IDE_RC mmdXid::finalize(mmdXidHashBucket *aBucket, idBool aFreeTrans)
     /* PROJ-2436 ADO.NET MSDTC */
     if (aFreeTrans == ID_TRUE)
     {
-        IDE_TEST(mmcTrans::free(mTrans) != IDE_SUCCESS);
+        IDE_TEST(mmcTrans::free(NULL, mTrans) != IDE_SUCCESS);
         mTrans = NULL;
     }
     else
@@ -154,10 +154,8 @@ IDE_RC mmdXid::finalize(mmdXidHashBucket *aBucket, idBool aFreeTrans)
 
 IDE_RC mmdXid::attachTrans(UInt aSlotID)
 {
-    IDE_ASSERT(mTrans->initialize() == IDE_SUCCESS);
-
-    IDE_ASSERT(mTrans->attach( aSlotID ) == IDE_SUCCESS);
-
+    /* BUG-46644 attach 시점에 mTrans는 초기화 되어 있기에 초기화는 제거한다. */
+    mmcTrans::attachXA(mTrans, aSlotID);
     setState(MMD_XA_STATE_PREPARED);
 
     return IDE_SUCCESS;
@@ -165,27 +163,13 @@ IDE_RC mmdXid::attachTrans(UInt aSlotID)
 
 void mmdXid::beginTrans(mmcSession *aSession)
 {
-    mmcTrans::begin(mTrans,
-                    aSession->getStatSQL(),
-                    aSession->getSessionInfoFlagForTx(),
-                    aSession);
-
+    mmcTrans::beginXA(mTrans, aSession->getStatSQL(), aSession->getSessionInfoFlagForTx());
     mBeginFlag = ID_TRUE;
 }
 
 IDE_RC mmdXid::prepareTrans(mmcSession *aSession)
 {
-    //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
-    if( aSession != NULL)
-    {
-        mTrans->setStatistics(aSession->getStatSQL());
-    }
-    else
-    {
-        mTrans->setStatistics(NULL);
-    }
-    
-    IDE_TEST(mTrans->prepare(&mXid) != IDE_SUCCESS);
+    IDE_TEST(mmcTrans::prepareXA(mTrans, &mXid, aSession) != IDE_SUCCESS);
 
     setState(MMD_XA_STATE_PREPARED);
 
@@ -197,21 +181,20 @@ IDE_RC mmdXid::prepareTrans(mmcSession *aSession)
 IDE_RC mmdXid::commitTrans(mmcSession *aSession)
 {
     //PROJ-1677 DEQ
-    smSCN          sDummySCN;
-
+    smiTrans      *sTrans = mmcTrans::getSmiTrans(mTrans);
     /* PROJ-1381 FAC */
     iduListNode         *sIterator = NULL;
     iduListNode         *sNodeNext = NULL;
     AssocFetchListItem  *sItem;
 
     //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
-    if( aSession != NULL)
+    if( aSession != NULL )
     {
-        mTrans->setStatistics(aSession->getStatSQL());
+        sTrans->setStatistics(aSession->getStatSQL());
     }
     else
     {
-        mTrans->setStatistics(NULL);
+        sTrans->setStatistics(NULL);
     }
 
     /* PROJ-1381 FAC : Commit된 FetchList를 mmcSession으로 옮긴다. */
@@ -235,10 +218,7 @@ IDE_RC mmdXid::commitTrans(mmcSession *aSession)
     }
 
     //fix BUG-30343 Committing a xid can be failed in replication environment.
-    IDE_TEST(mTrans->commit(&sDummySCN) != IDE_SUCCESS);
-
-    IDE_ASSERT(mTrans->destroy(NULL) == IDE_SUCCESS);
-
+    IDE_TEST( mmcTrans::commitXA( mTrans, aSession, SMI_RELEASE_TRANSACTION ) != IDE_SUCCESS);
     setState(MMD_XA_STATE_NO_TX);
 
     mBeginFlag = ID_FALSE;
@@ -261,15 +241,15 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
     iduListNode         *sIterator = NULL;
     iduListNode         *sNodeNext = NULL;
     AssocFetchListItem  *sItem;
-
+    smiTrans            *sTrans = mmcTrans::getSmiTrans(mTrans);
     //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
-    if( aSession != NULL)
+    if( aSession != NULL )
     {
-        mTrans->setStatistics(aSession->getStatSQL());
+        sTrans->setStatistics(aSession->getStatSQL());
     }
     else
     {
-        mTrans->setStatistics(NULL);
+        sTrans->setStatistics(NULL);
     }
 
     /* PROJ-1381 FAC : Rollback된 FetchList를 Close한다. */
@@ -290,10 +270,7 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
     }
 
     // BUG-24887 rollback 실패시 정보를 남기고 죽을것
-    IDE_TEST_RAISE(mTrans->rollback() != IDE_SUCCESS, RollbackError);
-
-    IDE_ASSERT(mTrans->destroy(NULL) == IDE_SUCCESS);
-
+    IDE_TEST( mmcTrans::rollbackXA( mTrans, aSession, SMI_RELEASE_TRANSACTION ) != IDE_SUCCESS);
     setState(MMD_XA_STATE_NO_TX);
 
     mBeginFlag = ID_FALSE;
@@ -316,7 +293,7 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
                         ((aSession != NULL) ? aSession->getSessionID() : 0),
                         sErrorCode,
                         sErrorMsg,
-                        mTrans->getTransID(),
+                        mmcTrans::getTransID(mTrans),
                         sxidString);
         }
         else
@@ -325,7 +302,7 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
                                       "Trans ID : %u\n"
                                       "XID : %s\n",
                         ((aSession != NULL) ? aSession->getSessionID() : 0),
-                        mTrans->getTransID(),
+                        mmcTrans::getTransID(mTrans),
                         sxidString);
         }
         IDE_ASSERT(0);
@@ -364,7 +341,7 @@ void   mmdXid::associate(mmcSession * aSession)
     // SM에게 transaction을사용하는 session 이변경됨을 알림.
     if(mTrans != NULL)
     {
-        mTrans->setStatistics(aSession->getStatSQL());
+        mmcTrans::getSmiTrans(mTrans)->setStatistics(aSession->getStatSQL());
     }
 
 }
@@ -394,7 +371,7 @@ void   mmdXid::disAssociate(mmdXaState aState)
             if(mTrans != NULL)
             {
                 // SM에게 transaction을사용하는 session이 없음을 알림.
-                mTrans->setStatistics(NULL);
+                mmcTrans::getSmiTrans(mTrans)->setStatistics(NULL);
             }
             break;
         case MMD_XA_STATE_PREPARED:

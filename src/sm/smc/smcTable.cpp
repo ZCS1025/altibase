@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcTable.cpp 84865 2019-02-07 05:10:33Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -80,8 +80,9 @@ IDE_RC smcTable::initialize()
                                          IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                          ID_FALSE,							/* ForcePooling */
                                          ID_TRUE,							/* GarbageCollection */
-                                         ID_TRUE)							/* HWCacheLine */
-             != IDE_SUCCESS);
+                                         ID_TRUE,                           /* HWCacheLine */
+                                         IDU_MEMPOOL_TYPE_LEGACY            /* mempool type*/) 
+             != IDE_SUCCESS);			
 
     return IDE_SUCCESS;
 
@@ -2812,7 +2813,7 @@ IDE_RC smcTable::modifyTableInfo( void                 * aTrans,
                                   sctTBSLockValidOpt     aTBSLvOpt,
                                   idBool                 aIsInitRowTemplate )
 {
-    ULong             sRecordCount;
+    ULong             sRecordCount = 0;
     UInt              sState = 0;
     scPageID          sHeaderPageID = 0;
     UInt              sTableFlag;
@@ -4917,11 +4918,11 @@ IDE_RC smcTable::dropIndexList( smcTableHeader * aHeader )
             IDE_TEST(smxTransMgr::alloc(&sTrans) != IDE_SUCCESS);
             sState = 2;
 
-            IDE_TEST(sTrans->begin( NULL,
-                                    ( SMI_TRANSACTION_REPL_NONE |
-                                      SMI_COMMIT_WRITE_NOWAIT ),
-                                    SMX_NOT_REPL_TX_ID )
-                     != IDE_SUCCESS);
+            IDE_ASSERT( sTrans->begin( NULL,
+                                       ( SMI_TRANSACTION_REPL_NONE |
+                                         SMI_COMMIT_WRITE_NOWAIT ),
+                                       SMX_NOT_REPL_TX_ID )
+                        == IDE_SUCCESS);
             sState = 3;
 
             if( SMI_TABLE_TYPE_IS_DISK( aHeader ) == ID_TRUE )
@@ -4966,7 +4967,8 @@ IDE_RC smcTable::dropIndexList( smcTableHeader * aHeader )
     switch ( sState )
     {
         case 3:
-            IDE_ASSERT( sTrans->abort() == IDE_SUCCESS );
+            IDE_ASSERT( sTrans->abort( ID_FALSE, /* aIsLegacyTrans */
+                                       NULL      /* aLegacyTrans */ ) == IDE_SUCCESS );
         case 2:
             IDE_ASSERT( smxTransMgr::freeTrans(sTrans) == IDE_SUCCESS );
         case 1:

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcgPlan.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcgPlan.h 82700 2018-04-04 04:36:26Z andrew.shin $
  *
  * Description :
  *     PROJ-1436 SQL Plan Cache를 위한 자료 구조 정의
@@ -101,6 +101,10 @@ typedef struct qcgEnvTableList
 {
     void            * tableHandle;
     smSCN             tableSCN;
+
+    /* BUG-45893 */
+    idBool            mIsDBAUser;
+
     qcgEnvTableList * next;
 } qcgEnvTableList;
 
@@ -188,6 +192,7 @@ typedef struct qcgEnvTablePrivList
     
     // 필요한 권한 (reference, insert, update, delete)
     UInt                   privilegeID;
+
     qcgEnvTablePrivList  * next;
 } qcgEnvTablePrivList;
 
@@ -281,7 +286,9 @@ public:
     // plan이 table 객체를 참조함을 기록한다.
     static IDE_RC registerPlanTable( qcStatement  * aStatement,
                                      void         * aTableHandle,
-                                     smSCN          aTableSCN );
+                                     smSCN          aTableSCN,
+                                     UInt           aTableOwnerID, /* BUG-45893 */
+                                     SChar        * aTableName );  /* BUG-45893 */
 
     // plan이 sequence 객체를 참조함을 기록한다.
     static IDE_RC registerPlanSequence( qcStatement * aStatement,
@@ -340,6 +347,7 @@ public:
 
     // plan 생성시의 table 객체에 대한 validation을 수행한다.
     static IDE_RC validatePlanTable( qcgEnvTableList * aTableList,
+                                     UInt              aUserID,    /* BUG-45893 */
                                      idBool          * aIsValid );
 
     // plan 생성시의 sequence 객체에 대한 validation을 수행한다.
@@ -413,7 +421,7 @@ public:
 
     // 원본 template에서 free 가능한 tuple row를 해제한다.
     static IDE_RC freeUnusedTupleRow( qcSharedPlan * aSharedPlan );
-    
+
 private:
 
     //-------------------------------------------------

@@ -116,9 +116,6 @@ public class AltimonMain implements Runnable {
         // Load properties from config.xml
         PropertyManager.getInstance().parseConfiguration();
 
-        // Initialize Picl
-        GlobalPiclInstance.getInstance().initPicl();
-
         //**************a***************************
         //Loading Init Information after connecting
         //*****************************************
@@ -129,16 +126,22 @@ public class AltimonMain implements Runnable {
         PropertyManager.getInstance().parseGroupMetrics();
 
         /* BUG-43234 monitorOsMetric attribute is added. */
-        if (AltimonProperty.getInstance().getMonitorOsMetric() == true &&
-                GlobalPiclInstance.getInstance().isPiclLoaded() == false)
+        if (AltimonProperty.getInstance().getMonitorOsMetric() == true)
         {
-            AltimonLogger.theLogger.fatal("Failed to load the PICL C library file. Shutting down altiMon. Check the altimon_stderr.log file.");
-            System.exit(1);
+            // Initialize Picl
+            AltimonLogger.theLogger.info("Initializing PICL(Platform Information Collection Library)...");
+            GlobalPiclInstance.getInstance().initPicl();
+
+            if (GlobalPiclInstance.getInstance().isPiclLoaded() == false)
+            {
+                AltimonLogger.theLogger.fatal("Failed to load the PICL C library file. Shutting down altiMon. Check the altimon_stderr.log file.");
+                System.exit(1);
+            }
         }
         // Connect to MonitoringDB & Get Altibase Monitoring Info		
         if(!MonitoredDb.getInstance().initMonitoredDb())
         {
-            //			ConnectionWatchDog.watch(MetricProperties.MONITORED_DB_TYPE);
+            //ConnectionWatchDog.watch(MetricProperties.MONITORED_DB_TYPE);
             System.exit(1);
         }
 

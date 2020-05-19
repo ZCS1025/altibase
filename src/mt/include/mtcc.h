@@ -168,6 +168,11 @@ acp_sint32_t mtcWeekOfYearForStandard( acp_sint32_t aYear,
                                        acp_sint32_t aMonth,
                                        acp_sint32_t aDay );
 
+/* BUG-46727 TO_CHAR()에 IYYY 추가 */
+acp_sint32_t mtcYearForStandard( acp_sint32_t aYear,
+                                 acp_sint32_t aMonth,
+                                 acp_sint32_t aDay );
+
 extern const acp_uint32_t mtcHashInitialValue;
 
 // mtd::valueForModule에서 사용한다.

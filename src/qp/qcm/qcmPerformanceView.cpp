@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmPerformanceView.cpp 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: qcmPerformanceView.cpp 85231 2019-04-15 03:22:43Z andrew.shin $
  *
  * Description :
  *
@@ -58,6 +58,8 @@
 // <모듈>i.h 에 define 으로 정의되어있다.
 #include <rpi.h>
 #include <sti.h>
+#include <sdi.h>
+#include <sdiPerformanceView.h>
 
 // PROJ-1726 - qcmPerformanceViewManager 에서 사용하는
 // static 변수 선언.
@@ -65,15 +67,20 @@ SChar ** qcmPerformanceViewManager::mPreViews;
 SInt     qcmPerformanceViewManager::mNumOfPreViews;
 SInt     qcmPerformanceViewManager::mNumOfAddedViews;
 iduList  qcmPerformanceViewManager::mAddedViewList;
+SChar ** qcmPerformanceViewManager::mShardViews;
+SInt     qcmPerformanceViewManager::mShardViewCount;
 
 // global performance view strings.
 SChar * gQcmPerformanceViews[] =
 {
+    /* BUG-46217 V$TABLE은 performance view만 보여주도록 함 */
     (SChar*)"CREATE VIEW V$TABLE "
                "(NAME, SLOTSIZE, COLUMNCOUNT) "
             "AS SELECT "
                "NAME, SLOTSIZE, COLUMNCOUNT "
-            "FROM X$TABLE",
+            "FROM X$TABLE "
+            "WHERE SUBSTR(NAME, 1, 2) IN ('S$', 'V$') "
+            "ORDER BY NAME",
 
     //[TASK-6757]LFG,SN 제거 : LFG_ID 는 0 으로 출력함
     (SChar*)"CREATE VIEW V$DISK_RTREE_HEADER "
@@ -442,7 +449,9 @@ SChar * gQcmPerformanceViews[] =
                 "SSL_CERTIFICATE_ISSUER, "
                 "CLIENT_INFO, "
                 "MODULE, "
-                "ACTION ) "
+                "ACTION, "
+                "REPLICATION_DDL_SYNC, "
+                "REPLICATION_DDL_SYNC_TIMELIMIT ) "
             "AS SELECT "
                 "A.ID, "
                 "A.TRANS_ID , "
@@ -486,7 +495,9 @@ SChar * gQcmPerformanceViews[] =
                 "A.SSL_CERTIFICATE_ISSUER, "
                 "A.CLIENT_APP_INFO, "
                 "A.MODULE, "
-                "A.ACTION "
+                "A.ACTION, "
+                "A.REPLICATION_DDL_SYNC, "
+                "A.REPLICATION_DDL_SYNC_TIMELIMIT "
             "FROM X$SESSION A",
 
     (SChar*)"CREATE VIEW V$SESSIONMGR "
@@ -517,7 +528,8 @@ SChar * gQcmPerformanceViews[] =
                 "EXECUTE_FAILURE, FETCH_SUCCESS, FETCH_FAILURE, "
                 "PROCESS_ROW, MEMORY_TABLE_ACCESS_COUNT, "
                 "SEQNUM, EVENT, P1, P2, P3, "
-                "WAIT_TIME, SECOND_IN_TIME, SIMPLE_QUERY ) "
+                "WAIT_TIME, SECOND_IN_TIME, SIMPLE_QUERY, "
+                "MATHEMATICS_TEMP_MEMORY )"
             "AS SELECT /*+ USE_HASH( A, B ) */ "
                 "A.ID, A.PARENT_ID, A.CURSOR_TYPE, A.SESSION_ID, A.TX_ID, A.QUERY, "
                 "A.LAST_QUERY_START_TIME, A.QUERY_START_TIME, A.FETCH_START_TIME, "
@@ -544,7 +556,8 @@ SChar * gQcmPerformanceViews[] =
                 "A.EXECUTE_FAILURE, A.FETCH_SUCCESS, A.FETCH_FAILURE, "
                 "A.PROCESS_ROW, A.MEMORY_TABLE_ACCESS_COUNT,"
                 "A.SEQNUM, B.EVENT, A.P1, A.P2, "
-                "A.P3, A.WAIT_TIME, A.SECOND_IN_TIME, A.SIMPLE_QUERY "
+                "A.P3, A.WAIT_TIME, A.SECOND_IN_TIME, A.SIMPLE_QUERY, "
+                "A.MATHEMATICS_TEMP_MEMORY "
             "FROM X$STATEMENT A, X$WAIT_EVENT_NAME B "
             "WHERE A.SEQNUM = B.EVENT_ID ",
 
@@ -643,13 +656,16 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$SQL_PLAN_CACHE",
 
     (SChar*)"CREATE VIEW V$SQL_PLAN_CACHE_SQLTEXT "
-             "( SQL_TEXT_ID, SQL_TEXT, CHILD_PCO_COUNT, CHILD_PCO_CREATE_COUNT ) "
+             "( SQL_TEXT_ID, SQL_TEXT, CHILD_PCO_COUNT, CHILD_PCO_CREATE_COUNT, PLAN_CACHE_KEEP ) "
             "AS SELECT "
-               "SQL_TEXT_ID, SQL_TEXT, CHILD_PCO_COUNT, CHILD_PCO_CREATE_COUNT "
+               "SQL_TEXT_ID, SQL_TEXT, CHILD_PCO_COUNT, CHILD_PCO_CREATE_COUNT, "
+               "DECODE( PLAN_CACHE_KEEP, 0, 'UNKEEP', "
+               "                         1, 'KEEP', "
+               "                         'UNKEEP' ) PLAN_CACHE_KEEP "
             "FROM X$SQL_PLAN_CACHE_SQLTEXT",
 
     (SChar*)"CREATE VIEW V$SQL_PLAN_CACHE_PCO "
-             "( SQL_TEXT_ID, PCO_ID, CREATE_REASON, HIT_COUNT, REBUILD_COUNT, PLAN_STATE, LRU_REGION ) "
+             "( SQL_TEXT_ID, PCO_ID, CREATE_REASON, HIT_COUNT, REBUILD_COUNT, PLAN_STATE, LRU_REGION, PLAN_SIZE, FIX_COUNT, PLAN_CACHE_KEEP ) "
             "AS SELECT "
             "A.SQL_TEXT_ID, A.PCO_ID ,"
             "DECODE( A.CREATE_REASON, 0, 'CREATED_BY_CACHE_MISS', "
@@ -663,7 +679,12 @@ SChar * gQcmPerformanceViews[] =
             "                      3, 'OLD_PLAN' ) PLAN_STATE , "
             "DECODE( A.LRU_REGION, 0, 'NONE', "
             "                      1, 'COLD_REGION', "
-            "                      2, 'HOT_REGION' ) LRU_REGION "
+            "                      2, 'HOT_REGION' ) LRU_REGION, "
+            "A.PLAN_SIZE, "
+            "A.FIX_COUNT, "
+            "DECODE( PLAN_CACHE_KEEP, 0, 'UNKEEP', "
+            "                         1, 'KEEP', "
+            "                         'UNKEEP' ) PLAN_CACHE_KEEP "
            "FROM X$SQL_PLAN_CACHE_PCO A",
     
     (SChar*)"CREATE VIEW V$XID   "
@@ -1489,6 +1510,9 @@ SChar * gQcmPerformanceViews[] =
     NULL
 };
 
+/* BUG-45646 shard performance view */
+SChar * gQcmShardPerformanceViews[] = { SDI_PERFORMANCE_VIEWS, NULL };
+
 extern mtdModule mtdChar;
 extern mtdModule mtdVarchar;
 extern mtdModule mtdBigint;
@@ -1533,10 +1557,12 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
 
     // PROJ-1726 - performance view 스트링을 얻기 위해서
     // gQcmPerformanceViews 를 직접접근하는 대신
-    // qcmPerformanceViewManager::get(idx) 을 이용, 간접접근을 한다.
+    // qcmPerformanceViewManager::get 을 이용, 간접접근을 한다.
     // 이는 gQcmPerformanceViews 외에 동적모듈이 로드될 때
     // 추가로 등록되는 performance view 를 위한 것이다.
-    sStmtText = qcmPerformanceViewManager::get(aTableRef->tableInfo->viewArrayNo);
+    sStmtText = qcmPerformanceViewManager::get( aTableRef->tableInfo->viewArrayNo,
+                                                aTableRef->tableInfo->mPVType );
+
     IDE_TEST_RAISE( sStmtText == NULL, ERR_PERFORMANCE_VIEW );
     sStmtTextLen = idlOS::strlen( sStmtText );
 
@@ -1550,7 +1576,7 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
 
     // PROJ-1726 - performance view 스트링을 얻기 위해서
     // gQcmPerformanceViews 를 직접접근하는 대신
-    // qcmPerformanceViewManager::get(idx) 을 이용, 간접접근을 한다.
+    // qcmPerformanceViewManager::get 을 이용, 간접접근을 한다.
     idlOS::memcpy(sStatement->myPlan->stmtText,
                   sStmtText,
                   sStmtTextLen);
@@ -1584,7 +1610,8 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
     return IDE_FAILURE;
 }
 
-IDE_RC qcmPerformanceView::registerPerformanceView( idvSQL * aStatistics )
+IDE_RC qcmPerformanceView::registerPerformanceView( idvSQL    * aStatistics,
+                                                    qcmPVType   aType )
 {
 /***********************************************************************
  *
@@ -1596,7 +1623,7 @@ IDE_RC qcmPerformanceView::registerPerformanceView( idvSQL * aStatistics )
  *
  ***********************************************************************/
 
-    IDE_TEST( qcmPerformanceView::runDDLforPV( aStatistics ) != IDE_SUCCESS );
+    IDE_TEST( qcmPerformanceView::runDDLforPV( aStatistics, aType ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1623,7 +1650,6 @@ IDE_RC qcmPerformanceView::executeDDL(
 
     aStatement->myPlan->stmtTextLen = idlOS::strlen(aText);
 
-    //
     IDU_FIT_POINT( "qcmPerformanceView::executeDDL::malloc::sText",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1880,11 +1906,24 @@ IDE_RC qcmPerformanceViewManager::initialize()
     mPreViews        = (SChar**)gQcmPerformanceViews;
     mNumOfPreViews   = 0;
     mNumOfAddedViews = 0;
+    mShardViews      = NULL;
+    mShardViewCount  = 0;
 
     // count total size of gQcmPerformanceViews
     for( i = 0; mPreViews[i] != NULL; i++ )
     {
         mNumOfPreViews++;
+    }
+
+    /* BUG-45646 */
+    if ( sdi::isShardEnable() == ID_TRUE )
+    {
+        mShardViews = (SChar**)gQcmShardPerformanceViews;
+
+        for( i = 0; mShardViews[i] != NULL; i++ )
+        {
+            mShardViewCount++;
+        }
     }
 
     IDU_LIST_INIT( &mAddedViewList );
@@ -1990,28 +2029,42 @@ SChar* qcmPerformanceViewManager::getFromAddedViews(int aIdx)
     return NULL;
 }
 
-SChar* qcmPerformanceViewManager::get(int aIdx)
+SChar* qcmPerformanceViewManager::get( int aIdx, qcmPVType aType )
 {
     SChar* sRetStr = NULL;
 
-    // 만일 gQcmPerformanceViews 에 등록된 performance view 인 경우
-    if(mNumOfPreViews > aIdx)
+    switch( aType )
     {
-        sRetStr = mPreViews[aIdx];
-    }
-    // 동적모듈에서 등록된 performance view 인 경우
-    else
-    {
-        if(aIdx < getTotalViewCount())
-        {
-            sRetStr = getFromAddedViews(aIdx - mNumOfPreViews);
-        }
+        case QCM_PV_TYPE_NORMAL:
+            // 만일 gQcmPerformanceViews 에 등록된 performance view 인 경우
+            if(mNumOfPreViews > aIdx)
+            {
+                sRetStr = mPreViews[aIdx];
+            }
+            // 동적모듈에서 등록된 performance view 인 경우
+            else
+            {
+                if ( aIdx < getTotalViewCount( QCM_PV_TYPE_NORMAL ) )
+                {
+                    sRetStr = getFromAddedViews(aIdx - mNumOfPreViews);
+                }
+            }
+            break;
+
+        case QCM_PV_TYPE_SHARD:
+            sRetStr = mShardViews[aIdx];
+            break;
+
+        default:
+            IDE_DASSERT(0);
+            break;
     }
 
     return sRetStr;
 }
 
-IDE_RC qcmPerformanceView::runDDLforPV( idvSQL * aStatistics )
+IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
+                                        qcmPVType   aType )
 {
 /***********************************************************************
  *
@@ -2076,18 +2129,18 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL * aStatistics )
     // PROJ-1726 - performance view 스트링을 얻기 위해서
     // gQcmPerformanceViews 를 직접접근하는 대신
     // qcmPerformanceViewManager::get(idx) 을 이용, 간접접근을 한다.
-    for (i = 0; i < qcmPerformanceViewManager::getTotalViewCount(); i++)
+    for ( i = 0; i < qcmPerformanceViewManager::getTotalViewCount( aType ); i++ )
     {
+        // PROJ-1726 - performance view 스트링을 얻기 위해서
+        // gQcmPerformanceViews 를 직접접근하는 대신
+        // qcmPerformanceViewManager::get 을 이용, 간접접근을 한다.
+        sStmtText = qcmPerformanceViewManager::get( i, aType );
+        IDE_TEST_RAISE( sStmtText == NULL, ERR_PERFORMANCE_VIEW );
+
         IDE_TEST( sSmiStmt.begin( aStatistics, sDummySmiStmt, sSmiStmtFlag )
                   != IDE_SUCCESS );
         sStage = 3;
 
-        // PROJ-1726 - performance view 스트링을 얻기 위해서
-        // gQcmPerformanceViews 를 직접접근하는 대신
-        // qcmPerformanceViewManager::get(idx) 을 이용, 간접접근을 한다.
-        sStmtText = qcmPerformanceViewManager::get(i);
-        IDE_TEST_RAISE( sStmtText == NULL, ERR_PERFORMANCE_VIEW );
-        
         IDE_TEST( executeDDL( &sStatement, sStmtText )
                   != IDE_SUCCESS );
         sStage = 2;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnDef.h 82124 2018-01-25 06:03:51Z jake.jang $
+ * $Id: qmnDef.h 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *     모든 Execution Plan Node 가 가지는 공통 정보를 정의함.
@@ -452,6 +452,10 @@ typedef struct qmnCursorPredicate
     smiCallBack           * filterCallBack;      // Output: Filter CallBack
     qtcSmiCallBackDataAnd * callBackDataAnd;     // Output: Filter And
     qtcSmiCallBackData    * callBackData;        // Output: Filter Data
+
+    /* PROJ-2632 */
+    mtxSerialFilterInfo   * mSerialFilterInfo;
+    mtxSerialExecuteData  * mSerialExecuteData;
 
     smiRange              * keyRange;            // Output: Key Range
     smiRange              * keyFilter;           // Output: Key Filter

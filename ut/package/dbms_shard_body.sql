@@ -7,19 +7,28 @@ create or replace package body DBMS_SHARD is
 
 
 -- CREATE META
-procedure CREATE_META()
+procedure CREATE_META( meta_node_id in integer )
 as
     dummy integer;
 begin
-    dummy := shard_create_meta();
+    dummy := shard_create_meta( meta_node_id );
 end CREATE_META;
+
+-- RESET META NODE ID
+procedure RESET_META_NODE_ID( meta_node_id in integer )
+as
+    dummy integer;
+begin
+    dummy := shard_reset_meta_node_id( meta_node_id );
+end RESET_META_NODE_ID;
 
 -- SET DATA NODE
 procedure SET_NODE( node_name         in varchar(40),
                     host_ip           in varchar(16),
                     port_no           in integer,
                     alternate_host_ip in varchar(16) default NULL,
-                    alternate_port_no in integer default NULL )
+                    alternate_port_no in integer default NULL,
+                    conn_type         in integer default NULL )
 as
     dummy integer;
     up_node_name varchar(40);
@@ -30,13 +39,16 @@ begin
         up_node_name := replace2( node_name, chr(34) );
     end if;
 
-    dummy := shard_set_node(up_node_name, host_ip, port_no, alternate_host_ip, alternate_port_no);
+    dummy := shard_set_node(up_node_name, host_ip, port_no, alternate_host_ip, alternate_port_no, conn_type);
 end SET_NODE;
 
--- RESET DATA NODE
-procedure RESET_NODE( node_name in varchar(40),
-                      host_ip   in varchar(16),
-                      port_no   in integer )
+-- RESET DATA NODE (INTERNAL)
+procedure RESET_NODE_INTERNAL( node_name         in varchar(40),
+                               host_ip           in varchar(16),
+                               port_no           in integer,
+                               alternate_host_ip in varchar(16),
+                               alternate_port_no in integer,
+                               conn_type         in integer)
 as
     dummy integer;
     up_node_name varchar(40);
@@ -47,13 +59,20 @@ begin
         up_node_name := replace2( node_name, chr(34) );
     end if;
 
-    dummy := shard_reset_node(up_node_name, host_ip, port_no, 0);
-end RESET_NODE;
+    dummy := shard_reset_node_internal( up_node_name,
+                                        host_ip,
+                                        port_no,
+                                        alternate_host_ip,
+                                        alternate_port_no,
+                                        conn_type );
+end RESET_NODE_INTERNAL;
 
--- RESET ALTERNATE DATA NODE
-procedure RESET_ALTERNATE_NODE( node_name in varchar(40),
-                                host_ip   in varchar(16),
-                                port_no   in integer )
+-- RESET DATA NODE (EXTERNAL)
+procedure RESET_NODE_EXTERNAL( node_name         in varchar(40),
+                               host_ip           in varchar(16),
+                               port_no           in integer,
+                               alternate_host_ip in varchar(16),
+                               alternate_port_no in integer )
 as
     dummy integer;
     up_node_name varchar(40);
@@ -64,8 +83,12 @@ begin
         up_node_name := replace2( node_name, chr(34) );
     end if;
 
-    dummy := shard_reset_node(up_node_name, host_ip, port_no, 1);
-end RESET_ALTERNATE_NODE;
+    dummy := shard_reset_node_external( up_node_name,
+                                        host_ip,
+                                        port_no,
+                                        alternate_host_ip,
+                                        alternate_port_no );
+end RESET_NODE_EXTERNAL;
 
 -- UNSET DATA NODE
 procedure UNSET_NODE( node_name in varchar(40) )
@@ -305,7 +328,7 @@ end SET_SHARD_PROCEDURE_COMPOSITE;
 -- SET SHARD HASH
 procedure SET_SHARD_HASH( user_name   in varchar(128),
                           object_name in varchar(128),
-                          hash_max    in integer,
+                          value       in integer,
                           node_name   in varchar(40) )
 as
     dummy integer;
@@ -335,7 +358,7 @@ begin
 
     dummy := shard_set_shard_range( up_user_name,
                                     up_object_name,
-                                    hash_max,
+                                    value,
                                     NULL,          -- sub_value
                                     up_node_name,
                                     'H' );
@@ -344,7 +367,7 @@ end SET_SHARD_HASH;
 -- SET SHARD RANGE
 procedure SET_SHARD_RANGE( user_name   in varchar(128),
                            object_name in varchar(128),
-                           value_max   in varchar(100),
+                           value       in varchar(100),
                            node_name   in varchar(40) )
 as
     dummy integer;
@@ -374,7 +397,7 @@ begin
 
     dummy := shard_set_shard_range( up_user_name,
                                     up_object_name,
-                                    value_max,
+                                    value,
                                     NULL,          -- sub_value
                                     up_node_name,
                                     'R' );
@@ -529,6 +552,54 @@ begin
                                     'P' );
 end SET_SHARD_COMPOSITE;
 
+-- RESET_SHARD_RESIDENT_NODE
+procedure RESET_SHARD_RESIDENT_NODE( user_name     in varchar(128),
+                                     object_name   in varchar(128),
+                                     old_node_name in varchar(40),
+                                     new_node_name in varchar(40),
+                                     value         in varchar(100) default NULL,
+                                     sub_value     in varchar(100) default NULL )
+as
+    dummy integer;
+    up_user_name varchar(128);
+    up_object_name varchar(128);
+    up_old_node_name varchar(40);
+    up_new_node_name varchar(40);
+
+begin
+
+    if instr( user_name, chr(34) ) = 0 then
+        up_user_name := upper( user_name );
+    else
+        up_user_name := replace2( user_name, chr(34) );
+    end if;
+
+    if instr( object_name, chr(34) ) = 0 then
+        up_object_name := upper( object_name );
+    else
+        up_object_name := replace2( object_name, chr(34) );
+    end if;
+
+    if instr( old_node_name, chr(34) ) = 0 then
+        up_old_node_name := upper( old_node_name );
+    else
+        up_old_node_name := replace2( old_node_name, chr(34) );
+    end if;
+
+    if instr( new_node_name, chr(34) ) = 0 then
+        up_new_node_name := upper( new_node_name );
+    else
+        up_new_node_name := replace2( new_node_name, chr(34) );
+    end if;
+
+    dummy := shard_reset_shard_resident_node( up_user_name,
+                                              up_object_name,
+                                              up_old_node_name,
+                                              up_new_node_name,
+                                              value,
+                                              sub_value );
+end RESET_SHARD_RESIDENT_NODE;
+
 -- UNSET SHARD TABLE
 procedure UNSET_SHARD_TABLE( user_name  in varchar(128),
                              table_name in varchar(128) )
@@ -610,8 +681,9 @@ begin
 end EXECUTE_IMMEDIATE;
 
 -- CHECK SHARD DATA
-procedure CHECK_DATA( user_name  in varchar(128),
-                      table_name in varchar(128) )
+procedure CHECK_DATA( user_name            in varchar(128),
+                      table_name           in varchar(128),
+                      additional_node_list in varchar(1000) default NULL )
 as
   up_node_name varchar(40);
   up_user_name varchar(128);
@@ -619,13 +691,21 @@ as
   key_column_name varchar(128);
   shard_info varchar(1000);
   node_name varchar(40);
-  stmt varchar(2000);
+  stmt varchar(4000);
   type my_cur is ref cursor;
   cur my_cur;
   record_count bigint;
   correct_count bigint;
   total_record_count bigint;
   total_incorrect_count bigint;
+
+  type additional_node_arr_t is table of varchar(40) index by integer;
+  additional_node_arr additional_node_arr_t;
+  additional_node_arr_idx integer;
+  additional_node_arr_length integer;
+  additional_node_list_length integer;
+  double_q_section integer;
+  node_list varchar(1000);
 begin
 
   if instr( user_name, chr(34) ) = 0 then
@@ -640,14 +720,51 @@ begin
     up_table_name := replace2( table_name, chr(34) );
   end if;
 
+  if additional_node_list is not null then
+    additional_node_list_length := length(additional_node_list);
+    double_q_section := 0;
+    additional_node_arr_idx := 0;
+    additional_node_arr[additional_node_arr_idx] := '';
+
+    for i in 1 .. additional_node_list_length loop
+      if instr( substr( additional_node_list, i, 1 ), chr(34) ) = 1 then -- chr(34) = double quotation mark 
+        double_q_section := abs(double_q_section-1);
+      elseif instr( substr( additional_node_list, i, 1 ), chr(44) ) = 1 then -- chr(44) = comma 
+        if double_q_section = 0 then
+          additional_node_arr_idx := additional_node_arr_idx + 1;
+          additional_node_arr[additional_node_arr_idx] := '';
+          continue;
+        end if;      
+      end if;
+      additional_node_arr[additional_node_arr_idx] := additional_Node_arr[additional_node_arr_idx]||substr( additional_node_list, i, 1 );
+    end loop;
+
+     for i in 0 .. additional_node_arr_idx loop
+      additional_node_arr_length := length(additional_node_arr[i]);
+      if ( instr( substr( additional_node_arr[i], 1, 1 ), chr(34) ) = 1 ) and 
+         ( instr( substr( additional_node_arr[i], additional_node_arr_length, 1 ), chr(34) ) = 1 ) then
+        additional_node_arr[i] := replace2( additional_node_arr[i], chr(34) );
+      else
+        additional_node_arr[i] := upper( additional_node_arr[i] );
+      end if;
+    end loop;
+  end if;
+
   stmt :=
   'select /*+group bucket count(1000)*/ nvl2(sub_key_column_name,key_column_name||'', ''||sub_key_column_name,key_column_name), ''{"SplitMethod":''||nvl2(sub_split_method,''["''||split_method||''","''||sub_split_method||''"]'',''"''||split_method||''"'')||nvl2(n.node_name,'',"DefaultNode":"''||n.node_name||''"'',null)||'',"RangeInfo":[''||group_concat(''{"Value":''||decode(sub_value,''$$N/A'',''"''||value||''"'',''["''||value||''","''||sub_value||''"]'')||'',"Node":"''||v.node_name||''"}'','','')||'']}'' 
 from (
-  select o.key_column_name, o.sub_key_column_name, o.split_method, o.sub_split_method, o.default_node_id, r.value, r.sub_value, n.node_name
-  from sys_shard.objects_ o, sys_shard.ranges_ r, sys_shard.nodes_ n
+  select o.key_column_name, o.sub_key_column_name, o.split_method, o.sub_split_method, o.default_node_id, r.value, r.sub_value, n.node_name, g.shard_meta_number smn
+  from sys_shard.objects_ o, sys_shard.ranges_ r, sys_shard.nodes_ n, sys_shard.global_meta_info_ g
   where o.object_type=''T'' and o.user_name='''||up_user_name||''' and o.object_name='''||up_table_name||''' and o.split_method in (''H'',''R'',''L'') 
     and o.shard_id=r.shard_id and r.node_id=n.node_id
-) v left outer join sys_shard.nodes_ n on default_node_id=n.node_id
+    and o.smn = g.shard_meta_number
+    and r.smn = g.shard_meta_number
+    and n.smn = g.shard_meta_number
+) v left outer join ( select node_id, node_name
+                        from sys_shard.nodes_ n, 
+                             sys_shard.global_meta_info_ g
+                       where n.smn = g.shard_meta_number ) n
+    on default_node_id=n.node_id
 group by key_column_name, sub_key_column_name, split_method, sub_split_method, n.node_name';
   --println(stmt);
   execute immediate stmt into key_column_name, shard_info;
@@ -656,11 +773,38 @@ group by key_column_name, sub_key_column_name, split_method, sub_split_method, n
   println('shard_information:'||shard_info);
   println('');
 
-  stmt := 'shard 
-  select shard_node_name() node_name, count(*) total_cnt, decode_count(1, shard_node_name(), home_name) correct_cnt 
-    from (select shard_condition('||key_column_name||', '''||shard_info||''') home_name from '||up_user_name||'.'||up_table_name||')';
-  --println(stmt);
 
+  if additional_node_list is NULL then
+    stmt := 'shard
+      select shard_node_name() node_name, count(*) total_cnt, decode_count(1, shard_node_name(), home_name) correct_cnt
+        from (select shard_condition('||key_column_name||', '''||shard_info||''') home_name from '||up_user_name||'.'||up_table_name||')';
+  else
+    stmt := 'select '||'''node[data(''''''||group_concat(distinct node_name,'''''','''''')||'''''')]''  node_list
+               from ( select n.node_name 
+                        from sys_shard.ranges_ r, 
+                             sys_shard.nodes_ n, 
+                             sys_shard.objects_ o,
+                             sys_shard.global_meta_info_ g 
+                       where r.node_id = n.node_id 
+                         and r.shard_id = o.shard_id 
+                         and r.smn = g.shard_meta_number
+                         and n.smn = g.shard_meta_number
+                         and o.smn = g.shard_meta_number
+                         and o.user_name='''||up_user_name||'''
+                         and o.object_name='''||up_table_name||'''';
+     for i in 0 .. additional_node_arr_idx loop
+       stmt := stmt||'union all select '''||additional_node_arr[i]||''' from dual ';
+     end loop;
+
+     stmt := stmt||')';
+
+    execute immediate stmt into node_list;
+
+    stmt := node_list||'select shard_node_name() node_name, count(*) total_cnt, decode_count(1, shard_node_name(), home_name) correct_cnt 
+        from (select shard_condition('||key_column_name||', '''||shard_info||''') home_name from '||up_user_name||'.'||up_table_name||')';
+  end if;
+
+  --println(stmt);
   total_record_count := 0;
   total_incorrect_count := 0;
   open cur for stmt;
@@ -702,8 +846,8 @@ as
   up_node_name varchar(40);
   key_column_name varchar(128);
   shard_info varchar(1000);
-  stmt1 varchar(2000);
-  stmt2 varchar(2000);
+  stmt1 varchar(4000);
+  stmt2 varchar(4000);
   batch_stmt varchar(100);
   total_count bigint;
   cur_count bigint;
@@ -743,11 +887,18 @@ begin
     stmt1 :=
   'select /*+group bucket count(1000)*/ nvl2(sub_key_column_name,key_column_name||'', ''||sub_key_column_name,key_column_name), ''{"SplitMethod":''||nvl2(sub_split_method,''["''||split_method||''","''||sub_split_method||''"]'',''"''||split_method||''"'')||nvl2(n.node_name,'',"DefaultNode":"''||n.node_name||''"'',null)||'',"RangeInfo":[''||group_concat(''{"Value":''||decode(sub_value,''$$N/A'',''"''||value||''"'',''["''||value||''","''||sub_value||''"]'')||'',"Node":"''||v.node_name||''"}'','','')||'']}'' 
 from (
-  select o.key_column_name, o.sub_key_column_name, o.split_method, o.sub_split_method, o.default_node_id, r.value, r.sub_value, n.node_name
-  from sys_shard.objects_ o, sys_shard.ranges_ r, sys_shard.nodes_ n
+  select o.key_column_name, o.sub_key_column_name, o.split_method, o.sub_split_method, o.default_node_id, r.value, r.sub_value, n.node_name, g.shard_meta_number smn
+  from sys_shard.objects_ o, sys_shard.ranges_ r, sys_shard.nodes_ n, sys_shard.global_meta_info_ g
   where o.object_type=''T'' and o.user_name='''||up_user_name||''' and o.object_name='''||up_table_name||''' and o.split_method in (''H'',''R'',''L'') 
     and o.shard_id=r.shard_id and r.node_id=n.node_id
-) v left outer join sys_shard.nodes_ n on default_node_id=n.node_id
+    and o.smn = g.shard_meta_number
+    and r.smn = g.shard_meta_number
+    and n.smn = g.shard_meta_number
+) v left outer join ( select node_id, node_name
+                        from sys_shard.nodes_ n, 
+                             sys_shard.global_meta_info_ g
+                       where n.smn = g.shard_meta_number ) n
+    on default_node_id=n.node_id
 group by key_column_name, sub_key_column_name, split_method, sub_split_method, n.node_name';
     --println(stmt1);
     execute immediate stmt1 into key_column_name, shard_info;
@@ -805,17 +956,26 @@ when others then
 end REBUILD_DATA_NODE;
 
 -- REBUILD SHARD DATA
-procedure REBUILD_DATA( user_name   in varchar(128),
-                        table_name  in varchar(128),
-                        batch_count in bigint default 0 )
+procedure REBUILD_DATA( user_name            in varchar(128),
+                        table_name           in varchar(128),
+                        batch_count          in bigint default 0,
+                        additional_node_list in varchar(1000) default NULL )
 as
   up_user_name varchar(128);
   up_table_name varchar(128);
   type name_arr_t is table of varchar(40) index by integer;
   name_arr name_arr_t;
-  stmt1 varchar(2000);
-begin
+  node_name varchar(40);
+  stmt1 varchar(4000);
 
+  type additional_node_arr_t is table of varchar(40) index by integer;
+  additional_node_arr additional_node_arr_t;
+  additional_node_arr_idx integer;
+  additional_node_arr_length integer;
+  additional_node_list_length integer;
+  double_q_section integer;
+  stage integer := 0;
+begin
   if instr( user_name, chr(34) ) = 0 then
     up_user_name := upper( user_name );
   else
@@ -828,18 +988,55 @@ begin
     up_table_name := replace2( table_name, chr(34) );
   end if;
 
-  stmt1 := '
+  stmt1 := 'SELECT distinct node_name from (';
+
+  if additional_node_list is not null then
+    additional_node_list_length := length(additional_node_list);
+    double_q_section := 0;
+    additional_node_arr_idx := 0;
+    additional_node_arr[additional_node_arr_idx] := '';
+
+    for i in 1 .. additional_node_list_length loop
+      if instr( substr( additional_node_list, i, 1 ), chr(34) ) = 1 then
+        double_q_section := abs(double_q_section-1);
+      elseif instr( substr( additional_node_list, i, 1 ), chr(44) ) = 1 then
+        if double_q_section = 0 then
+          additional_node_arr_idx := additional_node_arr_idx+1;
+          additional_node_arr[additional_node_arr_idx] := '';
+          continue;
+        end if;      
+      end if;
+      additional_node_arr[additional_node_arr_idx] := additional_Node_arr[additional_node_arr_idx]||substr( additional_node_list, i, 1 );
+    end loop;
+
+    for i in 0 .. additional_node_arr_idx loop
+      additional_node_arr_length := length(additional_node_arr[i]);
+      if ( instr( substr( additional_node_arr[i], 1, 1 ), chr(34) ) = 1 ) and 
+         ( instr( substr( additional_node_arr[i], additional_node_arr_length, 1 ), chr(34) ) = 1 ) then
+        additional_node_arr[i] := replace2( additional_node_arr[i], chr(34) );
+      else
+        additional_node_arr[i] := upper( additional_node_arr[i] );
+      end if;
+        stmt1 := stmt1||' SELECT '''||additional_node_arr[i]||''' node_name FROM dual UNION ALL';
+    end loop;
+  end if;
+
+  stmt1 := stmt1||'
   SELECT n.node_name node_name 
-    FROM sys_shard.objects_ o, sys_shard.ranges_ r, sys_shard.nodes_ n 
+    FROM sys_shard.objects_ o, sys_shard.ranges_ r, sys_shard.nodes_ n, sys_shard.global_meta_info_ g
    WHERE o.split_method in (''H'',''R'',''L'') and r.node_id = n.node_id and o.shard_id = r.shard_id 
      AND o.user_name = '''|| up_user_name ||''' and o.object_name = '''|| up_table_name ||''' 
-  UNION
+     AND o.smn = g.shard_meta_number
+     AND r.smn = g.shard_meta_number
+     AND n.smn = g.shard_meta_number
+  UNION ALL
   SELECT n.node_name
-    FROM sys_shard.objects_ o, sys_shard.nodes_ n 
+    FROM sys_shard.objects_ o, sys_shard.nodes_ n, sys_shard.global_meta_info_ g 
    WHERE o.split_method in (''H'',''R'',''L'') and o.default_node_id = n.node_id
      AND o.user_name = '''|| up_user_name ||''' and o.object_name = '''|| up_table_name ||'''
-   ORDER BY node_name';
-
+     AND o.smn = g.shard_meta_number
+     AND n.smn = g.shard_meta_number';
+  stmt1 := stmt1||') ORDER BY node_name';
   --println(stmt1);
   execute immediate stmt1 bulk collect into name_arr;
 
@@ -848,6 +1045,17 @@ begin
   end if;
 
   --println('['||to_char(sysdate, 'HH24:MI:SS')||'] node count: '||name_arr.count());
+  stage := 1;
+  for i in name_arr.first() .. name_arr.last() loop
+    node_name := name_arr[i];
+    stmt1 := 'select node_name 
+                from sys_shard.nodes_ n, 
+                     sys_shard.global_meta_info_ g 
+               where n.smn = g.shard_meta_number 
+                 and node_name = '''||node_name||'''';
+    execute immediate stmt1 into node_name;
+  end loop;
+  stage := 0;
  
   for i in name_arr.first() .. name_arr.last() loop
     println('['||to_char(sysdate, 'HH24:MI:SS')||'] target node('||i||'/'||name_arr.count()||'): "'||name_arr[i]||'"');
@@ -857,9 +1065,23 @@ begin
   println('['||to_char(sysdate, 'HH24:MI:SS')||'] done.');
 
 exception
+when no_data_found then
+  if stage = 1 then
+    println('Invalid node name: '||node_name);
+  else
+    raise;
+  end if;
 when others then
   raise;
 end REBUILD_DATA;
+
+-- PURGE OLD SHARD META INFO
+procedure PURGE_OLD_SHARD_META_INFO( smn in bigint default NULL )
+as
+    dummy integer;
+begin
+    dummy := shard_unset_old_smn( smn );
+end PURGE_OLD_SHARD_META_INFO;
 
 end DBMS_SHARD;
 /

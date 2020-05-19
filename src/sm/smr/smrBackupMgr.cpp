@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrBackupMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrBackupMgr.cpp 84887 2019-02-14 10:13:01Z emlee $
  *
  * Description :
  *
@@ -560,8 +560,9 @@ IDE_RC smrBackupMgr::backupLogAnchor( idvSQL* aStatistics,
 
     IDE_EXCEPTION(err_online_backup_write);
     {
-        ideLog::log(SM_TRC_LOG_LEVEL_ABORT,
-                    SM_TRC_MRECOVERY_ARCH_ABORT1);
+        ideLog::log( SM_TRC_LOG_LEVEL_ABORT,
+                     SM_TRC_MRECOVERY_ARCH_ABORT1,
+                     aDestFilePath );
         IDE_SET(ideSetErrorCode(smERR_ABORT_BackupWrite));
     }
     IDE_EXCEPTION(err_logAnchor_backup_write);
@@ -727,8 +728,7 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
     SChar                sStrFullFileName[ SM_MAX_FILE_NAME ];
 
     IDE_DASSERT( aBackupDir != NULL );
-    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(aSpaceID)
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(aSpaceID) == ID_TRUE );
 
     /* ------------------------------------------------
      * [1] disk table space backup 상태 변경및
@@ -760,28 +760,28 @@ IDE_RC smrBackupMgr::backupMemoryTBS( idvSQL*      aStatistics,
         if( aBackupDir[sBackupPathLen - 1] == IDL_FILE_SEPARATOR )
         {
             idlOS::snprintf(sStrFullFileName, SM_MAX_FILE_NAME,
-                    "%s%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT,
-                    aBackupDir,
-                    sSpaceNode->mHeader.mName,
-                    sWhichDB,
-                    i);
+                            "%s%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT,
+                            aBackupDir,
+                            sSpaceNode->mHeader.mName,
+                            sWhichDB,
+                            i);
         }
 
         idlOS::snprintf(sStrFullFileName, SM_MAX_FILE_NAME,
-                "%s%c%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT,
-                aBackupDir,
-                IDL_FILE_SEPARATOR,
-                sSpaceNode->mHeader.mName,
-                sWhichDB,
-                i);
+                        "%s%c%s-%"ID_UINT32_FMT"-%"ID_UINT32_FMT,
+                        aBackupDir,
+                        IDL_FILE_SEPARATOR,
+                        sSpaceNode->mHeader.mName,
+                        sWhichDB,
+                        i);
 
         sDataFileNameLen = idlOS::strlen(sStrFullFileName);
 
         IDE_TEST( sctTableSpaceMgr::makeValidABSPath(
-                      ID_TRUE,
-                      sStrFullFileName,
-                      &sDataFileNameLen,
-                      SMI_TBS_DISK)
+                                              ID_TRUE,
+                                              sStrFullFileName,
+                                              &sDataFileNameLen,
+                                              SMI_TBS_DISK)
                   != IDE_SUCCESS );
 
         IDE_TEST( smmManager::openAndGetDBFile( sSpaceNode,
@@ -914,8 +914,7 @@ IDE_RC smrBackupMgr::backupDiskTBS( idvSQL*   aStatistics,
     UInt                  i;
 
     IDE_DASSERT( aBackupDir != NULL );
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace(aSpaceID)
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace(aSpaceID) == ID_TRUE );
 
     /* ------------------------------------------------
      * [1] disk table space backup 상태 변경및
@@ -1362,6 +1361,8 @@ IDE_RC smrBackupMgr::beginBackupTBS( scSpaceID aSpaceID )
     }
     else
     {
+        IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aSpaceID ) == ID_TRUE );
+
         setOnlineBackupStatusOR( SMR_BACKUP_MEMTBS );
         sRestoreState = 2;
 
@@ -1570,6 +1571,8 @@ IDE_RC smrBackupMgr::endBackupTBS( scSpaceID aSpaceID )
     }
     else
     {
+        IDE_ERROR (sctTableSpaceMgr::isMemTableSpace( aSpaceID ) == ID_TRUE );
+
         // 백업중인 메모리 테이블스페이스가 없는경우 Exception 처리
         IDE_TEST_RAISE((mOnlineBackupState & SMR_BACKUP_MEMTBS)
                        != SMR_BACKUP_MEMTBS,
@@ -2173,9 +2176,7 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
 
     IDE_DASSERT( aCommonBackupInfo  != NULL );
     IDE_DASSERT( aBackupDir         != NULL );
-
-    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(aSpaceID)
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace(aSpaceID) == ID_TRUE );
 
     /* ------------------------------------------------
      * [1] disk table space backup 상태 변경및
@@ -2209,10 +2210,10 @@ IDE_RC smrBackupMgr::incrementalBackupMemoryTBS( idvSQL     * aStatistics,
         sDataFileNameLen = idlOS::strlen(sBackupInfo.mBackupFileName);
 
         IDE_TEST( sctTableSpaceMgr::makeValidABSPath(
-                      ID_TRUE,
-                      sBackupInfo.mBackupFileName,
-                      &sDataFileNameLen,
-                      SMI_TBS_MEMORY) // MEMORY
+                                              ID_TRUE,
+                                              sBackupInfo.mBackupFileName,
+                                              &sDataFileNameLen,
+                                              SMI_TBS_MEMORY) // MEMORY
                   != IDE_SUCCESS );
 
         IDE_TEST( smmManager::openAndGetDBFile( sSpaceNode,
@@ -2438,8 +2439,7 @@ IDE_RC smrBackupMgr::incrementalBackupDiskTBS( idvSQL     * aStatistics,
     UShort                      sLockListID;
 
     IDE_DASSERT( aBackupDir != NULL );
-    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace(aSpaceID)
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace(aSpaceID) == ID_TRUE );
 
     /* ------------------------------------------------
      * [1] disk table space backup 상태 변경및

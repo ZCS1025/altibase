@@ -27,6 +27,8 @@ public:
     /* PROJ-2600 Online DDL for Tablespace Alteration */
     static IDE_RC executeReplaceTable( qcStatement * aStatement );
 
+    static IDE_RC executeReplacePartition( qcStatement * aStatement );
+
 private:
     static IDE_RC getRefChildInfoList( qcStatement      * aStatement,
                                        qcmTableInfo     * aTableInfo,
@@ -161,6 +163,39 @@ private:
     static IDE_RC checkNormalUserTable( qcStatement    * aStatement,
                                         qcmTableInfo   * aTableInfo,
                                         qcNamePosition   aTableName );
+
+    static IDE_RC swapTablePartitionsMeta( qcStatement     * aStatement,
+                                           UInt              aTargetTableID,
+                                           UInt              aSourceTableID,
+                                           qcNamePosition    aPartitionName );
+
+    static IDE_RC swapPartLobs( qcStatement * aStatement,
+                                UInt          aTargetTableID,
+                                UInt          aSourceTableID,
+                                UInt          aTargetPartTableID,
+                                UInt          aSourcePartTableID );
+
+    static IDE_RC swapIndexPartitions( qcStatement  * aStatement,
+                                       UInt           aTargetTableID,
+                                       UInt           aSourceTableID,
+                                       qcmTableInfo * aTargetPartTableInfo,
+                                       qcmTableInfo * aSourcePartTableInfo );
+
+    static IDE_RC swapReplicationFlagOnPartitonTableHeader( smiStatement  * aStatement,
+                                                            qcmTableInfo  * aTargetPartTableInfo,
+                                                            qcmTableInfo  * aSourcePartTableInfo );
+        
+    static IDE_RC swapReplItemsForParititonMeta( qcStatement  * aStatement,
+                                                 qcmTableInfo * aTargetPartTableInfo,
+                                                 qcmTableInfo * aSourcePartTableInfo );
+    
+
+    static IDE_RC validateReplacePartition( qcStatement      * aStatement,
+                                            qdTableParseTree * aParseTree );
+
+    static IDE_RC swapTablePartitionColumnID( qcStatement  * aStatement,
+                                              qcmTableInfo * aTargetTablePartInfo,
+                                              qcmTableInfo * aSourceTablePartInfo );
 };
 
 #endif // _O_QDB_COPYSWAP_H_

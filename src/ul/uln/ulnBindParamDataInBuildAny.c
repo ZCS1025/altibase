@@ -60,7 +60,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_CHAR(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );//BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     if (sCType == ULN_CTYPE_DEFAULT)
@@ -139,6 +140,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_CHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -175,8 +181,9 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NUMERIC(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
-
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+    
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -246,6 +253,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NUMERIC(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MTCONV_ERROR)
     {
         if (aciGetErrorCode() == mtERR_ABORT_VALUE_OVERFLOW)
@@ -300,7 +312,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BIT(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -354,6 +367,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BIT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LITERAL)
     {
         ulnErrorExtended(aFnContext,
@@ -414,7 +432,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_SMALLINT(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -482,6 +501,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_SMALLINT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LITERAL)
     {
         ulnErrorExtended(aFnContext,
@@ -532,7 +556,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_INTEGER(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -600,6 +625,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_INTEGER(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LITERAL)
     {
         ulnErrorExtended(aFnContext,
@@ -650,7 +680,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BIGINT(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -714,6 +745,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BIGINT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LITERAL)
     {
         ulnErrorExtended(aFnContext,
@@ -758,7 +794,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_REAL(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -799,6 +836,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_REAL(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MTCONV_ERROR)
     {
         if (aciGetErrorCode() == mtERR_ABORT_VALUE_OVERFLOW)
@@ -851,7 +893,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_FLOAT(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -906,6 +949,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_FLOAT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MTCONV_ERROR)
     {
         if (aciGetErrorCode() == mtERR_ABORT_VALUE_OVERFLOW)
@@ -954,7 +1002,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_DOUBLE(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -995,6 +1044,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_DOUBLE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MTCONV_ERROR)
     {
         if (aciGetErrorCode() == mtERR_ABORT_VALUE_OVERFLOW)
@@ -1044,7 +1098,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BINARY(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -1104,6 +1159,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BINARY(ulnFnContext *aFnContext,
     }
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_BUFF_LEN)
     {
         ulnErrorExtended(aFnContext,
@@ -1156,7 +1216,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NIBBLE(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -1207,6 +1268,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NIBBLE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_BUFF_LEN)
     {
         ulnErrorExtended(aFnContext,
@@ -1244,7 +1310,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BYTE(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -1295,6 +1362,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_BYTE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_BUFF_LEN)
     {
         ulnErrorExtended(aFnContext,
@@ -1332,7 +1404,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_TIMESTAMP(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -1378,6 +1451,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_TIMESTAMP(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION( INVALID_DATE_STR_ERROR )
     {
         acpMemCpy( sErrMsgBuf,
@@ -1419,7 +1497,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_INTERVAL(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     ACI_TEST(ulnBindCalcUserDataLen(sCType,
@@ -1469,6 +1548,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_INTERVAL(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LITERAL)
     {
         ulnErrorExtended(aFnContext,
@@ -1504,7 +1588,8 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NCHAR(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sCType = aDescRecApd->mMeta.mCTYPE;
     if (sCType == ULN_CTYPE_DEFAULT)
@@ -1552,6 +1637,11 @@ ACI_RC ulnParamDataInBuildAny_CHAR_NCHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -1593,7 +1683,8 @@ ACI_RC ulnParamDataInBuildAny_NUMERIC_NUMERIC(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL ); //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_NUMERIC,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -1747,6 +1838,11 @@ ACI_RC ulnParamDataInBuildAny_NUMERIC_NUMERIC(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -1825,7 +1921,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_CHAR(ulnFnContext *aFnContext,
                                            ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     acp_char_t           sCharValue;
     ulnDbc              *sDbc;
     acp_uint16_t         sCopyLen = 1;
@@ -1834,20 +1930,11 @@ ACI_RC ulnParamDataInBuildAny_BIT_CHAR(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    switch (sBitValue)
-    {
-        case 0:
-        case 1:
-            sCharValue = sBitValue + '0';
-            break;
 
-        default:
-            ACI_RAISE(LABEL_BIT_VALUE_OUT_OF_RANGE);
-            break;
-    }
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -1856,6 +1943,19 @@ ACI_RC ulnParamDataInBuildAny_BIT_CHAR(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        switch (sBitValue)
+        {
+            case 0:
+            case 1:
+                sCharValue = sBitValue + '0';
+                break;
+
+            default:
+                ACI_RAISE(LABEL_BIT_VALUE_OUT_OF_RANGE);
+                break;
+        }
         //*aConversionBuffer = (acp_uint8_t)sCharValue;
         ULN_CHUNK_WR2(sStmt, &sCopyLen);
         ULN_CHUNK_WR1(sStmt, sCharValue);
@@ -1863,6 +1963,11 @@ ACI_RC ulnParamDataInBuildAny_BIT_CHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -1886,7 +1991,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_NCHAR(ulnFnContext *aFnContext,
                                             ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulWChar              sCharValue;
     ulnDbc              *sDbc;
     acp_uint16_t         sCopyLen = 1;
@@ -1895,21 +2000,9 @@ ACI_RC ulnParamDataInBuildAny_BIT_NCHAR(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    switch (sBitValue)
-    {
-        case 0:
-        case 1:
-            *(acp_uint8_t*)(&sCharValue) = (acp_uint8_t)0;
-            *(((acp_uint8_t*)(&sCharValue)) + 1) = (acp_uint8_t)(sBitValue + 0x30);
-            break;
-
-        default:
-            ACI_RAISE(LABEL_BIT_VALUE_OUT_OF_RANGE);
-            break;
-    }
-
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -1918,6 +2011,20 @@ ACI_RC ulnParamDataInBuildAny_BIT_NCHAR(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        switch (sBitValue)
+        {
+            case 0:
+            case 1:
+                *(acp_uint8_t*)(&sCharValue) = (acp_uint8_t)0;
+                *(((acp_uint8_t*)(&sCharValue)) + 1) = (acp_uint8_t)(sBitValue + 0x30);
+                break;
+
+            default:
+                ACI_RAISE(LABEL_BIT_VALUE_OUT_OF_RANGE);
+                break;
+        }
         sCopyLen = ACI_SIZEOF(ulWChar);
         ULN_CHUNK_WR2(sStmt, &sCopyLen);
         ULN_CHUNK_WCP(sStmt, &(sCharValue), sCopyLen);
@@ -1925,6 +2032,11 @@ ACI_RC ulnParamDataInBuildAny_BIT_NCHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -1948,7 +2060,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_NUMERIC(ulnFnContext *aFnContext,
                                               ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     acp_uint8_t          sNumericBuf[MTD_NUMERIC_SIZE_MAXIMUM]; // 23
     mtdNumericType      *sNumeric = (mtdNumericType *) sNumericBuf;
@@ -1957,10 +2069,11 @@ ACI_RC ulnParamDataInBuildAny_BIT_NUMERIC(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -1969,6 +2082,9 @@ ACI_RC ulnParamDataInBuildAny_BIT_NUMERIC(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
         /*
         sCmtNumeric->mPrecision = 1;
         sCmtNumeric->mScale     = 0;
@@ -1991,6 +2107,11 @@ ACI_RC ulnParamDataInBuildAny_BIT_NUMERIC(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2014,7 +2135,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIT(ulnFnContext *aFnContext,
                                       ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     mtdBitType           sTarget;
 
@@ -2022,10 +2143,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIT(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /* typedef struct mtdBitType {
        acp_uint32_t  length;
@@ -2039,6 +2160,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIT(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
+
         sBitValue = sBitValue << 7;
         sTarget.length = 1;
         ULN_CHUNK_WR4(sStmt, &(sTarget.length));
@@ -2047,6 +2172,11 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2070,7 +2200,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_SMALLINT(ulnFnContext *aFnContext,
                                                ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     acp_sint16_t         sSmallIntValue = MTD_SMALLINT_NULL;
 
@@ -2078,10 +2208,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_SMALLINT(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2089,12 +2219,20 @@ ACI_RC ulnParamDataInBuildAny_BIT_SMALLINT(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
         sSmallIntValue = sBitValue;
         ULN_CHUNK_WR2(sStmt, &sSmallIntValue);
     }
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2118,7 +2256,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_INTEGER(ulnFnContext *aFnContext,
                                               ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     acp_sint32_t         sIntegerValue = MTD_INTEGER_NULL;
 
@@ -2126,10 +2264,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_INTEGER(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2137,12 +2275,20 @@ ACI_RC ulnParamDataInBuildAny_BIT_INTEGER(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
         sIntegerValue = sBitValue;
         ULN_CHUNK_WR4(sStmt, &sIntegerValue);
     }
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2166,7 +2312,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIGINT(ulnFnContext *aFnContext,
                                              ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     acp_sint64_t         sBigIntValue = MTD_BIGINT_NULL;
 
@@ -2174,10 +2320,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIGINT(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2185,12 +2331,20 @@ ACI_RC ulnParamDataInBuildAny_BIT_BIGINT(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
         sBigIntValue = sBitValue;
         ULN_CHUNK_WR8(sStmt, &sBigIntValue);
     }
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2214,7 +2368,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_REAL(ulnFnContext *aFnContext,
                                            ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     acp_float_t          sRealValue = mtcdRealNull; // acp_uint32_t
 
@@ -2222,10 +2376,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_REAL(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2233,12 +2387,20 @@ ACI_RC ulnParamDataInBuildAny_BIT_REAL(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
         sRealValue = sBitValue;
         ULN_CHUNK_WR4(sStmt, &sRealValue);
     }
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2262,7 +2424,7 @@ ACI_RC ulnParamDataInBuildAny_BIT_DOUBLE(ulnFnContext *aFnContext,
                                              ulnCharSet   *aCharSet)
 {
     ulnStmt             *sStmt = aFnContext->mHandle.mStmt;
-    acp_uint8_t          sBitValue = *(acp_uint8_t *)aUserDataPtr;
+    acp_uint8_t          sBitValue = 0;
     ulnDbc              *sDbc;
     acp_double_t         sDoubleValue = mtcdDoubleNull; // acp_uint64_t
 
@@ -2270,10 +2432,10 @@ ACI_RC ulnParamDataInBuildAny_BIT_DOUBLE(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
     ACP_UNUSED(aCharSet);
 
-    ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2281,12 +2443,20 @@ ACI_RC ulnParamDataInBuildAny_BIT_DOUBLE(ulnFnContext *aFnContext,
     }
     else
     {
+        /* BUG-46052 codesonar null test after dereference */
+        sBitValue = *(acp_uint8_t *)aUserDataPtr;
+        ACI_TEST_RAISE(sBitValue > 1, LABEL_BIT_VALUE_OUT_OF_RANGE);
         sDoubleValue = sBitValue;
         ULN_CHUNK_WR8(sStmt, &sDoubleValue);
     }
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_BIT_VALUE_OUT_OF_RANGE)
     {
         ulnErrorExtended(aFnContext,
@@ -2332,7 +2502,8 @@ ACI_RC ulnParamDataInBuildAny_TO_SMALLINT(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2402,6 +2573,11 @@ ACI_RC ulnParamDataInBuildAny_TO_SMALLINT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(DataOverflow)
     {
         ulnErrorExtended(aFnContext,
@@ -2439,7 +2615,8 @@ ACI_RC ulnParamDataInBuildAny_TO_INTEGER(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2492,6 +2669,11 @@ ACI_RC ulnParamDataInBuildAny_TO_INTEGER(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(DataOverflow)
     {
         ulnErrorExtended(aFnContext,
@@ -2527,7 +2709,8 @@ ACI_RC ulnParamDataInBuildAny_TO_BIGINT(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2570,6 +2753,11 @@ ACI_RC ulnParamDataInBuildAny_TO_BIGINT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(DataOverflow)
     {
         ulnErrorExtended(aFnContext,
@@ -2603,7 +2791,8 @@ ACI_RC ulnParamDataInBuildAny_FLOAT_REAL(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2619,7 +2808,13 @@ ACI_RC ulnParamDataInBuildAny_FLOAT_REAL(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
+
     return ACI_FAILURE;
 }
 
@@ -2643,7 +2838,8 @@ ACI_RC ulnParamDataInBuildAny_DOUBLE_DOUBLE(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -2659,6 +2855,11 @@ ACI_RC ulnParamDataInBuildAny_DOUBLE_DOUBLE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
     return ACI_FAILURE;
 }
@@ -2691,7 +2892,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_CHAR(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -2713,6 +2915,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_CHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -2738,7 +2945,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_NCHAR(ulnFnContext *aFnContext,
     ACP_UNUSED(aConversionBuffer);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_CHAR,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -2772,6 +2980,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_NCHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -2800,7 +3013,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BINARY(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -2831,6 +3045,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BINARY(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -2880,7 +3099,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BIT(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -2911,6 +3131,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BIT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -2947,7 +3172,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_NIBBLE(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -2982,6 +3208,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_NIBBLE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3017,7 +3248,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BYTE(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3039,6 +3271,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BYTE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -3065,7 +3302,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_SMALLINT(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3087,6 +3325,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_SMALLINT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3121,7 +3364,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_INTEGER(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3143,6 +3387,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_INTEGER(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3176,7 +3425,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BIGINT(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3198,6 +3448,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_BIGINT(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3231,7 +3486,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_DOUBLE(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3253,6 +3509,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_DOUBLE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3286,7 +3547,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_REAL(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3308,6 +3570,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_REAL(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3377,7 +3644,8 @@ ACI_RC ulnParamDataInBuildAny_BINARY_TIMESTAMP(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnBindCalcUserDataLen(ULN_CTYPE_BINARY,
                                     aDescRecApd->mMeta.mOctetLength,
@@ -3433,6 +3701,11 @@ ACI_RC ulnParamDataInBuildAny_BINARY_TIMESTAMP(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATA_SIZE)
     {
         ulnErrorExtended(aFnContext,
@@ -3501,7 +3774,8 @@ ACI_RC ulnParamDataInBuildAny_DATE_DATE(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -3529,6 +3803,11 @@ ACI_RC ulnParamDataInBuildAny_DATE_DATE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATE)
     {
         ulnErrorExtended(aFnContext,
@@ -3562,7 +3841,8 @@ ACI_RC ulnParamDataInBuildAny_TIME_TIME(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -3590,6 +3870,11 @@ ACI_RC ulnParamDataInBuildAny_TIME_TIME(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATE)
     {
         ulnErrorExtended(aFnContext,
@@ -3623,7 +3908,8 @@ ACI_RC ulnParamDataInBuildAny_TIMESTAMP_DATE(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -3651,6 +3937,11 @@ ACI_RC ulnParamDataInBuildAny_TIMESTAMP_DATE(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATE)
     {
         ulnErrorExtended(aFnContext,
@@ -3684,7 +3975,8 @@ ACI_RC ulnParamDataInBuildAny_TIMESTAMP_TIME(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -3712,6 +4004,11 @@ ACI_RC ulnParamDataInBuildAny_TIMESTAMP_TIME(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATE)
     {
         ulnErrorExtended(aFnContext,
@@ -3745,7 +4042,8 @@ ACI_RC ulnParamDataInBuildAny_TIMESTAMP_TIMESTAMP(ulnFnContext *aFnContext,
     ACP_UNUSED(aCharSet);
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (aUserDataPtr == NULL || aUserOctetLength == SQL_NULL_DATA)
     {
@@ -3773,6 +4071,11 @@ ACI_RC ulnParamDataInBuildAny_TIMESTAMP_TIMESTAMP(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_DATE)
     {
         ulnErrorExtended(aFnContext,

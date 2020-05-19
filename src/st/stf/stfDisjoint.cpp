@@ -70,6 +70,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfDisjointCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,   // Fix BUG-15283
     mtk::extractRangeNA     // Fix BUG-15283
 };

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTrans.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smiTrans.cpp 85343 2019-04-30 01:50:33Z returns $
  **********************************************************************/
 
 #include <idl.h>
@@ -81,6 +81,8 @@ IDE_RC smiTrans::initializeInternal( void )
     SM_LSN_INIT( mBeginLSN );
     SM_LSN_INIT( mCommitLSN );
 
+    mImpSVP4Shard = NULL; /* BUG-46786 */
+
     return IDE_SUCCESS;
 }
 
@@ -136,6 +138,8 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
                        UInt           aReplID,
                        idBool         aIgnoreRetry)
 {
+    smxTrans* sTrans = (smxTrans*)mTrans;
+
     /* PROJ-1381 Fetch Across Commits
      * for XA, replication */
     IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
@@ -156,8 +160,8 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
         /* nothing to do */
     }
 
-    IDE_TEST( ((smxTrans*)mTrans)->begin( aStatistics, aFlag, aReplID )
-              != IDE_SUCCESS );
+    IDE_ASSERT( ((smxTrans*)mTrans)->begin( aStatistics, aFlag, aReplID )
+                == IDE_SUCCESS );
 
     mFlag = aFlag;
 
@@ -178,80 +182,90 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
 
         /* BUG-42584 INC-30976 해결을 위한 디버그 코드 추가 */
         ideLog::log( IDE_SM_0,
-                "Transaction has child statement.\n"
-                "Statement Info\n"
-                "Trans Ptr        : 0x%"ID_xPOINTER_FMT"\n"
-                "Trans ID         : %"ID_UINT32_FMT"\n"
-                "Child Statements : %"ID_UINT32_FMT"\n"
-                "SCN              : %"ID_UINT64_FMT"\n"
-                "SCN HEX          : 0x%"ID_XINT64_FMT"\n"
-                "InfiniteSCN      : %"ID_UINT64_FMT"\n"
-                "InfiniteSCN HEX  : 0x%"ID_XINT64_FMT"\n"
-                "Flag             : %"ID_UINT32_FMT"\n"
-                "Depth            : %"ID_UINT32_FMT"\n",
-                mStmtListHead->mTrans,
-                mStmtListHead->mTransID,
-                mStmtListHead->mChildStmtCnt,
-                SM_SCN_TO_LONG( mStmtListHead->mSCN ),
-                SM_SCN_TO_LONG( mStmtListHead->mSCN ),
-                SM_SCN_TO_LONG( mStmtListHead->mInfiniteSCN ),
-                SM_SCN_TO_LONG( mStmtListHead->mInfiniteSCN ),
-                mStmtListHead->mFlag,
-                mStmtListHead->mDepth );
-
-        ideLog::log( IDE_SM_0,
-                "smiTrans Info\n"
-                "Trans Ptr    : 0x%"ID_xPOINTER_FMT"\n"
-                "Flag         : %"ID_UINT32_FMT"\n"
-                "BeginLSN     : %"ID_UINT32_FMT", %"ID_UINT32_FMT"\n"
-                "CommitLSN    : %"ID_UINT32_FMT", %"ID_UINT32_FMT"\n",
-                mTrans,
-                mFlag,
-                mBeginLSN.mFileNo,
-                mBeginLSN.mOffset,
-                mCommitLSN.mFileNo,
-                mCommitLSN.mOffset );
-
-        if ( mTrans != NULL )
-        {
-            ideLog::log( IDE_SM_0,
-                    "smxTrans Info\n"
-                    "TransID           : %"ID_UINT32_FMT"\n"
-                    "Flag              : %"ID_UINT32_FMT"\n"
-                    "SessionID         : %"ID_UINT32_FMT"\n"
-                    "Status            : %"ID_UINT32_FMT"\n"
-                    "Repl ID           : %"ID_UINT32_FMT"\n"
-                    "IsFree            : %"ID_UINT32_FMT"\n"
-                    "CommitSCN         : %"ID_UINT64_FMT"\n"
-                    "CommitSCN HEX     : 0x%"ID_XINT64_FMT"\n"
-                    "InfiniteSCN       : %"ID_UINT64_FMT"\n"
-                    "InfiniteSCN HEX   : 0x%"ID_XINT64_FMT"\n"
-                    "MinMemViewSCN     : %"ID_UINT64_FMT"\n"
-                    "MinMemViewSCN HEX : 0x%"ID_XINT64_FMT"\n"
-                    "MinDskViewSCN     : %"ID_UINT64_FMT"\n"
-                    "MinDskViewSCN HEX : 0x%"ID_XINT64_FMT"\n",
-                    ((smxTrans*)mTrans)->mTransID,
-                    ((smxTrans*)mTrans)->mFlag,
-                    ((smxTrans*)mTrans)->mSessionID,
-                    ((smxTrans*)mTrans)->mStatus,
-                    ((smxTrans*)mTrans)->mReplID,
-                    ((smxTrans*)mTrans)->mIsFree,
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mCommitSCN ),
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mCommitSCN ),
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mInfinite ),
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mInfinite ),
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinMemViewSCN ),
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinMemViewSCN ),
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinDskViewSCN ), 
-                    SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinDskViewSCN ) );
-        }
-        else
-        {
-            /* nothing to do ... */
-        }
-
+                     "Transaction has child statement.\n"
+                     "Statement Info\n"
+                     "Trans Ptr        : 0x%"ID_xPOINTER_FMT"\n"
+                     "Trans ID         : %"ID_UINT32_FMT"\n"
+                     "Child Statements : %"ID_UINT32_FMT"\n"
+                     "SCN              : %"ID_UINT64_FMT"\n"
+                     "SCN HEX          : 0x%"ID_XINT64_FMT"\n"
+                     "InfiniteSCN      : %"ID_UINT64_FMT"\n"
+                     "InfiniteSCN HEX  : 0x%"ID_XINT64_FMT"\n"
+                     "Flag             : %"ID_UINT32_FMT"\n"
+                     "Depth            : %"ID_UINT32_FMT"\n",
+                     mStmtListHead->mTrans,
+                     mStmtListHead->mTransID,
+                     mStmtListHead->mChildStmtCnt,
+                     SM_SCN_TO_LONG( mStmtListHead->mSCN ),
+                     SM_SCN_TO_LONG( mStmtListHead->mSCN ),
+                     SM_SCN_TO_LONG( mStmtListHead->mInfiniteSCN ),
+                     SM_SCN_TO_LONG( mStmtListHead->mInfiniteSCN ),
+                     mStmtListHead->mFlag,
+                     mStmtListHead->mDepth );
     }
     IDE_EXCEPTION_END;
+
+    if ( mTrans != NULL )
+    {
+        /* BUG-46782 Begin transaction 디버깅 정보 추가.
+         * mTrans NULL인 경우는, 이전에 할당 한 적이 없고, 새로 할당도 실패한 경우이다.
+         *   1. mTrans == NULL , sTrans == NULL Transaction alloc 실패, 본 정보 출력 하지 않음
+         * > 2. mTrans != NULL , sTrans == NULL 새로 Transaction alloc 받아서 begin 실패
+         * > 3. mTrans == sTrans != NULL        이전에 alloc 받은 transaction 재활용
+         *   4. mTrans != sTrans != NULL        없는 경우의 수
+         * */
+
+        ideLog::log( IDE_ERR_0,
+                     "smiTrans Info\n"
+                     "Trans Ptr    : 0x%"ID_xPOINTER_FMT", 0x%"ID_xPOINTER_FMT"\n"
+                     "Flag         : %"ID_UINT32_FMT"\n"
+                     "BeginLSN     : %"ID_UINT32_FMT", %"ID_UINT32_FMT"\n"
+                     "CommitLSN    : %"ID_UINT32_FMT", %"ID_UINT32_FMT"\n",
+                     sTrans,
+                     mTrans,
+                     mFlag,
+                     mBeginLSN.mFileNo,
+                     mBeginLSN.mOffset,
+                     mCommitLSN.mFileNo,
+                     mCommitLSN.mOffset );
+
+        ideLog::log( IDE_ERR_0,
+                     "smxTrans Info\n"
+                     "TransID           : %"ID_UINT32_FMT"\n"
+                     "Flag              : %"ID_UINT32_FMT"\n"
+                     "SessionID         : %"ID_UINT32_FMT"\n"
+                     "Status            : %"ID_UINT32_FMT"\n"
+                     "Repl ID           : %"ID_UINT32_FMT"\n"
+                     "IsFree            : %"ID_UINT32_FMT"\n"
+                     "CommitSCN         : %"ID_UINT64_FMT"\n"
+                     "CommitSCN HEX     : 0x%"ID_XINT64_FMT"\n"
+                     "InfiniteSCN       : %"ID_UINT64_FMT"\n"
+                     "InfiniteSCN HEX   : 0x%"ID_XINT64_FMT"\n"
+                     "MinMemViewSCN     : %"ID_UINT64_FMT"\n"
+                     "MinMemViewSCN HEX : 0x%"ID_XINT64_FMT"\n"
+                     "MinDskViewSCN     : %"ID_UINT64_FMT"\n"
+                     "MinDskViewSCN HEX : 0x%"ID_XINT64_FMT"\n",
+                     ((smxTrans*)mTrans)->mTransID,
+                     ((smxTrans*)mTrans)->mFlag,
+                     ((smxTrans*)mTrans)->mSessionID,
+                     ((smxTrans*)mTrans)->mStatus,
+                     ((smxTrans*)mTrans)->mReplID,
+                     ((smxTrans*)mTrans)->mIsFree,
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mCommitSCN ),
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mCommitSCN ),
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mInfinite ),
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mInfinite ),
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinMemViewSCN ),
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinMemViewSCN ),
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinDskViewSCN ), 
+                     SM_SCN_TO_LONG( ((smxTrans*)mTrans)->mMinDskViewSCN ) );
+        IDE_ASSERT( 0 );
+    }
+    else
+    {
+        /* alloc transaction을 실패한 경우는 있을 수 있다.
+         * Debug Info 및 Assert 없이 예외처리만 함*/
+    }
 
     return IDE_FAILURE;
 
@@ -319,10 +333,22 @@ IDE_RC smiTrans::abortToPsmSvp( )
 IDE_RC smiTrans::rollback(const SChar* aSavePoint,
                           UInt         aTransReleasePolicy )
 {
+    idBool      sIsLegacyTrans = ID_FALSE;
+    void      * sLegacyTrans   = NULL;
+
     IDU_FIT_POINT_RAISE( "smiTrans::rollback::ERR_UPDATE_STATEMENT_EXIST", ERR_UPDATE_STATEMENT_EXIST );
 
     IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
                     ERR_UPDATE_STATEMENT_EXIST );
+
+    /* BUG-46786 : Tx에 기록된 implicit savepoint를 정리한다. */
+    if ( mImpSVP4Shard != NULL  ) 
+    {
+        IDE_TEST( ((smxTrans *)mTrans)->unsetImpSavepoint( mImpSVP4Shard )
+                  != IDE_SUCCESS );
+
+        mImpSVP4Shard = NULL;
+    }
 
     if(aSavePoint != NULL)
     {
@@ -333,10 +359,35 @@ IDE_RC smiTrans::rollback(const SChar* aSavePoint,
     else
     {
         /* total rollback. */
-        IDE_TEST_RAISE( mStmtListHead->mChildStmtCnt != 0,
-                        ERR_STATEMENT_EXIST );
 
-        IDE_TEST( ((smxTrans*)mTrans)->abort() != IDE_SUCCESS );
+        /* PROJ-2694 Fetch Across Rollback
+         * rollback 시점에 ChildStmt가 남아 있다면 cursor의 view를 유지하기 위해
+         * Legacy Trans를 생성해야 할 수 있다.
+         * 단, rollback으로 인해 view가 깨질 경우에는 cursor의 재사용이 불가능하므로
+         * 이 경우에는 cursor를 재사용하지 않는다. */
+        sIsLegacyTrans = isReusableRollback();
+
+        IDE_TEST( ((smxTrans*)mTrans)->abort( sIsLegacyTrans,
+                                              &sLegacyTrans ) != IDE_SUCCESS );
+
+        if ( sIsLegacyTrans == ID_FALSE )
+        {
+            IDE_TEST_RAISE( mStmtListHead->mChildStmtCnt != 0,
+                            ERR_STATEMENT_EXIST );
+        }
+        else
+        {
+            if( mStmtListHead->mChildStmtCnt != 0 )
+            {
+                IDE_TEST( smiLegacyTrans::makeLegacyStmt( sLegacyTrans,
+                            mStmtListHead )
+                        != IDE_SUCCESS );
+            }
+            else
+            {
+                /* rollback 시점에 ChildStmt가 없을 경우 legacyTx를 생성할 필요가 없다. */
+            }
+        }
 
         if ( aTransReleasePolicy == SMI_RELEASE_TRANSACTION )
         {
@@ -372,6 +423,15 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
     IDU_FIT_POINT_RAISE( "smiTrans::commit::ERR_UPDATE_STATEMENT_EXIST", ERR_UPDATE_STATEMENT_EXIST );
     IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
                     ERR_UPDATE_STATEMENT_EXIST );
+
+    /* BUG-46786 : Tx에 기록된 implicit savepoint를 정리한다. */
+    if ( mImpSVP4Shard != NULL ) 
+    {
+        IDE_TEST( ((smxTrans *)mTrans)->unsetImpSavepoint( mImpSVP4Shard )
+                  != IDE_SUCCESS );
+
+        mImpSVP4Shard = NULL;
+    }
 
     /* PROJ-1381 Fetch Across Commits
      * commit 시점에 ChildStmt가 남아있으면 fetch를 계속 할 수 있도록
@@ -598,4 +658,70 @@ idBool smiTrans::isBegin()
     }
 
     return sIsBegin;
+}
+
+idBool smiTrans::isReusableRollback( void )
+{
+    smxTrans    * sTrans = (smxTrans*)mTrans;
+    idBool        sResult;
+
+    if ( ( sTrans != NULL ) && 
+         ( sTrans->mIsReusableRollback == ID_TRUE ) && 
+         ( mStmtListHead->mChildStmtCnt != 0 ) )
+    {
+        sResult = ID_TRUE;
+    }   
+    else
+    {
+        sResult = ID_FALSE;
+    }
+
+    return sResult;
+}
+
+void smiTrans::setCursorHoldable( void )
+{
+    smxTrans    * sTrans = (smxTrans*)mTrans;
+
+    if( sTrans != NULL )
+    {
+        sTrans->mIsCursorHoldable = ID_TRUE;
+    }
+}
+
+/* BUG-46786
+   smiTrans에 저장된 implicit savepoint가 있는지 확인한다. */
+idBool smiTrans::checkImpSVP4Shard( smiTrans * aTrans )
+{
+    if ( ( aTrans != NULL ) &&
+         ( aTrans->mTrans != NULL ) &&
+         ( aTrans->mImpSVP4Shard != NULL ) )
+    {
+        return ID_TRUE;
+    }
+    else
+    {
+        return ID_FALSE;
+    }
+}
+
+/* BUG-46786
+   smiTrans에 저장된 implicit savepoint까지 ROLLBACK 한다. */
+IDE_RC smiTrans::abortToImpSVP4Shard( smiTrans * aTrans )
+{
+    IDE_DASSERT( checkImpSVP4Shard( aTrans ) == ID_TRUE );
+
+    IDE_TEST( ((smxTrans*)aTrans->mTrans)->abortToImpSavepoint( aTrans->mImpSVP4Shard )
+              != IDE_SUCCESS );
+
+    IDE_TEST( ((smxTrans *)aTrans->mTrans)->unsetImpSavepoint( aTrans->mImpSVP4Shard )
+              != IDE_SUCCESS );
+
+    aTrans->mImpSVP4Shard = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

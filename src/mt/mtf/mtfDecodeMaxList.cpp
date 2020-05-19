@@ -92,6 +92,7 @@ static const mtcExecute mtfDecodeMaxListExecute = {
     mtfDecodeMaxListFinalize,
     mtfDecodeMaxListCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfMultiply.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfMultiply.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -29,6 +29,8 @@
 #include <mtdTypes.h>
 
 extern mtfModule mtfMultiply;
+
+extern mtxModule mtxMultiply; /* PROJ-2632 */
 
 static mtcName mtfMultiplyFunctionName[1] = {
     { NULL, 1, (void*)"*" }
@@ -206,8 +208,25 @@ static mtfSubModule* mtfGroupTableHighPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAX
 /* INTERVAL */ { mtfNP, mtfNP, mtfNP, mtfNP, mtfNP }
 };
 
+/* BUG-46195 */
+static mtfSubModule mtfNF[1] = {
+    { NULL, mtfMultiplyEstimateFloat }
+};
+
+static mtfSubModule * mtfGroupTableMaxPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
+/*               MISC   TEXT   NUMBE  DATE   INTER */
+/* MISC     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* TEXT     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* NUMBER   */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* DATE     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* INTERVAL */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF }
+};
+
 static mtfSubModule*** mtfTable = NULL;
 static mtfSubModule*** mtfTableHighPrecision = NULL;
+
+/* BUG-46195 */
+static mtfSubModule*** mtfTableMaxPrecision = NULL;
 
 IDE_RC mtfMultiplyInitialize( void )
 {
@@ -215,12 +234,18 @@ IDE_RC mtfMultiplyInitialize( void )
                                                  mtfGroupTable,
                                                  mtfXX )
               != IDE_SUCCESS );
-    
+
     IDE_TEST( mtf::initializeComparisonTemplate( &mtfTableHighPrecision,
                                                  mtfGroupTableHighPrecision,
                                                  mtfXX )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::initializeComparisonTemplate( &mtfTableMaxPrecision,
+                                                 mtfGroupTableMaxPrecision,
+                                                 mtfXX )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -232,10 +257,14 @@ IDE_RC mtfMultiplyFinalize( void )
 {
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTable )
               != IDE_SUCCESS );
-    
+
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableHighPrecision )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableMaxPrecision )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -267,11 +296,16 @@ IDE_RC mtfMultiplyEstimate( mtcNode*     aNode,
     {
         sTable = mtfTableHighPrecision;
     }
+    /* BUG-46195 */
+    else if ( aTemplate->arithmeticOpMode == MTC_ARITHMETIC_OPERATION_MAX_PRECISION )
+    {
+        sTable = mtfTableMaxPrecision;
+    }
     else
     {
         sTable = mtfTable;
     }
-    
+
     IDE_TEST( mtf::getSubModule2Args( &sSubModule,
                                       sTable,
                                       aStack[1].column->module->no,
@@ -315,6 +349,7 @@ static const mtcExecute mtfMultiplyExecuteInteger = {
     mtf::calculateNA,
     mtfMultiplyCalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -339,7 +374,11 @@ IDE_RC mtfMultiplyEstimateInteger( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfMultiplyExecuteInteger;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxMultiply.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdInteger.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -507,6 +546,7 @@ static const mtcExecute mtfMultiplyExecuteBigint = {
     mtf::calculateNA,
     mtfMultiplyCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -531,7 +571,11 @@ IDE_RC mtfMultiplyEstimateBigint( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfMultiplyExecuteBigint;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxMultiply.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdBigint.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -596,6 +640,7 @@ static const mtcExecute mtfMultiplyExecuteFloat = {
     mtf::calculateNA,
     mtfMultiplyCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -620,7 +665,11 @@ IDE_RC mtfMultiplyEstimateFloat( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfMultiplyExecuteFloat;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxMultiply.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdFloat.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -703,6 +752,7 @@ static const mtcExecute mtfMultiplyExecuteReal = {
     mtf::calculateNA,
     mtfMultiplyCalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -727,7 +777,11 @@ IDE_RC mtfMultiplyEstimateReal( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfMultiplyExecuteReal;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxMultiply.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdReal.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -795,6 +849,7 @@ static const mtcExecute mtfMultiplyExecuteDouble = {
     mtf::calculateNA,
     mtfMultiplyCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -819,7 +874,11 @@ IDE_RC mtfMultiplyEstimateDouble( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfMultiplyExecuteDouble;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxMultiply.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdDouble.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,

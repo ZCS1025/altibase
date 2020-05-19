@@ -19,6 +19,7 @@ package Altibase.jdbc.driver;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnInfo;
@@ -104,7 +105,8 @@ public class AltibaseResultSetMetaData implements ResultSetMetaData
 
     public int getColumnType(int aColumnIndex) throws SQLException
     {
-        return column(aColumnIndex).getMappedJDBCTypes()[0];
+        Set<Integer> sMappedJdbcTypeSet = column(aColumnIndex).getMappedJDBCTypes();
+        return sMappedJdbcTypeSet.iterator().next();
     }
 
     public String getColumnTypeName(int aColumnIndex) throws SQLException

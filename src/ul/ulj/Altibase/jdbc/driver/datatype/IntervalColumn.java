@@ -36,6 +36,7 @@ public class IntervalColumn extends AbstractColumn
 
     IntervalColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.INTERVAL);
     }
 
     public int getDBColumnType()
@@ -43,11 +44,6 @@ public class IntervalColumn extends AbstractColumn
         return ColumnTypes.INTERVAL;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.INTERVAL };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "INTERVAL";

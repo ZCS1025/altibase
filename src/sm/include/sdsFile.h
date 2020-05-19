@@ -35,8 +35,8 @@
 
 #include <smiDef.h>
 
-#define SDS_FILEHDR_SEQ_MAX     (UINT_MAX)    
-#define SDS_FILEHDR_IOB_MAX     (UINT_MAX)
+#define SDS_FILEHDR_SEQ_MAX     (ID_UINT_MAX)    
+#define SDS_FILEHDR_IOB_MAX     (ID_UINT_MAX)
     
 typedef struct sdsFileHdr
 {

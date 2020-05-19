@@ -808,11 +808,8 @@ void mmdXa::open(mmdXaContext *aXaContext)
 
     IDE_TEST(beginOpen(aXaContext) != IDE_SUCCESS);
 
-    /* xa에 참여하는 rm도 global tx로 동작해야한다. */
-    IDE_TEST( dkiSessionSetGlobalTransactionLevel(
-                  aXaContext->mSession->getDatabaseLinkSession(), 2 )
-              != IDE_SUCCESS );
-    aXaContext->mSession->setDblinkGlobalTransactionLevel(2);
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+    IDE_TEST( aXaContext->mSession->setDblinkGlobalTransactionLevel(2) != IDE_SUCCESS );
 
     aXaContext->mSession->setXaSession(ID_TRUE);
     aXaContext->mSession->setXaAssocState(MMD_XA_ASSOC_STATE_NOTASSOCIATED);
@@ -967,7 +964,7 @@ void mmdXa::start(mmdXaContext *aXaContext, ID_XID *aXid)
     UChar             sXidString[XID_DATA_MAX_LEN];
     /* PROJ-2436 ADO.NET MSDTC */
     mmcTransEscalation sTransEscalation = sSession->getTransEscalation();
-    smiTrans          *sTransToEscalate = NULL;
+    mmcTransObj       *sTransToEscalate = NULL;
 
     if (sTransEscalation == MMC_TRANS_DO_NOT_ESCALATE)
     {
@@ -975,7 +972,7 @@ void mmdXa::start(mmdXaContext *aXaContext, ID_XID *aXid)
     }
     else
     {
-        sTransToEscalate = sSession->getTrans(ID_FALSE);
+        sTransToEscalate = sSession->getTransPtr();
     }
 
     (void)idaXaConvertXIDToString(NULL, aXid, sXidString, XID_DATA_MAX_LEN);
@@ -1070,7 +1067,7 @@ reCheck:
 
             if (sTransEscalation == MMC_TRANS_DO_NOT_ESCALATE)
             {
-                sSession->setTrans(sXid->getTrans());
+                sSession->setTrans(sXid->getTransPtr());
             }
             else
             {
@@ -1080,7 +1077,7 @@ reCheck:
     }
     else
     {
-        sSession->setTrans(sXid->getTrans());
+        sSession->setTrans(sXid->getTransPtr());
     }
 
     sXid->setState(MMD_XA_STATE_ACTIVE);
@@ -1476,7 +1473,7 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
 
     IDE_TEST(beginPrepare(aXaContext, sXid) != IDE_SUCCESS);
 
-    IDE_ASSERT(sXid->getTrans()->isReadOnly(&sReadOnly) == IDE_SUCCESS);
+    IDE_ASSERT(mmcTrans::isReadOnly(sXid->getTransPtr(), &sReadOnly) == IDE_SUCCESS);
 
     if (sReadOnly == ID_TRUE)
     {
@@ -1534,9 +1531,6 @@ void mmdXa::prepare(mmdXaContext *aXaContext, ID_XID *aXid)
     else
     {
         IDU_FIT_POINT("mmdXa::prepare::lock::prepareTrans" );
-
-        IDE_TEST( dkiCommitPrepare( aXaContext->mSession->getDatabaseLinkSession() )
-                  != IDE_SUCCESS );
 
         //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
         IDE_TEST(sXid->prepareTrans(aXaContext->mSession) != IDE_SUCCESS);
@@ -1607,9 +1601,6 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
                 aXaContext->mSession->getSessionID(),
                 sXidString);            //BUG-25050 Xid 출력
 
-    /* PROJ-2661 commit/rollback failure test of RM */
-    dkiTxLogOfRM( aXid );
-
     IDE_TEST(mmdXa::fix(&sXid, aXid, MMD_XA_DO_LOG) != IDE_SUCCESS);
     //fix BUG-22349 XA need to handle state.
     sState = 1;
@@ -1629,8 +1620,6 @@ void mmdXa::commit(mmdXaContext *aXaContext, ID_XID *aXid)
     //statement end를 자동으로처리해야 합니다.
     //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
     IDE_TEST_RAISE(sXid->commitTrans(aXaContext->mSession) != IDE_SUCCESS,CommitError);
-
-    dkiCommit( aXaContext->mSession->getDatabaseLinkSession() );
 
     //fix BUG-22349 XA need to handle state.
     sState = 1;
@@ -1710,9 +1699,6 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
     ideLog::logLine(IDE_XA_1, "ROLLBACK (%d)(XID:%s)",
                 aXaContext->mSession->getSessionID(),
                 sXidString);        //BUG-25050 Xid 출력
-
-    /* PROJ-2661 commit/rollback failure test of RM */
-    dkiTxLogOfRM( aXid );
 
   retry:
     IDE_TEST(mmdXa::fix(&sXid, aXid, sXaLogFlag) != IDE_SUCCESS);
@@ -1818,12 +1804,8 @@ void mmdXa::rollback(mmdXaContext *aXaContext, ID_XID *aXid)
                             sXidString);
         }
 
-        dkiRollbackPrepareForce( aXaContext->mSession->getDatabaseLinkSession() );
-
         //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
         sXid->rollbackTrans(aXaContext->mSession);
-
-        dkiRollback( aXaContext->mSession->getDatabaseLinkSession(), NULL ) ;
 
         sState = 1;
         sXid->unlock();
@@ -2092,17 +2074,17 @@ void mmdXa::heuristicCompleted(mmdXaContext *aXaContext, ID_XID *aXid)
 
 IDE_RC mmdXa::cleanupLocalTrans(mmcSession *aSession)
 {
-    idBool      sReadOnly;
-    smiTrans   *sTrans = NULL;
+    idBool       sReadOnly;
+    mmcTransObj *sTrans = NULL;
 
     /* BUG-20850 local transaction 이 readOnly 상태이면 commit 을 해 줌 */
     if ( (aSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT) &&
          (aSession->isActivated() == ID_TRUE) )
     {
-        sTrans = aSession->getTrans(ID_FALSE);
+        sTrans = aSession->getTransPtr();
         if (sTrans != NULL)
         {
-            IDE_ASSERT(sTrans->isReadOnly(&sReadOnly) == IDE_SUCCESS);
+            IDE_ASSERT(mmcTrans::isReadOnly(sTrans, &sReadOnly) == IDE_SUCCESS);
             if (sReadOnly == ID_TRUE)
             {
                 /* PROJ-1381 FAC : Commit 하므로 Holdable Fetch는 유지한다. */
@@ -2159,10 +2141,10 @@ void mmdXa::restoreLocalTrans(mmcSession *aSession)
 
     if(aSession->getNeedLocalTxBegin() == ID_TRUE)
     {
-        mmcTrans::begin(aSession->getTrans(ID_FALSE),
-                                   aSession->getStatSQL(),
-                                   aSession->getSessionInfoFlagForTx(),
-                                   aSession);
+        mmcTrans::begin(aSession->getTransPtr(),
+                        aSession->getStatSQL(),
+                        aSession->getSessionInfoFlagForTx(),
+                        aSession);
         aSession->setNeedLocalTxBegin(ID_FALSE);
     }
     aSession->setActivated(ID_FALSE);
@@ -2236,12 +2218,8 @@ void mmdXa::terminateSession(mmcSession *aSession)
                         IDE_ASSERT(aSession->closeAllCursor(ID_TRUE, MMC_CLOSEMODE_NON_COMMITED) == IDE_SUCCESS);
                         IDE_ASSERT(aSession->isAllStmtEndExceptHold() == ID_TRUE);
 
-                        dkiRollbackPrepareForce( aSession->getDatabaseLinkSession() );
-
                         //fix BUG-22651 smrLogFileGroup::updateTransLSNInfo, server FATAL
                         sXid->rollbackTrans(aSession);
-
-                        dkiRollback( aSession->getDatabaseLinkSession(), NULL ) ;
 
                         sXid->unlock();
 

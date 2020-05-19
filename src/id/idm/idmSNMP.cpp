@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idmSNMP.cpp 67796 2014-12-03 08:39:33Z donlet $
+ * $Id: idmSNMP.cpp 83415 2018-07-04 04:47:30Z kclee $
  **********************************************************************/
 
 #include <idmSNMP.h>
@@ -99,7 +99,8 @@ UInt idmSNMP::selectSNMP(const PDL_SOCKET&  aSock,
                          PDL_Time_Value&    aTimeout,
                          SChar             *aMessage)
 {
-    UInt sRet = 0;
+    SInt sRet = 0;
+    UInt sOut = 0;
 
     sRet = idlOS::select(aSock + 1, aReadFdSet, aWriteFdSet, NULL, aTimeout);
 
@@ -107,21 +108,21 @@ UInt idmSNMP::selectSNMP(const PDL_SOCKET&  aSock,
     {
         case -1:
             ideLog::log(IDE_SNMP_0, "SNMP: SELECT_ERR %s", aMessage);
-            sRet = SNMP_SELECT_ERR;
+            sOut = SNMP_SELECT_ERR;
             break;
 
         case 0:
-            sRet = SNMP_SELECT_TIMEOUT;
+            sOut = SNMP_SELECT_TIMEOUT;
             break;
 
         default:
-            sRet = 0;
+            sOut = 0;
 
             if (aReadFdSet != NULL)
             {
                 if (FD_ISSET(aSock, aReadFdSet) != 0)
                 {
-                    sRet |= SNMP_SELECT_READ;
+                    sOut |= SNMP_SELECT_READ;
                 }
                 else
                 {
@@ -137,7 +138,7 @@ UInt idmSNMP::selectSNMP(const PDL_SOCKET&  aSock,
             {
                 if (FD_ISSET(aSock, aWriteFdSet) != 0)
                 {
-                    sRet |= SNMP_SELECT_WRITE;
+                    sOut |= SNMP_SELECT_WRITE;
                 }
                 else
                 {
@@ -152,7 +153,7 @@ UInt idmSNMP::selectSNMP(const PDL_SOCKET&  aSock,
             break;
     }
 
-    return sRet;
+    return sOut;
 }
 
 /**

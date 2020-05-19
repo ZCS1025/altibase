@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmo.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmo.cpp 84150 2018-10-12 08:13:08Z jake.jang $
  *
  * Description :
  *     Query Optimizer
@@ -1569,7 +1569,18 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
     if( sMergeParseTree->updateStatement != NULL )
     {
         IDE_TEST( doTransformSubqueries( sMergeParseTree->updateStatement,
-                                         NULL )
+                                         sMergeParseTree->whereForUpdate )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if( sMergeParseTree->deleteStatement != NULL )
+    {
+        IDE_TEST( doTransformSubqueries( sMergeParseTree->deleteStatement,
+                                         sMergeParseTree->whereForDelete )
                   != IDE_SUCCESS );
     }
     else
@@ -1580,7 +1591,7 @@ IDE_RC qmo::optimizeMerge( qcStatement * aStatement )
     if( sMergeParseTree->insertStatement != NULL )
     {
         IDE_TEST( doTransformSubqueries( sMergeParseTree->insertStatement,
-                                         NULL )
+                                         sMergeParseTree->whereForInsert )
                   != IDE_SUCCESS );
     }
     else

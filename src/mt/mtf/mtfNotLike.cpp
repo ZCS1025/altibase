@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNotLike.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfNotLike.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -664,6 +664,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfNotLikeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -675,6 +676,7 @@ const mtcExecute mtfExecuteMB = {
     mtf::calculateNA,
     mtfNotLikeCalculateMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -686,6 +688,7 @@ const mtcExecute mtfExecuteNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculateNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -697,6 +700,7 @@ const mtcExecute mtfExecuteMBNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculateMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -709,6 +713,7 @@ const mtcExecute mtfExecute4XlobLocator = {
     mtf::calculateNA,
     mtfNotLikeCalculate4XlobLocator,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -720,6 +725,7 @@ const mtcExecute mtfExecute4XlobLocatorMB = {
     mtf::calculateNA,
     mtfNotLikeCalculate4XlobLocatorMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -732,6 +738,7 @@ const mtcExecute mtfExecute4XlobLocatorNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculate4XlobLocatorNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -743,6 +750,7 @@ const mtcExecute mtfExecute4XlobLocatorMBNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculate4XlobLocatorMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -755,6 +763,7 @@ const mtcExecute mtfExecute4Echar = {
     mtf::calculateNA,
     mtfNotLikeCalculate4Echar,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -766,6 +775,7 @@ const mtcExecute mtfExecute4EcharMB = {
     mtf::calculateNA,
     mtfNotLikeCalculate4EcharMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -778,6 +788,7 @@ const mtcExecute mtfExecute4EcharNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculate4EcharNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -789,6 +800,7 @@ const mtcExecute mtfExecute4EcharMBNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculate4EcharMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -801,6 +813,7 @@ const mtcExecute mtfExecute4ClobValue = {
     mtf::calculateNA,
     mtfNotLikeCalculate4ClobValue,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -813,6 +826,7 @@ const mtcExecute mtfExecute4ClobValueMB = {
     mtf::calculateNA,
     mtfNotLikeCalculate4ClobValueMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -825,6 +839,7 @@ const mtcExecute mtfExecute4ClobValueNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculate4ClobValueNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -837,6 +852,7 @@ const mtcExecute mtfExecute4ClobValueMBNormal = {
     mtf::calculateNA,
     mtfNotLikeCalculate4ClobValueMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

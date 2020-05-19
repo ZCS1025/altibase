@@ -41,6 +41,7 @@ public class RealColumn extends AbstractColumn
 
     RealColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.REAL);
     }
 
     public int getDBColumnType()
@@ -48,11 +49,6 @@ public class RealColumn extends AbstractColumn
         return ColumnTypes.REAL;
     }
 
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.REAL };
-    }
-    
     public String getDBColumnTypeName()
     {
         return "REAL";

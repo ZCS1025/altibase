@@ -504,6 +504,10 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
     sLob->mGetSize -= aReceivedDataSize;
 
     ULN_FNCONTEXT_GET_DBC(sFnContext, sDbc);
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     ACP_UNUSED(aCmVariable);
     ACP_UNUSED(aOffset);
 
@@ -590,6 +594,11 @@ static ACI_RC ulnLobBufferDataInCHAR(cmtVariable  *aCmVariable,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MAY_NOT_ENOUGH_APP_BUFFER)
     {
         /* 
@@ -738,6 +747,9 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
     sLob->mGetSize -= aReceivedDataSize;
 
     ULN_FNCONTEXT_GET_DBC(sFnContext, sDbc);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
     ACP_UNUSED(aCmVariable);
     ACP_UNUSED(aOffset);
 
@@ -826,6 +838,11 @@ static ACI_RC ulnLobBufferDataInWCHAR(cmtVariable  *aCmVariable,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_CONVERT_CHARSET_FAILED)
     {
         ulnError(sFnContext,
@@ -1091,6 +1108,8 @@ static ACI_RC ulnLobBufferDataOutCHAR(ulnFnContext *aFnContext,
     ACI_RC              sRC             = ACI_FAILURE;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST_RAISE(aLob->mState != ULN_LOB_ST_OPENED, LABEL_LOB_NOT_OPENED);
 
@@ -1151,6 +1170,11 @@ static ACI_RC ulnLobBufferDataOutCHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_LOB_NOT_OPENED)
     {
         ulnError(aFnContext, ulERR_FATAL_LOB_NOT_OPENED, "ulnLobBufferDataOutCHAR");
@@ -1214,6 +1238,8 @@ static ACI_RC ulnLobBufferDataOutWCHAR(ulnFnContext *aFnContext,
     ACI_RC              sRC = ACI_FAILURE;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST_RAISE(aLob->mState != ULN_LOB_ST_OPENED, LABEL_LOB_NOT_OPENED);
 
@@ -1295,6 +1321,11 @@ static ACI_RC ulnLobBufferDataOutWCHAR(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_LOB_NOT_OPENED)
     {
         ulnError(aFnContext, ulERR_FATAL_LOB_NOT_OPENED, "ulnLobBufferDataOutWCHAR");
@@ -1429,7 +1460,8 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
     acp_uint64_t  sSize;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
 
     /* BUG-44125 [mm-cli] IPCDA 모드 테스트 중 hang - iloader CLOB */
@@ -1444,16 +1476,18 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
     /*
      * 0. In Current Position
      */
-    for( i = 1; i <= ulnStmtGetColumnCount(sStmt); i++ )
+    for ( i = 1; i <= ulnStmtGetColumnCount(sStmt); i++ )
     {
         sColumn = ulnCacheGetColumn(sCache, i);
 
-        if( (sColumn->mMtype == ULN_MTYPE_BLOB) ||
-            (sColumn->mMtype == ULN_MTYPE_CLOB) )
+        if ( (sColumn->mMtype == ULN_MTYPE_BLOB) ||
+             (sColumn->mMtype == ULN_MTYPE_CLOB) )
         {
             sLob = (ulnLob*)sColumn->mBuffer;
+            ACI_TEST_RAISE(sLob == NULL, LABEL_FUNCTION_SEQUENCE_ERR);  /* BUG-46889 */
+
             ULN_GET_LOB_LOCATOR_VALUE(&(sLocatorVal),&(sLob->mLocatorID));
-            if(sLocatorVal  == aLocatorID )
+            if ( sLocatorVal == aLocatorID )
             {
                 *aSize = sLob->mSize;
                 ACI_RAISE( LABEL_CACHE_HIT );
@@ -1478,21 +1512,21 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
     // To Fix BUG-20480
     // 논리적 Cursor Position을 이용하여 Cache 내에 존재하는 지를 검사
     // Review : ulnCacheGetRow() 함수를 이용한 물리적 Position 사용도 가능함.
-    for( i = 0; i < (acp_uint32_t)ulnCacheGetRowCount(sCache); i++ )
+    for ( i = 0; i < (acp_uint32_t)ulnCacheGetRowCount(sCache); i++ )
     {
         sRow = ulnCacheGetRow(sCache, i);
         sOffset = 0;
 
-        for( j = 1; j <= ulnStmtGetColumnCount(sStmt); j++ )
+        for ( j = 1; j <= ulnStmtGetColumnCount(sStmt); j++ )
         {
             sColumn = ulnCacheGetColumn(sCache, j);
-            if( (sColumn->mMtype == ULN_MTYPE_BLOB) ||
-                (sColumn->mMtype == ULN_MTYPE_CLOB) )
+            if ( (sColumn->mMtype == ULN_MTYPE_BLOB) ||
+                 (sColumn->mMtype == ULN_MTYPE_CLOB) )
             {
                 sSrc = sRow->mRow + sOffset;
                 CM_ENDIAN_ASSIGN8(&sLocatorVal, sSrc);
 
-                if(sLocatorVal  == aLocatorID )
+                if (sLocatorVal == aLocatorID )
                 {
                     sSrc = sRow->mRow + sOffset + 8;
 
@@ -1533,9 +1567,18 @@ ACI_RC ulnLobGetSize(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(IPCDANotSupport)
     {
         ulnError(aFnContext, ulERR_ABORT_IPCDA_UNSUPPORTED_FUNCTION);
+    }
+    ACI_EXCEPTION(LABEL_FUNCTION_SEQUENCE_ERR)
+    {
+        ulnError(aFnContext, ulERR_ABORT_FUNCTION_SEQUENCE_ERR);
     }
     ACI_EXCEPTION_END;
 
@@ -1582,7 +1625,8 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
     aLob->mGetSize       = aSizeToGet;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACI_TEST( sDbc == NULL );   //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     // fix BUG-18938
     // LOB 데이터의 길이가 0이면 데이터를 요청할 필요가 없다.
@@ -1613,10 +1657,10 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
              (sColumn->mMtype == ULN_MTYPE_CLOB) )
         {
             sLob = (ulnLob *)sColumn->mBuffer;
+            ACI_TEST_RAISE(sLob == NULL, LABEL_FUNCTION_SEQUENCE_ERR);  /* BUG-46889 */
 
             ULN_GET_LOB_LOCATOR_VALUE(&(sLobLocatorValCache),
                                       &(sLob->mLocatorID));
-
             if (sLobLocatorValCache == sLobLocatorVal)
             {
                 ACI_TEST_RAISE(sLob->mData == NULL, REQUEST_TO_SERVER);
@@ -1690,11 +1734,19 @@ static ACI_RC ulnLobGetData(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_LOB_RANGE)
     {
         ulnError(aFnContext, ulERR_ABORT_INVALID_LOB_RANGE);
     }
-
+    ACI_EXCEPTION(LABEL_FUNCTION_SEQUENCE_ERR)
+    {
+        ulnError(aFnContext, ulERR_ABORT_FUNCTION_SEQUENCE_ERR);
+    }
     ACI_EXCEPTION_END;
 
     /*
@@ -1712,6 +1764,8 @@ ACI_RC ulnLobFreeLocator(ulnFnContext *aFnContext, ulnPtContext *aPtContext, acp
     ulnStmt *sStmt = aFnContext->mHandle.mStmt;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * send LOB FREE REQ
@@ -1740,6 +1794,11 @@ ACI_RC ulnLobFreeLocator(ulnFnContext *aFnContext, ulnPtContext *aPtContext, acp
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -1933,7 +1992,8 @@ static ACI_RC ulnLobAppend(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST_RAISE(aLob->mState != ULN_LOB_ST_OPENED, LABEL_LOB_NOT_OPENED);
 
@@ -1969,6 +2029,11 @@ static ACI_RC ulnLobAppend(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_LOB_NOT_OPENED)
     {
         ulnError(aFnContext, ulERR_FATAL_LOB_NOT_OPENED, "ulnLobAppend");
@@ -2059,7 +2124,8 @@ static ACI_RC ulnLobOverWrite(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST_RAISE(aLob->mState != ULN_LOB_ST_OPENED, LABEL_LOB_NOT_OPENED);
 
@@ -2095,6 +2161,11 @@ static ACI_RC ulnLobOverWrite(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_LOB_NOT_OPENED)
     {
         ulnError(aFnContext, ulERR_FATAL_LOB_NOT_OPENED, "ulnLobOverWrite");
@@ -2182,8 +2253,8 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    //BUG-28623 [CodeSonar]Null Pointer Dereference
-    ACI_TEST( sDbc == NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
      * Note : 업데이트 되어서 바뀌는 구간에 대한 정보는 update begin 함수에서 전송했으니
@@ -2235,6 +2306,11 @@ static ACI_RC ulnLobUpdate(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     ULN_IS_FLAG_UP(sNeedEndLob)

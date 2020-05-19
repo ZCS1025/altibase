@@ -277,7 +277,8 @@ SQLRETURN ulnProcedureColumns(ulnStmt      *aStmt,
     ULN_FLAG(sNeedFinPtContext);
 
     ulnFnContext sFnContext;
-    acp_char_t sQueryString[ULN_CATALOG_QUERY_STR_BUF_SIZE];
+    acp_char_t   sQueryString[ULN_CATALOG_QUERY_STR_BUF_SIZE];
+    ulnDbc      *sParentDbc = (aStmt != NULL) ? aStmt->mParentDbc : NULL;  /* BUG-46885 */
 
     ACP_UNUSED(aCatalogName);
     ACP_UNUSED(aNameLength1);
@@ -286,7 +287,7 @@ SQLRETURN ulnProcedureColumns(ulnStmt      *aStmt,
     /*
      * Enter
      */
-    ACI_TEST(ulnEnter(&sFnContext, (void *)(aStmt->mParentDbc)) != ACI_SUCCESS);
+    ACI_TEST(ulnEnter(&sFnContext, (void *)sParentDbc) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
 
     /*

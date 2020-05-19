@@ -111,6 +111,7 @@
 #define SDL_ALTIBASE_SHARD_LINKER_TYPE                 5001
 #define SDL_ALTIBASE_SHARD_NODE_NAME                   5002
 #define SDL_ALTIBASE_SHARD_PIN                         5003
+#define SDL_ALTIBASE_SHARD_META_NUMBER                 5004
 #define SDL_SQL_ATTR_METADATA_ID                       10014
 #define SDL_SQL_ATTR_AUTO_IPD                          10001
 

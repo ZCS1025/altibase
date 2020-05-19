@@ -1,8 +1,8 @@
-# $Id: Makefile 68602 2015-01-23 00:13:11Z sbjang $
+# $Id: Makefile 85090 2019-03-28 01:15:28Z andrew.shin $
 
 include mtEnv.mk
 
-DIRS = msg mtc mtd mtl mtv mtf mtk mtu lib
+DIRS = msg mtc mtd mtl mtv mtf mtk mtu mtx lib
 include $(ALTIDEV_HOME)/makefiles/moddep-common.mk
 
 CDIRS = mtcc mtcd mtcl mtca mtcn

@@ -203,7 +203,8 @@ IDE_RC smxLegacyTransMgr::removeLegacyStmt( smuList * aLegacyStmtNode,
 
 IDE_RC smxLegacyTransMgr::addLegacyTrans( smxTrans * aSmxTrans,
                                           smLSN      aCommitEndLSN,
-                                          void    ** aLegacyTrans )
+                                          void    ** aLegacyTrans,
+                                          idBool     aIsCommit )
                                           
 {
     smxLegacyTrans    * sLegacyTrans;
@@ -231,13 +232,25 @@ IDE_RC smxLegacyTransMgr::addLegacyTrans( smxTrans * aSmxTrans,
 
     sLegacyTrans->mTransID       = aSmxTrans->mTransID;
     sLegacyTrans->mCommitEndLSN  = aCommitEndLSN;
-    sLegacyTrans->mOIDList       = aSmxTrans->mOIDList;
     sLegacyTrans->mCommitSCN     = aSmxTrans->mCommitSCN;
     sLegacyTrans->mMinMemViewSCN = aSmxTrans->mMinMemViewSCN;
     sLegacyTrans->mMinDskViewSCN = aSmxTrans->mMinDskViewSCN;
     sLegacyTrans->mFstDskViewSCN = aSmxTrans->mFstDskViewSCN;
 
-    ((smxOIDList*)sLegacyTrans->mOIDList)->mCacheOIDNode4Insert = NULL;
+    /* PROJ-2694 Fetch Across Rollback 
+     * rollback에서 호출될 경우에는 OID list를 이미 처리 한 다음이므로 OID list를 연결할 필요가 없다. */
+    if( aIsCommit == ID_TRUE )
+    {
+        sLegacyTrans->mMadeType  = 'C';
+        sLegacyTrans->mOIDList   = aSmxTrans->mOIDList;
+        ((smxOIDList*)sLegacyTrans->mOIDList)->mCacheOIDNode4Insert = NULL;
+    }
+    else
+    {
+        sLegacyTrans->mMadeType  = 'R';
+        sLegacyTrans->mOIDList = NULL;
+    }
+
 
     idlOS::snprintf( sMutexName,
                      128,
@@ -365,19 +378,28 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
 
         if( sOIDList != NULL )
         {
-            /* BUG-42760 */
-            IDE_ASSERT( lockWaitForNoAccessAftDropTbl( sLegacyTrans )
-                        == IDE_SUCCESS );
+            if ( sLegacyTrans->mMadeType == 'C' )
+            {
+                /* BUG-42760 */
+                IDE_ASSERT( lockWaitForNoAccessAftDropTbl( sLegacyTrans )
+                            == IDE_SUCCESS );
 
-            IDE_TEST( sOIDList->processOIDList4LegacyTx( &(sLegacyTrans->mCommitEndLSN),
-                                                         sLegacyTrans->mCommitSCN )
-                      != IDE_SUCCESS );
+                IDE_TEST( sOIDList->processOIDList4LegacyTx( &(sLegacyTrans->mCommitEndLSN),
+                                                             sLegacyTrans->mCommitSCN )
+                          != IDE_SUCCESS );
 
-            IDE_ASSERT( unlockWaitForNoAccessAftDropTbl( sLegacyTrans )
-                        == IDE_SUCCESS );
+                IDE_ASSERT( unlockWaitForNoAccessAftDropTbl( sLegacyTrans )
+                            == IDE_SUCCESS );
 
-            IDE_TEST( sOIDList->destroy() != IDE_SUCCESS );
-            IDE_TEST( iduMemMgr::free(sOIDList) != IDE_SUCCESS );
+                IDE_TEST( sOIDList->destroy() != IDE_SUCCESS );
+                IDE_TEST( iduMemMgr::free(sOIDList) != IDE_SUCCESS );
+            }
+            else
+            {
+                /* PROJ-2694 Fetch Across Rollback
+                 * legacy Tx가 rollback일 경우는 OID list가 모두 정리된 상태로 연결되므로 
+                 * OID list를 정리할 필요 없다. */
+            }
         }
         else
         {

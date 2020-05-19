@@ -1524,8 +1524,7 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
     sInsertedRowValueCount = aTemplate->insOrUptRowValueCount[sCodePlan->valueIdx];
     
     // Memory 재사용을 위하여 현재 위치 기록
-    IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
-              != IDE_SUCCESS );
+    IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     
     //-----------------------------------
     // clear lob info
@@ -1760,12 +1759,18 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
         // BUG-33567과 유사하게 첫번째 makeSmiValueWithValue의 qmxMem은 유지한다.
         
         // Memory 재사용을 위한 Memory 이동
-        IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
-                  != IDE_SUCCESS);
+        IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     }
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnMOVE::insertOneRow"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -2103,8 +2108,7 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
         //------------------------------
 
         // Memory 재사용을 위하여 현재 위치 기록
-        IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
-                  != IDE_SUCCESS);
+        IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
         IDE_TEST( qdnForeignKey::checkParentRef( aTemplate->stmt,
                                                  NULL,
@@ -2115,8 +2119,7 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
                   != IDE_SUCCESS);
 
         // Memory 재사용을 위한 Memory 이동
-        IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
-                  != IDE_SUCCESS);
+        IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
         
         IDE_TEST( aCursorIter->cursor.readNewRow( (const void **) & sRow,
                                                   & sRid )
@@ -2125,6 +2128,13 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnMOVE::checkInsertChildRefOnScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -2310,9 +2320,8 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
         while( sSearchRow != NULL )
         {
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS );
-        
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
             //------------------------------------------
             // Child Table에 대한 Referencing 검사
             //------------------------------------------
@@ -2327,9 +2336,8 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
                       != IDE_SUCCESS );
         
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS );
-        
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
             sOrgRow = sSearchRow = aDeleteTuple->row;
             
             IDE_TEST(
@@ -2348,6 +2356,13 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
     
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qmnMOVE::checkDeleteChildRefOnScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION( ERR_NOT_FOUND )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,

@@ -42,16 +42,12 @@ public class NullColumn extends AbstractColumn
 
     NullColumn()
     {
+        addMappedJdbcTypeSet(AltibaseTypes.NULL);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.NULL;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.NULL };
     }
 
     public String getDBColumnTypeName()

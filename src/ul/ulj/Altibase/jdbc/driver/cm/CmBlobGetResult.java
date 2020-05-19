@@ -38,7 +38,7 @@ public class CmBlobGetResult extends CmResult
         return mLobLength;
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

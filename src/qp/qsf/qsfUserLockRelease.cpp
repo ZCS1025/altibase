@@ -67,6 +67,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_UserLockRelease,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

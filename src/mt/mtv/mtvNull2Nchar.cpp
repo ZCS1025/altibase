@@ -59,6 +59,7 @@ static const mtcExecute mtvExecute = {
     mtf::calculateNA,
     mtvCalculate_Null2Nchar,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -72,7 +73,7 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns+aNode->column;
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
-    
+
     //IDE_TEST( mtdNchar.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,

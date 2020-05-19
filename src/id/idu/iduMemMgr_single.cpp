@@ -140,13 +140,25 @@ IDE_RC iduMemMgr::single_realloc(iduMemoryClientIndex  aIndex,
 #undef IDE_FN
 }
 
-IDE_RC iduMemMgr::single_free(void *aMemPtr)
+IDE_RC iduMemMgr::single_free(void                 *aMemPtr)
+
 {
 #define IDE_FN "iduMemMgr::single_free()"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
     idlOS::free(aMemPtr);
     return IDE_SUCCESS;
 #undef IDE_FN
+}
+
+IDE_RC iduMemMgr::single_free4malign(void                 *aMemPtr,
+                                     iduMemoryClientIndex  aIndex,
+                                     ULong                 aSize)
+
+{
+    PDL_UNUSED_ARG(aIndex);
+    PDL_UNUSED_ARG(aSize);
+
+    return single_free(aMemPtr);
 }
 
 IDE_RC iduMemMgr::single_shrink(void)

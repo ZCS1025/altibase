@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderHandshake.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSenderHandshake.cpp 85324 2019-04-25 06:51:29Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -62,6 +62,8 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
     idBool       sRegistHost     = ID_FALSE;
     idBool       sTraceLogEnable = ID_TRUE;
     smSN         sReceiverXSN    = SM_SN_NULL;
+    SChar      * sConnectedIPAddress = NULL;
+    SInt         sConnectedPortNumber = 0;
 
     *aHandshakeFlag = ID_FALSE;
 
@@ -142,13 +144,18 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
             {
                 case RP_MSG_OK :            // success return
                     // PROJ-1537
-                    if((mMeta.mReplication.mRole != RP_ROLE_ANALYSIS) && 
-                       (mCurrentType != RP_OFFLINE)) //PROJ-1915
+                    if( (mMeta.mReplication.mRole != RP_ROLE_ANALYSIS) &&
+                        (mMeta.mReplication.mRole != RP_ROLE_ANALYSIS_PROPAGATION ) &&
+                       (mCurrentType != RP_OFFLINE) && //PROJ-1915
+                       ( mSocketType != RP_SOCKET_TYPE_IB ) )
                     {
+                        getRemoteAddress( &sConnectedIPAddress,
+                                          &sConnectedPortNumber );
+
                         IDE_TEST( rpcHBT::registHost( &mRsc,
-                                                     mMeta.mReplication.mReplHosts[sHostNum].mHostIp,
-                                                     mMeta.mReplication.mReplHosts[sHostNum].mPortNo )
-                                 != IDE_SUCCESS );
+                                                      sConnectedIPAddress,
+                                                      sConnectedPortNumber )
+                                  != IDE_SUCCESS );
                         /*
                          *  unSet HBT Resource to Messenger
                          */
@@ -202,24 +209,9 @@ rpxSender::attemptHandshake(idBool *aHandshakeFlag)
     mSenderInfo->initReconnectCount();
     mSenderInfo->setOriginReplMode( mMeta.mReplication.mReplMode );
 
-    // BUG-15507
-    mRetry = 0;
-
     IDE_TEST(initXSN(sReceiverXSN) != IDE_SUCCESS);
 
     IDE_TEST( addXLogKeepAlive() != IDE_SUCCESS );
-
-    //----------------------------------------------------------------//
-    //   set TCP information
-    //----------------------------------------------------------------//
-    if ( mSocketType == RP_SOCKET_TYPE_TCP )
-    {
-        mMessenger.updateTcpAddress();
-    }
-    else
-    {
-        /* nothing to do */
-    }
 
     *aHandshakeFlag = ID_TRUE;
 
@@ -284,8 +276,10 @@ void rpxSender::releaseHandshake()
     mMessenger.setHBTResource( NULL );
 
     // PROJ-1537
-    if((mMeta.mReplication.mRole != RP_ROLE_ANALYSIS) &&
-       (mCurrentType != RP_OFFLINE)) //PROJ-1915
+    if ( ( mMeta.mReplication.mRole != RP_ROLE_ANALYSIS ) &&
+         ( mMeta.mReplication.mRole != RP_ROLE_ANALYSIS_PROPAGATION ) &&
+         ( mCurrentType != RP_OFFLINE ) && //PROJ-1915
+         ( mSocketType != RP_SOCKET_TYPE_IB ) )
     {
         rpcHBT::unregistHost(mRsc);
     }
@@ -311,43 +305,79 @@ void rpxSender::releaseHandshake()
 //
 //===================================================================
 
-IDE_RC rpxSender::connectPeer(SInt aHostNum)
+IDE_RC rpxSender::connectPeer( SInt     aHostNum )
 {
-    SChar * sHostIP = NULL;
+    SChar * sHostInfo = NULL;
+    SChar * sConnectedIPAddress = NULL;
+    SInt    sConnectedPortNumber = 0;
 
-    sHostIP = mMeta.mReplication.mReplHosts[aHostNum].mHostIp;
+    sHostInfo = mMeta.mReplication.mReplHosts[aHostNum].mHostIp;
+    mSocketType = mMeta.mReplication.mReplHosts[aHostNum].mConnType;
 
-    // PROJ-1537
-    if(idlOS::strMatch(RP_SOCKET_UNIX_DOMAIN_STR, RP_SOCKET_UNIX_DOMAIN_LEN,
-                       sHostIP, idlOS::strlen(sHostIP)) == 0)
+    switch ( mSocketType )
     {
-        mSocketType = RP_SOCKET_TYPE_UNIX;
+        case RP_SOCKET_TYPE_TCP:
 
-        idlOS::memset(mSocketFile, 0x00, RP_SOCKET_FILE_LEN);
-        idlOS::snprintf(mSocketFile, RP_SOCKET_FILE_LEN, "%s%c%s%c%s%s",
-                        idlOS::getenv(IDP_HOME_ENV), IDL_FILE_SEPARATOR,
-                        "trc", IDL_FILE_SEPARATOR,
-                        "rp-", mRepName);
+            IDE_TEST( mMessenger.connectThroughTcp( sHostInfo, 
+                                                    mMeta.mReplication.mReplHosts[aHostNum].mPortNo )
+                      != IDE_SUCCESS );
 
-        IDE_TEST( mMessenger.connectThroughUnix( mSocketFile )
-                  != IDE_SUCCESS );
+            mMessenger.updateAddress();
+
+            if ( cmiIsValidIPFormat( sHostInfo ) == ID_TRUE )
+            {
+                /* do nothing */
+            }
+            else
+            {
+                getRemoteAddress( &sConnectedIPAddress, &sConnectedPortNumber );
+                ideLog::log( IDE_RP_0, RP_TRC_S_GET_IP_BY_HOSTNAME, sConnectedIPAddress, sHostInfo );
+            }
+            break;
+
+        case RP_SOCKET_TYPE_UNIX:
+
+            idlOS::memset(mSocketFile, 0x00, RP_SOCKET_FILE_LEN);
+            idlOS::snprintf(mSocketFile, RP_SOCKET_FILE_LEN, "%s%c%s%c%s%s",
+                            idlOS::getenv(IDP_HOME_ENV), IDL_FILE_SEPARATOR,
+                            "trc", IDL_FILE_SEPARATOR,
+                            "rp-", mRepName);
+
+            IDE_TEST( mMessenger.connectThroughUnix( mSocketFile )
+                      != IDE_SUCCESS );
+            break;
+
+        case RP_SOCKET_TYPE_IB:
+
+            IDE_TEST( mMessenger.connectThroughIB( sHostInfo, 
+                                                   mMeta.mReplication.mReplHosts[aHostNum].mPortNo,
+                                                   mMeta.mReplication.mReplHosts[aHostNum].mIBLatency )
+                      != IDE_SUCCESS );
+
+            mMessenger.updateAddress(); 
+
+            if ( cmiIsValidIPFormat( sHostInfo ) == ID_TRUE )
+            {
+                /* do nothing */
+            }
+            else
+            {
+                getRemoteAddress( &sConnectedIPAddress, &sConnectedPortNumber );
+                ideLog::log( IDE_RP_0, RP_TRC_S_GET_IP_BY_HOSTNAME, sConnectedIPAddress, sHostInfo );
+            }
+            break;
+                
+        default :
+            IDE_DASSERT( 0 );
     }
-    else
-    {
-        mSocketType = RP_SOCKET_TYPE_TCP;
 
-        IDE_TEST( mMessenger.connectThroughTcp( 
-                      sHostIP, mMeta.mReplication.mReplHosts[aHostNum].mPortNo )
-                  != IDE_SUCCESS );
-    }
-
-    mNetworkError = ID_FALSE;
+    mRetryError = ID_FALSE;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    mNetworkError = ID_TRUE;
+    mRetryError = ID_TRUE;
 
     return IDE_FAILURE;
 }
@@ -356,7 +386,7 @@ void rpxSender::disconnectPeer()
 {
     mMessenger.disconnect();
 
-    mNetworkError = ID_TRUE;
+    mRetryError = ID_TRUE;
 
     return;
 }
@@ -377,8 +407,10 @@ void rpxSender::disconnectPeer()
 
 IDE_RC rpxSender::checkReplAvailable(rpMsgReturn *aRC,
                                      SInt        *aFailbackStatus,
-                                     smSN        *aXSN)
+                                     smSN        *aReceiverXSN)
 {
+    idBool sMetaInitFlag = ID_FALSE;
+
     /* Server가 Startup 단계인지 여부는 유동적이다. */
     if ( rpcManager::isStartupFailback() == ID_TRUE )
     {
@@ -389,11 +421,21 @@ IDE_RC rpxSender::checkReplAvailable(rpMsgReturn *aRC,
         rpdMeta::clearReplFlagFailbackServerStartup( &(mMeta.mReplication) );
     }
 
+    if ( mMeta.mReplication.mXSN == SM_SN_NULL )
+    {
+        sMetaInitFlag = ID_TRUE;
+    }
+    else
+    {
+        sMetaInitFlag = ID_FALSE;
+    }
+
     IDE_TEST( mMessenger.handshakeAndGetResults( &mMeta, aRC,
                                                  mRCMsg,
                                                  sizeof( mRCMsg ),
+                                                 sMetaInitFlag,
                                                  aFailbackStatus,
-                                                 aXSN )
+                                                 aReceiverXSN )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -413,7 +455,7 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
     SInt        sFailbackStatus;
     ULong       sDummyXSN;
 
-    if(mMeta.mReplication.mRole == RP_ROLE_ANALYSIS)
+    if ( ( mMeta.mReplication.mRole == RP_ROLE_ANALYSIS ) || ( mMeta.mReplication.mRole == RP_ROLE_ANALYSIS_PROPAGATION ) )
     {
         ideLog::log( IDE_RP_0, "[%s] XLog Sender: Send XLog for Meta change.\n", mMeta.mReplication.mRepName );
         // Ala Receiver에게 Handshake를 다시 할 것이라고 알리고 종료한다.
@@ -422,13 +464,16 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
         /* Send Replication Stop Message */
         ideLog::log( IDE_RP_0, "[%s] XLog Sender: SEND Stop Message for meta change\n", mMeta.mReplication.mRepName );
         
-        IDE_TEST( mMessenger.sendStop( getRestartSN() ) != IDE_SUCCESS );
+        IDE_TEST( mMessenger.sendStop( getRestartSN(),
+                                       &mExitFlag,
+                                       RPU_REPLICATION_SENDER_SEND_TIMEOUT )
+                  != IDE_SUCCESS );
 
         ideLog::log( IDE_RP_0, "SEND Stop Message SUCCESS!!!\n" );
 
         finalizeSenderApply();
         // Altibase Log Analyzer로 동작할 때는 Network 연결을 종료한다.
-        mNetworkError = ID_TRUE;
+        mRetryError = ID_TRUE;
         mSenderInfo->deActivate(); //isDisconnect()
     }
     else
@@ -454,7 +499,7 @@ IDE_RC rpxSender::handshakeWithoutReconnect()
                  != IDE_SUCCESS);   // always return IDE_SUCCESS
         if(sRC != RP_MSG_OK)
         {
-            mNetworkError = ID_TRUE;
+            mRetryError = ID_TRUE;
             mSenderInfo->deActivate(); //isDisconnect()
         }
 

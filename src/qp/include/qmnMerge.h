@@ -81,8 +81,12 @@ typedef struct qmncMRGE
     qcStatement         * selectTargetStatement;
     
     qcStatement         * updateStatement;
+    qcStatement         * deleteStatement;    
     qcStatement         * insertStatement;
     qcStatement         * insertNoRowsStatement;
+
+    // insert where clause
+    qtcNode             * whereForInsert;
 
     // reset plan index
     UInt                  resetPlanFlagStartIndex;
@@ -118,6 +122,7 @@ typedef struct qmndMRGE
     qcStatement           selectTargetStatement;
 
     qcStatement           updateStatement;
+    qcStatement           deleteStatement;
     qcStatement           insertStatement;
     qcStatement           insertNoRowsStatement;
     
@@ -212,11 +217,18 @@ private:
                                 qmnPlan    * aPlan,
                                 vSLong     * aNumRows );
 
+    static IDE_RC deleteTarget( qcTemplate * aTemplate,
+                                qmnPlan    * aPlan );
+
     static IDE_RC insertTarget( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
 
     static IDE_RC insertNoRowsTarget( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan );
+
+    static IDE_RC checkWhereForInsert( qcTemplate * aTemplate,
+                                       qmnPlan    * aPlan,
+                                       idBool     * aFlag );
 
     static void finalize( qcTemplate * aTemplate,
                           qmnPlan    * aPlan );

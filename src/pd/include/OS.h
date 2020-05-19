@@ -13,7 +13,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 // -*- C++ -*-
 // OS.h,v 4.934 2000/02/18 17:36:19 coryan Exp
 
@@ -31,16 +31,35 @@
 //
 // ============================================================================
 // fix BUG-14387
+
+/* before modifying, check acpConfig.h ,Basic_Types.h, and OS.h 
+ (BUG-45623,BUG-46609)*/
+#ifndef FD_SETSIZE_NOT_REDEFINED
+#define FD_SETSIZE_NOT_REDEFINED
+
 #if !defined(ANDROID)
-#ifdef _WIN32
-# define FD_SETSIZE 1024
-#else
-# if !defined(INTEL_LINUX)
-#  undef  FD_SETSIZE
-#  define FD_SETSIZE 65536
-# endif
+#  if defined(ALTI_CFG_OS_HPUX)
+#    undef  FD_SETSIZE
+#    define FD_SETSIZE 65536    
+#  elif defined(ALTI_CFG_OS_AIX)
+#    ifdef _H_SELECT
+#      error  select_h_is_already_included
+#    endif
+#    undef  FD_SETSIZE
+#    define FD_SETSIZE 65536     
+#  else
+#    ifdef _WIN32
+#      define FD_SETSIZE 1024
+#    else
+#      if !defined(INTEL_LINUX)
+#        undef  FD_SETSIZE
+#        define FD_SETSIZE 65536
+#      endif
+#    endif
+#  endif
 #endif
-#endif
+
+#endif  /* #ifndef FD_SETSIZE_NOT_REDEFINED */
 
 //TASK-1878
 #ifdef _WIN32
@@ -1471,6 +1490,9 @@ public:
 
   long msec (void) const;
   // Converts from <Time_Value> format into milli-seconds format.
+
+  long microsec (void) const;  /* BUG-46183 */
+  // Converts from <Time_Value> format into micro-seconds format.
 
   void msec (long);
   // Converts from milli-seconds format into <Time_Value> format.
@@ -3720,13 +3742,13 @@ typedef int PDL_pri_t;
 #     define RTLD_LAZY 1
 #   endif /* !RTLD_LAZY */
 
-/* BUG-17858 : Windows¿¡¼­ ÄÄÆÄÀÏ¿¡·¯ ¹ß»ýÇÕ´Ï´Ù.
+/* BUG-17858 : Windowsì—ì„œ ì»´íŒŒì¼ì—ëŸ¬ ë°œìƒí•©ë‹ˆë‹¤.
  *
- * WINDOWS¿¡¼­´Â LoadLibraryÇÒ¶§ ¾î¶² Flagµµ »ç¿ëÇÏÁö ¾ÊÁö¸¸
- * UNIXÀÇ dlopenÀº ´ÙÀ½°ú °°Àº flag¸¦ ÀÎÀÚ·Î ¹Þ½À´Ï´Ù.
+ * WINDOWSì—ì„œëŠ” LoadLibraryí• ë•Œ ì–´ë–¤ Flagë„ ì‚¬ìš©í•˜ì§€ ì•Šì§€ë§Œ
+ * UNIXì˜ dlopenì€ ë‹¤ìŒê³¼ ê°™ì€ flagë¥¼ ì¸ìžë¡œ ë°›ìŠµë‹ˆë‹¤.
  * RTLD_LAZY, RTLD_NOW, RTLD_LOCAL, RTLD_GLOBAL
- * ÇÏ¿© Windows¿¡¼­´Â ÀÌ°ªÀ» Á¤ÀÇ¸¸ ÇÏ¿© compile error°¡
- * ³ª´Â °ÍÀ» ¸·¾Ò½À´Ï´Ù.
+ * í•˜ì—¬ Windowsì—ì„œëŠ” ì´ê°’ì„ ì •ì˜ë§Œ í•˜ì—¬ compile errorê°€
+ * ë‚˜ëŠ” ê²ƒì„ ë§‰ì•˜ìŠµë‹ˆë‹¤.
  */
 #   if !defined(RTLD_NOW)
 #     define RTLD_NOW 2
@@ -5130,9 +5152,9 @@ typedef double PDL_timer_t;
 
 # if defined (PDL_WIN32) && !defined(PDL_HAS_WINCE)
     // = typedef for the _stat data structure
-    /* BUG-18734: [Win32] Large File(> MAXDWORD)¿¡ ´ëÇÑ fstatÇÔ¼ö¿¡ ´ëÇÑ
-     * Æ÷ÆÃÀÌ ÇÊ¿äÇÕ´Ï´Ù.
-     * _stat => __stat64·Î º¯°æÇÔ.
+    /* BUG-18734: [Win32] Large File(> MAXDWORD)ì— ëŒ€í•œ fstatí•¨ìˆ˜ì— ëŒ€í•œ
+     * í¬íŒ…ì´ í•„ìš”í•©ë‹ˆë‹¤.
+     * _stat => __stat64ë¡œ ë³€ê²½í•¨.
      * */
  # if (_MSC_VER <= 1200)  && !defined( COMPILE_64BIT )
      typedef struct stat PDL_stat;
@@ -6225,11 +6247,11 @@ typedef struct stack_t
                          int *optlen);
 
   /*
-  fix BUG-28834 IP Access List°¡ Àß¸øµÇ¾ú´Ù. 
- inet_addrÇÔ¼ö°¡  in_addr_t¸¦ returnÇÏ´Â µ¥
- in_addr_t´Â unsigned intÀÌ´Ù.
- return value´Â BigEndianÀÌ´Ù.
- µû¶ó¼­ return longÀº Àß¸øµÈ °ÍÀÌ´Ù.
+  fix BUG-28834 IP Access Listê°€ ìž˜ëª»ë˜ì—ˆë‹¤. 
+ inet_addrí•¨ìˆ˜ê°€  in_addr_të¥¼ returní•˜ëŠ” ë°
+ in_addr_tëŠ” unsigned intì´ë‹¤.
+ return valueëŠ” BigEndianì´ë‹¤.
+ ë”°ë¼ì„œ return longì€ ìž˜ëª»ëœ ê²ƒì´ë‹¤.
  */
   static unsigned int  inet_addr (const char *name);
   static char *inet_ntoa (const struct in_addr addr);
@@ -7634,12 +7656,12 @@ int \
 pdl_main_i
 #   else
 /*BUGBUG_NT*/
-/* Ace¶óÀÌºê·¯¸®¸¦ ÀÌ¿ëÇÑ class°¡ global·Î Á¤ÀÇµÇ¾î ÀÖÀ¸¸é
-   PDLÃÊ±âÈ­º¸´Ù ¸ÕÀú PDL API°¡ »ç¿ëµÇ°Ô µÈ´Ù.
-   ±×·¯¹Ç·Î ¸¶Âù°¡Áö·Î PDLÃÊ±âÈ­°¡ ¸ÕÀú µÇ°Ô ÇÏ±â À§ÇØ
-   OS.cpp¿¡ ÃÊ±âÈ­ Å¬·¡½ºÀÇ ÀÎ½ºÅÏ½º¸¦ ÇÏ³ª ¸¸µå´Â ¹æ½ÄÀ» »ç¿ëÇÑ´Ù.
-   ¿ì¼± WIN32¿¡ ´ëÇØ¼­¸¸ ÀÌ·¸°Ô ¸¸µé¾î³õ¾ÒÁö¸¸,
-   ´Ù¸¥ ¸ðµç ÇÃ·§Æû¿¡ ´ëÇØ¼­µµ ÀÌ·¸°Ô ÇØÁÖ¾î¾ß ÇÒ °ÍÀÌ´Ù.
+/* Aceë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì´ìš©í•œ classê°€ globalë¡œ ì •ì˜ë˜ì–´ ìžˆìœ¼ë©´
+   PDLì´ˆê¸°í™”ë³´ë‹¤ ë¨¼ì € PDL APIê°€ ì‚¬ìš©ë˜ê²Œ ëœë‹¤.
+   ê·¸ëŸ¬ë¯€ë¡œ ë§ˆì°¬ê°€ì§€ë¡œ PDLì´ˆê¸°í™”ê°€ ë¨¼ì € ë˜ê²Œ í•˜ê¸° ìœ„í•´
+   OS.cppì— ì´ˆê¸°í™” í´ëž˜ìŠ¤ì˜ ì¸ìŠ¤í„´ìŠ¤ë¥¼ í•˜ë‚˜ ë§Œë“œëŠ” ë°©ì‹ì„ ì‚¬ìš©í•œë‹¤.
+   ìš°ì„  WIN32ì— ëŒ€í•´ì„œë§Œ ì´ë ‡ê²Œ ë§Œë“¤ì–´ë†“ì•˜ì§€ë§Œ,
+   ë‹¤ë¥¸ ëª¨ë“  í”Œëž«í¼ì— ëŒ€í•´ì„œë„ ì´ë ‡ê²Œ í•´ì£¼ì–´ì•¼ í•  ê²ƒì´ë‹¤.
 */
 #    if !defined(PDL_WIN32)
 /*BUGBUG_NT ADD*/
@@ -8252,8 +8274,8 @@ private:
 /*
  * BUG-38951 Support to choice a type of CM dispatcher on run-time
  *
- * POLLÀ» Áö¿øÇÏÁö ¾Ê´Â È¯°æ¿¡¼­ ÄÄÆÄÀÏ ¿¡·¯¸¦ ÇÇÇÏ±â À§ÇØ Ãß°¡ÇÏ¿´À¸¸ç
- * ½ÇÁ¦ »ç¿ëµÇÁö´Â ¾Ê´Â´Ù.
+ * POLLì„ ì§€ì›í•˜ì§€ ì•ŠëŠ” í™˜ê²½ì—ì„œ ì»´íŒŒì¼ ì—ëŸ¬ë¥¼ í”¼í•˜ê¸° ìœ„í•´ ì¶”ê°€í•˜ì˜€ìœ¼ë©°
+ * ì‹¤ì œ ì‚¬ìš©ë˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
  */
 #if !defined (PDL_HAS_POLL)
 /* Data structure describing a polling request.  */
@@ -8275,8 +8297,8 @@ struct pollfd
 
 /*
  * BUG-45365 epoll porting on ID
- * EPOLLÀ» Áö¿øÇÏÁö ¾Ê´Â È¯°æ¿¡¼­ ÄÄÆÄÀÏ ¿¡·¯¸¦ ÇÇÇÏ±â À§ÇØ Ãß°¡ÇÏ¿´À¸¸ç
- * ½ÇÁ¦ »ç¿ëµÇÁö´Â ¾Ê´Â´Ù.
+ * EPOLLì„ ì§€ì›í•˜ì§€ ì•ŠëŠ” í™˜ê²½ì—ì„œ ì»´íŒŒì¼ ì—ëŸ¬ë¥¼ í”¼í•˜ê¸° ìœ„í•´ ì¶”ê°€í•˜ì˜€ìœ¼ë©°
+ * ì‹¤ì œ ì‚¬ìš©ë˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
  * */
 #if !defined (PDL_HAS_EPOLL)
 

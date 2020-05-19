@@ -50,6 +50,10 @@ public:
         qmsPartCondValList * aComp1,
         qmsPartCondValList * aComp2 );
 
+    /* BUG-46065 support range using hash */
+    static SInt compareRangeUsingHashPartition( qmsPartCondValList * aComp1,
+                                                qmsPartCondValList * aComp2 );
+
     static idBool compareListPartition(
         qcmColumn          * aKeyColumn,
         qmsPartCondValList * aPartKeyCondVal,
@@ -100,6 +104,11 @@ public:
         qmsPartCondValList * aPartCondVal,
         qmsPartitionRef   ** aSelectedPartitionRef );
 
+    /* BUG-46065 support range using hash */
+    static IDE_RC rangeUsingHashPartitionFilteringWithValues( qmsTableRef        * aTableRef,
+                                                              qmsPartCondValList * aPartCondVal,
+                                                              qmsPartitionRef   ** aSelectedPartitionRef );
+
     static IDE_RC listPartitionFilteringWithValue(
         qmsTableRef        * aTableRef,
         void               * aValue,
@@ -123,6 +132,11 @@ public:
         smiColumnList   ** aPartColumnList );
 
     static IDE_RC sortPartitionRef(
+        qmnRangeSortedChildren * aRangeSortedChildrenArray,
+        UInt                     aPartitionCount );
+
+    /* BUG-46065 support range using hash */
+    static IDE_RC sortRangeHashPartitionRef(
         qmnRangeSortedChildren * aRangeSortedChildrenArray,
         UInt                     aPartitionCount );
 
@@ -246,6 +260,63 @@ private:
                                    smiRange               * aPartKeyRange,
                                    UInt                     aPartCount );
 
+    /* BUG-46065 support range using hash */
+    static IDE_RC isIntersectRangeUsingHashPartition( qmsPartCondValList * aMinPartCondVal,
+                                                      qmsPartCondValList * aMaxPartCondVal,
+                                                      UInt                 aMinHashVal,
+                                                      UInt                 aMaxHashVal,
+                                                      idBool             * aIsIntersect );
+
+    static IDE_RC rangeUsinghashPartitionPruningWithKeyRange( qcStatement * aStatement,
+                                                              qmsTableRef * aTableRef,
+                                                              smiRange    * aPartKeyRange );
+
+    static IDE_RC makeHashKeyForRangePruning( qcStatement        * aStatement,
+                                              mtkRangeCallBack   * aData,
+                                              UInt               * aHashValue );
+
+    static IDE_RC rangeUsingHashFilteringWithPartitionFilter( qcStatement            * aStatement,
+                                                              qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                                              UInt                   * aRangeIntersectCountArray,
+                                                              UInt                     aPartCount,
+                                                              smiRange               * aPartFilter,
+                                                              qmnChildren           ** aSelectedChildrenArea,
+                                                              UInt                   * aSelectedChildrenCount );
+
+    static SInt comparePartMinRangeMaxUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                                 UInt                 aMaxHashVal );
+
+    static SInt comparePartMinRangeMinUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                                 UInt                 aMinHashVal );
+
+    static SInt comparePartMaxRangeMinUsingHash( qmsPartCondValList * aMaxPartCondVal,
+                                                 UInt                 aMinHashVal );
+
+    static SInt comparePartMaxRangeMaxUsingHash( qmsPartCondValList * aMaxPartCondVal,
+                                                 UInt                 aMaxHashVal );
+
+    static SInt comparePartGEUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                        qmsPartCondValList * aMaxPartCondVal,
+                                        UInt                 aMinHashVal );
+
+    static SInt comparePartLEUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                        qmsPartCondValList * aMaxPartCondVal,
+                                        UInt                 aMaxHashVal );
+
+    static void partitionFilterGEUsingHash( qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                            UInt                   * aRangeIntersectCountArray,
+                                            UInt                     aMinHashVal,
+                                            UInt                     aPartCount );
+
+    static void partitionFilterLEUsingHash( qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                            UInt                   * aRangeIntersectCountArray,
+                                            UInt                     aMaxHashVal,
+                                            UInt                     aPartCount );
+
+    static IDE_RC makeHashKeyForRangeFilter( qcStatement        * aStatement,
+                                             mtkRangeCallBack   * aData,
+                                             UInt               * aHashValue );
 };
 
 #endif /* _O_QMO_PARTITION_H_ */
+

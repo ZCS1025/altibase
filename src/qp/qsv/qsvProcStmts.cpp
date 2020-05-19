@@ -16,11 +16,12 @@
  
 
 /***********************************************************************
- * $Id: qsvProcStmts.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvProcStmts.cpp 85120 2019-04-02 01:27:30Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
 #include <ide.h>
+#include <cm.h>
 #include <qcmCache.h>
 #include <qcmUser.h>
 #include <qcmTableInfo.h>
@@ -167,7 +168,8 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
         aStatement->spvEnv->currDeclItem = sCurrItem;
 
         if ( ( sCurrItem->itemType == QS_VARIABLE ) ||
-             ( sCurrItem->itemType == QS_TRIGGER_VARIABLE ) ||
+             ( sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+             ( sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
              ( sCurrItem->itemType == QS_CURSOR ) ||
              ( sCurrItem->itemType == QS_TYPE ) )
         {
@@ -177,7 +179,8 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
                  sNextItem = sNextItem->next)
             {
                 if ( ( sNextItem->itemType == QS_VARIABLE ) ||
-                     ( sNextItem->itemType == QS_TRIGGER_VARIABLE ) ||
+                     ( sNextItem->itemType == QS_TRIGGER_NEW_VARIABLE ) ||
+                     ( sNextItem->itemType == QS_TRIGGER_OLD_VARIABLE ) ||
                      ( sNextItem->itemType == QS_CURSOR ) ||
                      ( sNextItem->itemType == QS_TYPE ) )
                 {
@@ -210,7 +213,8 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
             }
 
             if ( (sCurrItem->itemType == QS_VARIABLE) ||
-                 (sCurrItem->itemType == QS_TRIGGER_VARIABLE) )
+                 (sCurrItem->itemType == QS_TRIGGER_NEW_VARIABLE) ||
+                 (sCurrItem->itemType == QS_TRIGGER_OLD_VARIABLE) )
             {
                 IDE_TEST(qsvProcVar::validateLocalVariable(
                              aStatement,
@@ -697,6 +701,12 @@ IDE_RC qsvProcStmts::validateSql( qcStatement     * aStatement,
     sStatement->spvEnv          = aStatement->spvEnv;
     sStatement->mRandomPlanInfo = aStatement->mRandomPlanInfo;
 
+
+    sStatement->myPlan->sBindColumn      = aStatement->myPlan->sBindColumn;
+    sStatement->myPlan->sBindColumnCount = aStatement->myPlan->sBindColumnCount;
+    sStatement->myPlan->sBindParam       = aStatement->myPlan->sBindParam;
+    sStatement->myPlan->sBindParamCount  = aStatement->myPlan->sBindParamCount;
+
     // no subquery is allowed on
     // 1. execute proc
     // 2. execute ? := func
@@ -726,8 +736,10 @@ IDE_RC qsvProcStmts::validateSql( qcStatement     * aStatement,
     }
 
     // check INTO clause of SELECT statement
+    // BUG-46309 Dequeue without INTO clause makes server shutdown abnormally.
     if ( ( (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT) ||
-           (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE) )
+           (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE) ||
+           (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE) )
          &&
          ( sSQL->isExistsSql == ID_FALSE ) )  // if exists subquery는 검사하지 않는다.
     {
@@ -2375,8 +2387,8 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
 {
     qsProcStmtAssign    * sASSIGN = (qsProcStmtAssign *)aProcStmts;
     qcuSqlSourceInfo      sqlInfo;
-    idBool                sFind;
     qsVariables         * sLeftArrayVar;
+    idBool                sFind;
     UInt                  sErrCode;         // PROJ-1073 Package
     qcNamePosition      * sNamePosition;
 
@@ -2428,27 +2440,26 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
         // Nothing to do.
     }
 
-    if( sFind == ID_FALSE )
+    if( (sFind == ID_FALSE) &&
+        ((sASSIGN->leftNode->node.lflag & MTC_NODE_BIND_MASK) != MTC_NODE_BIND_EXIST) )
     {
         sqlInfo.setSourceInfo(
             aStatement,
             &sASSIGN->leftNode->position );
         IDE_RAISE(ERR_NOT_FOUND_VAR);
     }
+    else
+    {
+        if ( (aStatement->myPlan->sBindParam != NULL) &&
+             (sFind == ID_FALSE) )
+        {
+            aStatement->myPlan->sBindParam[sASSIGN->leftNode->node.column].param.inoutType = CMP_DB_PARAM_OUTPUT;
+        }
+    }
 
     // lvalue에 psm변수가 존재하므로 lvalue flag를 씌움.
     // qtcColumn 모듈에서 estimate시 참조함.
     sASSIGN->leftNode->lflag |= QTC_NODE_LVALUE_ENABLE;
-
-    // PROJ-1904 Extend UDT
-    if ( sLeftArrayVar->nocopyType == QS_NOCOPY )
-    {
-        sASSIGN->copyRef = ID_TRUE;
-    }
-    else
-    {
-        sASSIGN->copyRef = ID_FALSE;
-    }
 
     // lvalue에 estimate를 하는 이유는
     // associative array의 index계산 때문.
@@ -2460,58 +2471,70 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
                              NULL )
               != IDE_SUCCESS);
 
-    // BUG-42790 lvalue에는 항상 columnModule이여야한다.
-    IDE_ERROR_RAISE( ( sASSIGN->leftNode->node.module ==
-                       &qtc::columnModule ),
-                     ERR_UNEXPECTED_MODULE_ERROR );
-
-    IDE_TEST_RAISE( qsv::checkNoSubquery(
-                        aStatement,
-                        sASSIGN->leftNode,
-                        & sqlInfo ) != IDE_SUCCESS,
-                    ERR_SUBQ_NOT_ALLOWED );
-
-    if ( ( sASSIGN->leftNode->lflag & QTC_NODE_OUTBINDING_MASK )
-         == QTC_NODE_OUTBINDING_DISABLE )
+    if ( sFind == ID_TRUE )
     {
-        sqlInfo.setSourceInfo(
-            aStatement,
-            &sASSIGN->leftNode->position );
-        IDE_RAISE(ERR_INOUT_TYPE_MISMATCH);
-    }
-
-    // Validate right node.
-    sNamePosition = &sASSIGN->rightNode->position;
-
-    // PROJ-1904 Extend UDT
-    // ARR_TYPE1은 1차원 ARRAY, ARR_TYPE2는 2차원 ARRAY일 때,
-    // 간접 참조를 위해서 rightNode에 QTC_NODE_LVALUE_ENABLE을 설정한다.
-    // 만약 flag를 설정하지 않으면, no data found 오류가 발생한다.
-    //
-    // V1 NOCOPY ARR_TYPE1;
-    // V2        ARR_TYPE2;
-    // ..
-    // V1 := V2[1];
-    if ( (sLeftArrayVar->typeInfo != NULL) &&
-         (sASSIGN->copyRef == ID_TRUE ) &&
-         (sASSIGN->leftNode->node.arguments  == NULL) &&
-         (sASSIGN->rightNode->node.arguments != NULL) )
-
-    {
-        if ( (sLeftArrayVar->typeInfo->flag & QTC_UD_TYPE_HAS_ARRAY_MASK) ==
-             QTC_UD_TYPE_HAS_ARRAY_TRUE )
+        // PROJ-1904 Extend UDT
+        if ( sLeftArrayVar->nocopyType == QS_NOCOPY )
         {
-            sASSIGN->rightNode->lflag |= QTC_NODE_LVALUE_ENABLE;
+            sASSIGN->copyRef = ID_TRUE;
+        }
+        else
+        {
+            sASSIGN->copyRef = ID_FALSE;
+        }
+
+        // BUG-42790 lvalue에는 항상 columnModule이여야한다.
+        IDE_ERROR_RAISE( ( sASSIGN->leftNode->node.module ==
+                           &qtc::columnModule ),
+                         ERR_UNEXPECTED_MODULE_ERROR );
+
+        IDE_TEST_RAISE( qsv::checkNoSubquery(
+                            aStatement,
+                            sASSIGN->leftNode,
+                            & sqlInfo ) != IDE_SUCCESS,
+                        ERR_SUBQ_NOT_ALLOWED );
+
+        if ( ( sASSIGN->leftNode->lflag & QTC_NODE_OUTBINDING_MASK )
+             == QTC_NODE_OUTBINDING_DISABLE )
+        {
+            sqlInfo.setSourceInfo(
+                aStatement,
+                &sASSIGN->leftNode->position );
+            IDE_RAISE(ERR_INOUT_TYPE_MISMATCH);
+        }
+
+        // PROJ-1904 Extend UDT
+        // ARR_TYPE1은 1차원 ARRAY, ARR_TYPE2는 2차원 ARRAY일 때,
+        // 간접 참조를 위해서 rightNode에 QTC_NODE_LVALUE_ENABLE을 설정한다.
+        // 만약 flag를 설정하지 않으면, no data found 오류가 발생한다.
+        //
+        // V1 NOCOPY ARR_TYPE1;
+        // V2        ARR_TYPE2;
+        // ..
+        // V1 := V2[1];
+        if ( (sLeftArrayVar->typeInfo != NULL) &&
+             (sASSIGN->copyRef == ID_TRUE ) &&
+             (sASSIGN->leftNode->node.arguments  == NULL) &&
+             (sASSIGN->rightNode->node.arguments != NULL) )
+        {
+            if ( (sLeftArrayVar->typeInfo->flag & QTC_UD_TYPE_HAS_ARRAY_MASK) ==
+                 QTC_UD_TYPE_HAS_ARRAY_TRUE )
+            {
+                sASSIGN->rightNode->lflag |= QTC_NODE_LVALUE_ENABLE;
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
         else
         {
             // Nothing to do.
         }
     }
-    else
-    {
-        // Nothing to do.
-    }
+
+    // Validate right node.
+    sNamePosition = &sASSIGN->rightNode->position;
 
     IDE_TEST( qtc::estimate( sASSIGN->rightNode,
                              QC_SHARED_TMPLATE( aStatement ),
@@ -4837,6 +4860,9 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
     qcNamePosition   sNullPosition;
     // BUG-42858
     qcuSqlSourceInfo    sqlInfo;
+    // BUG-46174
+    SInt             j;
+    qtcNode        * sColumnNode = NULL;
 
     SET_EMPTY_POSITION( sNullPosition );
 
@@ -4858,17 +4884,25 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         // Nothing to do.
     }
 
-    for( i = 0; i < *aBindCount; i++)
+    if ( (sUsingNode->position.size != 1) ||
+         ((sUsingNode->position.stmtText[sUsingNode->position.offset]) != '?') )
     {
-        // 이미 등록한 bind 변수인지 찾는다.
-        if ( QC_IS_NAME_MATCHED( (*aBindVars)[i], sUsingNode->position ) )
+        for( i = 0; i < *aBindCount; i++)
         {
-            break;
+            // 이미 등록한 bind 변수인지 찾는다.
+            if ( QC_IS_NAME_MATCHED( (*aBindVars)[i], sUsingNode->position ) )
+            {
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
-        else
-        {
-            // Nothing to do.
-        }
+    }
+    else
+    {
+        i = *aBindCount;
     }
 
     if( i == *aBindCount ) // 찾지 못한 경우 등록한다.
@@ -4925,10 +4959,6 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         }
         else
         {
-            // Record type인 경우 반드시 제일 마지막 usingParam이다.
-            // (return .. into 절에서만 사용가능하다.)
-            IDE_DASSERT( sUsingParam->next == NULL );
-
             // record type 에서 bind 변수를 넣는다.
             sMtdModuleID = sRowModule->module.id;
             sMtcColumn   = sRowColumn->basicInfo;
@@ -4946,73 +4976,140 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
     {
         sColumnCount = ((qtcModule*)sMtcColumn->module)->typeInfo->columnCount;
 
-        // Record type인 경우 반드시 제일 마지막 usingParam이다.
-        // (return .. into 절에서만 사용가능하다.)
-        IDE_DASSERT( sUsingParam->next == NULL );
+        if ( (sUsingNode->lflag & QTC_NODE_SP_INS_UPT_VALUE_REC_MASK) ==
+             QTC_NODE_SP_INS_UPT_VALUE_REC_TRUE )
+        {
+            // BUG-46174
+            /* Record Type인 경우 record의 column 개수만큼 bind 변수를 만든다.
+             *    ex) TYPE REC iS RECORD ( A1 INTEGER, A2 INTEGER );
+             *        var REC;
+             * before) UPDATE T1 SET ROW = var
+             *  after) UPDATE T1 SET ROW = (:C0, :C1) 
+             * before) INSERT INTO T1 VALUES var
+             *  after) INSERT INTO T1 VALUES (:C0, :C1) */
+            IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, "(", 1 )
+                      != IDE_SUCCESS );
 
+            if ( aSql->usingRecValueInsUpt == NULL )
+            {
+                sqlInfo.setSourceInfo( aQcStmt,
+                                       &sUsingNode->position );
+                IDE_RAISE( ERR_INVALID_IDENTIFIER );
+            }
+
+            // BUG-46583
+            // INSERT VALUES절, UPDATE SET 절에서 명시한 레코드변수를
+            // 다른절(returning 절)에 같이 사용한 경우 다른 바이드변수명으로
+            // 지정하도록 해야합니다. 
+            SET_POSITION( (*aBindVars)[i], sNullPosition );
+
+            for ( j = 0, sColumnNode = aSql->usingRecValueInsUpt;
+                  j < sColumnCount;
+                  j++, sColumnNode = (qtcNode*)sColumnNode->node.next )
+            {
+                if ( j == 0 )
+                {
+                    sUsingParam->paramNode = sColumnNode;
+
+                    // BUG-46583 Column의 C를 사용
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":C%"ID_INT32_FMT, j )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aQcStmt),
+                                           qsUsingParam,
+                                           &sNewUsingParam)
+                              != IDE_SUCCESS );
+
+                    sNewUsingParam->paramNode = sColumnNode;
+                    sNewUsingParam->next      = sUsingParam->next;
+                    sNewUsingParam->inOutType = QS_IN;
+
+                    sUsingParam->next = sNewUsingParam;
+                    sUsingParam       = sNewUsingParam;
+
+                    aSql->usingParamCount++;
+                    i++;
+
+                    // BUG-46583
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :C%"ID_INT32_FMT, j )
+                              != IDE_SUCCESS );
+                }
+            }
+
+            IDE_TEST( iduVarMemStringAppend( aSqlBuffer, ")" )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
 /* Record Type인 경우 record의 column 개수만큼 bind 변수를 만든다.
  *    ex) TYPE ARR1 iS RECORD ( A1 INTEGER, A2 INTEGER );
  *        UPDATE T1 SET I1=I1, I2=I2 RETURN I1, I2 BULK COLLECT INTO ARR1;
  * step1) UPDATE T1 SET I1=I1, I2=I2 RETURN I1, I2 BULK COLLECT INTO :O0 
  * step2) UPDATE T1 SET I1=I1, I1=I2 RETURN I1, I2 BULK COLLECT INTO :O0, :O1 */
-        for( i = 0; i < sColumnCount; i++ )
-        {
-            IDE_TEST( qtc::makeProcVariable( aQcStmt,
-                                             sIndexNode,
-                                             &sNullPosition,
-                                             NULL,
-                                             QTC_PROC_VAR_OP_NEXT_COLUMN )
-                      != IDE_SUCCESS );
-
-            IDE_TEST( mtc::initializeColumn(
-                           QTC_TMPL_COLUMN( sTemplate, sIndexNode[0] ),
-                           &mtdInteger,
-                           0,
-                           0,
-                           0 )
-                      != IDE_SUCCESS );
-
-            sIndexNode[0]->lflag &= ~QTC_NODE_COLUMN_ESTIMATE_MASK;
-            sIndexNode[0]->lflag |= QTC_NODE_COLUMN_ESTIMATE_TRUE;
-
-            IDE_TEST( qtc::estimate( sIndexNode[0],
-                                     sTemplate,
-                                     aQcStmt,
-                                     NULL,
-                                     NULL,
-                                     NULL )
-                      != IDE_SUCCESS );
-
-            sIndexNode[0]->lflag &= ~QTC_NODE_LVALUE_MASK;
-            sIndexNode[0]->lflag |= QTC_NODE_LVALUE_ENABLE;
-
-            // 처음이면 usingParam의 paramNode만 변경한다.
-            // 이후에는 usingParam을 할당해서 추가한다.
-            if( i == 0 )
+            for( i = 0; i < sColumnCount; i++ )
             {
-                sUsingParam->paramNode = sIndexNode[0];
-
-                IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":O%"ID_INT32_FMT, i )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aQcStmt),
-                                       qsUsingParam,
-                                       &sNewUsingParam)
+                IDE_TEST( qtc::makeProcVariable( aQcStmt,
+                                                 sIndexNode,
+                                                 &sNullPosition,
+                                                 NULL,
+                                                 QTC_PROC_VAR_OP_NEXT_COLUMN )
                           != IDE_SUCCESS );
 
-                sNewUsingParam->paramNode = sIndexNode[0];
-                sNewUsingParam->next      = NULL;
-                sNewUsingParam->inOutType = QS_IN;
+                IDE_TEST( mtc::initializeColumn(
+                        QTC_TMPL_COLUMN( sTemplate, sIndexNode[0] ),
+                        &mtdInteger,
+                        0,
+                        0,
+                        0 )
+                    != IDE_SUCCESS );
 
-                sUsingParam->next = sNewUsingParam;
-                sUsingParam       = sNewUsingParam;
+                sIndexNode[0]->lflag &= ~QTC_NODE_COLUMN_ESTIMATE_MASK;
+                sIndexNode[0]->lflag |= QTC_NODE_COLUMN_ESTIMATE_TRUE;
 
-                aSql->usingParamCount++;
-
-                IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :O%"ID_INT32_FMT, i )
+                IDE_TEST( qtc::estimate( sIndexNode[0],
+                                         sTemplate,
+                                         aQcStmt,
+                                         NULL,
+                                         NULL,
+                                         NULL )
                           != IDE_SUCCESS );
+
+                sIndexNode[0]->lflag &= ~QTC_NODE_LVALUE_MASK;
+                sIndexNode[0]->lflag |= QTC_NODE_LVALUE_ENABLE;
+
+                // 처음이면 usingParam의 paramNode만 변경한다.
+                // 이후에는 usingParam을 할당해서 추가한다.
+                if( i == 0 )
+                {
+                    sUsingParam->paramNode = sIndexNode[0];
+
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":O%"ID_INT32_FMT, i )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aQcStmt),
+                                           qsUsingParam,
+                                           &sNewUsingParam)
+                              != IDE_SUCCESS );
+
+                    sNewUsingParam->paramNode = sIndexNode[0];
+                    // BUG-46589
+                    // Return into 절 이후에도 PSM 변수를 사용할 수 있으므로
+                    // next link를 연결해야 합니다.
+                    sNewUsingParam->next      = sUsingParam->next;
+                    sNewUsingParam->inOutType = QS_IN;
+
+                    sUsingParam->next = sNewUsingParam;
+                    sUsingParam       = sNewUsingParam;
+
+                    aSql->usingParamCount++;
+
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :O%"ID_INT32_FMT, i )
+                              != IDE_SUCCESS );
+                }
             }
         }
     }
@@ -5033,7 +5130,7 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         (void)sqlInfo.init(aQcStmt->qmeMem);
         IDE_SET(
             ideSetErrorCode( qpERR_ABORT_QSV_INVALID_IDENTIFIER,
-                            sqlInfo.getErrMessage() ));
+                             sqlInfo.getErrMessage() ));
         (void)sqlInfo.fini();
     }
     IDE_EXCEPTION_END;
@@ -5193,6 +5290,9 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
     qcNamePosition     sNullPosition;
     qcNamePosition     sPos;
     qcuSqlSourceInfo   sqlInfo;
+    //BUG-46032
+    qsVariables      * sNewArrayVar;
+    qsAllVariables   * sOldAllVariables = NULL;
 
     IDE_DASSERT( aIntoVars->intoNodes != NULL );
 
@@ -5227,7 +5327,8 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
                       != IDE_SUCCESS );
         }
 
-        if ( sFindVar == ID_FALSE )
+        if ( (sFindVar == ID_FALSE) &&
+             ((sCurrIntoVar->node.lflag & MTC_NODE_BIND_MASK) != MTC_NODE_BIND_EXIST ) )
         {
             sqlInfo.setSourceInfo( aStatement,
                                    & sCurrIntoVar->position );
@@ -5249,6 +5350,12 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
                                  NULL,
                                  NULL )
                   != IDE_SUCCESS );
+
+        if ( (sCurrIntoVar->node.lflag & MTC_NODE_BIND_MASK) == MTC_NODE_BIND_EXIST )
+        {
+            aStatement->myPlan->sBindParam[sCurrIntoVar->node.column].param.inoutType = CMP_DB_PARAM_OUTPUT;
+            continue;
+        }
 
         // BUG-42790 lvalue에는 항상 columnModule이여야 한다.
         IDE_ERROR_RAISE( ( sCurrIntoVar->node.module ==
@@ -5273,6 +5380,27 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
         {
             if ( sMtcColumn->module->id == MTD_ASSOCIATIVE_ARRAY_ID )
             {
+                if ( sCurrIntoVar->node.arguments != NULL )
+                {
+                    if ( ( aStatement->spvEnv->currStmt->stmtType == QS_PROC_STMT_SELECT ) ||
+                         ( aStatement->spvEnv->currStmt->stmtType == QS_PROC_STMT_EXEC_IMM ) )
+                    { 
+                        // BUG-46032 
+                        IDE_TEST( qsvProcVar::makeInternalArrayVariable ( aStatement,
+                                                                          sCurrIntoVar,
+                                                                          sArrayVariable,
+                                                                          &sNewArrayVar )
+                                  != IDE_SUCCESS );
+
+                        IDE_TEST( connectAllVariables( aStatement,
+                                                       aStatement->spvEnv->currStmt->parentLabels,
+                                                       (qsVariableItems*)sNewArrayVar,
+                                                       ID_FALSE,
+                                                       &sOldAllVariables)
+                                  !=IDE_SUCCESS);
+                    }
+                }
+
                 if ( sCurrIntoVar->node.arguments == NULL )
                 {
                     SET_EMPTY_POSITION( sNullPosition );
@@ -5315,6 +5443,12 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
                               != IDE_SUCCESS );
 
                     sCurrIntoVar->lflag |= QTC_NODE_LVALUE_ENABLE;
+
+                    if ( sOldAllVariables != NULL )
+                    {
+                        disconnectAllVariables( aStatement, sOldAllVariables );
+                        sOldAllVariables = NULL;
+                    }
                 }
                 else
                 {
@@ -5475,7 +5609,6 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
 
     return IDE_SUCCESS;
 
-  
     IDE_EXCEPTION(ERR_NOT_FOUND_VAR);
     {
         (void)sqlInfo.init(aStatement->qmeMem);

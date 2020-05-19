@@ -340,9 +340,9 @@ void mmsSNMP::run()
     PDL_Time_Value  sTimeout;
     UInt            sSelectRet = SNMP_SELECT_ERR;
 
-    UInt            sRet = 0;
-    UInt            sRecvPacketLen = 0;
-    UInt            sSendPacketLen = 0;
+    SInt            sRet = 0;
+    SInt            sRecvPacketLen = 0;
+    SInt            sSendPacketLen = 0;
 
     FD_ZERO(&sReadFdSet);
     FD_ZERO(&sWriteFdSet);
@@ -369,7 +369,7 @@ void mmsSNMP::run()
             if (sRecvPacketLen > 0)
             {
                 /* 패킷을 처리한다. */
-                sSendPacketLen = processSNMP(sRecvPacketLen);
+                sSendPacketLen = processSNMP((UInt)sRecvPacketLen);
             }
             else
             {

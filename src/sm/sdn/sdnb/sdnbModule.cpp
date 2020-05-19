@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnbModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnbModule.cpp 83124 2018-05-30 00:03:18Z emlee $
  **********************************************************************/
 
 /*********************************************************************
@@ -84,10 +84,8 @@
  *********************************************************************/
 
 
-#include <idl.h>
-#include <ide.h>
-#include <idu.h>
-#include <idCore.h>
+#include <mte.h>
+
 #include <smDef.h>
 #include <smnDef.h>
 #include <smErrorCode.h>
@@ -14311,22 +14309,23 @@ IDE_RC sdnbBTree::checkUniqueness(idvSQL           * aStatistics,
                   != IDE_SUCCESS );
         sIsDataPageReleased = ID_FALSE;
 
-        /* BUG-44802
-           INDEX KEY가 가르키는 DATA slot이 먼저 AGING 되어 freeSlot 될수있다. */
-        if ( sIsUnusedSlot == ID_TRUE )
+        /* BUG-44802 : INDEX KEY가 가르키는 DATA slot이 먼저 AGING 되어 freeSlot 될수있다. 이럴경우 SKIP한다.
+           BUG-46068 : AGING된 DATA slot이 재사용되고, 첫번째 record piece가 아니면 SKIP한다.
+                       (첫번째 record piece인 경우는 이후코드에서 확인후 SKIP한다.) */
+        if ( ( sIsUnusedSlot == ID_TRUE ) ||
+             ( sdcRow::isHeadRowPiece( sRow ) == ID_FALSE ) )
         {
-            /* BUG-45009 */
-            sIsDataPageReleased = ID_TRUE;
-            IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
-                                                 (UChar *)sRow )
-                      != IDE_SUCCESS );
+            if( sIsDataPageReleased == ID_FALSE )
+            {
+                sIsDataPageReleased = ID_TRUE;
+                /* BUG-45009 */
+                IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
+                                                     (UChar*)sRow )
+                          != IDE_SUCCESS );
+            }
 
             sSlotSeq++;
             continue;
-        }
-        else
-        {
-            /* nothing to do */
         }
 
         IDE_TEST( sdcRow::canUpdateRowPieceInternal(
@@ -22206,6 +22205,7 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
 {
     UChar           * sDataSlot;
     UChar           * sDataPage;
+    UChar           * sLeafPage;
     idBool            sIsSuccess;
     idBool            sResult;
     sdSID             sRowSID;
@@ -22272,7 +22272,7 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
         }
         else
         {
-            IDE_TEST( getPage( sStatistics,
+            IDE_TEST_RAISE( getPage( sStatistics,
                                &(sIndex->mQueryStat.mIndexPage),
                                sTableTSID,
                                SD_MAKE_PID( sRowSID ),
@@ -22281,7 +22281,7 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
                                NULL, /* aMtx */
                                (UChar **)&sDataPage,
                                &sIsSuccess )
-                      != IDE_SUCCESS );
+                            != IDE_SUCCESS,ERR_CHECK_AND_DUMP );
             sIsPageLatchReleased = ID_FALSE;
 
             sDataSlotDir = sdpPhyPage::getSlotDirStartPtr( sDataPage );
@@ -22335,19 +22335,19 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
                                                                 SDB_WAIT_NORMAL,
                                                                 SDB_SINGLE_PAGE_READ,
                                                                 NULL, /* aMtx */
-                                                                (UChar **)&sDataPage,
+                                                                (UChar **)&sLeafPage,
                                                                 &sIsSuccess,
                                                                 NULL /*IsCorruptPage*/ )
                                     == IDE_SUCCESS,
                                     "Error Ouccurs in DRDB Index ID : %"ID_UINT32_FMT, sIndex->mIndexID );
 
                     ideLog::logMem( IDE_DUMP_0, 
-                                    (UChar *)sDataPage,
+                                    (UChar *)sLeafPage,
                                     SD_PAGE_SIZE,
                                     "Leaf Node dump :\n" );
 
                     IDE_ASSERT( sdbBufferMgr::releasePage( sStatistics,
-                                                           (UChar *)sDataPage )
+                                                           (UChar *)sLeafPage )
                                 == IDE_SUCCESS );
 
                     IDE_ERROR( 0 );
@@ -22368,13 +22368,29 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
                 /* nothing to do */
             }
 
-            IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum( 
+            IDU_FIT_POINT_RAISE( "BUG-45979@sdnbBTree::fetchRowCache::getPagePtrFromSlotNum",
+                                 ERR_CHECK_AND_DUMP );
+            IDE_TEST_RAISE( sdpSlotDirectory::getPagePtrFromSlotNum( 
                                                     sDataSlotDir,
                                                     SD_MAKE_SLOTNUM( sRowSID ),
                                                     &sDataSlot )
-                      != IDE_SUCCESS );
+                            != IDE_SUCCESS, ERR_CHECK_AND_DUMP );
 
-            IDE_TEST( makeVRowFromRow( sStatistics,
+            /* BUG-46068 : AGING된 DATA slot이 재사용되고, 첫번째 record piece가 아니면 SKIP한다.
+                           (첫번째 record piece인 경우는 이후코드에서 확인후 SKIP한다.) */
+            if ( sdcRow::isHeadRowPiece( sDataSlot ) == ID_FALSE )
+            {
+                if( sIsPageLatchReleased == ID_FALSE )
+                {
+                    sIsPageLatchReleased = ID_TRUE;
+                    IDE_TEST( sdbBufferMgr::releasePage( sStatistics,
+                                                         (UChar*)sDataPage )
+                              != IDE_SUCCESS );
+                }
+                continue;
+            }
+
+            IDE_TEST_RAISE( makeVRowFromRow( sStatistics,
                                        NULL, /* aMtx */
                                        NULL, /* aSP */
                                        aIterator->mTrans,
@@ -22390,7 +22406,7 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
                                        (UChar *)*aRow,
                                        &sIsRowDeleted,
                                        &sIsPageLatchReleased )
-                      != IDE_SUCCESS );
+                            != IDE_SUCCESS, ERR_CHECK_AND_DUMP );
 
             if ( sIsRowDeleted == ID_TRUE )
             {
@@ -22424,24 +22440,24 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
                  * 상황에 따라 적절한 처리를 해야 한다. */
                 if ( sIsPageLatchReleased == ID_TRUE )
                 {
-                    IDE_TEST( getPage( sStatistics,
-                                       &(sIndex->mQueryStat.mIndexPage),
-                                       sTableTSID,
-                                       SD_MAKE_PID( sRowSID ),
-                                       SDB_S_LATCH,
-                                       SDB_WAIT_NORMAL,
-                                       NULL, /* aMtx */
-                                       (UChar **)&sDataPage,
-                                       &sIsSuccess )
-                              != IDE_SUCCESS );
+                    IDE_TEST_RAISE( getPage( sStatistics,
+                                             &(sIndex->mQueryStat.mIndexPage),
+                                             sTableTSID,
+                                             SD_MAKE_PID( sRowSID ),
+                                             SDB_S_LATCH,
+                                             SDB_WAIT_NORMAL,
+                                             NULL, /* aMtx */
+                                             (UChar **)&sDataPage,
+                                             &sIsSuccess )
+                                    != IDE_SUCCESS, ERR_CHECK_AND_DUMP );
                     sIsPageLatchReleased = ID_FALSE;
 
                     sDataSlotDir = sdpPhyPage::getSlotDirStartPtr( sDataPage );
-                    IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum( 
-                                                    sDataSlotDir,
-                                                    SD_MAKE_SLOTNUM( sRowSID ),
-                                                    &sDataSlot )
-                              != IDE_SUCCESS );
+                    IDE_TEST_RAISE( sdpSlotDirectory::getPagePtrFromSlotNum( 
+                                                          sDataSlotDir,
+                                                          SD_MAKE_SLOTNUM( sRowSID ),
+                                                          &sDataSlot )
+                                    != IDE_SUCCESS,ERR_CHECK_AND_DUMP );
                 }
                 else
                 {
@@ -22499,13 +22515,13 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
 
             if ( SDNB_GET_STATE( sLeafKey ) == SDNB_CACHE_VISIBLE_UNKNOWN )
             {
-                IDE_TEST( cursorLevelVisibility( aIterator->mIndex,
-                                                 &(sIndex->mQueryStat),
-                                                 (UChar *)*aRow,
-                                                 (UChar *)sLeafKey,
-                                                 &sIsVisible,
-                                                 sIsRowDeleted )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( cursorLevelVisibility( aIterator->mIndex,
+                                                       &(sIndex->mQueryStat),
+                                                       (UChar *)*aRow,
+                                                       (UChar *)sLeafKey,
+                                                       &sIsVisible,
+                                                       sIsRowDeleted )
+                                != IDE_SUCCESS, ERR_CHECK_AND_DUMP );
             }
 #if defined(DEBUG)
             /* BUG-31845 [sm-disk-index] Debugging information is needed for 
@@ -22516,13 +22532,13 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
                 IDE_DASSERT( SDNB_GET_STATE( sLeafKey ) 
                              == SDNB_CACHE_VISIBLE_YES );
 
-                IDE_TEST( cursorLevelVisibility( aIterator->mIndex,
-                                                 &(sIndex->mQueryStat),
-                                                 (UChar *)*aRow,
-                                                 (UChar *)sLeafKey,
-                                                 &sIsVisible,
-                                                 sIsRowDeleted )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( cursorLevelVisibility( aIterator->mIndex,
+                                                       &(sIndex->mQueryStat),
+                                                       (UChar *)*aRow,
+                                                       (UChar *)sLeafKey,
+                                                       &sIsVisible,
+                                                       sIsRowDeleted )
+                                != IDE_SUCCESS, ERR_CHECK_AND_DUMP );
                 IDE_DASSERT( sIsVisible == ID_TRUE );
             }
 #endif
@@ -22589,18 +22605,38 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_CHECK_AND_DUMP )
+    {
+        /* 단순 쿼리 timeout 에도 예외가 발생할수 있어서 (iduCheckSessionEvent)
+         * Consistent 설정은 하지 않음. */
+        switch( ideGetErrorCode() )
+        {
+        case idERR_ABORT_Session_Disconnected:  /* SessionTimeOut이니 정상적임 */
+        case idERR_ABORT_Session_Closed:        /* 세션 닫힘 */
+        case idERR_ABORT_Query_Timeout:         /* 시간 초과 */
+        case idERR_ABORT_Query_Canceled:        /* 취소 */
+        case idERR_ABORT_IDU_MEMORY_ALLOCATION: /* 메모리한계상황도 정상 */
+        case idERR_ABORT_InsufficientMemory:    /* 메모리한계상황도 정상 */
+            break;
+        default:
+         /* 그외 경우는 이유를 확인해보자 */
+            ideLog::log( IDE_ERR_0,
+                         "Error : Cannot create Row cache because of ERR-%05X (error=%"ID_UINT32_FMT") %s\n",
+                          E_ERROR_CODE( ideGetErrorCode() ) ,
+                          ideGetSystemErrno(),
+                          ideGetErrorMsg( ideGetErrorCode() )  );
+
+            dumpHeadersAndIteratorToSMTrc( (smnIndexHeader*)aIterator->mIndex,
+                                           sIndex,
+                                           aIterator );
+            break;
+        }
+    }
     IDE_EXCEPTION_END;
 
     if ( sIsPageLatchReleased == ID_FALSE )
     {
-        IDE_PUSH();
-        if ( sdbBufferMgr::releasePage( sStatistics, (UChar *)sDataPage )
-             != IDE_SUCCESS )
-        {
-            dumpIndexNode( (sdpPhyPageHdr *)sDataPage );
-            IDE_ASSERT( 0 );
-        }
-        IDE_POP();
+        (void)sdbBufferMgr::releasePage( sStatistics, (UChar*)sDataPage );
     }
 
     return IDE_FAILURE;
@@ -22619,8 +22655,8 @@ IDE_RC sdnbBTree::fetchRowCache( sdnbIterator  * aIterator,
  * 이전 캐시한 노드를 찾고, 찾은 노드로 부터 다시 mNextLeafNode를    *
  * 구한다.
  *********************************************************************/
-IDE_RC sdnbBTree::makeNextRowCacheBackward(sdnbIterator *aIterator,
-                                           sdnbHeader   *aIndex)
+IDE_RC sdnbBTree::makeNextRowCacheBackward( sdnbIterator *aIterator,
+                                            sdnbHeader   *aIndex )
 {
     sdrMtx            sMtx;
     idBool            sIsSuccess;
@@ -22937,6 +22973,7 @@ IDE_RC sdnbBTree::lockAllRows4RR( sdnbIterator* aIterator )
     sdSID           sTSSlotSID   = smLayerCallback::getTSSlotSID( aIterator->mTrans );
     sdnbHeader    * sIndex;
     scSpaceID       sTableTSID;
+    UChar         * sLeafPage;
     sdnbLKey      * sLeafKey;
     UChar           sCTSlotIdx;
     sdrMtxStartInfo sStartInfo;
@@ -23041,20 +23078,20 @@ IDE_RC sdnbBTree::lockAllRows4RR( sdnbIterator* aIterator )
                                             SDB_WAIT_NORMAL,
                                             SDB_SINGLE_PAGE_READ,
                                             NULL, /* aMtx */
-                                            (UChar **)&sDataPage,
+                                            (UChar **)&sLeafPage,
                                             &sIsSuccess,
                                             NULL /*IsCorruptPage*/ )
                                             == IDE_SUCCESS,
                                             "Error Ouccurs in DRDB Index ID : %"ID_UINT32_FMT, sIndex->mIndexID );
 
                 ideLog::logMem( IDE_DUMP_0, 
-                                (UChar *)sDataPage,
+                                (UChar *)sLeafPage,
                                 SD_PAGE_SIZE,
                                 "Leaf Node dump :\n" );
 
                 IDE_ASSERT( sdbBufferMgr::releasePage( 
                                             aIterator->mProperties->mStatistics,
-                                            (UChar *)sDataPage )
+                                            (UChar *)sLeafPage )
                             == IDE_SUCCESS );
 
                 IDE_ERROR( 0 );
@@ -23071,6 +23108,16 @@ IDE_RC sdnbBTree::lockAllRows4RR( sdnbIterator* aIterator )
                                                      SD_MAKE_SLOTNUM( sRowSID ),
                                                      &sSlot )
                   != IDE_SUCCESS );
+
+        /* BUG-46068 : AGING된 DATA slot이 재사용되고, 첫번째 record piece가 아니면 SKIP한다.
+                       (첫번째 record piece인 경우는 이후코드에서 확인후 SKIP한다.) */
+        if ( sdcRow::isHeadRowPiece( sSlot ) == ID_FALSE )
+        {
+            sState = 0;
+            IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+
+            continue;
+        }
 
         sIsPageLatchReleased = ID_FALSE;
         IDE_TEST( makeVRowFromRow( aIterator->mProperties->mStatistics,

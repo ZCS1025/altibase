@@ -25,11 +25,10 @@ acp_thr_once_t   once_control         = ACP_THR_ONCE_INIT;
 // callback functions for global variables;
 void ulxDestroyConnHeader(void)
 {
-    acp_thr_mutex_t *sLockEnv;
-    sLockEnv = gUlxConnectionHeader->mLock;
     if (gUlxConnectionHeader != NULL)
     {
-        acpThrMutexDestroy(sLockEnv);
+        /* BUG-46052 codesonar null test after dereference */
+        acpThrMutexDestroy(gUlxConnectionHeader->mLock);
         uluLockDestroy(gUlxConnectionHeader->mLock);
         acpMemFree(gUlxConnectionHeader);
         gUlxConnectionHeader = NULL;

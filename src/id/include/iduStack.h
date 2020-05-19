@@ -4,7 +4,7 @@
  ****************************************************************************/
 
 /*****************************************************************************
- * $Id: iduStack.h 82088 2018-01-18 09:21:15Z yoonhee.kim $
+ * $Id: iduStack.h 82992 2018-05-08 06:30:01Z kclee $
  ****************************************************************************/
 
 #ifndef _O_IDE_STACK_H_
@@ -12,6 +12,10 @@
 
 #include <idl.h>
 #include <ide.h>
+
+#define IDU_DUMPSTACKS_PREFIX           "[DUMPSTACKS]"
+#define IDU_DUMPSTACKS_PREFIX_LEN       idlOS::strlen(IDU_DUMPSTACKS_PREFIX)
+
 
 #define IDU_MAX_CALL_DEPTH (1024)
 
@@ -40,6 +44,8 @@ typedef struct iduSignalDef
 } iduSignalDef;
 #endif
 
+#define IDU_SIGNUM_DUMP_CALLSTACKS   SIGRTMIN  /*34 in linux*/
+
 class iduStack
 {
 public:
@@ -57,8 +63,11 @@ public:
                                siginfo_t*            = NULL,
                                ucontext_t*           = NULL,
                                idBool                = ID_FALSE, /* PROJ-2617 */
-                               SChar*                = NULL );
+                               SChar*                = NULL,
+                               idBool                = ID_FALSE); /*it's only for Linux.(BUG-45982) */
 #endif
+
+    static IDE_RC dumpAllCallstack();
 
 private:
     static SInt             mCallStackCriticalSection;

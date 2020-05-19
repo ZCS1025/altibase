@@ -83,6 +83,7 @@ static const mtcExecute stfExecute = {
     mtf::calculateNA,
     stfIsMBRIntersectsCalculate,
     NULL,
+    mtx::calculateNA,
     stfIsMBRIntersectsEstimateRange,
     stfIsMBRIntersectsExtractRange
 };

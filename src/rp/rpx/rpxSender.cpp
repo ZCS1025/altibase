@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSender.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxSender.cpp 84757 2019-01-18 00:01:28Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -105,7 +105,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
                       rprSNMapMgr     * aSNMapMgr,
                       smSN              aActiveRPRecoverySN,
                       rpdMeta         * aMeta,
-                      UInt              aParallelID )
+                      UInt              aParallelID,
+                      UInt              aSenderListIndex )
 {
     SChar                sName[IDU_MUTEX_NAME_LEN];
     SInt                 sHostNum;
@@ -118,6 +119,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     idBool sIsOfflineStatusFound = ID_FALSE;
     idBool               sMessengerInitialized = ID_FALSE;
     idBool               sNeedMessengerLock = ID_FALSE;
+    SInt                 sIndex = 0;
 
     mRPLogBufMgr            = NULL;
     mIsRemoteFaultDetect    = ID_TRUE;
@@ -141,7 +143,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     mSenderApply            = NULL;
     mSyncItems              = NULL;
 
-    mNetworkError           = ID_FALSE;
+    mRetryError             = ID_FALSE;
     mSetHostFlag            = ID_FALSE;
     mStartComplete          = ID_FALSE;
     mStartError             = ID_FALSE;
@@ -159,6 +161,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     mXSN                    = SM_SN_NULL;
     mSkipXSN                = SM_SN_NULL;
     mCommitXSN              = 0;
+    mOldMaxXSN              = 0;
 
     idlOS::memset(mSocketFile, 0x00, RP_SOCKET_FILE_LEN);
     mRsc                    = NULL;
@@ -175,7 +178,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     mTransTableSize         = smiGetTransTblSize();
 
     mAssignedTransTbl       = NULL;
-    mIsServiceTrans         = NULL;
+
+    mSenderListIndex = aSenderListIndex;
 
     (void)idCore::acpAtomicSet64( &mServiceThrRefCount, 0 );
     mFailbackEndSN = SM_SN_MAX;
@@ -316,7 +320,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
                        aMeta)
              != IDE_SUCCESS);
 
-    if ( rpuProperty::isUseV6Protocol() == ID_TRUE )
+    if ( rpdMeta::isUseV6Protocol( &( mMeta.mReplication ) ) == ID_TRUE )
     {
         IDE_TEST_RAISE( mMeta.hasLOBColumn() == ID_TRUE,
                         ERR_NOT_SUPPORT_LOB_COLUMN_WITH_V6_PROTOCOL );
@@ -409,7 +413,8 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     if ( ( aStartType == RP_OFFLINE ) ||
          ( ( getRole() == RP_ROLE_ANALYSIS ) &&
            ( smiGetArchiveMode() == SMI_LOG_ARCHIVE ) ) ||
-         ( getRole() == RP_ROLE_PROPAGATION )
+         ( getRole() == RP_ROLE_PROPAGATION ) ||
+         ( getRole() == RP_ROLE_ANALYSIS_PROPAGATION )
        )
     {
         mRPLogBufMgr = NULL;
@@ -429,6 +434,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
                                         mMeta.mReplication.mHostCount,
                                        &sHostNum)
              != IDE_SUCCESS);
+
     /* PROJ-1915 : IP , PORT를 변경 */
     if(mCurrentType == RP_OFFLINE)
     {
@@ -438,6 +444,7 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
         idlOS::strcpy(mMeta.mReplication.mReplHosts[sHostNum].mHostIp,
                       (SChar *)"127.0.0.1");
         mMeta.mReplication.mReplHosts[sHostNum].mPortNo = RPU_REPLICATION_PORT_NO;
+        mMeta.mReplication.mReplHosts[sHostNum].mConnType = RP_SOCKET_TYPE_TCP;
     }
 
     /* PROJ-2453 */
@@ -450,28 +457,17 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
         sNeedMessengerLock = ID_FALSE;
     }
 
-    if(idlOS::strMatch(RP_SOCKET_UNIX_DOMAIN_STR, RP_SOCKET_UNIX_DOMAIN_LEN,
-        mMeta.mReplication.mReplHosts[sHostNum].mHostIp,
-        idlOS::strlen(mMeta.mReplication.mReplHosts[sHostNum].mHostIp)) == 0)
-    {
-        IDE_TEST( mMessenger.initialize( RPN_MESSENGER_SOCKET_TYPE_UNIX,
-                                         &mExitFlag,
-                                         NULL,
-                                         sNeedMessengerLock )
-                  != IDE_SUCCESS );
+    mSocketType = (RP_SOCKET_TYPE)mMeta.mReplication.mReplHosts[sHostNum].mConnType;
+    
+    IDE_TEST( mMessenger.initialize( mSocketType,
+                                     &mExitFlag,
+                                     &( mMeta.mReplication ),
+                                     NULL,
+                                     sNeedMessengerLock )
+              != IDE_SUCCESS );
 
-        mSocketType = RP_SOCKET_TYPE_UNIX;
-    }
-    else
-    {
-        IDE_TEST( mMessenger.initialize( RPN_MESSENGER_SOCKET_TYPE_TCP,
-                                         &mExitFlag,
-                                         NULL,
-                                         sNeedMessengerLock )
-                  != IDE_SUCCESS );
 
-        mSocketType = RP_SOCKET_TYPE_TCP;
-    }
+
     sMessengerInitialized = ID_TRUE;
 
     if ( mCurrentType == RP_RECOVERY )
@@ -502,7 +498,6 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
     //----------------------------------------------------------------//
     if ( mSocketType == RP_SOCKET_TYPE_TCP )
     {
-        SInt sIndex;
 
         if( rpdCatalog::getIndexByAddr( mMeta.mReplication.mLastUsedHostNo,
                                      mMeta.mReplication.mReplHosts,
@@ -518,6 +513,26 @@ rpxSender::initialize(smiStatement    * aSmiStmt,
         {
             mMessenger.setRemoteTcpAddress( (SChar *)"127.0.0.1", 
                                             RPU_REPLICATION_PORT_NO );
+        }
+    }
+    else if ( mSocketType == RP_SOCKET_TYPE_IB )
+    {
+        if( rpdCatalog::getIndexByAddr( mMeta.mReplication.mLastUsedHostNo,
+                                     mMeta.mReplication.mReplHosts,
+                                     mMeta.mReplication.mHostCount,
+                                     &sIndex )
+            == IDE_SUCCESS )
+        {
+            mMessenger.setRemoteIBAddress(
+                mMeta.mReplication.mReplHosts[sIndex].mHostIp,
+                mMeta.mReplication.mReplHosts[sIndex].mPortNo, 
+                mMeta.mReplication.mReplHosts[sIndex].mIBLatency );
+        }
+        else
+        {
+            mMessenger.setRemoteIBAddress( (SChar *)"127.0.0.1", 
+                                            RPU_REPLICATION_IB_PORT_NO,
+                                            (rpIBLatency)RPU_REPLICATION_IB_LATENCY );
         }
     }
     else
@@ -774,16 +789,6 @@ void rpxSender::destroy()
     {
         /* do nothing */
     }
-    if ( mIsServiceTrans != NULL )
-    {
-        (void)iduMemMgr::free( mIsServiceTrans );
-        mIsServiceTrans = NULL;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
     return;
 }
 
@@ -791,9 +796,7 @@ IDE_RC rpxSender::initializeThread()
 {
     idCoreAclMemAllocType sAllocType = (idCoreAclMemAllocType)iduMemMgr::getAllocatorType();
     idCoreAclMemTlsfInit  sAllocInit = {0};
-    UInt                  i = 0;
     idBool                sIsAssignedTransAlloced = ID_FALSE;
-    idBool                sIsServiceTransAlloced = ID_FALSE;
 
     /* Thread의 run()에서만 사용하는 메모리를 할당한다. */
 
@@ -853,22 +856,7 @@ IDE_RC rpxSender::initializeThread()
                   != IDE_SUCCESS );
         sIsAssignedTransAlloced = ID_TRUE;
 
-        /* 
-         * idBool : 4
-         * mTransTableSize 의 MAXSIZE :16384
-         */
-        IDU_FIT_POINT( "rpxSender::initializeThread::malloc::IsServiceTrans" );
-        IDE_TEST( iduMemMgr::malloc( IDU_MEM_RP_RPX_SENDER,
-                                     ID_SIZEOF( idBool ) * mTransTableSize,
-                                     (void **)&mIsServiceTrans,
-                                     IDU_MEM_IMMEDIATE )
-                  != IDE_SUCCESS );
-        sIsServiceTransAlloced = ID_TRUE;
-        for ( i = 0 ; i < mTransTableSize ; i++ )
-        {
-            mAssignedTransTbl[i] = NULL;
-            mIsServiceTrans[i] = ID_FALSE;
-        }
+        initializeAssignedTransTbl();
     }
     else
     {
@@ -898,16 +886,6 @@ IDE_RC rpxSender::initializeThread()
     {
         (void)iduMemMgr::free( mAssignedTransTbl );
         mAssignedTransTbl = NULL;
-    }
-    else
-    {
-        /* do nothing */
-    }
-
-    if ( sIsServiceTransAlloced == ID_TRUE )
-    {
-        (void)iduMemMgr::free( mIsServiceTrans );
-        mIsServiceTrans = NULL;
     }
     else
     {
@@ -1007,6 +985,8 @@ void rpxSender::finalize() // call by sender itself
     idBool            sIsOfflineStatusFound;
     UInt              sSenderInfoIdx;
 
+    rpcManager::setDDLSyncCancelEvent( mRepName );
+
     shutdownNDestroyChildren();
 
     mReplicator.leaveLogBuffer();
@@ -1071,7 +1051,7 @@ IDE_RC rpxSender::setHostForNetwork( SChar* aIP, SInt aPort )
     SInt sIPLen1, sIPLen2;
     idBool sIsExistMatch = ID_FALSE;
 
-    if ( ( mNetworkError != ID_TRUE ) && 
+    if ( ( mRetryError != ID_TRUE ) && 
          ( mMessenger.mRemotePort == aPort ) && 
          ( idlOS::strncmp( mMessenger.mRemoteIP, aIP, QCI_MAX_IP_LEN ) == 0 ) )
     {
@@ -1121,7 +1101,7 @@ IDE_RC rpxSender::setHostForNetwork( SChar* aIP, SInt aPort )
             }
         }
         IDL_MEM_BARRIER;
-        mNetworkError = ID_TRUE;
+        mRetryError = ID_TRUE;
     }
     IDE_TEST_RAISE( sIsExistMatch != ID_TRUE, ERR_HOST_MISMATCH );
     return IDE_SUCCESS;
@@ -1156,7 +1136,7 @@ void rpxSender::run()
     UInt       sRetryCount  = 0;
     smSN       sRestartSN     = SM_SN_NULL;
     smSN       sDummySN;
-
+    
     // mTryHandshakeOnce가 ID_TRUE이면, Handshake가 이미 성공한 것임.
     sHandshakeFlag = mTryHandshakeOnce;
 
@@ -1234,6 +1214,7 @@ void rpxSender::run()
                                mMeta.mReplication.mXSN,
                                mMeta.mReplication.mReplMode,
                                mMeta.mReplication.mRole,
+                               mSenderListIndex,
                                mAssignedTransTbl );
 
         // BUG-18527 mXSN이 최종적으로 결정된 후, Log Manager를 초기화
@@ -1281,7 +1262,7 @@ void rpxSender::run()
                     {
                         IDE_TEST( ideFindErrorCode( smERR_ABORT_NotFoundLog ) != IDE_SUCCESS );
                         IDE_ERRLOG( IDE_RP_0 );
-                        mNetworkError = ID_TRUE;
+                        mRetryError = ID_TRUE;
 
                         sRetryCount += 1;
                         IDE_TEST( sRetryCount > RPU_REPLICATION_SENDER_RETRY_COUNT ); 
@@ -1294,7 +1275,7 @@ void rpxSender::run()
             mReplicator.setNeedSN( mXSN ); //proj-1670
             rebuildSentLogCount();
         }
-
+        
         IDL_MEM_BARRIER;
 
         if ( mReplicator.isLogMgrInit() == ID_TRUE )
@@ -1306,7 +1287,7 @@ void rpxSender::run()
             // Eager인 경우, Failback을 수행하고 Child를 생성&시작한다.
             if( prepareForParallel() != IDE_SUCCESS )
             {
-                IDE_TEST( checkInterrupt() != RP_INTR_NETWORK );
+                IDE_TEST( checkInterrupt() != RP_INTR_RETRY );
             }
             else /* prepare for parallel success */
             {
@@ -1327,8 +1308,10 @@ void rpxSender::run()
         mSenderInfo->deActivate();
 
         // Network 장애보다 상위 인터럽트인 경우, 재시도를 위한 준비를 하지 않는다.
-        if(checkInterrupt() == RP_INTR_NETWORK)
+        if(checkInterrupt() == RP_INTR_RETRY)
         {
+            rpcManager::setDDLSyncCancelEvent( mRepName );
+
             // Retry 상태로 변경한다.
             setStatus( RP_SENDER_RETRY );
 
@@ -1337,8 +1320,7 @@ void rpxSender::run()
             cleanupForParallel();
 
             /* BUG-42138 */
-            initializeTransTbl();
-            initializeServiceTrans();
+            initializeAssignedTransTbl();
             // Parallel Child는 여기에 올 수 없다.
             IDE_DASSERT(isParallelChild() != ID_TRUE);
 
@@ -1348,10 +1330,12 @@ void rpxSender::run()
             // replication이 종료되었으므로, 리소스 모두 해제
             sHandshakeFlag = ID_FALSE;  // reset
             releaseHandshake();
-
+            
+            checkXSNAndSleep();
+           
             IDE_TEST_RAISE( mReplicator.initTransTable() != IDE_SUCCESS,
                             ERR_TRANS_TABLE_INIT );
-
+            
             if( ( mCurrentType != RP_OFFLINE ) && ( mSetHostFlag != ID_TRUE ) )
             {
                 IDE_TEST(getNextLastUsedHostNo() != IDE_SUCCESS);
@@ -1380,17 +1364,20 @@ void rpxSender::run()
     //sync only인 경우
     mSenderInfo->deActivate();
 
-    /* 인터럽트 대신 mNetworkError를 사용 : 상위 인터럽트가 걸려있는 경우에도,
+    /* 인터럽트 대신 mRetryError를 사용 : 상위 인터럽트가 걸려있는 경우에도,
      *      Network 장애가 없으면 정상적으로 마무리해야 한다.
      */
-    if ( ( sHandshakeFlag == ID_TRUE ) && ( mNetworkError != ID_TRUE ) )
+    if ( ( sHandshakeFlag == ID_TRUE ) && ( mRetryError != ID_TRUE ) )
     {
         if ( mCurrentType != RP_OFFLINE )
         {
             /* Send Replication Stop Message */
             ideLog::log( IDE_RP_0, "SEND Stop Message!\n" );
 
-            IDE_TEST( mMessenger.sendStop( sRestartSN ) != IDE_SUCCESS );
+            IDE_TEST( mMessenger.sendStop( sRestartSN,
+                                           NULL,
+                                           RPN_STOP_MSG_NETWORK_TIMEOUT_SEC ) 
+                      != IDE_SUCCESS );
 
             ideLog::log( IDE_RP_0, "SEND Stop Message SUCCESS!!!\n" );
         }
@@ -1400,7 +1387,10 @@ void rpxSender::run()
             ideLog::log( IDE_RP_0, "[OFFLINE SENDER]SEND Stop Message %d!\n",
                                    sRestartSN );
 
-            IDE_TEST( mMessenger.sendStop( sRestartSN ) != IDE_SUCCESS );
+            IDE_TEST( mMessenger.sendStop( sRestartSN,
+                                           NULL,
+                                           RPN_STOP_MSG_NETWORK_TIMEOUT_SEC ) 
+                      != IDE_SUCCESS );
 
             ideLog::log( IDE_RP_0, "[OFFLINE SENDER]SEND Stop Message SUCCESS!!!\n" );
         }
@@ -1513,7 +1503,7 @@ void rpxSender::cleanupForParallel()
     shutdownNDestroyChildren();
 }
 
-void rpxSender::initializeTransTbl()
+void rpxSender::initializeAssignedTransTbl()
 {
     UInt i = 0;
 
@@ -1522,23 +1512,6 @@ void rpxSender::initializeTransTbl()
         for ( i = 0 ; i < mTransTableSize ; i++ )
         {
             mAssignedTransTbl[i] = NULL;
-        }
-    }
-    else
-    {
-        /* nothing to do */
-    }
-}
-
-void rpxSender::initializeServiceTrans()
-{
-    UInt i = 0;
-
-    if ( mIsServiceTrans != NULL )
-    {
-        for ( i = 0 ; i < mTransTableSize ; i++ )
-        {
-            mIsServiceTrans[i] = ID_FALSE;
         }
     }
     else
@@ -1585,6 +1558,9 @@ IDE_RC rpxSender::prepareForParallel()
             default:
                 IDE_ASSERT(0);
         }
+
+        IDU_FIT_POINT( "rpxSender::prepareForParallel::SLEEP::afterFailback1" );
+        IDU_FIT_POINT( "rpxSender::prepareForParallel::SLEEP::afterFailback2" );
     }
 
     // Service Thread의 Statement가 더 이상 필요하지 않다.
@@ -1593,18 +1569,11 @@ IDE_RC rpxSender::prepareForParallel()
     /* BUG-42732 */
     if ( checkInterrupt() == RP_INTR_NONE )
     {
-        if ( mMeta.mReplication.mReplMode == RP_EAGER_MODE )
+        if ( mCurrentType == RP_PARALLEL ) 
         {
             mSenderInfo->initializeLastProcessedSNTable();
             IDE_TEST( addXLogAckOnDML() != IDE_SUCCESS );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
 
-        if ( mCurrentType == RP_PARALLEL ) 
-        {
             if ( isParallelParent() == ID_TRUE )
             {
                 IDE_TEST( createNStartChildren() != IDE_SUCCESS );
@@ -1679,31 +1648,37 @@ IDE_RC rpxSender::execOnceAtStart()
             break;
 
         case RP_SYNC:
-            IDE_TEST_RAISE( rpuProperty::isUseV6Protocol() == ID_TRUE,
+            IDE_TEST_RAISE( rpdMeta::isUseV6Protocol( &( mMeta.mReplication ) ) == ID_TRUE,
                             ERR_NOT_SUPPORT_SYNC_WITH_V6_PROTOCOL );
 
             switch ( mMeta.mReplication.mRole )
             {
                 case RP_ROLE_REPLICATION:
+                case RP_ROLE_PROPAGABLE_LOGGING:
+                case RP_ROLE_PROPAGATION:
                     IDE_TEST( syncStart() != IDE_SUCCESS );
                     break;
                 case RP_ROLE_ANALYSIS:
+                case RP_ROLE_ANALYSIS_PROPAGATION:
                     IDE_TEST( syncALAStart() != IDE_SUCCESS );
                     break;
             }
             break;
 
         case RP_SYNC_ONLY: 
-            IDE_TEST_RAISE( rpuProperty::isUseV6Protocol() == ID_TRUE,
+            IDE_TEST_RAISE( rpdMeta::isUseV6Protocol( &( mMeta.mReplication ) ) == ID_TRUE,
                             ERR_NOT_SUPPORT_SYNC_WITH_V6_PROTOCOL );
 
             //fix BUG-9023
             switch ( mMeta.mReplication.mRole )
             {
                 case RP_ROLE_REPLICATION:
+                case RP_ROLE_PROPAGABLE_LOGGING:
+                case RP_ROLE_PROPAGATION:
                     IDE_TEST( syncStart() != IDE_SUCCESS );
                     break;
                 case RP_ROLE_ANALYSIS:
+                case RP_ROLE_ANALYSIS_PROPAGATION:
                     IDE_TEST( syncALAStart() != IDE_SUCCESS );
                     break;
             }
@@ -1837,7 +1812,7 @@ IDE_RC rpxSender::doRunning()
 
     // 상위 인터럽트가 걸려있는 경우에도,
     // Network/Apply 장애에 대한 정지 메시지를 출력한다.
-    if((mNetworkError == ID_TRUE) || (mApplyFaultFlag == ID_TRUE))
+    if((mRetryError == ID_TRUE) || (mApplyFaultFlag == ID_TRUE))
     {
         IDE_SET(ideSetErrorCode(rpERR_IGNORE_RP_SENDER_STOP,
                                 mMeta.mReplication.mRepName,
@@ -1851,7 +1826,7 @@ IDE_RC rpxSender::doRunning()
 
     // 상위 인터럽트가 걸려있는 경우에도,
     // Network 장애가 발생하면 Failback 상태를 결정하는 인자를 갱신한다.
-    if((mNetworkError == ID_TRUE) && (isParallelChild() != ID_TRUE))
+    if((mRetryError == ID_TRUE) && (isParallelChild() != ID_TRUE))
     {
         mIsRemoteFaultDetect = ID_TRUE;
     }
@@ -1928,12 +1903,59 @@ void rpxSender::sleepForNextConnect()
     // BUG-15507
     IDE_TEST_CONT((SInt)mRetry < mMeta.mReplication.mHostCount, NORMAL_EXIT);
 
+    sleepForSenderSleepTime();
+
+    // BUG-15507
+    mRetry = 0;
+
+    RP_LABEL(NORMAL_EXIT);
+
+    return;
+}
+
+
+void rpxSender::checkXSNAndSleep()
+{
+    if ( mOldMaxXSN != SM_SN_NULL )
+    {
+        if ( mXSN <= mOldMaxXSN )
+        {
+            if ( mRetry >= mMeta.mReplication.mHostCount )
+            {
+                sleepForSenderSleepTime();
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            mRetry = 0;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+
+
+void rpxSender::sleepForSenderSleepTime()
+{
+    PDL_Time_Value  sSleepSec;
+
+    IDE_TEST_CONT(mExitFlag == ID_TRUE, NORMAL_EXIT);
+
     IDE_SET(ideSetErrorCode(rpERR_ABORT_RP_SENDER_SLEEP,
                             (UInt)RPU_REPLICATION_SENDER_SLEEP_TIMEOUT));
     IDE_ERRLOG(IDE_RP_0);
     IDE_CLEAR();
 
-    mTvRetry.set( idlOS::time(NULL) + RPU_REPLICATION_SENDER_SLEEP_TIMEOUT);
+    sSleepSec.initialize();
+    sSleepSec.set( RPU_REPLICATION_SENDER_SLEEP_TIMEOUT );
+
+    mTvRetry = idlOS::gettimeofday() + sSleepSec;
 
     IDE_ASSERT(time_lock() == IDE_SUCCESS);
     if(mTimeCondRmt.timedwait(&mTimeMtxRmt, &mTvRetry, IDU_IGNORE_TIMEDOUT) != IDE_SUCCESS)
@@ -1941,10 +1963,7 @@ void rpxSender::sleepForNextConnect()
         IDE_WARNING(IDE_RP_0, RP_TRC_S_ERR_SLP_COND_TIMEDWAIT);
     }
     IDE_ASSERT(time_unlock() == IDE_SUCCESS);
-
-    // BUG-15507
-    mRetry = 0;
-
+    
     RP_LABEL(NORMAL_EXIT);
 
     return;
@@ -2181,13 +2200,14 @@ rpxSender::startSenderApply()
                                             &mMessenger,
                                             &mMeta,
                                             mRsc,
-                                            &mNetworkError,
+                                            &mRetryError,
                                             &mApplyFaultFlag,
                                             &mExitFlag,
                                             sIsSupportRecovery,
                                             &mCurrentType,//PROJ-1915
                                             mParallelID,
-                                            &mStatus)
+                                            &mStatus,
+                                            mSocketType)
                    != IDE_SUCCESS, APPLY_INIT_ERR);
 
     IDU_FIT_POINT_RAISE( "rpxSender::startSenderApply::Thread::mSenderApply",
@@ -2923,7 +2943,7 @@ IDE_RC rpxSender::failbackMaster()
     {
         if ( sFailbackWaitTime >= RPU_REPLICATION_RECEIVE_TIMEOUT )
         {
-            mNetworkError = ID_TRUE;
+            mRetryError = ID_TRUE;
             mSenderInfo->deActivate();
 
             IDE_CONT( NORMAL_EXIT );
@@ -3120,8 +3140,9 @@ IDE_RC rpxSender::failbackSlave()
                                      8,                        //align byte(default)
                                      ID_FALSE,				   //ForcePooling
                                      ID_TRUE,				   //GarbageCollection
-                                     ID_TRUE)                  //HWCacheLine
-             != IDE_SUCCESS);
+                                     ID_TRUE,                          /* HWCacheLine */
+                                     IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/) 
+              != IDE_SUCCESS);			
     sBeginSNPoolInit = ID_TRUE;
 
     IDU_LIST_INIT(&sBeginSNList);
@@ -3196,7 +3217,7 @@ IDE_RC rpxSender::failbackSlave()
     {
         if ( rpcManager::isStartupFailback() != ID_TRUE )
         {
-            mNetworkError = ID_TRUE;
+            mRetryError = ID_TRUE;
             mSenderInfo->deActivate();
 
             IDE_CONT( NORMAL_EXIT );
@@ -3225,6 +3246,7 @@ IDE_RC rpxSender::failbackSlave()
                            mMeta.mReplication.mXSN,
                            mMeta.mReplication.mReplMode,
                            mMeta.mReplication.mRole,
+                           mSenderListIndex,
                            mAssignedTransTbl );
 
     RP_LABEL(NORMAL_EXIT);
@@ -3273,6 +3295,10 @@ IDE_RC rpxSender::createNStartChildren()
     rpxSender*  sTmpChildArray = NULL;
     // child는 parallel factor에서 자신을 뺀 수(factor -1)만큼 생성하면 된다.
     UInt        sChildCount = RPU_REPLICATION_EAGER_PARALLEL_FACTOR - 1;
+    SChar     * sParentConnectedIP = NULL;
+    SInt        sParentConnectedPort = 0;
+    SChar     * sChildConnectedIP = NULL;
+    SInt        sChildConnectedPort = 0;
 
     if(sChildCount != 0)
     {
@@ -3306,7 +3332,8 @@ IDE_RC rpxSender::createNStartChildren()
                         NULL,                        //aSNMapMgr
                         SM_SN_NULL,                  //aActiveRPRecoverySN
                         &mMeta,                      //aMeta
-                        makeChildID(sChildInitIdx))  //aParallelID
+                        makeChildID(sChildInitIdx),  //aParallelID
+                        mSenderListIndex )
                     != IDE_SUCCESS);
         }
 
@@ -3339,6 +3366,17 @@ IDE_RC rpxSender::createNStartChildren()
         }
     }
 
+    getRemoteAddress( &sParentConnectedIP, &sParentConnectedPort );
+    for( sTmpIdx = 0; sTmpIdx < sChildCount; sTmpIdx++ )
+    {
+        sTmpChildArray[sTmpIdx].getRemoteAddress( &sChildConnectedIP, &sChildConnectedPort );
+
+        IDE_TEST_RAISE( idlOS::strncmp( sParentConnectedIP, 
+                                        sChildConnectedIP, 
+                                        QC_MAX_IP_LEN + 1 ) 
+                        != 0, ERR_DIFFERENT_IP );
+    }
+
     // performanceview에서 mChildArray를 접근하므로 atomic operation으로 해야한다.
     // 그러므로, 모든 작업이 완료된 후에 mChildArray를 설정한다.
     IDE_ASSERT(mChildArrayMtx.lock(NULL) == IDE_SUCCESS);
@@ -3354,6 +3392,11 @@ IDE_RC rpxSender::createNStartChildren()
         IDE_SET(ideSetErrorCode(rpERR_ABORT_MEMORY_ALLOC,
                                 "rpxSender::createParallelChilds",
                                 "mChildArray"));
+    }
+    IDE_EXCEPTION( ERR_DIFFERENT_IP )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_PARENT_AND_CHILD_CONNECT_DIFFERENT ) );
+        mRetryError = ID_TRUE;
     }
     IDE_EXCEPTION_END;
 
@@ -3440,8 +3483,8 @@ void rpxSender::shutdownNDestroyChildren()
 /*****************************************************************************
  * Description:
  *
- * All Sender-> mExitFlag, mApplyFaultFlag, mNetworkError으로 인터럽트 종류를 확인한다.
- *              mApplyFaultFlag보다 mNetworkError를 우선하여 설정한다.
+ * All Sender-> mExitFlag, mApplyFaultFlag, mRetryError으로 인터럽트 종류를 확인한다.
+ *              mApplyFaultFlag보다 mRetryError를 우선하여 설정한다.
  *
  * Parallel-> Parent Sender는 모든 Child의 인터럽트를 확인하여, 한 Child라도 인터럽트
  *            상태이면 자신은 Network Error로 처리한다.
@@ -3451,7 +3494,7 @@ void rpxSender::shutdownNDestroyChildren()
  * Return value: check 결과에 따라서 해야할 일에 대한 code를 나타내는
  *               intrLevel(interrupt Level)을 반환한다. intrLevel은 아래와 같다.
  * intrLevel: 0, RP_INTR_NONE        (No problem, continue replication)
- *            1, RP_INTR_NETWORK     (Network error occur, The sender must retry.)
+ *            1, RP_INTR_RETRY     (Network error occur, The sender must retry.)
  *            2, RP_INTR_FAULT       (Some fault occur, The sender must stop.)
  *            3, RP_INTR_EXIT        (Exit flag was set, The sender must stop.)
  * interrupt: vt, vi, noun
@@ -3469,7 +3512,7 @@ RP_INTR_LEVEL rpxSender::checkInterrupt()
     {
         sCheckResult = RP_INTR_EXIT;
     }
-    else if(mNetworkError == ID_TRUE)
+    else if(mRetryError == ID_TRUE)
     {
         if(isParallelChild() == ID_TRUE)
         {
@@ -3478,7 +3521,7 @@ RP_INTR_LEVEL rpxSender::checkInterrupt()
         }
         else
         {
-            sCheckResult = RP_INTR_NETWORK;
+            sCheckResult = RP_INTR_RETRY;
         }
     }
     else if(mApplyFaultFlag == ID_TRUE)
@@ -3515,9 +3558,9 @@ RP_INTR_LEVEL rpxSender::checkInterrupt()
                 {
                     // child가 network error가 발생한 직후 또는
                     // error로 인해 종료되어 exit flag가 설정되었다.
-                    mNetworkError = ID_TRUE;
+                    mRetryError = ID_TRUE;
                     mSenderInfo->deActivate(); //isDisconnect()
-                    sCheckResult = RP_INTR_NETWORK;
+                    sCheckResult = RP_INTR_RETRY;
                     break;
                 }
             }
@@ -3788,6 +3831,79 @@ void rpxSender::searchSentLogCount(
     }
 }
 
+void rpxSender::copySentLogCount( rpxSentLogCount * aSrc, UInt aSentLogCountArraySize )
+{
+    SInt i = 0;
+    UInt j = 0;
+
+    for ( i = 0; i < mMeta.mReplication.mItemCount; i++ )
+    {
+        for ( j = 0; j < aSentLogCountArraySize; j++ )
+        {
+            if ( mSentLogCountArray[i].mTableOID == aSrc[j].mTableOID )
+            {
+                mSentLogCountArray[i].mInsertLogCount = aSrc[j].mInsertLogCount;
+                mSentLogCountArray[i].mUpdateLogCount = aSrc[j].mUpdateLogCount;
+                mSentLogCountArray[i].mDeleteLogCount = aSrc[j].mDeleteLogCount;
+                mSentLogCountArray[i].mLOBLogCount    = aSrc[j].mLOBLogCount;
+
+                break;
+            }
+        }
+    }
+}
+
+IDE_RC rpxSender::allocAndRebuildNewSentLogCount()
+{
+    UInt               sSentLogCountArraySize   = 0;
+    rpxSentLogCount  * sSentLogCountArray       = NULL;
+    rpxSentLogCount ** sSentLogCountSortedArray = NULL;
+    idBool             sIsAlloc                 = ID_FALSE;
+
+    sSentLogCountArray       = mSentLogCountArray;
+    sSentLogCountSortedArray = mSentLogCountSortedArray;
+    sSentLogCountArraySize   = mSentLogCountArraySize;
+
+    mSentLogCountArray       = NULL;
+    mSentLogCountSortedArray = NULL;
+
+    mSentLogCountArraySize = mMeta.mReplication.mItemCount;
+    IDE_TEST( allocSentLogCount() != IDE_SUCCESS );
+    sIsAlloc = ID_TRUE;
+    rebuildSentLogCount();
+
+    copySentLogCount( sSentLogCountArray, sSentLogCountArraySize );
+
+    (void)iduMemMgr::free( sSentLogCountArray );
+    sSentLogCountArray = NULL;
+
+    (void)iduMemMgr::free( sSentLogCountSortedArray );        
+    sSentLogCountSortedArray = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsAlloc != ID_TRUE )
+    {
+        mSentLogCountArray       = sSentLogCountArray;
+        mSentLogCountSortedArray = sSentLogCountSortedArray;
+        mSentLogCountArraySize   = sSentLogCountArraySize;
+    }
+    else
+    {
+        (void)iduMemMgr::free( sSentLogCountArray );
+        sSentLogCountArray = NULL;
+        (void)iduMemMgr::free( sSentLogCountSortedArray );        
+        sSentLogCountSortedArray = NULL;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
 /*
  *
  */
@@ -4144,7 +4260,6 @@ idBool rpxSender::waitUntilFlushFailbackComplete()
 }
 
 void rpxSender::sendXLog( const SChar * aLogPtr,
-                          smiLogType    aLogType,
                           smTID         aTransID,
                           smSN          aCurrentSN,
                           idBool        aIsBeginLog )
@@ -4153,15 +4268,9 @@ void rpxSender::sendXLog( const SChar * aLogPtr,
 
     (void)idCore::acpAtomicInc64( &mServiceThrRefCount );
 
-    if ( needSendLogFromServiceThr( aTransID,
-                                    aCurrentSN,
-                                    aIsBeginLog ) 
-         == ID_TRUE )
+    sSender = getAssignedSender( aTransID, aCurrentSN, aIsBeginLog );
+    if ( sSender != NULL )
     {
-        /* BUG-43051 임시로 고친 코드입니다. */
-        IDE_TEST_CONT( waitUntilFlushFailbackComplete() == ID_FALSE, NORMAL_EXIT );
-
-        sSender = getAssignedSender( aTransID );
         if ( sSender->replicateLogWithLogPtr( aLogPtr ) != IDE_SUCCESS )
         {
             mIsServiceFail = ID_TRUE;
@@ -4173,44 +4282,70 @@ void rpxSender::sendXLog( const SChar * aLogPtr,
         {
             /* Nothing to do */
         }
-
-        if ( ( aLogType == SMI_LT_TRANS_COMMIT ) ||
-             ( aLogType == SMI_LT_TRANS_ABORT ) )
-        {
-            unSetServiceTrans( aTransID );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
     }
     else
     {
         /* Nothing to do */
     }
 
-    RP_LABEL( NORMAL_EXIT );
-
     (void)idCore::acpAtomicDec64( &mServiceThrRefCount );
 }
 
-rpxSender * rpxSender::getAssignedSender( smTID     aTransID )
+rpxSender * rpxSender::assignSenderBySlotIndex( UInt     aSlotIndex,
+                                                smSN     aCurrentSN,
+                                                idBool   aIsBeginLog )
 {
-    UInt            sSlotIndex = 0;
-    rpxSender     * sSender = NULL;
+    rpxSender   * sSender = NULL;
 
-    sSlotIndex = aTransID % mTransTableSize;
-
-    sSender = mAssignedTransTbl[sSlotIndex];
-
-    if ( sSender == NULL )
+    switch( mStatus )
     {
-        sSender = getLessBusySender();
-        mAssignedTransTbl[sSlotIndex] = sSender;
-    }
-    else
-    {
-        /* do nothing */
+        case RP_SENDER_IDLE:
+            sSender = getLessBusySender();
+            mAssignedTransTbl[aSlotIndex] = sSender;
+            break;
+
+        case RP_SENDER_FLUSH_FAILBACK:
+            IDE_ASSERT( mStatusMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
+
+            IDE_DASSERT( ( mStatus == RP_SENDER_FLUSH_FAILBACK ) || ( mStatus == RP_SENDER_IDLE ) );
+
+            if ( ( aCurrentSN > mFailbackEndSN ) && ( aIsBeginLog == ID_TRUE ) )
+            {
+                IDE_ASSERT( mStatusMutex.unlock() == IDE_SUCCESS );
+
+                sSender = getLessBusyChildSender();
+                if ( sSender == NULL )
+                {
+                    /* child 가 존재하지 않으면 sSender 가 null 이다
+                     * 이때에는 진행중인 Failback 이 끝날때까지 대기 한다.
+                     */
+                    if ( waitUntilFlushFailbackComplete() == ID_TRUE )
+                    {
+                        sSender = this;
+                    }
+                    else
+                    {
+                        /* 정상적으로 복제를 할수 없으니 exitflag 를 설정 한다. */
+                        mExitFlag = ID_TRUE;
+                    }
+                }
+                else
+                {
+                    /* do nothing */
+                }
+
+                mAssignedTransTbl[aSlotIndex] = sSender;
+            }
+            else
+            {
+                IDE_ASSERT( mStatusMutex.unlock() == IDE_SUCCESS );
+                /* sender thread 가 직접 처리 한다. */
+            }
+
+            break;
+
+        default:
+            break;
     }
 
     return sSender;
@@ -4249,6 +4384,45 @@ rpxSender * rpxSender::getLessBusySender( void )
     return sSender;
 }
 
+rpxSender * rpxSender::getLessBusyChildSender( void )
+{
+    rpxSender   * sSender = NULL;
+    UInt          i = 0;
+    UInt          sActiveTransCount = 0;
+    UInt          sMinActiveTransCount = 0;
+
+    IDE_ASSERT( mChildArrayMtx.lock( NULL ) == IDE_SUCCESS );
+
+    if ( mChildCount != 0 )
+    {
+        sMinActiveTransCount = mChildArray[0].getActiveTransCount();
+        sSender = &(mChildArray[0]);
+
+        for ( i = 1; i < mChildCount; i++ )
+        {
+            sActiveTransCount = mChildArray[i].getActiveTransCount();
+
+            if ( sMinActiveTransCount >= sActiveTransCount )
+            {
+                sMinActiveTransCount = sActiveTransCount;
+                sSender = &(mChildArray[i]);
+            }
+            else
+            {
+                /* do nothing */
+            }
+        }
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    IDE_ASSERT( mChildArrayMtx.unlock() == IDE_SUCCESS );
+
+    return sSender;
+}
+
 UInt rpxSender::getActiveTransCount( void )
 {
     return mReplicator.getActiveTransCount();
@@ -4275,66 +4449,27 @@ IDE_RC rpxSender::replicateLogWithLogPtr( const SChar    * aLogPtr )
 }
 
 
-idBool rpxSender::needSendLogFromServiceThr( smTID  aTransID, 
-                                             smSN   aCurrentSN,
-                                             idBool aIsBeginLog )
+rpxSender * rpxSender::getAssignedSender( smTID        aTransID, 
+                                          smSN         aCurrentSN,
+                                          idBool       aIsBeginLog )
 {
-    idBool      sResult    = ID_FALSE;
-    UInt        sSlotIndex = aTransID % mTransTableSize;
+    UInt               sSlotIndex = 0;
+    rpxSender        * sSender = NULL;
 
-    if ( mStatus == RP_SENDER_IDLE )
+    sSlotIndex = aTransID % mTransTableSize;
+    sSender = mAssignedTransTbl[sSlotIndex];
+    if ( sSender == NULL )
     {
-        sResult = ID_TRUE;
+        sSender = assignSenderBySlotIndex( sSlotIndex,
+                                           aCurrentSN,
+                                           aIsBeginLog );
     }
     else
     {
-        IDE_ASSERT( mStatusMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
-        
-        if ( ( mStatus == RP_SENDER_FLUSH_FAILBACK ) ||
-             ( mStatus == RP_SENDER_IDLE ) )
-        {
-            if ( aCurrentSN > mFailbackEndSN )
-            {
-                if ( mIsServiceTrans[sSlotIndex] == ID_TRUE )
-                {
-                    sResult = ID_TRUE;
-                }
-                else
-                {
-                    if ( aIsBeginLog == ID_TRUE )
-                    {
-                        setServiceTrans( aTransID );
-                        sResult = ID_TRUE;
-                    }
-                    else
-                    {
-                        sResult = ID_FALSE;
-                    }
-                }
-            }
-            else
-            {
-                sResult = ID_FALSE;
-            }
-        }
-        else
-        {
-            sResult = ID_FALSE;
-        }
-
-        IDE_ASSERT( mStatusMutex.unlock() == IDE_SUCCESS );
+        /* do nothing */
     }
 
-    return sResult;
-}
-
-void rpxSender::setAssignedTransactionInSender( smTID         aTransID )
-{
-    UInt            sSlotIndex = 0;
-
-    sSlotIndex = aTransID % mTransTableSize;
-
-    mAssignedTransTbl[sSlotIndex] = this;
+    return sSender;
 }
 
 void rpxSender::waitUntilSendingByServiceThr( void )
@@ -4352,24 +4487,6 @@ void rpxSender::waitUntilSendingByServiceThr( void )
 smSN rpxSender::getFailbackEndSN( void )
 {
     return mFailbackEndSN;
-}
-
-void rpxSender::setServiceTrans( smTID aTransID )
-{
-    UInt sSlotIndex = 0;
-
-    sSlotIndex = aTransID % mTransTableSize;
-    
-    mIsServiceTrans[sSlotIndex] = ID_TRUE;
-}
-
-void rpxSender::unSetServiceTrans( smTID aTransID )
-{
-    UInt sSlotIndex = 0;
-
-    sSlotIndex = aTransID % mTransTableSize;
-
-    mIsServiceTrans[sSlotIndex] = ID_FALSE;
 }
 
 idBool rpxSender::isSkipLog( smSN  aSN )
@@ -4391,3 +4508,78 @@ idBool rpxSender::isSkipLog( smSN  aSN )
 
     return sRes;
 }
+
+IDE_RC rpxSender::sendDDLASyncStart( UInt aType )
+{
+    return mMessenger.sendDDLASyncStart( aType );
+}
+
+IDE_RC rpxSender::recvDDLASyncStartAck( UInt * aType )
+{
+    return mMessenger.recvDDLASyncStartAck( aType );
+}
+
+IDE_RC rpxSender::sendDDLASyncExecute( UInt    aType,
+                                       SChar * aUserName,
+                                       UInt    aDDLEnableLevel,
+                                       UInt    aTargetCount,
+                                       SChar * aTargetTableName,
+                                       SChar * aTargetPartNames,
+                                       smSN    aDDLCommitSN,
+                                       SChar * aDDLStmt )
+{
+    return mMessenger.sendDDLASyncExecute( aType,
+                                           aUserName,
+                                           aDDLEnableLevel,
+                                           aTargetCount,
+                                           aTargetTableName,
+                                           aTargetPartNames,
+                                           aDDLCommitSN,
+                                           aDDLStmt );
+}
+
+IDE_RC rpxSender::recvDDLASyncExecuteAck( UInt  * aType,
+                                          UInt  * aIsSuccess,
+                                          UInt  * aErrCode,
+                                          SChar * aErrMsg )
+
+{
+    return  mMessenger.recvDDLASyncExecuteAck( aType,
+                                               aIsSuccess,
+                                               aErrCode,
+                                               aErrMsg );
+}
+
+IDE_RC rpxSender::getTargetNamesFromItemMetaEntry( smTID    aTID,
+                                                   UInt   * aTargetCount,
+                                                   SChar  * aTargetTableName,
+                                                   SChar ** aTargetPartNames )
+{
+    return mReplicator.getTargetNamesFromItemMetaEntry( aTID,
+                                                        aTargetCount,
+                                                        aTargetTableName,
+                                                        aTargetPartNames );
+}
+
+IDE_RC rpxSender::getDDLInfoFromDDLStmtLog( smTID   aTID,
+                                               SInt    aMaxDDLStmtLen,
+                                               SChar * aUserName,
+                                               SChar * aDDLStmt )
+{
+    return mReplicator.getDDLInfoFromDDLStmtLog( aTID, 
+                                                 aMaxDDLStmtLen,
+                                                 aUserName,
+                                                 aDDLStmt );
+}
+
+idBool rpxSender::isSuspended( void )
+{
+    return mSenderApply->isSuspended();
+}
+
+void rpxSender::resume( void )
+{
+    mSenderApply->resume();
+}
+
+

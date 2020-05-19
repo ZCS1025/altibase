@@ -22,6 +22,7 @@
 #include <ulpLibInterFuncA.h>
 #include <ulpLibInterFuncB.h>
 #include <ulpLibMacro.h>
+#include <mtcdTypes.h>
 
 /* 초기화 코드가 처리돼야하는지에 대한 flag */
 acp_bool_t gUlpLibDoInitProc = ACP_TRUE;
@@ -249,5 +250,36 @@ void SQLSQLDAFree( SQLDA *sqlda )
     (void)acpMemFree( sqlda->I );
 
     (void)acpMemFree( sqlda );
+}
+
+/* BUG-45779 */
+EXTERN_C
+bool ulpShortIsNull( const short *aValue )
+{
+    return (*aValue == MTD_SMALLINT_NULL) ? true : false;
+}
+
+EXTERN_C
+bool ulpIntIsNull( const int *aValue )
+{
+    return (*aValue == MTD_INTEGER_NULL) ? true : false ;
+}
+
+EXTERN_C
+bool ulpLongIsNull( const long *aValue )
+{
+    return (*aValue == MTD_BIGINT_NULL) ? true : false ;
+}
+
+EXTERN_C
+bool ulpFloatIsNull( const void* aValue )
+{
+    return ((*(acp_uint32_t*)aValue & MTD_REAL_EXPONENT_MASK) == MTD_REAL_EXPONENT_MASK) ? true : false ;
+}
+
+EXTERN_C
+bool ulpDoubleIsNull( const void* aValue )
+{
+    return ((*(acp_uint64_t*)aValue & MTD_DOUBLE_EXPONENT_MASK) == MTD_DOUBLE_EXPONENT_MASK) ? true : false ;
 }
 

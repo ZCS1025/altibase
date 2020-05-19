@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtf.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtf.h 85313 2019-04-24 05:52:44Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_MTF_H_
@@ -297,6 +297,11 @@ public:
     static IDE_RC allocFuncDataMemory( iduMemory ** aMemoryMgr );
 
     static void freeFuncDataMemory( iduMemory * aMemoryMgr );
+
+    /* BUG-46892 */
+    static IDE_RC getFuncDataMemorySize( mtcTemplate * aTemplate,
+                                         iduMemory   * aMemoryMgr,
+                                         ULong         aSize );
 
     static IDE_RC setKeepOrderData( mtcNode          * aNode,
                                     mtcStack         * aStack,

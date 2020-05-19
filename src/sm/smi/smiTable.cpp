@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiTable.cpp 83725 2018-08-19 23:15:49Z emlee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smiTable.cpp                            *
@@ -831,7 +831,7 @@ IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
 {
 
     smxTrans*       sTrans;
-    ULong           sTotalRecCnt;
+    ULong           sTotalRecCnt = 0;
     UInt            sBUBuildThreshold;
     smSCN         * sCommitSCN;
 
@@ -1773,6 +1773,36 @@ IDE_RC smiTable::alterSequence(smiStatement    * aStatement,
     IDE_EXCEPTION(already_droped_sequence)
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_droped_Sequence));
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
+}
+
+IDE_RC smiTable::resetSequence( smiStatement    * aStatement,
+                                const void      * aTable )
+{
+
+    smcTableHeader *sTableHeader;
+
+    IDE_TEST( aStatement->prepareDDL( (smiTrans*)aStatement->mTrans ) != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( SMP_SLOT_IS_DROP( (smpSlotHeader*)aTable ),
+                    already_droped_sequence );
+
+    sTableHeader = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
+
+    IDE_TEST( smcSequence::resetSequence( (smxTrans*)aStatement->mTrans->mTrans,
+                                          sTableHeader )
+              != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( already_droped_sequence )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_droped_Sequence ) );
     }
 
     IDE_EXCEPTION_END;
@@ -3142,3 +3172,175 @@ IDE_RC smiTable::indexReorganization( void    * aHeader )
 
     return IDE_FAILURE;
 }
+
+/* BUG-45853 : partiton table swap 지원(BUG-45745) 위해서 추가.
+               index header의 index id를 변경할수 있는 인터페이스 */
+IDE_RC smiTable::swapIndexID( smiStatement * aStatement,
+                              void         * aTable1,
+                              void         * aIndex1,
+                              void         * aTable2,
+                              void         * aIndex2 )
+{
+    volatile UInt sIndex1ID;
+    volatile UInt sIndex2ID;
+
+    sIndex1ID = ((smnIndexHeader *)aIndex1)->mId;
+    sIndex2ID = ((smnIndexHeader *)aIndex2)->mId;
+
+    IDE_TEST( modifyIndexID( aStatement,
+                             aTable1,
+                             aIndex1,
+                             sIndex2ID )
+              != IDE_SUCCESS );
+
+    IDE_TEST( modifyIndexID( aStatement,
+                             aTable2,
+                             aIndex2,
+                             sIndex1ID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smiTable::modifyIndexID( smiStatement * aStatement,
+                                const void   * aTable,
+                                void         * aIndex,
+                                UInt           aIndexID )
+{
+    smxTrans       * sTrans;
+    smcTableHeader * sTable;
+    smnIndexHeader * sIndex;
+    scPageID         sPageID;
+    scOffset         sOffset;
+
+    sTrans = (smxTrans *)aStatement->mTrans->mTrans;
+    sTable = (smcTableHeader *)((SChar *)aTable + SMP_SLOT_HEADER_SIZE);
+    sIndex = (smnIndexHeader *)aIndex;
+
+    sPageID = SM_MAKE_PID( sIndex->mSelfOID );
+    sOffset = SM_MAKE_OFFSET( sIndex->mSelfOID );
+    sOffset += IDU_FT_OFFSETOF( smnIndexHeader, mId );
+
+    IDE_TEST( smrUpdate::physicalUpdate( NULL, /* idvSQL* */
+                                         (void *)sTrans,
+                                         SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
+                                         sPageID,
+                                         sOffset,
+                                         (SChar *)&sIndex->mId, /* OLD */
+                                         ID_SIZEOF( UInt ),
+                                         (SChar *)&aIndexID, /* NEW */
+                                         ID_SIZEOF( UInt ),
+                                         NULL,
+                                         0 )
+              != IDE_SUCCESS );
+
+    ideLog::log( IDE_SM_0, "[INDEX OID %ul] Index ID is changed : %u => %u",
+                 sIndex->mSelfOID, sIndex->mId, aIndexID );
+
+    if ( ( sTable->mFlag & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_DISK )
+    {
+        sIndex->mId = aIndexID;
+        /* disk경우 runtime header의 index id도 수정 */
+        ((sdnbHeader *)(sIndex->mHeader))->mIndexID = aIndexID;
+    }
+    else
+    {
+        sIndex->mId = aIndexID;
+    }
+
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, sPageID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smiTable::swapIndexColumns( smiStatement * aStatement,
+                                   void         * aIndex1,
+                                   void         * aIndex2 )
+{
+    UInt * sColumns1;
+    UInt * sColumns2;
+    UInt   sColumns[SMI_MAX_IDX_COLUMNS];
+    UInt   i;
+
+    sColumns1 = ((smnIndexHeader *)aIndex1)->mColumns;
+    sColumns2 = ((smnIndexHeader *)aIndex2)->mColumns;
+
+    for ( i = 0; i < ((smnIndexHeader *)aIndex1)->mColumnCount; i++ )
+    {
+        sColumns[i] = *( sColumns1 + i );
+    }
+
+    IDE_TEST( modifyIndexColumns( aStatement,
+                                  aIndex1,
+                                  sColumns2 )
+              != IDE_SUCCESS );
+
+    IDE_TEST( modifyIndexColumns( aStatement,
+                                  aIndex2,
+                                  sColumns )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smiTable::modifyIndexColumns( smiStatement  * aStatement,
+                                     void          * aIndex,
+                                     UInt          * aColumns )
+{
+    smxTrans       * sTrans;
+    smnIndexHeader * sIndex;
+    scPageID         sPageID;
+    scOffset         sOffset;
+    UInt             i;
+
+    sTrans = (smxTrans *)aStatement->mTrans->mTrans;
+    sIndex = (smnIndexHeader *)aIndex;
+
+    sPageID = SM_MAKE_PID( sIndex->mSelfOID );
+    sOffset = SM_MAKE_OFFSET( sIndex->mSelfOID );
+    sOffset += IDU_FT_OFFSETOF( smnIndexHeader, mColumns );
+
+    IDE_TEST( smrUpdate::physicalUpdate( NULL, /* idvSQL* */
+                                         (void *)sTrans,
+                                         SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
+                                         sPageID,
+                                         sOffset,
+                                         (SChar *)&sIndex->mColumns, /* OLD */
+                                         ID_SIZEOF( UInt ) * sIndex->mColumnCount,
+                                         (SChar *)&aColumns, /* NEW */
+                                         ID_SIZEOF( UInt ) * sIndex->mColumnCount,
+                                         NULL,
+                                         0 )
+              != IDE_SUCCESS );
+
+    ideLog::log( IDE_SM_0, "[INDEX OID %ul] Index Columns is changed : %u => %u",
+                 sIndex->mSelfOID, sIndex->mColumns[0], *aColumns );
+
+    for ( i = 0; i < sIndex->mColumnCount; i++ )
+    {
+        sIndex->mColumns[i] = *( aColumns + i );
+    }
+
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, sPageID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

@@ -36,7 +36,7 @@ public class CmGetColumnInfoResult extends CmStatementIdResult
         return mColumnList;
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

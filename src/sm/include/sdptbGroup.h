@@ -234,8 +234,11 @@ public:
     //////////////////////////////////////////////////////////////
     //  redo routine 
     //////////////////////////////////////////////////////////////
+
+    /* BUG-46036 codesonar warning 제거
     static IDE_RC initGG( sdrMtx      * aMtx,
                           UChar       * aPagePtr );
+    */
 
     /* dealocation LG header page 의 경우는 비트맵을 모두 1로 초기화한다.*/
     static void initBitmapOfLG( UChar      * aPagePtr,

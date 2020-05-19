@@ -48,7 +48,7 @@ SQLRETURN ulsdExecuteForMtDataRows( ulnStmt      *aStmt,
     sRet = ulnExecute(aStmt);
 
     /* PROJ-2638 shard native linker */
-    if (sRet == SQL_SUCCESS)
+    if ( SQL_SUCCEEDED(sRet) )
     {
         aStmt->mShardStmtCxt.mIsMtDataFetch             = ACP_TRUE;
         aStmt->mShardStmtCxt.mRowDataBufLen             = aOutBufLen;
@@ -604,7 +604,6 @@ SQLRETURN ulsdGetResultCallback( acp_uint32_t      aIndex,
             {
                 /* Nothing to do. */
             }
-
             break;
         }
         else
@@ -628,9 +627,13 @@ void ulsdRemoveCallback( ulsdFuncCallback *aCallback )
         {
             sCallback->mStmt->mShardStmtCxt.mCallback = NULL;
         }
-        else
+        else if ( sCallback->mDbc != NULL )
         {
             sCallback->mDbc->mShardDbcCxt.mCallback = NULL;
+        }
+        else
+        {
+            /* Nothing to do */
         }
 
         sNext = sCallback->mNext;

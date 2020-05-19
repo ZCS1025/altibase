@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpsSmExecutor.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpsSmExecutor.cpp 85255 2019-04-16 08:33:27Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -262,10 +262,10 @@ IDE_RC rpsSmExecutor::executeInsert( smiTrans         * aTrans,
     // insert retry
 retryInsert:
 
-    IDE_TEST(sSmiStmt.begin(NULL,
-                            aTrans->getStatement(),
-                                SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR)
-                 != IDE_SUCCESS);
+    IDE_TEST(sSmiStmt.begin( aTrans->getStatistics(),
+                             aTrans->getStatement(),
+                             SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR)
+             != IDE_SUCCESS);
 
     sStep = 1;
 
@@ -679,7 +679,7 @@ IDE_RC rpsSmExecutor::stmtBeginAndCursorOpen( smiTrans       * aTrans,
     IDE_TEST_RAISE( setCursorOpenFlag( aTrans, sTable, &sFlag )
                     != IDE_SUCCESS, ERR_SET_CURSOR_OPEN );
 
-    IDE_TEST_RAISE( aSmiStmt->begin( NULL,
+    IDE_TEST_RAISE( aSmiStmt->begin( aTrans->getStatistics(),
                                      aTrans->getStatement(),
                                      SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
                     != IDE_SUCCESS, ERR_STMT_BEGIN );
@@ -761,6 +761,7 @@ IDE_RC rpsSmExecutor::stmtEndAndCursorClose( smiStatement   * aSmiStmt,
                                              smiTableCursor * aCursor,
                                              idBool         * aIsBegunSyncStmt,
                                              idBool         * aIsOpenedCursor,
+                                             ULong          * aSyncTupleSuccessCount,
                                              SInt             aStmtEndFlag )
 {
     if ( *aIsOpenedCursor == ID_TRUE )
@@ -782,6 +783,16 @@ IDE_RC rpsSmExecutor::stmtEndAndCursorClose( smiStatement   * aSmiStmt,
     {
         /* nothing to do */
     }
+
+    if ( aSyncTupleSuccessCount != NULL )
+    {
+        *aSyncTupleSuccessCount = 0;
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_CURSOR_CLOSE );
@@ -827,6 +838,7 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
                                          smiStatement     * aSmiStmt,
                                          smiTableCursor   * aCursor,
                                          rpdMetaItem      * aMetaItem,
+                                         ULong              aSyncTupleSuccessCount,
                                          idBool           * aIsBegunSyncStmt,
                                          idBool           * aIsOpenedSyncCursor,
                                          rpApplyFailType  * aFailType )
@@ -915,32 +927,44 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
                              &sRowGRID )
          != IDE_SUCCESS)
     {
-        /* insertRow 실패하면, sm에서 cursor를 init해버려 다시 사용할 수 없게 된다.
-         * sync의 경우, 맨처음 한번 statement begin과 cursor open 해 sync가 끝날때까지 사용하므로,
-         * init이 되고나면 statement begin과 cursor open를 다시 해 주어야한다.
+        /* BUG-46910 insertRow 실패할 경우 stmtEnd stmtBegin을 새로 해주어
+         * 이전에 insert 데이타들이 rollback되므로 sync도 fail 처리 해야한다.
          */
-        IDE_TEST( stmtEndAndCursorClose( aSmiStmt,
-                                         aCursor,
-                                         aIsBegunSyncStmt,
-                                         aIsOpenedSyncCursor,
-                                         SMI_STATEMENT_RESULT_FAILURE )
-                  != IDE_SUCCESS );
+        if ( aSyncTupleSuccessCount == 0 )
+        {
+            /* insertRow 실패하면, sm에서 cursor를 init해버려 다시 사용할 수 없게 된다.
+             * sync의 경우, 맨처음 한번 statement begin과 cursor open 해 sync가 끝날때까지 사용하므로,
+             * init이 되고나면 statement begin과 cursor open를 다시 해 주어야한다.
+             */
+            IDE_TEST( stmtEndAndCursorClose( aSmiStmt,
+                                             aCursor,
+                                             aIsBegunSyncStmt,
+                                             aIsOpenedSyncCursor,
+                                             NULL, // 상위 함수에서 SynTupleSuccessCount를 체크해야 하므로 초기화 시키지 않는다
+                                             SMI_STATEMENT_RESULT_FAILURE )
+                      != IDE_SUCCESS );
 
-        IDE_TEST( stmtBeginAndCursorOpen( aSmiTrans,
-                                          aSmiStmt,
-                                          aCursor,
-                                          aMetaItem,
-                                          aIsBegunSyncStmt,
-                                          aIsOpenedSyncCursor )
-                  != IDE_SUCCESS );
+            IDE_TEST( stmtBeginAndCursorOpen( aSmiTrans,
+                                              aSmiStmt,
+                                              aCursor,
+                                              aMetaItem,
+                                              aIsBegunSyncStmt,
+                                              aIsOpenedSyncCursor )
+                      != IDE_SUCCESS );
 
-        IDE_TEST_RAISE( ideIsRetry() != IDE_SUCCESS, ERR_CONFLICT );
+            IDE_TEST_RAISE( ideIsRetry() != IDE_SUCCESS, ERR_CONFLICT );
 
-        IDE_CLEAR();
+            IDE_CLEAR();
 
-        // retry.
-        RP_DBG_PRINTLINE();
-        goto retryInsert;
+            // retry.
+            RP_DBG_PRINTLINE();
+            goto retryInsert;
+        }
+        else
+        {
+            IDE_TEST_RAISE( ideIsRetry() != IDE_SUCCESS, ERR_CONFLICT );
+            IDE_TEST( ID_TRUE );
+        }
     }
     else
     {
@@ -1021,6 +1045,7 @@ IDE_RC rpsSmExecutor::executeSyncInsert( rpdXLog          * aXLog,
                                      aCursor,
                                      aIsBegunSyncStmt,
                                      aIsOpenedSyncCursor,
+                                     NULL, // 상위 함수에서 SynTupleSuccessCount를 체크해야 하므로 초기화 시키지 않는다
                                      SMI_STATEMENT_RESULT_FAILURE );
     }
     else
@@ -1142,9 +1167,9 @@ IDE_RC rpsSmExecutor::executeUpdate(smiTrans         * aTrans,
     // update retry
 retryUpdate:
 
-    IDE_TEST(sSmiStmt.begin(NULL,
-                            aTrans->getStatement(),
-                                SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR)
+    IDE_TEST(sSmiStmt.begin( aTrans->getStatistics(),
+                             aTrans->getStatement(),
+                             SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
              != IDE_SUCCESS);
 
     IDE_TEST( convertValueToOID( aXLog,
@@ -1464,10 +1489,10 @@ IDE_RC rpsSmExecutor::executeDelete(smiTrans         * aTrans,
     // delete retry
 retryDelete:
 
-    IDE_TEST(sSmiStmt.begin(NULL,
-                            aTrans->getStatement(),
-                            SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR)
-             != IDE_SUCCESS);
+    IDE_TEST( sSmiStmt.begin( aTrans->getStatistics(),
+                              aTrans->getStatement(),
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
     sStep = 1;
 
     sCursor.initialize();
@@ -2433,10 +2458,10 @@ IDE_RC rpsSmExecutor::compareInsertImage( smiTrans    * aTrans,
         sProperty.mFetchColumnList = NULL;
     }
 
-    IDE_TEST(sSmiStmt.begin(NULL,
-                            aTrans->getStatement(),
-                            SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR)
-             != IDE_SUCCESS);
+    IDE_TEST( sSmiStmt.begin( aTrans->getStatistics(),
+                              aTrans->getStatement(),
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
     sStep = 1;
 
     sCursor.initialize();
@@ -2527,7 +2552,8 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
                                      rpdMetaItem * aMetaItem,
                                      smiRange    * aKeyRange,
                                      rpdTransTbl * aTransTbl,
-                                     idBool      * aIsLOBOperationException)
+                                     idBool      * aIsLOBOperationException,
+                                     idBool      * aIsConflict )
 {
     const void         *sRow;
     scGRID              sGRID;
@@ -2548,6 +2574,7 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
     RP_OPTIMIZE_TIME_BEGIN(mOpStatistics, IDV_OPTM_INDEX_RP_R_OPEN_LOB_CURSOR);
 
     *aIsLOBOperationException = ID_FALSE;
+    *aIsConflict = ID_FALSE;
 
     sTable = smiGetTable( aMetaItem->mItem.mTableOID );
 
@@ -2580,7 +2607,7 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
     sProperty.mLockRowBufferSize = mRealRowSize;
 
 
-    IDE_TEST_RAISE( sSmiStmt.begin( NULL,
+    IDE_TEST_RAISE( sSmiStmt.begin( aTrans->getStatistics(),
                                     aTrans->getStatement(),
                                     SMI_STATEMENT_NORMAL |
                                     SMI_STATEMENT_ALL_CURSOR )
@@ -2604,7 +2631,7 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
                     != IDE_SUCCESS, ERR_CURSOR_OPEN );
     sStep = 2;
 
-    IDE_TEST(sCursor.beforeFirst() != IDE_SUCCESS);
+    IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
 
     sCount = 0;
 
@@ -2716,6 +2743,16 @@ IDE_RC rpsSmExecutor::openLOBCursor( smiTrans    * aTrans,
         IDE_SET(ideSetErrorCode(rpERR_ABORT_OPEN_LOB_CURSOR));
     }
     IDE_EXCEPTION_END;
+
+    if ( ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolationInReplTrans ) ||
+         ( ideGetErrorCode() == smERR_ABORT_smcExceedLockTimeWait ) )
+    {            
+        *aIsConflict = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     RP_OPTIMIZE_TIME_END(mOpStatistics, IDV_OPTM_INDEX_RP_R_OPEN_LOB_CURSOR);
 

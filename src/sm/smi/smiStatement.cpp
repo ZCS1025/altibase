@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiStatement.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiStatement.cpp 85343 2019-04-30 01:50:33Z returns $
  **********************************************************************/
 
 #include <idl.h>
@@ -71,7 +71,7 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
     else
     {
         mRoot  = aParent->mRoot;
-        /* BUG-17073: 최상위 Statement가 아닌 Statment에 대해서도
+        /* BUG-17033: 최상위 Statement가 아닌 Statment에 대해서도
          * Partial Rollback을 지원해야 합니다. */
         mDepth = aParent->mDepth + 1;
 
@@ -82,6 +82,17 @@ IDE_RC smiStatement::begin( idvSQL       * aStatistics,
     }
 
     sTrans = (smxTrans*)aParent->mTrans->getTrans();
+
+    /* BUG-46786 : 이전 statement의 implicit savepoint를 해제한다. */
+    if ( ( mDepth == 1 ) &&
+         ( aParent->mTrans != NULL ) &&
+         ( aParent->mTrans->mImpSVP4Shard != NULL ) )
+    {
+        IDE_TEST( ((smxTrans *)aParent->mTrans->mTrans)->unsetImpSavepoint( aParent->mTrans->mImpSVP4Shard )
+                  != IDE_SUCCESS );
+
+        aParent->mTrans->mImpSVP4Shard = NULL;
+    }
 
     // PROJ-2199 SELECT func() FOR UPDATE 지원
     // SMI_STATEMENT_FORUPDATE 추가
@@ -192,23 +203,61 @@ IDE_RC smiStatement::end( UInt aFlag )
                     mCursors.mNext       != &mCursors,
                     ERR_CANT_END_STATEMENT_NOT_CLOSED_CURSOR );
 
+    if ( mTrans->mImpSVP4Shard != NULL )
+    {
+        /* BUG-46786
+
+           ex) depth 1인 statment  끼리 서로 포함하고 있음.
+           smiStatement S1 (depth : 1) begin
+           smiStatement S2 (depth : 1) begin
+           smiStatement S2 end
+           smiStatement S1 end
+
+           statement S2 end시 implicit savepoint를 저장한 이후,
+           statement S1 end시 이곳으로 오게된다.
+           여기서 statement S2 end시 저장한 implicit savepoint를 해제한다.
+         */
+        IDE_TEST( ((smxTrans *)mTrans->mTrans)->unsetImpSavepoint( mTrans->mImpSVP4Shard )
+                  != IDE_SUCCESS );
+
+        mTrans->mImpSVP4Shard = NULL;
+    }
+
     // PROJ-2199 SELECT func() FOR UPDATE 지원
     // SMI_STATEMENT_FORUPDATE 추가
     if( ( ((mFlag & SMI_STATEMENT_MASK ) == SMI_STATEMENT_NORMAL) ||
           ((mFlag & SMI_STATEMENT_MASK ) == SMI_STATEMENT_FORUPDATE)) &&
         ( (mFlag & SMI_STATEMENT_SELF_MASK) == SMI_STATEMENT_SELF_FALSE ) )
     {
+        IDE_DASSERT( mISavepoint != NULL );
+
         if( (aFlag & SMI_STATEMENT_RESULT_MASK) == SMI_STATEMENT_RESULT_FAILURE )
         {
-            if( mISavepoint != NULL )
-            {
-                IDE_TEST( ((smxTrans*)mTrans->mTrans)->abortToImpSavepoint(
-                        mISavepoint)
-                    != IDE_SUCCESS );
-            }
+            IDE_TEST( ((smxTrans*)mTrans->mTrans)->abortToImpSavepoint( mISavepoint )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( ((smxTrans *)mTrans->mTrans)->unsetImpSavepoint( mISavepoint )
+                      != IDE_SUCCESS );
         }
-        else
+        else /* SMI_STATEMENT_RESULT_SUCCESS */
         {
+            /* BUG-46786
+             *
+             * depth 1인 statement의 implicit savepoint를 저장한다.
+             *  (해제는 다음 statement begin시 또는 smiTrans 종료(commit/rollback)시 수행된다.)
+             * depth 2,3,4,... statement는 기존과 동일하다. */
+            if ( mDepth == 1)
+            {
+                mTrans->mImpSVP4Shard = mISavepoint;
+
+                mISavepoint = NULL;
+            }
+            else
+            {
+                IDE_TEST( ((smxTrans *)mTrans->mTrans)->unsetImpSavepoint( mISavepoint )
+                        != IDE_SUCCESS );
+            }
+
             /* BUG-15906: Non-Autocommit모드에서 Select완료후 IS_LOCK이
              * 해제되면 좋겠습니다. : Statement가 끝날때 ISLock만을 해제
              * 합니다. */
@@ -217,15 +266,8 @@ IDE_RC smiStatement::end( UInt aFlag )
              * Select 연산에서 User Temp TBS 사용시 TBS에 Lock이 안풀리는 현상
              */
             IDE_TEST( ((smxTrans *)mTrans->mTrans)->unlockSeveralLock( mLockSlotSequence )
-                      != IDE_SUCCESS );
+                    != IDE_SUCCESS );
         }
-
-        /* Begin시 Transaction의 Implicit SVP List에 추가된 Implicit
-         * SVP를 제거한다. */
-        IDE_TEST( ((smxTrans *)mTrans->mTrans)->unsetImpSavepoint( mISavepoint )
-                  != IDE_SUCCESS );
-
-        mLockSlotSequence = 0;
     }
     else
     {
@@ -315,7 +357,36 @@ IDE_RC smiStatement::end( UInt aFlag )
 
     return IDE_FAILURE;
 }
-
+/***********************************************************************
+ * Description : 열린 table cursor가 있으면 강제로 close 시킨 후 Statement를 종료 시킨다.
+ **********************************************************************/
+IDE_RC smiStatement::endForce()
+{
+    smiTableCursor *sTempCursor = NULL;
+    smiTableCursor *sNextCursor = NULL;
+    
+    for ( sTempCursor = mCursors.mNext ;
+          sTempCursor != &mCursors ;
+          sTempCursor = sNextCursor )
+    {
+        sNextCursor = sTempCursor->mNext;
+        sTempCursor->close();
+    }
+ 
+    for ( sTempCursor = mUpdateCursors.mNext ;
+          sTempCursor != &mUpdateCursors ;
+          sTempCursor = sNextCursor )
+    {
+        sNextCursor = sTempCursor->mNext;
+        sTempCursor->close();
+    }
+   
+    IDE_TEST( end( SMI_STATEMENT_RESULT_FAILURE ) != IDE_SUCCESS );
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+} 
 
 /***************************************************************************
  *

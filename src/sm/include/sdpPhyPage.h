@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdpPhyPage.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpPhyPage.h 84847 2019-01-31 05:18:28Z jiwon.kim $
  *
  * Description :
  *
@@ -237,6 +237,9 @@ public:
      * Page를 Inconsistent하다고 설정함 */
     static IDE_RC setPageInconsistency( scSpaceID       aSpaceID,
                                         scPageID        aPID );
+
+    /* BUG-45598 Page를 Inconsistent하다고 설정 ( 페이지 헤더 이용, 운영중 ) */
+    static IDE_RC setPageInconsistency( sdpPhyPageHdr   *aPageHdr );
 
     // PROJ-1665 : Page의 consistent 상태 여부 반환
     static inline idBool isConsistentPage( UChar * aPageHdr );
@@ -935,6 +938,9 @@ inline void sdpPhyPage::calcAndSetCheckSum( UChar *aPageHdr )
         IDE_ASSERT( smrCompareLSN::isEQ( &sPageHdr->mFrameHdr.mPageLSN,
                                          &sPageFooter->mPageLSN ) 
                     == ID_TRUE );
+
+        // BUG-45598: LSN을 사용하면 checksum 값은 0으로 초기화
+        sPageHdr->mFrameHdr.mCheckSum = SDP_CHECKSUM_INIT_VAL;
     }
 }
 

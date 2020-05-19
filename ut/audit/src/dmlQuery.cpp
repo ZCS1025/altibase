@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: dmlQuery.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: dmlQuery.cpp 82688 2018-04-03 05:57:13Z bethy $
  ******************************************************************************/
 
 #include <uto.h>
@@ -84,7 +84,7 @@ IDE_RC dmlQuery::initialize(
     return IDE_FAILURE;
 }
 
-IDE_RC dmlQuery::execute()
+IDE_RC dmlQuery::execute(bool aIsFileMode)
 {
     IDE_TEST(mRow == NULL);
 
@@ -94,15 +94,79 @@ IDE_RC dmlQuery::execute()
     idlOS::fprintf(stderr, "[Thr=%"ID_UINT64_FMT"]EXECUTE Before\n", idlOS::getThreadID());
 #endif
 
-    if(mQuery->execute() != IDE_SUCCESS)
+    IDE_TEST_RAISE(mQuery->execute() != IDE_SUCCESS, exec_err);
+
+    /* BUG-45909 Improve LOB Processing */
+    if ( (aIsFileMode == false)       &&
+         (mMeta->getCLSize(true) > 0) &&  // if LOB columns exist
+         (mType[1] == 'I' || mType[1] == 'U') )
     {
-        mFail++;
-        IDE_TEST(mFail);
+        IDE_TEST_RAISE(putLob() != IDE_SUCCESS, putLob_err);
     }
+
+    mQuery->close4DML();
 
 #ifdef DEBUG
     idlOS::fprintf(stderr, "[Thr=%"ID_UINT64_FMT"]EXECUTE After\n", idlOS::getThreadID());
 #endif
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(exec_err)
+    {
+        mFail++;
+    }
+    IDE_EXCEPTION(putLob_err)
+    {
+        mFail++;
+        mQuery->close4DML();
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC dmlQuery::putLob()
+{
+    Field          *f;
+    UShort      i, cl;
+
+    switch(mType[1])
+    {
+    case 'I':
+        for(i = 1; i <= mRow->size(); i++)
+        {
+            f = mRow->getField(i);
+            if((f->getSQLType() != SQL_BLOB) &&
+               (f->getSQLType() != SQL_CLOB))
+            {
+                continue;
+            }
+#ifdef DEBUG
+            log4Bind((SChar *)"Insert LOB", i, f);
+#endif
+            IDE_TEST(mQuery->putLob(i, f) != IDE_SUCCESS);
+        }
+
+        break;
+    case 'U':
+        // ** Its uses backward order links ** //
+        for(cl = 1,i = mRow->size(); i; i--,cl++)
+        {
+            f = mRow->getField(i);
+            if((f->getSQLType() != SQL_BLOB) &&
+               (f->getSQLType() != SQL_CLOB))
+            {
+                continue;
+            }
+#ifdef DEBUG
+            log4Bind((SChar *)"Update LOB", i, f);
+#endif
+            IDE_TEST(mQuery->putLob(cl, f) != IDE_SUCCESS);
+        }
+
+        break;
+    }
 
     return IDE_SUCCESS;
 
@@ -111,11 +175,15 @@ IDE_RC dmlQuery::execute()
     return IDE_FAILURE;
 }
 
-IDE_RC dmlQuery::lobAtToAt(Query * aGetLob, Query * aPutLob, SChar * tblName)
+IDE_RC dmlQuery::lobAtToAt(Query * aGetLob,
+                           Query * aPutLob,
+                           SChar * aTableNameA,
+                           SChar * aTableNameB)
 {
     //IDE_TEST(mRow == NULL);
 
-    IDE_TEST(mQuery->lobAtToAt(aGetLob, aPutLob, tblName) != IDE_SUCCESS);
+    IDE_TEST(mQuery->lobAtToAt(aGetLob, aPutLob, aTableNameA, aTableNameB)
+             != IDE_SUCCESS);
 
     return IDE_SUCCESS;
 

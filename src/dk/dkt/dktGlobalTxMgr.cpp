@@ -21,6 +21,7 @@
 
 #include <dktGlobalTxMgr.h>
 #include <iduCheckLicense.h>
+#include <dksSessionMgr.h>
 
 #define EPOCHTIME_20170101   ( 1483228800 ) /* ( ( ( ( (2017) - (1970) ) * 365 ) * 24 ) *3600 ) + a */
 
@@ -37,6 +38,7 @@ UInt        dktGlobalTxMgr::mInitTime = 0;
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::initializeStatic()
 {
+    time_t sTime       = 0;
     mUniqueGlobalTxSeq = 0;
 
     /* Global coordinator 객체의 개수를 0 으로 초기화 */
@@ -52,7 +54,7 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
     IDE_TEST( mNotifier.initialize() != IDE_SUCCESS );
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         IDE_TEST_RAISE( mNotifier.start() != IDE_SUCCESS, ERR_NOTIFIER_START );
     }
@@ -63,7 +65,12 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
 
     idlOS::memcpy( mMacAddr, iduCheckLicense::mLicense.mMacAddr[0].mAddr, ACP_SYS_MAC_ADDR_LEN );
 
-    mInitTime = (UInt) ( idlOS::time(NULL) - EPOCHTIME_20170101 );
+    sTime = idlOS::time(NULL);
+
+    /* well.... it's not going to happen...! */
+    IDE_TEST_RAISE(  sTime == -1, ERR_INTERNAL_ERROR );
+
+    mInitTime = ( sTime - EPOCHTIME_20170101 );/*sTime is always bigger*/
 
     return IDE_SUCCESS;
 
@@ -77,6 +84,10 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
         IDE_SET( ideSetErrorCode( dkERR_ABORT_DK_INTERNAL_ERROR,
                                   "[dktGlobalTxMgr::initializeStatic] ERROR NOTIFIER START" ) );
     }
+    IDE_EXCEPTION( ERR_INTERNAL_ERROR );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DK_INTERNAL_ERROR ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -89,7 +100,7 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
 IDE_RC  dktGlobalTxMgr::finalizeStatic()
 {
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         mNotifier.setExit( ID_TRUE );
         IDE_TEST( mNotifier.join() != IDE_SUCCESS );
@@ -164,7 +175,6 @@ IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSessio
 
     IDE_EXCEPTION( ERR_MEMORY_ALLOC_GLOBAL_COORDINATOR );
     {
-        
         IDE_SET( ideSetErrorCode( dkERR_ABORT_MEMORY_ALLOCATION ) );
     }
     IDE_EXCEPTION_END;
@@ -893,7 +903,7 @@ UInt dktGlobalTxMgr::getDtxGlobalTxId( UInt aLocalTxId )
     UInt                          sGlobalTxId = DK_INIT_GTX_ID;
 
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( qci::isShardMetaEnable() == ID_TRUE ) )
+         ( sdi::isShardEnable() == ID_TRUE ) )
     {
         findGlobalCoordinatorByLocalTxId( aLocalTxId, &sGlobalCoordinator );
 
@@ -920,3 +930,36 @@ UInt dktGlobalTxMgr::getDtxGlobalTxId( UInt aLocalTxId )
 
     return sGlobalTxId;
 }
+
+IDE_RC dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( dksDataSession        * aSession,
+                                                                 UInt                    aLocalTxId,
+                                                                 dktGlobalCoordinator ** aGlobalCoordinator )
+{
+    dktGlobalCoordinator * sGlobalCoordinator = NULL;
+
+    IDE_TEST( createGlobalCoordinator( aSession,
+                                       aLocalTxId,
+                                       &sGlobalCoordinator )
+              != IDE_SUCCESS );
+
+    dksSessionMgr::setDataSessionGlobalTxId( aSession, sGlobalCoordinator->getGlobalTxId() );
+    dksSessionMgr::setDataSessionLocalTxId( aSession, aLocalTxId );
+
+    *aGlobalCoordinator = sGlobalCoordinator;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void dktGlobalTxMgr::destroyGlobalCoordinatorAndUnSetSessionTxId( dktGlobalCoordinator * aGlobalCoordinator,
+                                                                dksDataSession       * aSession )
+{
+    destroyGlobalCoordinator( aGlobalCoordinator );
+
+    dksSessionMgr::setDataSessionGlobalTxId( aSession, DK_INIT_GTX_ID );
+    dksSessionMgr::setDataSessionLocalTxId( aSession, DK_INIT_LTX_ID );
+}
+

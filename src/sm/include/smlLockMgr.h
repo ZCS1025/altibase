@@ -24,7 +24,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smlLockMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smlLockMgr.h 83541 2018-07-20 01:50:06Z donghyun $
  **********************************************************************/
 
 #ifndef _O_SML_LOCK_MGR_H_
@@ -260,13 +260,10 @@ public:
     static smlLockMode  getLockMode(const SLong);
     static smlLockMode  getLockMode(const smlLockItemSpin*);
     static smlLockMode  getLockMode(const smlLockNode*);
-    static SLong        getGrantedCnt(const SLong,
-                                      const smlLockMode = SML_NLOCK);
     static SLong        getGrantedCnt(const smlLockItemSpin*,
                                       const smlLockMode = SML_NLOCK);
 
     static SInt**               mPendingMatrix;
-    static SInt*                mPendingCount;
 
 private:
     static const SLong          mLockDelta[SML_NUMLOCKTYPES];
@@ -277,11 +274,9 @@ private:
 
     static SInt*                mPendingArray;
 
-    static SInt**               mIndicesMatrix;
-    static SInt*                mIndicesArray;
-
     static idBool*              mIsCycle;
     static idBool*              mIsChecked;
+    static idBool*              mIsDetected;
     static SInt*                mDetectQueue;
     static ULong*               mSerialArray;
     static ULong                mPendSerial;

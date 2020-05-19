@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfIsNull.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfIsNull.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -85,6 +85,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfIsNullCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefault,
     mtfIsNullExtractRange
 };
@@ -97,8 +98,9 @@ static const mtcExecute mtfExecuteXlobValue = {
     mtf::calculateNA,
     mtfIsNullCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA,
+    mtk::extractRangeNA
 };
 
 static const mtcExecute mtfExecuteXlobColumn = {
@@ -108,8 +110,9 @@ static const mtcExecute mtfExecuteXlobColumn = {
     mtf::calculateNA,
     mtfIsNullCalculateXlobColumn,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA,
+    mtk::extractRangeNA
 };
 
 static const mtcExecute mtfExecuteXlobLocator = {
@@ -119,8 +122,9 @@ static const mtcExecute mtfExecuteXlobLocator = {
     mtf::calculateNA,
     mtfIsNullCalculateXlobLocator,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA,
+    mtk::extractRangeNA
 };
 
 IDE_RC mtfIsNullEstimate( mtcNode*     aNode,

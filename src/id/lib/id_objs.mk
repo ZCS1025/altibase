@@ -1,6 +1,6 @@
 # Makefile for ID library
 #
-# CVS Info : $Id: id_objs.mk 80586 2017-07-24 00:57:33Z yoonhee.kim $
+# CVS Info : $Id: id_objs.mk 84587 2018-12-12 03:47:17Z kclee $
 #
 
 # NORMAL LIBRARY
@@ -77,6 +77,7 @@ IDU_SRCS   =   $(ID_DIR)/idu/iduVersion.cpp    \
                $(ID_DIR)/idu/iduMemMgr_single.cpp \
                $(ID_DIR)/idu/iduMemMgr_libc.cpp \
                $(ID_DIR)/idu/iduMemMgr_tlsf.cpp \
+               $(ID_DIR)/idu/iduMemMgr_innocense.cpp \
                $(ID_DIR)/idu/iduMemPoolMgr.cpp \
                $(ID_DIR)/idu/iduMemPool.cpp \
                $(ID_DIR)/idu/iduFile.cpp     \

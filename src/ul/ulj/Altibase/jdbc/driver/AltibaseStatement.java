@@ -30,6 +30,7 @@ import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.util.AltiSqlProcessor;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 import Altibase.jdbc.driver.util.DynamicArray;
@@ -58,47 +59,48 @@ class ExecuteResult
 
 public class AltibaseStatement implements Statement
 {
-    static final int                 DEFAULT_CURSOR_HOLDABILITY = ResultSet.CLOSE_CURSORS_AT_COMMIT;
-    static final int                 DEFAULT_UPDATE_COUNT = -1;
+    static final int                   DEFAULT_CURSOR_HOLDABILITY = ResultSet.CLOSE_CURSORS_AT_COMMIT;
+    static final int                   DEFAULT_UPDATE_COUNT = -1;
     // BUG-42424 ColumnInfo에서 BYTES_PER_CHAR를 사용하기 때문에 public으로 변경
-    public static final int          BYTES_PER_CHAR             = 2;
-    private static final String      PING_SQL_PATTERN           = "/* PING */ SELECT 1";
+    public static final int            BYTES_PER_CHAR             = 2;
+    private static final String        PING_SQL_PATTERN           = "/* PING */ SELECT 1";
 
-    protected AltibaseConnection     mConnection;
-    protected boolean                mEscapeProcessing          = true;
-    protected ExecuteResultManager   mExecuteResultMgr = new ExecuteResultManager();
-    protected short                  mCurrentResultIndex;
-    protected ResultSet              mCurrentResultSet          = null;
-    protected List                   mResultSetList             = null;
-    protected boolean                mIsClosed;
-    protected SQLWarning             mWarning                   = null;
+    protected AltibaseConnection       mConnection;
+    protected boolean                  mEscapeProcessing          = true;
+    protected ExecuteResultManager     mExecuteResultMgr = new ExecuteResultManager();
+    protected short                    mCurrentResultIndex;
+    protected ResultSet                mCurrentResultSet          = null;
+    protected List<ResultSet>          mResultSetList;
+    protected boolean                  mIsClosed;
+    protected SQLWarning               mWarning                   = null;
     /* BUG-37642 Improve performance to fetch */
-    protected int                    mFetchSize                 = 0;
-    protected int                    mMaxFieldSize;
-    protected int                    mMaxRows;
-    protected CmPrepareResult        mPrepareResult;
-    protected List<Column>           mPrepareResultColumns;
-    protected CmExecutionResult      mExecutionResult;
-    protected CmFetchResult          mFetchResult;
-    protected int                    mStmtCID;
-    protected boolean                mIsDeferred;        // BUG-42424 deferred prepare
-    protected List                   mDeferredRequests;  // BUG-42712 deferred된 동작들을 저장하게 되는 ArrayList
-    private String                   mQstr;
-    private String                   mQstrForGeneratedKeys;
-    private CmProtocolContextDirExec mContext;
-    private LinkedList               mBatchSqlList;
-    private final int                mResultSetType;
-    private final int                mResultSetConcurrency;
-    private final int                mResultSetHoldability;
-    private int                      mTargetResultSetType;
-    private int                      mTargetResultSetConcurrency;
-    private AltibaseStatement        mInternalStatement;
-    private boolean                  mIsInternalStatement; // PROJ-2625
-    private SemiAsyncPrefetch        mSemiAsyncPrefetch;   // PROJ-2625
-    private AltibaseResultSet        mGeneratedKeyResultSet;
-    private int                      mQueryTimeout;
-    private final AltibaseResultSet  mEmptyResultSet;
-    private transient Logger         mLogger;
+    protected int                      mFetchSize                 = 0;
+    protected int                      mMaxFieldSize;
+    protected int                      mMaxRows;
+    protected CmPrepareResult          mPrepareResult;
+    protected List<Column>             mPrepareResultColumns;
+    protected CmExecutionResult        mExecutionResult;
+    protected CmFetchResult            mFetchResult;
+    protected int                      mStmtCID;
+    protected boolean                  mIsDeferred;        // BUG-42424 deferred prepare
+    protected List                     mDeferredRequests;  // BUG-42712 deferred된 동작들을 저장하게 되는 ArrayList
+    protected String                   mQstr;
+    private String                     mQstrForGeneratedKeys;
+    private CmProtocolContextDirExec   mContext;
+    private LinkedList                 mBatchSqlList;
+    private final int                  mResultSetType;
+    private final int                  mResultSetConcurrency;
+    private final int                  mResultSetHoldability;
+    private int                        mTargetResultSetType;
+    private int                        mTargetResultSetConcurrency;
+    private AltibaseStatement          mInternalStatement;
+    private boolean                    mIsInternalStatement; // PROJ-2625
+    private SemiAsyncPrefetch          mSemiAsyncPrefetch;   // PROJ-2625
+    private AltibaseResultSet          mGeneratedKeyResultSet;
+    private int                        mQueryTimeout;
+    private final AltibaseResultSet    mEmptyResultSet;
+    private transient Logger           mLogger;
+    private AltibaseShardingConnection mMetaConn;
 
     protected class ExecuteResultManager
     {
@@ -130,7 +132,7 @@ public class AltibaseStatement implements Statement
             mExecuteResults.add(aResult);
         }
 
-        protected int size() throws SQLException
+        protected int size()
         {
             if(mExecuteResults == null)
             {
@@ -195,7 +197,7 @@ public class AltibaseStatement implements Statement
         }
 
         mCurrentResultIndex = 0;
-        mResultSetList = new ArrayList();
+        mResultSetList = new ArrayList<ResultSet>();
         mIsClosed = false;
         mStmtCID = mConnection.makeStatementCID();
         createProtocolContext();
@@ -249,7 +251,19 @@ public class AltibaseStatement implements Statement
     {
         if (getProtocolContext().getError() != null)
         {
-            mWarning = Error.processServerError(mWarning, getProtocolContext().getError());
+            CmErrorResult sErrorResult = getProtocolContext().getError();
+            mWarning = Error.processServerError(mWarning, sErrorResult);
+
+            // BUG-46513 SMN Invalid 오류가 발생한 경우 SMN값과 needToDisconnect값을 셋팅한다.
+            if (sErrorResult.isInvalidSMNError())
+            {
+                long sSMN = sErrorResult.getSMNOfDataNode();
+                mConnection.getMetaConnection().setShardMetaNumberOfDataNode(sSMN);
+
+                boolean sIsNeedToDisconnect = sErrorResult.isNeedToDisconnect();
+                mConnection.getMetaConnection().setNeedToDisconnect(sIsNeedToDisconnect);
+            }
+
         }
         mPrepareResult = getProtocolContext().getPrepareResult();
         if(getProtocolContext().getPrepareResult().getResultSetCount() > 1) 
@@ -614,7 +628,7 @@ public class AltibaseStatement implements Statement
         }
         catch (SQLException ex)
         {
-            AltibaseFailover.trySTF(mConnection.failoverContext(), ex);
+            tryFailOver(ex);
         }
         afterExecution();
 
@@ -708,7 +722,7 @@ public class AltibaseStatement implements Statement
         }
         catch (SQLException ex)
         {
-            AltibaseFailover.trySTF(mConnection.failoverContext(), ex);
+            tryFailOver(ex);
         }
         afterExecution();
         
@@ -907,9 +921,9 @@ public class AltibaseStatement implements Statement
                 mCurrentResultSet.close();
                 break;
             case Statement.CLOSE_ALL_RESULTS :
-                for(int i=0; i<=mCurrentResultIndex; i++)
+                for(int i = 0; i <= mCurrentResultIndex; i++)
                 {
-                    ResultSet rs = (ResultSet)mResultSetList.get(i);
+                    ResultSet rs = mResultSetList.get(i);
                     rs.close();
                 }
                 break;
@@ -1447,6 +1461,13 @@ public class AltibaseStatement implements Statement
         return mIsInternalStatement;
     }
 
+    /** Prepared 여부를 리턴한다. */
+    public boolean isPrepared()
+    {
+        if (mPrepareResult == null) return false;
+        return  mPrepareResult.isPrepared();
+    }
+
     /**
      * Semi-async prefetch 동작을 위한 SemiAsyncPrefetch 객체를 반환한다.
      */
@@ -1469,5 +1490,75 @@ public class AltibaseStatement implements Statement
     String getTraceUniqueId()
     {
         return "[StmtId #" + String.valueOf(hashCode()) + "] ";
+    }
+
+    /**
+     * 노드커넥션이고 통신에러가 났을때 alternateservers 셋팅이 없으면 FailoverIsNotAvailableException을 올리고
+     * 그렇지 않은 경우 STF로 처리한다.
+     * @param aEx 발생한 익셉션
+     * @throws SQLException prepare, execute, fetch 도중 오류가 발생한 경우
+     */
+    void tryFailOver(SQLException aEx) throws SQLException
+    {
+        // node connection이고 stf가 false일때는 RetryAvailalbeException을 올린다.
+        if (mConnection.isNodeConnection() && AltibaseFailover.isNeedToFailover(aEx) &&
+            ( mConnection.failoverContext() == null ||
+              !mConnection.failoverContext().useSessionFailover()))
+        {
+            CmOperation.throwShardFailoverIsNotAvailableException(mConnection.getNodeName());
+        }
+        else
+        {
+            AltibaseFailover.trySTF(mConnection.failoverContext(), aEx);
+        }
+    }
+
+    /**
+     * 서버 커서가 열려있는지 여부를 리턴한다.
+     * @return true Select쿼리가 아니거나 서버커서가 모두 닫힌 경우
+     */
+    public boolean cursorhasNoData()
+    {
+        boolean sResult = false;
+
+        AltibaseResultSet sCurrResultSet = (AltibaseResultSet)mCurrentResultSet;
+        if (sCurrResultSet == null || sCurrResultSet instanceof AltibaseEmptyResultSet)
+        {
+            return true;
+        }
+
+        if (mPrepareResult.getResultSetCount() == 0)
+        {
+            sResult = true;
+        }
+        // BUG-46513 ResultSet이 여러개인 경우 마지막 ResultSet인지 확인한다.
+        else if ((mCurrentResultIndex >= mExecuteResultMgr.size() - 1) &&
+                 (!sCurrResultSet.fetchRemains()))
+        {
+            sResult = true;
+        }
+
+        return sResult;
+    }
+
+    public void setMetaConnection(AltibaseShardingConnection aMetaConn)
+    {
+        mMetaConn = aMetaConn;
+    }
+
+    public AltibaseShardingConnection getMetaConn()
+    {
+        return mMetaConn;
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuilder sSb = new StringBuilder("AltibaseStatement{");
+        sSb.append("mStmtCID=").append(mStmtCID);
+        sSb.append("mStmtID=").append(getID());
+        sSb.append(", mQstr='").append(mQstr).append('\'');
+        sSb.append('}');
+        return sSb.toString();
     }
 }

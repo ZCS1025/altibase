@@ -168,6 +168,11 @@ IDE_RC cmnDispatcherAddLinkSOCKPoll(cmnDispatcher *aDispatcher, cmnLink *aLink)
     PDL_SOCKET             sHandle;
 
     /*
+     * Dispatcher에서 사용할 수 있는 Link Impl인지 검사 (PROJ-2681)
+     */
+    IDE_TEST_RAISE(cmiDispatcherImplForLink(aLink) != sDispatcher->mDispatcher.mImpl, InvalidLinkImpl);
+
+    /*
      * Link 갯수 초과 검사
      */
     IDE_TEST_RAISE(sDispatcher->mPollFdCount == sDispatcher->mPollFdSize, LinkLimitReach);
@@ -210,9 +215,13 @@ IDE_RC cmnDispatcherAddLinkSOCKPoll(cmnDispatcher *aDispatcher, cmnLink *aLink)
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(LinkLimitReach);
+    IDE_EXCEPTION(LinkLimitReach)
     {
         IDE_SET(ideSetErrorCode(cmERR_ABORT_LINK_LIMIT_REACH));
+    }
+    IDE_EXCEPTION(InvalidLinkImpl)
+    {
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_INVALID_LINK_IMPL));
     }
     IDE_EXCEPTION_END;
 

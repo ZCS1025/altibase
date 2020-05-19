@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmv.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmv.cpp 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -266,6 +266,10 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
     idBool            sFound;
     qcmViewReadOnly   sReadOnly = QCM_VIEW_NON_READ_ONLY;
 
+    /* BUG-46124 */
+    qmsTarget       * sReturnTarget;
+    qmsSFWGH        * sViewSFWGH;
+
     IDU_FIT_POINT_FATAL( "qmv::parseInsertValues::__FT__" );
 
     sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
@@ -291,6 +295,7 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
     if ( sTableRef->view != NULL )
     {
         sViewParseTree = (qmsParseTree*) sTableRef->view->myPlan->parseTree;
+        sViewSFWGH     = sViewParseTree->querySet->SFWGH; /* BUG-46124 */
 
         if ( sViewParseTree->querySet->SFWGH != NULL )
         {
@@ -376,9 +381,17 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
 
                                 QCM_COLUMN_INIT( sInsertColumn );
 
-                                sInsertColumn->namePos.stmtText = sTarget->columnName.name;
+                                /* BUG-46124 */
+                                IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                                               sViewSFWGH,
+                                                                                               sViewSFWGH->from,
+                                                                                               sTarget,
+                                                                                               & sReturnTarget )
+                                          != IDE_SUCCESS );
+
+                                sInsertColumn->namePos.stmtText = sReturnTarget->columnName.name;
                                 sInsertColumn->namePos.offset = 0;
-                                sInsertColumn->namePos.size = sTarget->columnName.size;
+                                sInsertColumn->namePos.size = sReturnTarget->columnName.size;
                                 sInsertColumn->next = NULL;
 
                                 if( sPrevColumn == NULL )
@@ -393,8 +406,8 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
                                 }
 
                                 // key-preserved column 검사
-                                sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                                sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                                sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                                sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                                 IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                                   != MTC_TUPLE_VIEW_FALSE ) ||
@@ -407,12 +420,12 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
                                 if( sInsertTupleId == ID_USHORT_MAX )
                                 {
                                     // first
-                                    sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                                    sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                                 }
                                 else
                                 {
                                     // insert할 태이블이 여러개임
-                                    IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                                    IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                                     ERR_DUP_BASE_TABLE );
                                 }
 
@@ -467,9 +480,17 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
 
                     QCM_COLUMN_INIT( sInsertColumn );
 
-                    sInsertColumn->namePos.stmtText = sTarget->columnName.name;
+                    /* BUG-46124 */
+                    IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                                   sViewSFWGH,
+                                                                                   sViewSFWGH->from,
+                                                                                   sTarget,
+                                                                                   & sReturnTarget )
+                              != IDE_SUCCESS );
+
+                    sInsertColumn->namePos.stmtText = sReturnTarget->columnName.name;
                     sInsertColumn->namePos.offset = 0;
-                    sInsertColumn->namePos.size = sTarget->columnName.size;
+                    sInsertColumn->namePos.size = sReturnTarget->columnName.size;
                     sInsertColumn->next = NULL;
 
                     if( sPrevColumn == NULL )
@@ -484,8 +505,8 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
                     }
 
                     // key-preserved column 검사
-                    sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                    sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                    sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                    sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                     IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                       != MTC_TUPLE_VIEW_FALSE ) ||
@@ -498,12 +519,12 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
                     if( sInsertTupleId == ID_USHORT_MAX )
                     {
                         // first
-                        sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                        sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                     }
                     else
                     {
                         // insert할 태이블이 여러개임
-                        IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                        IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                         ERR_NOT_ENOUGH_INSERT_VALUES );
                     }
 
@@ -580,6 +601,16 @@ IDE_RC qmv::parseInsertValues(qcStatement * aStatement)
                      &(sParseTree->queueMsgIDSeq))
                  != IDE_SUCCESS);
     }
+
+    // BUG-46174
+    if ( sParseTree->spVariable != NULL )
+    {
+        IDE_TEST( parseSPVariableValue( aStatement,
+                                        sParseTree->spVariable,
+                                        &(sParseTree->rows->values) )
+                  != IDE_SUCCESS);
+    }
+
     // The possible cases
     //             number of column   number of value
     //  - case 1 :        m                  n        (m = n and n > 0)
@@ -1150,6 +1181,10 @@ IDE_RC qmv::validateInsertValues(qcStatement * aStatement)
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_REPL_TABLE_FALSE;
     }
 
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NO_GRANT_DML_MVIEW_TABLE );
@@ -1209,6 +1244,10 @@ IDE_RC qmv::parseInsertAllDefault(qcStatement * aStatement)
     UShort            sInsertTupleId = ID_USHORT_MAX;
     qcmViewReadOnly   sReadOnly = QCM_VIEW_NON_READ_ONLY;
 
+    /* BUG-46124 */
+    qmsTarget       * sReturnTarget;
+    qmsSFWGH        * sViewSFWGH;
+
     IDU_FIT_POINT_FATAL( "qmv::parseInsertAllDefault::__FT__" );
 
     sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
@@ -1234,6 +1273,7 @@ IDE_RC qmv::parseInsertAllDefault(qcStatement * aStatement)
     if ( sTableRef->view != NULL )
     {
         sViewParseTree = (qmsParseTree*) sTableRef->view->myPlan->parseTree;
+        sViewSFWGH     = sViewParseTree->querySet->SFWGH; /* BUG-46124 */
 
         if ( sViewParseTree->querySet->SFWGH != NULL )
         {
@@ -1294,9 +1334,17 @@ IDE_RC qmv::parseInsertAllDefault(qcStatement * aStatement)
                   sTarget != NULL;
                   sTarget = sTarget->next )
             {
+                /* BUG-46124 */
+                IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                               sViewSFWGH,
+                                                                               sViewSFWGH->from,
+                                                                               sTarget,
+                                                                               & sReturnTarget )
+                          != IDE_SUCCESS );
+
                 // key-preserved column 검사
-                sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                 IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                   != MTC_TUPLE_VIEW_FALSE ) ||
@@ -1309,12 +1357,12 @@ IDE_RC qmv::parseInsertAllDefault(qcStatement * aStatement)
                 if( sInsertTupleId == ID_USHORT_MAX )
                 {
                     // first
-                    sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                    sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                 }
                 else
                 {
                     // insert할 태이블이 여러개임
-                    IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                    IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                     ERR_NOT_ONE_BASE_TABLE );
                 }
 
@@ -1651,6 +1699,10 @@ IDE_RC qmv::validateInsertAllDefault(qcStatement * aStatement)
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_REPL_TABLE_FALSE;
     }
 
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NO_GRANT_DML_MVIEW_TABLE );
@@ -1705,6 +1757,10 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
     UShort            sInsertTupleId = ID_USHORT_MAX;
     qcmViewReadOnly   sReadOnly = QCM_VIEW_NON_READ_ONLY;
 
+    /* BUG-46124 */
+    qmsTarget       * sReturnTarget;
+    qmsSFWGH        * sViewSFWGH;
+
     IDU_FIT_POINT_FATAL( "qmv::parseInsertSelect::__FT__" );
 
     sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
@@ -1732,6 +1788,7 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
     if ( sTableRef->view != NULL )
     {
         sViewParseTree = (qmsParseTree*) sTableRef->view->myPlan->parseTree;
+        sViewSFWGH     = sViewParseTree->querySet->SFWGH; /* BUG-46124 */
 
         if ( sViewParseTree->querySet->SFWGH != NULL )
         {
@@ -1817,9 +1874,17 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
 
                                 QCM_COLUMN_INIT( sInsertColumn );
 
-                                sInsertColumn->namePos.stmtText = sTarget->columnName.name;
+                                /* BUG-46124 */
+                                IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                                               sViewSFWGH,
+                                                                                               sViewSFWGH->from,
+                                                                                               sTarget,
+                                                                                               & sReturnTarget )
+                                          != IDE_SUCCESS );
+
+                                sInsertColumn->namePos.stmtText = sReturnTarget->columnName.name;
                                 sInsertColumn->namePos.offset = 0;
-                                sInsertColumn->namePos.size = sTarget->columnName.size;
+                                sInsertColumn->namePos.size = sReturnTarget->columnName.size;
                                 sInsertColumn->next = NULL;
 
                                 if( sPrevColumn == NULL )
@@ -1834,8 +1899,8 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
                                 }
 
                                 // key-preserved column 검사
-                                sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                                sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                                sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                                sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                                 IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                                   != MTC_TUPLE_VIEW_FALSE ) ||
@@ -1848,12 +1913,12 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
                                 if( sInsertTupleId == ID_USHORT_MAX )
                                 {
                                     // first
-                                    sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                                    sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                                 }
                                 else
                                 {
                                     // insert할 태이블이 여러개임
-                                    IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                                    IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                                     ERR_NOT_ONE_BASE_TABLE );
                                 }
 
@@ -1907,10 +1972,18 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
                               != IDE_SUCCESS );
 
                     QCM_COLUMN_INIT( sInsertColumn );
+                
+                    /* BUG-46124 */
+                    IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                                   sViewSFWGH,
+                                                                                   sViewSFWGH->from,
+                                                                                   sTarget,
+                                                                                   & sReturnTarget )
+                              != IDE_SUCCESS );
 
-                    sInsertColumn->namePos.stmtText = sTarget->columnName.name;
+                    sInsertColumn->namePos.stmtText = sReturnTarget->columnName.name;
                     sInsertColumn->namePos.offset = 0;
-                    sInsertColumn->namePos.size = sTarget->columnName.size;
+                    sInsertColumn->namePos.size = sReturnTarget->columnName.size;
                     sInsertColumn->next = NULL;
 
                     if( sPrevColumn == NULL )
@@ -1925,8 +1998,8 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
                     }
 
                     // key-preserved column 검사
-                    sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                    sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                    sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                    sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                     IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                       != MTC_TUPLE_VIEW_FALSE ) ||
@@ -1939,12 +2012,12 @@ IDE_RC qmv::parseInsertSelect(qcStatement * aStatement)
                     if( sInsertTupleId == ID_USHORT_MAX )
                     {
                         // first
-                        sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                        sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                     }
                     else
                     {
                         // insert할 태이블이 여러개임
-                        IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                        IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                         ERR_NOT_ONE_BASE_TABLE );
                     }
 
@@ -2337,6 +2410,10 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
     qmsTarget       * sTarget;
     idBool            sFound;
 
+    /* BUG-46124 */
+    qmsTarget       * sReturnTarget;
+    qmsSFWGH        * sViewSFWGH;
+
     IDU_FIT_POINT_FATAL( "qmv::parseMultiInsertSelect::__FT__" );
 
     sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
@@ -2381,7 +2458,8 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
         if ( sTableRef->view != NULL )
         {
             sViewParseTree = (qmsParseTree*) sTableRef->view->myPlan->parseTree;
-
+            sViewSFWGH     = sViewParseTree->querySet->SFWGH; /* BUG-46124 */
+        
             if ( sViewParseTree->querySet->SFWGH != NULL )
             {
                 sViewParseTree->querySet->SFWGH->flag &= ~QMV_SFWGH_UPDATABLE_VIEW_MASK;
@@ -2466,9 +2544,17 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
 
                                     QCM_COLUMN_INIT( sInsertColumn );
 
-                                    sInsertColumn->namePos.stmtText = sTarget->columnName.name;
+                                    /* BUG-46124 */
+                                    IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                                                   sViewSFWGH,
+                                                                                                   sViewSFWGH->from,
+                                                                                                   sTarget,
+                                                                                                   & sReturnTarget )
+                                              != IDE_SUCCESS );
+
+                                    sInsertColumn->namePos.stmtText = sReturnTarget->columnName.name;
                                     sInsertColumn->namePos.offset = 0;
-                                    sInsertColumn->namePos.size = sTarget->columnName.size;
+                                    sInsertColumn->namePos.size = sReturnTarget->columnName.size;
                                     sInsertColumn->next = NULL;
 
                                     if( sPrevColumn == NULL )
@@ -2483,8 +2569,8 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
                                     }
 
                                     // key-preserved column 검사
-                                    sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                                    sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                                    sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                                    sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                                     IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                                       != MTC_TUPLE_VIEW_FALSE ) ||
@@ -2497,12 +2583,12 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
                                     if( sInsertTupleId == ID_USHORT_MAX )
                                     {
                                         // first
-                                        sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                                        sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                                     }
                                     else
                                     {
                                         // insert할 태이블이 여러개임
-                                        IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                                        IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                                         ERR_NOT_ONE_BASE_TABLE );
                                     }
 
@@ -2556,10 +2642,18 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
                                   != IDE_SUCCESS );
 
                         QCM_COLUMN_INIT( sInsertColumn );
+                
+                        /* BUG-46124 */
+                        IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                                       sViewSFWGH,
+                                                                                       sViewSFWGH->from,
+                                                                                       sTarget,
+                                                                                       & sReturnTarget )
+                                  != IDE_SUCCESS );
 
-                        sInsertColumn->namePos.stmtText = sTarget->columnName.name;
+                        sInsertColumn->namePos.stmtText = sReturnTarget->columnName.name;
                         sInsertColumn->namePos.offset = 0;
-                        sInsertColumn->namePos.size = sTarget->columnName.size;
+                        sInsertColumn->namePos.size = sReturnTarget->columnName.size;
                         sInsertColumn->next = NULL;
 
                         if( sPrevColumn == NULL )
@@ -2574,8 +2668,8 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
                         }
 
                         // key-preserved column 검사
-                        sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                        sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                        sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                        sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                         IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                           != MTC_TUPLE_VIEW_FALSE ) ||
@@ -2588,12 +2682,12 @@ IDE_RC qmv::parseMultiInsertSelect(qcStatement * aStatement)
                         if( sInsertTupleId == ID_USHORT_MAX )
                         {
                             // first
-                            sInsertTupleId = sTarget->targetColumn->node.baseTable;
+                            sInsertTupleId = sReturnTarget->targetColumn->node.baseTable;
                         }
                         else
                         {
                             // insert할 태이블이 여러개임
-                            IDE_TEST_RAISE( sInsertTupleId != sTarget->targetColumn->node.baseTable,
+                            IDE_TEST_RAISE( sInsertTupleId != sReturnTarget->targetColumn->node.baseTable,
                                             ERR_NOT_ONE_BASE_TABLE );
                         }
 
@@ -3155,26 +3249,34 @@ IDE_RC qmv::validateInsertSelect(qcStatement * aStatement)
     {
         if ( sParseTree->hints->parallelHint != NULL )
         {
-            if (idlOS::strMatch(
-                    sParseTree->hints->parallelHint->table->tableName.stmtText +
-                    sParseTree->hints->parallelHint->table->tableName.offset,
-                    sParseTree->hints->parallelHint->table->tableName.size,
-                    sInsertTableRef->aliasName.stmtText +
-                    sInsertTableRef->aliasName.offset,
-                    sInsertTableRef->aliasName.size) == 0 ||
-                idlOS::strMatch(
-                    sParseTree->hints->parallelHint->table->tableName.stmtText +
-                    sParseTree->hints->parallelHint->table->tableName.offset,
-                    sParseTree->hints->parallelHint->table->tableName.size,
-                    sInsertTableRef->tableName.stmtText +
-                    sInsertTableRef->tableName.offset,
-                    sInsertTableRef->tableName.size) == 0)
+            // BUG-46286
+            if ( sParseTree->hints->parallelHint->table != NULL )
             {
-                // 동일 테이블인 경우, nothing to do
+                if (idlOS::strMatch(
+                        sParseTree->hints->parallelHint->table->tableName.stmtText +
+                        sParseTree->hints->parallelHint->table->tableName.offset,
+                        sParseTree->hints->parallelHint->table->tableName.size,
+                        sInsertTableRef->aliasName.stmtText +
+                        sInsertTableRef->aliasName.offset,
+                        sInsertTableRef->aliasName.size) == 0 ||
+                    idlOS::strMatch(
+                        sParseTree->hints->parallelHint->table->tableName.stmtText +
+                        sParseTree->hints->parallelHint->table->tableName.offset,
+                        sParseTree->hints->parallelHint->table->tableName.size,
+                        sInsertTableRef->tableName.stmtText +
+                        sInsertTableRef->tableName.offset,
+                        sInsertTableRef->tableName.size) == 0)
+                {
+                    // 동일 테이블인 경우, nothing to do
+                }
+                else
+                {
+                    // Hint 무시
+                    sParseTree->hints->parallelHint = NULL;
+                }
             }
             else
             {
-                // Hint 무시
                 sParseTree->hints->parallelHint = NULL;
             }
         }
@@ -3255,6 +3357,10 @@ IDE_RC qmv::validateInsertSelect(qcStatement * aStatement)
     {
         /* Nothing to do */
     }
+
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
 
     return IDE_SUCCESS;
 
@@ -3530,26 +3636,34 @@ IDE_RC qmv::validateMultiInsertSelect(qcStatement * aStatement)
         {
             if ( sParseTree->hints->parallelHint != NULL )
             {
-                if (idlOS::strMatch(
-                        sParseTree->hints->parallelHint->table->tableName.stmtText +
-                        sParseTree->hints->parallelHint->table->tableName.offset,
-                        sParseTree->hints->parallelHint->table->tableName.size,
-                        sInsertTableRef->aliasName.stmtText +
-                        sInsertTableRef->aliasName.offset,
-                        sInsertTableRef->aliasName.size) == 0 ||
-                    idlOS::strMatch(
-                        sParseTree->hints->parallelHint->table->tableName.stmtText +
-                        sParseTree->hints->parallelHint->table->tableName.offset,
-                        sParseTree->hints->parallelHint->table->tableName.size,
-                        sInsertTableRef->tableName.stmtText +
-                        sInsertTableRef->tableName.offset,
-                        sInsertTableRef->tableName.size) == 0)
+                // BUG-46286
+                if ( sParseTree->hints->parallelHint->table != NULL )
                 {
-                    // 동일 테이블인 경우, nothing to do
+                    if (idlOS::strMatch(
+                            sParseTree->hints->parallelHint->table->tableName.stmtText +
+                            sParseTree->hints->parallelHint->table->tableName.offset,
+                            sParseTree->hints->parallelHint->table->tableName.size,
+                            sInsertTableRef->aliasName.stmtText +
+                            sInsertTableRef->aliasName.offset,
+                            sInsertTableRef->aliasName.size) == 0 ||
+                        idlOS::strMatch(
+                            sParseTree->hints->parallelHint->table->tableName.stmtText +
+                            sParseTree->hints->parallelHint->table->tableName.offset,
+                            sParseTree->hints->parallelHint->table->tableName.size,
+                            sInsertTableRef->tableName.stmtText +
+                            sInsertTableRef->tableName.offset,
+                            sInsertTableRef->tableName.size) == 0)
+                    {
+                        // 동일 테이블인 경우, nothing to do
+                    }
+                    else
+                    {
+                        // Hint 무시
+                        sParseTree->hints->parallelHint = NULL;
+                    }
                 }
                 else
                 {
-                    // Hint 무시
                     sParseTree->hints->parallelHint = NULL;
                 }
             }
@@ -3646,6 +3760,10 @@ IDE_RC qmv::validateMultiInsertSelect(qcStatement * aStatement)
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_REF_REPL_TABLE_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_REPL_TABLE_FALSE;
     }
+
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
 
     return IDE_SUCCESS;
 
@@ -4111,6 +4229,11 @@ IDE_RC qmv::validateDelete(qcStatement * aStatement)
     qcmViewReadOnly      sReadOnly = QCM_VIEW_NON_READ_ONLY;
     mtcTuple           * sMtcTuple;
 
+    /* BUG-46124 */
+    qmsTarget       * sTarget;
+    qmsTarget       * sReturnTarget;
+    qmsSFWGH        * sViewSFWGH;
+
     IDU_FIT_POINT_FATAL( "qmv::validateDelete::__FT__" );
 
     sParseTree = (qmmDelParseTree*) aStatement->myPlan->parseTree;
@@ -4129,6 +4252,8 @@ IDE_RC qmv::validateDelete(qcStatement * aStatement)
     if ( sTableRef->view != NULL )
     {
         sViewParseTree = (qmsParseTree*) sTableRef->view->myPlan->parseTree;
+        sViewSFWGH     = sViewParseTree->querySet->SFWGH; /* BUG-46124 */
+        sTarget        = sViewParseTree->querySet->target; /* BUG-46124 */
 
         if ( sViewParseTree->querySet->SFWGH != NULL )
         {
@@ -4222,12 +4347,27 @@ IDE_RC qmv::validateDelete(qcStatement * aStatement)
                 // Nothing to do.
             }
 
+            /* BUG-46124 */
+            IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                           sViewSFWGH,
+                                                                           sViewSFWGH->from,
+                                                                           sTarget,
+                                                                           & sReturnTarget )
+                      != IDE_SUCCESS );
+
             // error delete할 테이블이 없음
             IDE_TEST_RAISE( sDeleteTableRef == NULL,
                             ERR_NOT_KEY_PRESERVED_TABLE );
 
             /* BUG-39399 remove search key preserved table  */
             sMtcTuple = &QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sDeleteTableRef->table];
+
+            /* BUG-46124 */
+            IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
+                              != MTC_TUPLE_VIEW_FALSE ) ||
+                            ( ( sMtcTuple->lflag & MTC_TUPLE_KEY_PRESERVED_MASK )
+                              != MTC_TUPLE_KEY_PRESERVED_TRUE ),
+                            ERR_NOT_KEY_PRESERVED_TABLE );
 
             sMtcTuple->lflag &= ~MTC_TUPLE_TARGET_UPDATE_DELETE_MASK;
             sMtcTuple->lflag |= MTC_TUPLE_TARGET_UPDATE_DELETE_TRUE;
@@ -4404,7 +4544,11 @@ IDE_RC qmv::validateDelete(qcStatement * aStatement)
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_REF_REPL_TABLE_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_REPL_TABLE_FALSE;
     }
-    
+
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NO_GRANT_DML_MVIEW_TABLE );
@@ -4510,6 +4654,10 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
     UShort            sUpdateTupleId = ID_USHORT_MAX;
     qcmViewReadOnly   sReadOnly = QCM_VIEW_NON_READ_ONLY;
 
+    /* BUG-46124 */
+    qmsTarget       * sReturnTarget;
+    qmsSFWGH        * sViewSFWGH;
+
     IDU_FIT_POINT_FATAL( "qmv::parseUpdate::__FT__" );
 
     sParseTree = (qmmUptParseTree*) aStatement->myPlan->parseTree;
@@ -4538,6 +4686,7 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
     if ( sTableRef->view != NULL )
     {
         sViewParseTree = (qmsParseTree*) sTableRef->view->myPlan->parseTree;
+        sViewSFWGH     = sViewParseTree->querySet->SFWGH; /* BUG-46124 */
 
         if ( sViewParseTree->querySet->SFWGH != NULL )
         {
@@ -4618,36 +4767,74 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
         }
     }
 
-    // validation of SET clause
-    // if this statement pass parser,
-    //      then nummber of column = the number of value.
-    sParseTree->uptColCount = 0;
-    for (sColumn = sParseTree->columns;
-         sColumn != NULL;
-         sColumn = sColumn->next)
+    // BUG-46174
+    if ( sParseTree->spVariable != NULL )
     {
-        sParseTree->uptColCount++;
+        IDE_TEST( parseSPVariableValue( aStatement,
+                                        sParseTree->spVariable,
+                                        &(sParseTree->values) )
+                  != IDE_SUCCESS);
+    }
 
-        //--------- validation of updating column ---------//
-        // check column existence
-        if ( (QC_IS_NULL_NAME(sColumn->tableNamePos) != ID_TRUE) )
+    // BUG-46174
+    if ( sParseTree->columns == NULL )
+    {
+        // SET ROW = 인 경우
+        IDE_TEST_RAISE( ( ( aStatement->spvEnv->createProc == NULL ) &&
+                          ( aStatement->spvEnv->createPkg  == NULL ) &&
+                          ( aStatement->calledByPSMFlag == ID_FALSE ) ),
+                        ERR_NOT_SUPPORTED );
+
+        sUpdateTableRef = sTableRef;
+        sUpdateTableInfo = sUpdateTableRef->tableInfo;
+
+        sParseTree->uptColCount = sUpdateTableInfo->columnCount;
+        sParseTree->columns = sUpdateTableInfo->columns;
+
+        for ( sColumn = sParseTree->columns,
+              sCurrValue = sParseTree->values;
+              sColumn != NULL;
+              sColumn = sColumn->next,
+              sCurrValue = sCurrValue->next )
         {
-            if ( idlOS::strMatch( sTableRef->aliasName.stmtText + sTableRef->aliasName.offset,
-                                  sTableRef->aliasName.size,
-                                  sColumn->tableNamePos.stmtText + sColumn->tableNamePos.offset,
-                                  sColumn->tableNamePos.size ) != 0 )
-            {
-                sqlInfo.setSourceInfo( aStatement, &sColumn->namePos );
-                IDE_RAISE( ERR_NOT_EXIST_COLUMN );
-            }
+            IDE_TEST_RAISE(sCurrValue == NULL, ERR_NOT_ENOUGH_INSERT_VALUES);
         }
 
-        IDE_TEST(qcmCache::getColumn(aStatement,
-                                     sTableInfo,
-                                     sColumn->namePos,
-                                     &sColumnInfo) != IDE_SUCCESS);
+        IDE_TEST_RAISE(sCurrValue != NULL, ERR_TOO_MANY_INSERT_VALUES);
+    }
+    else
+    {
+        // validation of SET clause
+        // if this statement pass parser,
+        //      then nummber of column = the number of value.
+        sParseTree->uptColCount = 0;
+        for (sColumn = sParseTree->columns;
+             sColumn != NULL;
+             sColumn = sColumn->next)
+        {
+            sParseTree->uptColCount++;
 
-        QMV_SET_QCM_COLUMN(sColumn, sColumnInfo);
+            //--------- validation of updating column ---------//
+            // check column existence
+            if ( (QC_IS_NULL_NAME(sColumn->tableNamePos) != ID_TRUE) )
+            {
+                if ( idlOS::strMatch( sTableRef->aliasName.stmtText + sTableRef->aliasName.offset,
+                                      sTableRef->aliasName.size,
+                                      sColumn->tableNamePos.stmtText + sColumn->tableNamePos.offset,
+                                      sColumn->tableNamePos.size ) != 0 )
+                {
+                    sqlInfo.setSourceInfo( aStatement, &sColumn->namePos );
+                    IDE_RAISE( ERR_NOT_EXIST_COLUMN );
+                }
+            }
+
+            IDE_TEST(qcmCache::getColumn(aStatement,
+                                         sTableInfo,
+                                         sColumn->namePos,
+                                         &sColumnInfo) != IDE_SUCCESS);
+
+            QMV_SET_QCM_COLUMN(sColumn, sColumnInfo);
+        }
     }
 
     /******************************
@@ -4698,9 +4885,6 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
                  sColumn = sColumn->next,
                      sUpdateColumn++ )
             {
-                // 순수 column이 아닌 경우(i1+1) column.id는 0이다.
-                IDE_TEST_RAISE ( sColumn->basicInfo->column.id == 0, ERR_NOT_KEY_PRESERVED_TABLE );
-
                 // find target column
                 for ( sColumnInfo = sTableInfo->columns,
                           sTarget = sViewParseTree->querySet->target;
@@ -4718,9 +4902,17 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
                     }
                 }
 
+                /* BUG-46124 */
+                IDE_TEST( qmsPreservedTable::searchQmsTargetForPreservedTable( sViewParseTree,
+                                                                               sViewSFWGH,
+                                                                               sViewSFWGH->from,
+                                                                               sTarget,
+                                                                               & sReturnTarget )
+                          != IDE_SUCCESS );
+
                 // key-preserved column 검사
-                sMtcTuple  = sMtcTemplate->rows + sTarget->targetColumn->node.baseTable;
-                sMtcColumn = sMtcTuple->columns + sTarget->targetColumn->node.baseColumn;
+                sMtcTuple  = sMtcTemplate->rows + sReturnTarget->targetColumn->node.baseTable;
+                sMtcColumn = sMtcTuple->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                 IDE_TEST_RAISE( ( ( sMtcTuple->lflag & MTC_TUPLE_VIEW_MASK )
                                   != MTC_TUPLE_VIEW_FALSE ) ||
@@ -4737,19 +4929,19 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
                 if( sUpdateTupleId == ID_USHORT_MAX )
                 {
                     // first
-                    sUpdateTupleId = sTarget->targetColumn->node.baseTable;
+                    sUpdateTupleId = sReturnTarget->targetColumn->node.baseTable;
                 }
                 else
                 {
                     // update할 태이블이 여러개임
-                    IDE_TEST_RAISE( sUpdateTupleId != sTarget->targetColumn->node.baseTable,
+                    IDE_TEST_RAISE( sUpdateTupleId != sReturnTarget->targetColumn->node.baseTable,
                                     ERR_NOT_ONE_BASE_TABLE );
                 }
 
                 sUpdateTableRef =
                     QC_SHARED_TMPLATE(aStatement)->tableMap[sUpdateTupleId].from->tableRef;
 
-                sColumnInfo = sUpdateTableRef->tableInfo->columns + sTarget->targetColumn->node.baseColumn;
+                sColumnInfo = sUpdateTableRef->tableInfo->columns + sReturnTarget->targetColumn->node.baseColumn;
 
                 // copy column
                 idlOS::memcpy( sUpdateColumn, sColumn, ID_SIZEOF(qcmColumn) );
@@ -5105,6 +5297,23 @@ IDE_RC qmv::parseUpdate(qcStatement * aStatement)
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QMV_NOT_DML_READ_ONLY_VIEW));
     }
+    IDE_EXCEPTION(ERR_NOT_ENOUGH_INSERT_VALUES)
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMV_NOT_ENOUGH_INSERT_VALUES));
+    }
+    IDE_EXCEPTION(ERR_TOO_MANY_INSERT_VALUES)
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMV_TOO_MANY_INSERT_VALUES));
+    }
+    IDE_EXCEPTION(ERR_NOT_SUPPORTED);
+    {
+        sqlInfo.setSourceInfo( aStatement, &sParseTree->columns->namePos );
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QSX_NOT_SUPPORTED_SQLTEXT,
+                                 sqlInfo.getErrMessage() ));
+        (void)sqlInfo.fini();
+    }
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -5263,7 +5472,10 @@ IDE_RC qmv::validateUpdate(qcStatement * aStatement)
         {
             /* PROJ-2197 PSM Renewal */
             sCurrValue->value->lflag |= QTC_NODE_COLUMN_CONVERT_TRUE;
-            
+
+            IDE_TEST( notAllowedAnalyticFunc( aStatement, sCurrValue->value )
+                      != IDE_SUCCESS );
+
             if ( qtc::estimate( sCurrValue->value,
                                 QC_SHARED_TMPLATE(aStatement),
                                 aStatement,
@@ -5317,7 +5529,10 @@ IDE_RC qmv::validateUpdate(qcStatement * aStatement)
             {
                 /* PROJ-2197 PSM Renewal */
                 sCurrValue->value->lflag |= QTC_NODE_COLUMN_CONVERT_TRUE;
-                
+
+                IDE_TEST( notAllowedAnalyticFunc( aStatement, sCurrValue->value )
+                          != IDE_SUCCESS );
+
                 if ( qtc::estimate( sCurrValue->value,
                                     QC_SHARED_TMPLATE(aStatement),
                                     aStatement,
@@ -5575,7 +5790,11 @@ IDE_RC qmv::validateUpdate(qcStatement * aStatement)
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_REF_REPL_TABLE_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_REPL_TABLE_FALSE;
     }
-    
+
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_USE_CURSOR_ATTR);
@@ -5614,7 +5833,10 @@ IDE_RC qmv::validateLockTable(qcStatement * aStatement)
     qcuSqlSourceInfo   sqlInfo;
     idBool             sExist = ID_FALSE;
     qcmSynonymInfo     sSynonymInfo;
-
+    UInt               sOperatableFlag = 0;
+    UInt               sTableID = 0;
+    qcmTableType       sTableType = QCM_USER_TABLE;
+    
     IDU_FIT_POINT_FATAL( "qmv::validateLockTable::__FT__" );
 
     sParseTree = (qmmLockParseTree*) aStatement->myPlan->parseTree;
@@ -5639,8 +5861,44 @@ IDE_RC qmv::validateLockTable(qcStatement * aStatement)
         IDE_RAISE( ERR_NOT_EXIST_TABLE );
     }
 
+    // BUG-46284
+    if ( ( smiGetTableFlag( sParseTree->tableHandle ) & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_FIXED )
+    {
+        // QCM_FIXED_TABLE, QCM_DUMP_TABLE, QCM_PERFORMANCE_VIEW
+        sTableType = QCM_FIXED_TABLE;
+    }
+    else
+    {
+        if( sSynonymInfo.isSynonymName == ID_TRUE )
+        {
+            IDE_TEST( qcm::getTableIDAndTypeByName( QC_SMI_STMT( aStatement ),
+                                                    sParseTree->userID,
+                                                    (UChar *)sSynonymInfo.objectName,
+                                                    (SInt)idlOS::strlen( sSynonymInfo.objectName ),
+                                                    &sTableID,
+                                                    &sTableType )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qcm::getTableIDAndTypeByName( QC_SMI_STMT( aStatement ),
+                                                    sParseTree->userID,
+                                                    (UChar *)(sParseTree->tableName.stmtText +
+                                                              sParseTree->tableName.offset),
+                                                    sParseTree->tableName.size,
+                                                    &sTableID,
+                                                    &sTableType )
+                      != IDE_SUCCESS );
+
+        }
+
+    }
+
+    qcm::setOperatableFlag( sTableType,
+                            &sOperatableFlag );
+
     // BUG-45366
-    if ( QCM_IS_OPERATABLE_QP_LOCK_TABLE( sParseTree->tableInfo->operatableFlag )
+    if ( QCM_IS_OPERATABLE_QP_LOCK_TABLE( sOperatableFlag )
          != ID_TRUE )
     {
         sqlInfo.setSourceInfo( aStatement, &(sParseTree->tableName) );
@@ -5650,7 +5908,6 @@ IDE_RC qmv::validateLockTable(qcStatement * aStatement)
     {
         /* Nothing to do */
     }
-
     
     // check grant
     IDE_TEST( qdpRole::checkDMLLockTablePriv( aStatement,
@@ -5667,6 +5924,24 @@ IDE_RC qmv::validateLockTable(qcStatement * aStatement)
     else
     {
         /* Nothing to do */
+    }
+
+    /* BUG-46273 Lock Partition */
+    if ( QC_IS_NULL_NAME( sParseTree->partitionName ) == ID_FALSE )
+    {
+        IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                                  sTableID,
+                                                  sParseTree->partitionName,
+                                                  & sParseTree->partitionInfo,
+                                                  & sParseTree->partitionSCN,
+                                                  & sParseTree->partitionHandle )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        sParseTree->partitionInfo   = NULL;
+        sParseTree->partitionHandle = NULL;
+        SMI_INIT_SCN( & sParseTree->partitionSCN );
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -5940,13 +6215,12 @@ IDE_RC qmv::detectDollarInFromClause(
     
 }
 
-
 IDE_RC qmv::parseSelect(qcStatement * aStatement)
 {
     qmsParseTree      * sParseTree;
     qmsSortColumns    * sCurrSort;
-    qcStmtListMgr     * sStmtListMgr        = NULL;
-    qcWithStmt        * sBackupWithStmtHead = NULL;
+    qcStmtListMgr     * sStmtListMgr;        /* BUG-45994 - 컴파일러 최적화 회피 */
+    qcWithStmt        * sBackupWithStmtHead; /* BUG-45994 */
     idBool              sIsTop = ID_FALSE;
 
     IDE_FT_BEGIN();
@@ -6026,10 +6300,13 @@ IDE_RC qmv::parseViewInQuerySet(
     if (aQuerySet->setOp == QMS_NONE)
     {
         sSFWGH =  aQuerySet->SFWGH;
-        
-        // PROJ-2415 Grouping Sets Clause 
+
+        // PROJ-2415 Grouping Sets Clause
         if ( sSFWGH->group != NULL )
         {
+            /* BUG-46702 */
+            IDE_TEST( convertWithRoullupToRollup( aStatement, sSFWGH ) != IDE_SUCCESS );
+
             IDE_TEST( qmvGBGSTransform::doTransform( aStatement, aQuerySet ) != IDE_SUCCESS );
         }
         else
@@ -6123,18 +6400,17 @@ IDE_RC qmv::parseViewInQuerySet(
 
 }
 
-
 IDE_RC qmv::parseViewInFromClause(
     qcStatement     * aStatement,
     qmsFrom         * aFrom,
     qmsHints        * aHints )
 {
     qmsTableRef       * sTableRef;
-    UInt                sSessionUserID;   // for fixing BUG-6096
+    volatile UInt       sSessionUserID;   // for fixing BUG-6096
     qcuSqlSourceInfo    sqlInfo;
     idBool              sExist = ID_FALSE;
     idBool              sIsFixedTable = ID_FALSE;
-    idBool              sIndirectRef = ID_FALSE;
+    volatile idBool     sIndirectRef;
     void              * sTableHandle = NULL;
     qcmSynonymInfo      sSynonymInfo;
     UInt                sTableType;
@@ -6149,8 +6425,7 @@ IDE_RC qmv::parseViewInFromClause(
 
     // To Fix PR-11776
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
-
-    IDU_FIT_POINT_FATAL( "qmv::parseViewInFromClause::__FT__::STAGE1" );
+    sIndirectRef   = ID_FALSE; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     if (aFrom->joinType != QMS_NO_JOIN) // INNER, OUTER JOIN
     {
@@ -6282,7 +6557,10 @@ IDE_RC qmv::parseViewInFromClause(
                             // PROJ-1436
                             // environment의 기록시 간접 참조 객체에 대한 user나
                             // privilege의 기록을 중지한다.
-                            qcgPlan::startIndirectRefFlag( aStatement, &sIndirectRef );
+                            qcgPlan::startIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
+
+                            /* BUG-45994 */
+                            IDU_FIT_POINT_FATAL( "qmv::parseViewInFromClause::__FT__::STAGE1" );
 
                             // If view is valid, then make parse tree
                             IDE_TEST(
@@ -6303,7 +6581,7 @@ IDE_RC qmv::parseViewInFromClause(
                             // re-set current session userID
                             QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
-                            qcgPlan::endIndirectRefFlag( aStatement, &sIndirectRef );
+                            qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
                         }
                         else
                         {
@@ -6321,7 +6599,8 @@ IDE_RC qmv::parseViewInFromClause(
                                  != IDE_SUCCESS);
 
                         // PROJ-2646 shard analyzer enhancement
-                        if ( qcg::isShardCoordinator( aStatement ) == ID_TRUE )
+                        if ( ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) ||
+                             ( sdi::isRebuildCoordinator( aStatement ) == ID_TRUE ) )
                         {
                             IDE_TEST( sdi::getTableInfo( aStatement,
                                                          sTableRef->tableInfo,
@@ -6347,7 +6626,9 @@ IDE_RC qmv::parseViewInFromClause(
                         IDE_TEST( qcgPlan::registerPlanTable(
                                       aStatement,
                                       sTableHandle,
-                                      sTableRef->tableSCN )
+                                      sTableRef->tableSCN,
+                                      sTableRef->tableInfo->tableOwnerID, /* BUG-45893 */
+                                      sTableRef->tableInfo->name )        /* BUG-45893 */
                                   != IDE_SUCCESS );
 
                         // environment의 기록
@@ -6389,7 +6670,10 @@ IDE_RC qmv::parseViewInFromClause(
                                 // PROJ-1436
                                 // environment의 기록시 간접 참조 객체에 대한 user나
                                 // privilege의 기록을 중지한다.
-                                qcgPlan::startIndirectRefFlag( aStatement, &sIndirectRef );
+                                qcgPlan::startIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
+
+                                /* BUG-45994 */
+                                IDU_FIT_POINT_FATAL( "qmv::parseViewInFromClause::__FT__::STAGE1" );
 
                                 // If view is valid, then make parse tree
                                 IDE_TEST(qdv::makeParseTreeForViewInSelect( aStatement,
@@ -6407,7 +6691,7 @@ IDE_RC qmv::parseViewInFromClause(
                                 QCG_SET_SESSION_USER_ID( aStatement,
                                                          sSessionUserID );
 
-                                qcgPlan::endIndirectRefFlag( aStatement, &sIndirectRef );
+                                qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
                             }
                             else
                             {
@@ -6484,14 +6768,13 @@ IDE_RC qmv::parseViewInFromClause(
     // User ID를 바로 잡아야 함.
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
-    qcgPlan::endIndirectRefFlag( aStatement, &sIndirectRef );
+    qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 
     IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 
 }
-
 
 IDE_RC qmv::parseViewInExpression(
     qcStatement     * aStatement,
@@ -6500,12 +6783,14 @@ IDE_RC qmv::parseViewInExpression(
     qcStatement    * sSubQStatement;
     qtcNode        * sNode;
 
-    SInt             sStackRemain = ID_SINT_MAX;
+    volatile SInt    sStackRemain;
     idBool           sIsTop = ID_FALSE;
 
     IDE_FT_BEGIN();
 
     IDU_FIT_POINT_FATAL( "qmv::parseViewInExpression::__FT__" );
+
+    sStackRemain = ID_SINT_MAX; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     // BUG-45443 root에서만 shard transform을 수행한다.
     disableShardTransformOnTop( aStatement, &sIsTop );
@@ -6516,6 +6801,9 @@ IDE_RC qmv::parseViewInExpression(
     QC_SHARED_TMPLATE(aStatement)->tmplate.stackRemain--;
 
     IDE_TEST_RAISE( sStackRemain < 1, ERR_STACK_OVERFLOW );
+
+    /* BUG-45944 */
+    IDU_FIT_POINT_FATAL( "qmv::parseViewInExpression::__FT__::STAGE1" );
 
     if ( ( aExpression->node.lflag & MTC_NODE_OPERATOR_MASK )
          == MTC_NODE_OPERATOR_SUBQUERY )
@@ -6575,7 +6863,6 @@ IDE_RC qmv::parseViewInExpression(
     return IDE_FAILURE;
 
 }
-
 
 IDE_RC qmv::validateSelect(qcStatement * aStatement)
 {
@@ -7134,6 +7421,7 @@ IDE_RC qmv::validateReturnIntoValue( qcStatement   * aStatement,
          sReturnIntoValue = sReturnIntoValue->next )
     {
         sCurrIntoVar = sReturnIntoValue->returningInto;
+        sCurrIntoVar->lflag |= QTC_NODE_COLUMN_CONVERT_TRUE;
         sFindVar = ID_FALSE;
 
         sPos.size = sCurrIntoVar->position.offset + sCurrIntoVar->position.size - sPos.offset;
@@ -7442,7 +7730,7 @@ IDE_RC qmv::validateReturnIntoValue( qcStatement   * aStatement,
 IDE_RC qmv::validateLimit( qcStatement * aStatement, qmsLimit * aLimit )
 {
     qtcNode* sHostNode;
-    ULong    sStartValue;
+    qcuSqlSourceInfo   sqlInfo;
 
     IDU_FIT_POINT_FATAL( "qmv::validateLimit::__FT__" );
 
@@ -7461,22 +7749,38 @@ IDE_RC qmv::validateLimit( qcStatement * aStatement, qmsLimit * aLimit )
                       NULL )
                   != IDE_SUCCESS );
 
+        // sequence 안됨
+        if ( ( sHostNode->lflag & QTC_NODE_SEQUENCE_MASK )
+             == QTC_NODE_SEQUENCE_EXIST )
+        {
+            sqlInfo.setSourceInfo( aStatement,
+                                   & sHostNode->position );
+            IDE_RAISE( ERR_SEQUENCE_NOT_ALLOWED );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // subquery 안됨
+        if ( ( sHostNode->lflag & QTC_NODE_SUBQUERY_MASK )
+             == QTC_NODE_SUBQUERY_EXIST )
+        {
+            sqlInfo.setSourceInfo( aStatement,
+                                   & sHostNode->position );
+            IDE_RAISE( ERR_NOT_SUPPORT_SUBQUERY );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
         // BUG-16055
         IDE_TEST( qtc::makeConversionNode( sHostNode,
                                            aStatement,
                                            QC_SHARED_TMPLATE(aStatement),
                                            & mtdBigint )
                   != IDE_SUCCESS );
-    }
-    else
-    {
-        /* BUG-42296 */
-        IDE_TEST(qmsLimitI::getStartValue(QC_SHARED_TMPLATE(aStatement),
-                                          aLimit,
-                                          &sStartValue)
-                 != IDE_SUCCESS);
-
-        IDE_TEST_RAISE(sStartValue == 0, ERR_LIMIT_BOUND);
     }
 
     if( qmsLimitI::hasHostBind( qmsLimitI::getCount( aLimit ) ) == ID_TRUE )
@@ -7494,6 +7798,32 @@ IDE_RC qmv::validateLimit( qcStatement * aStatement, qmsLimit * aLimit )
                       NULL )
                   != IDE_SUCCESS );
 
+        // sequence 안됨
+        if ( ( sHostNode->lflag & QTC_NODE_SEQUENCE_MASK )
+             == QTC_NODE_SEQUENCE_EXIST )
+        {
+            sqlInfo.setSourceInfo( aStatement,
+                                   & sHostNode->position );
+            IDE_RAISE( ERR_SEQUENCE_NOT_ALLOWED );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // subquery 안됨
+        if ( ( sHostNode->lflag & QTC_NODE_SUBQUERY_MASK )
+             == QTC_NODE_SUBQUERY_EXIST )
+        {
+            sqlInfo.setSourceInfo( aStatement,
+                                   & sHostNode->position );
+            IDE_RAISE( ERR_NOT_SUPPORT_SUBQUERY );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
         // BUG-16055
         IDE_TEST( qtc::makeConversionNode( sHostNode,
                                            aStatement,
@@ -7501,16 +7831,24 @@ IDE_RC qmv::validateLimit( qcStatement * aStatement, qmsLimit * aLimit )
                                            & mtdBigint )
                   != IDE_SUCCESS );
     }
-    else
-    {
-        // Nothing to do
-    }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_LIMIT_BOUND)
+    IDE_EXCEPTION( ERR_SEQUENCE_NOT_ALLOWED )
     {
-        IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_LIMIT_VALUE));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET(
+            ideSetErrorCode( qpERR_ABORT_QMV_SEQUENCE_NOT_ALLOWED,
+                             sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_SUBQUERY )
+    {
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET(
+            ideSetErrorCode( qpERR_ABORT_QSV_NOT_ALLOWED_SUBQUERY_SQLTEXT,
+                             sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
     IDE_EXCEPTION_END;
     
@@ -8732,6 +9070,9 @@ IDE_RC qmv::validateMove( qcStatement * aStatement )
     {
         if( sCurrValue->value != NULL )
         {
+            IDE_TEST( notAllowedAnalyticFunc( aStatement, sCurrValue->value )
+                      != IDE_SUCCESS );
+
             if( sCurrValue->validate == ID_TRUE )
             {
                 if( sCurrValue->expand == ID_TRUE )
@@ -9741,7 +10082,14 @@ IDE_RC qmv::validatePlanHints( qcStatement * aStatement,
             // Nothing to do.
         }
     }
-    
+   
+    // BUG-46137
+    if ( aHints->planCacheKeep == ID_TRUE )
+    {
+        QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_PLAN_CACHE_KEEP_MASK;
+        QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_PLAN_CACHE_KEEP_TRUE;
+    }
+
     return IDE_SUCCESS;
     
 }
@@ -9867,12 +10215,17 @@ IDE_RC qmv::parseMerge( qcStatement * aStatement )
     qmsSFWGH            * sSFWGH;
     qmsFrom             * sFrom;
     qmsTableRef         * sTableRef;
-    qtcNode             * sArgNode;
-
+    qtcNode             * sAndNode[2];
+    qtcNode             * sArgNode1;
+    qtcNode             * sArgNode2;
+    qcNamePosition        sNullPosition;
+    
     IDU_FIT_POINT_FATAL( "qmv::parseMerge::__FT__" );
 
     sParseTree = (qmmMergeParseTree *) aStatement->myPlan->parseTree;
 
+    SET_EMPTY_POSITION( sNullPosition );
+    
     /*******************************************************/
     /* MAKE NEW qcStatements (SELECT2/UPDATE/DELETE/INSERT) */
     /*******************************************************/
@@ -10051,14 +10404,120 @@ IDE_RC qmv::parseMerge( qcStatement * aStatement )
         sParseTree->updateStatement = sStatement;
         sParseTree->updateParseTree->common.stmt = sStatement;
 
-        /* BUG-39400 SQL:2003 지원 */
-        IDE_TEST( qtc::copyNodeTree(aStatement, sParseTree->onExpr, &sArgNode,
-                                    ID_FALSE, ID_TRUE ) != IDE_SUCCESS);
+        /* where clause fix (update where) */
+        if (sParseTree->whereForUpdate != NULL)
+        {
+            IDE_TEST( qtc::copyNodeTree(aStatement, sParseTree->onExpr, &sArgNode1,
+                                        ID_FALSE, ID_TRUE ) != IDE_SUCCESS);
+            IDE_TEST( qtc::copyNodeTree(aStatement, sParseTree->whereForUpdate, &sArgNode2,
+                                        ID_FALSE, ID_TRUE ) != IDE_SUCCESS);
+            sArgNode1->node.next = (mtcNode *)(sArgNode2);
 
-        sParseTree->updateParseTree->querySet->SFWGH->where = sArgNode;
+            IDE_TEST( qtc::makeNode(aStatement, sAndNode, & sNullPosition, (const UChar *)"AND", 3)
+                      != IDE_SUCCESS );
+
+            sAndNode[0]->node.arguments = (mtcNode *)sArgNode1;
+            sAndNode[0]->node.lflag &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
+            sAndNode[0]->node.lflag |= 2;
+        }
+        else
+        {
+            /* BUG-39400 SQL:2003 지원 */
+            IDE_TEST( qtc::copyNodeTree(aStatement, sParseTree->onExpr, &sArgNode1,
+                                        ID_FALSE, ID_TRUE ) != IDE_SUCCESS);
+
+            sAndNode[0] = sArgNode1;
+        }
+
+        sParseTree->updateParseTree->querySet->SFWGH->where = sAndNode[0];
 
         IDE_TEST(sParseTree->updateParseTree->common.parse(
                      sParseTree->updateStatement)
+                 != IDE_SUCCESS);
+    }
+    else
+    {
+        /* nothing to do */
+    }
+    
+    /***************************/
+    /* delete statement */
+    /***************************/
+    if (sParseTree->deleteParseTree != NULL)
+    {
+        sParseTree->deleteParseTree->common.stmt = sParseTree->common.stmt;
+        sParseTree->deleteParseTree->common.stmtKind = QCI_STMT_DELETE;
+
+        IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qcStatement, &sStatement)
+                 != IDE_SUCCESS);
+        QC_SET_STATEMENT(sStatement, aStatement, sParseTree->deleteParseTree);
+
+        sStatement->myPlan->parseTree = (qcParseTree *)sParseTree->deleteParseTree;
+
+        IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmsQuerySet, &sQuerySet)
+                 != IDE_SUCCESS);
+        idlOS::memcpy(sQuerySet, sParseTree->target, ID_SIZEOF(qmsQuerySet));
+
+        sParseTree->deleteParseTree->querySet = sQuerySet;
+
+        IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmsSFWGH, &sSFWGH)
+                 != IDE_SUCCESS);
+        idlOS::memcpy(sSFWGH, sParseTree->target->SFWGH, ID_SIZEOF(qmsSFWGH));
+
+        sParseTree->deleteParseTree->querySet->SFWGH = sSFWGH;
+        sSFWGH->thisQuerySet = sQuerySet;
+
+        IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmsFrom, &sFrom)
+                  != IDE_SUCCESS);
+        idlOS::memcpy(sFrom, sParseTree->target->SFWGH->from, ID_SIZEOF(qmsFrom));
+
+        sSFWGH->from = sFrom;
+
+        IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmsTableRef, &sTableRef)
+                  != IDE_SUCCESS );
+        idlOS::memcpy(sTableRef, sParseTree->target->SFWGH->from->tableRef, ID_SIZEOF(qmsTableRef));
+
+        // partitionRef가 있는 경우 복사한다.
+        IDE_TEST( qcmPartition::copyPartitionRef(
+                      aStatement,
+                      sParseTree->target->SFWGH->from->tableRef->partitionRef,
+                      & sTableRef->partitionRef )
+                  != IDE_SUCCESS );
+        
+        sSFWGH->from->tableRef = sTableRef;
+
+        sParseTree->deleteStatement = sStatement;
+        sParseTree->deleteParseTree->common.stmt = sStatement;
+
+        /* where clause fix (update where + delete where) */
+        if (sParseTree->whereForDelete != NULL)
+        {
+            IDE_TEST( qtc::copyNodeTree(aStatement,
+                                        sParseTree->updateParseTree->querySet->SFWGH->where, &sArgNode1,
+                                        ID_FALSE, ID_TRUE) != IDE_SUCCESS);
+            IDE_TEST( qtc::copyNodeTree(aStatement,
+                                        sParseTree->whereForDelete, &sArgNode2,
+                                        ID_FALSE, ID_TRUE) != IDE_SUCCESS);
+            sArgNode1->node.next = (mtcNode *)(sArgNode2);
+
+            IDE_TEST( qtc::makeNode(aStatement, sAndNode, & sNullPosition, (const UChar *)"AND", 3)
+                      != IDE_SUCCESS );
+
+            sAndNode[0]->node.arguments = (mtcNode *)sArgNode1;
+            sAndNode[0]->node.lflag &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
+            sAndNode[0]->node.lflag |= 2;
+        }
+        else
+        {
+            IDE_TEST( qtc::copyNodeTree(aStatement,
+                                        sParseTree->updateParseTree->querySet->SFWGH->where, &sArgNode1,
+                                        ID_FALSE, ID_TRUE) != IDE_SUCCESS);
+            sAndNode[0] = sArgNode1;
+        }
+        sParseTree->deleteParseTree->querySet->SFWGH->where = sAndNode[0];
+
+        IDE_TEST(sParseTree->deleteParseTree->common.parse(
+                     sParseTree->deleteStatement)
                  != IDE_SUCCESS);
     }
     else
@@ -10190,7 +10649,8 @@ IDE_RC qmv::validateMerge( qcStatement * aStatement )
     qcmColumn           * sColumn;
     idBool                sFound;
     qcuSqlSourceInfo      sqlInfo;
-
+    qmsSFWGH            * sSFWGH;
+    
     IDU_FIT_POINT_FATAL( "qmv::validateMerge::__FT__" );
 
     sParseTree = (qmmMergeParseTree *) aStatement->myPlan->parseTree;
@@ -10259,6 +10719,31 @@ IDE_RC qmv::validateMerge( qcStatement * aStatement )
         /* nothing to do */
     }
 
+    if ( sParseTree->deleteParseTree != NULL )
+    {
+        // PR-13725
+        // CHECK OPERATABLE
+        if ( QCM_IS_OPERATABLE_QP_DELETE( sTargetTableInfo->operatableFlag )
+             != ID_TRUE )
+        {
+            sqlInfo.setSourceInfo( aStatement,
+                                   & sTargetTableRef->tableName );
+            IDE_RAISE( ERR_NOT_EXIST_TABLE );
+        }
+        else
+        {
+            /* nothing to do */
+        }
+        
+        IDE_TEST( sParseTree->deleteParseTree->common.validate(
+                      sParseTree->deleteStatement )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* nothing to do */
+    }
+    
     if ( sParseTree->insertParseTree != NULL )
     {
         // PR-13725
@@ -10278,6 +10763,28 @@ IDE_RC qmv::validateMerge( qcStatement * aStatement )
         IDE_TEST( sParseTree->insertParseTree->common.validate(
                       sParseTree->insertStatement )
                   != IDE_SUCCESS );
+
+        /* estimate WHERE for insert statement */
+        if ( sParseTree->whereForInsert != NULL )
+        {
+            IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmsSFWGH, &sSFWGH)
+                      != IDE_SUCCESS );
+            idlOS::memcpy( (void*)sSFWGH,
+                           (void*)sParseTree->selectTargetParseTree->querySet->SFWGH,
+                           ID_SIZEOF(qmsSFWGH) );
+            
+            sSFWGH->where = sParseTree->whereForInsert;
+
+            IDE_TEST( qmvQuerySet::validateWhere(
+                          aStatement,
+                          NULL, // querySet : SELECT 구문만 필요
+                          sSFWGH )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* nothing to do */
+        }
     }
     else
     {
@@ -10323,6 +10830,10 @@ IDE_RC qmv::validateMerge( qcStatement * aStatement )
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_REF_REPL_TABLE_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_REPL_TABLE_FALSE;
     }
+
+    /* PROJ-2632 */
+    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_DISABLE_SERIAL_FILTER_MASK;
+    QC_SHARED_TMPLATE(aStatement)->flag |=  QC_TMP_DISABLE_SERIAL_FILTER_TRUE;
 
     return IDE_SUCCESS;
 
@@ -10638,7 +11149,7 @@ IDE_RC qmv::getRefColumnList( qcStatement *  aQcStmt,
     UInt                        i;
     UInt                        j;
     idBool                      sNeedCheck = ID_FALSE;
-    UInt                        sStage = 0;
+    volatile UInt               sStage;
 
     IDE_FT_BEGIN();
 
@@ -10647,6 +11158,7 @@ IDE_RC qmv::getRefColumnList( qcStatement *  aQcStmt,
     sParseTree   = (qmmUptParseTree*)aQcStmt->myPlan->parseTree;
     sTableInfo   = sParseTree->querySet->SFWGH->from->tableRef->tableInfo;
     sTriggerInfo = sTableInfo->triggerInfo;
+    sStage       = 0; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     for ( i = 0; i < sTableInfo->triggerCount; i++, sTriggerInfo++ )
     {
@@ -10663,6 +11175,9 @@ IDE_RC qmv::getRefColumnList( qcStatement *  aQcStmt,
             IDE_TEST( sTriggerCache->latch.lockRead( NULL, NULL ) != IDE_SUCCESS );
 
             sStage = 1;
+
+            /* BUG-45994 */
+            IDU_FIT_POINT_FATAL( "qmv::getRefColumnList::__FT__::STAGE1" );
 
             // invalid 상태의 trigger는 무시한다.
             if ( sTriggerCache->isValid == ID_TRUE )
@@ -10846,3 +11361,281 @@ void qmv::enableShardTransformInShardView( qcStatement * aStatement,
 {
     enableShardTransformOnTop( aStatement, aIsShardView );
 }
+
+IDE_RC qmv::notAllowedAnalyticFunc( qcStatement * aStatement,
+                                    qtcNode     * aNode )
+{
+    qcuSqlSourceInfo    sqlInfo;
+
+    if ( aNode->overClause != NULL )
+    {
+        sqlInfo.setSourceInfo( aStatement, &aNode->position );
+        IDE_RAISE( ERR_NOT_ALLOWED_ANALYTIC );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( aNode->node.arguments != NULL )
+    {
+        IDE_TEST( notAllowedAnalyticFunc( aStatement, (qtcNode *)aNode->node.arguments )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( aNode->node.next != NULL )
+    {
+        IDE_TEST( notAllowedAnalyticFunc( aStatement, (qtcNode *)aNode->node.next )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_NOT_ALLOWED_ANALYTIC)
+    {
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET(
+            ideSetErrorCode(qpERR_ABORT_QCV_NOT_ALLOWED_ANALYTIC,
+                            sqlInfo.getErrMessage() ));
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmv::parseSPVariableValue( qcStatement   * aStatement,
+                                  qtcNode       * aSPVariable,
+                                  qmmValueNode ** aValues)
+{
+    // BUG-46174
+    qcuSqlSourceInfo     sqlInfo;
+    mtcColumn          * sMtcColumn  = NULL;
+
+    idBool               sFindVar;
+    qsVariables        * sVariable   = NULL;
+    qmmValueNode       * sLastValue  = NULL;
+    qmmValueNode       * sValue      = NULL;
+    qtcNode            * sRecField[2];
+    qcmColumn          * sFieldColumn = NULL;
+    qsProcStmtSql      * sCurrStmt    = NULL;
+    qcNamePosition       sFieldName;
+
+    IDE_TEST_RAISE( ( ( aStatement->spvEnv->createProc == NULL ) &&
+                      ( aStatement->spvEnv->createPkg  == NULL ) ),
+                    ERR_NOT_SUPPORTED );
+
+    aSPVariable->lflag |= QTC_NODE_COLUMN_CONVERT_TRUE;
+
+    IDE_TEST( qsvProcVar::searchVarAndPara( aStatement,
+                                            aSPVariable,
+                                            ID_TRUE, // for OUTPUT
+                                            &sFindVar,
+                                            &sVariable)
+              != IDE_SUCCESS);
+
+    if ( sFindVar == ID_FALSE )
+    {
+        // BUG-42715
+        // bind 변수가 아니면 package 변수이다.
+        IDE_TEST( qsvProcVar::searchVariableFromPkg( aStatement,
+                                                     aSPVariable,
+                                                     &sFindVar,
+                                                     &sVariable )
+                  != IDE_SUCCESS );
+    }
+
+    IDE_TEST_RAISE( sFindVar == ID_FALSE, ERR_INVALID_VAR );
+
+    IDE_TEST( qtc::estimate( aSPVariable,
+                             QC_SHARED_TMPLATE(aStatement),
+                             aStatement,
+                             NULL,
+                             NULL,
+                             NULL )
+              != IDE_SUCCESS );
+
+    if ( ( sVariable->variableType == QS_ASSOCIATIVE_ARRAY_TYPE ) &&
+         ( aSPVariable->node.arguments != NULL ) )
+    {
+        // ARRAY[1]이 레코드타입인 경우
+        sMtcColumn = sVariable->typeInfo->columns->next->basicInfo;
+
+        IDE_TEST_RAISE( ( ( sMtcColumn->module->id != MTD_ROWTYPE_ID ) &&
+                          ( sMtcColumn->module->id != MTD_RECORDTYPE_ID ) ),
+                        ERR_INVALID_VAR );
+
+        sFieldColumn = ((qtcModule*)(sMtcColumn->module))->typeInfo->columns;
+    }
+    else 
+    {
+        sMtcColumn = QTC_STMT_COLUMN( aStatement, aSPVariable ) ;
+
+        IDE_TEST_RAISE( ( ( sMtcColumn->module->id != MTD_ROWTYPE_ID ) &&
+                          ( sMtcColumn->module->id != MTD_RECORDTYPE_ID ) ),
+                        ERR_INVALID_VAR );
+
+        sFieldColumn = sVariable->typeInfo->columns;
+    }
+
+    for ( ; 
+          sFieldColumn != NULL;
+          sFieldColumn = sFieldColumn->next )
+    {
+        sFieldName.stmtText = sFieldColumn->name;
+        sFieldName.offset = 0;
+        sFieldName.size = idlOS::strlen((SChar*)sFieldColumn->name);
+
+        IDE_TEST( qsvProcVar::makeRecordColumnByName( aStatement,
+                                                      aSPVariable,
+                                                      &sFieldName,
+                                                      sRecField )
+                  != IDE_SUCCESS); 
+
+        IDE_TEST( STRUCT_ALLOC(QC_QMP_MEM(aStatement), qmmValueNode, &sValue)
+                  != IDE_SUCCESS );
+
+        sValue->value     = sRecField[0];
+        sValue->validate  = ID_TRUE;
+        sValue->calculate = ID_TRUE;
+        sValue->timestamp = ID_FALSE;
+        sValue->expand    = ID_FALSE;
+        sValue->msgID     = ID_FALSE;
+        sValue->next      = NULL;
+
+        if ( *aValues == NULL )
+        {
+            *aValues = sValue;
+
+            sCurrStmt = (qsProcStmtSql *)aStatement->spvEnv->currStmt;
+            sCurrStmt->usingRecValueInsUpt = sValue->value;
+
+            sLastValue = *aValues;
+        }
+        else
+        {
+            sLastValue->value->node.next = (mtcNode *)sValue->value;
+            sLastValue->next = sValue;
+            sLastValue = sLastValue->next;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_NOT_SUPPORTED);
+    {
+        sqlInfo.setSourceInfo( aStatement,
+                               &aSPVariable->position );
+
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QSX_NOT_SUPPORTED_SQLTEXT,
+                                 sqlInfo.getErrMessage() ));
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION(ERR_INVALID_VAR);
+    {
+        sqlInfo.setSourceInfo( aStatement,
+                               &aSPVariable->position );
+
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QSV_INVALID_IDENTIFIER,
+                                 sqlInfo.getErrMessage() ));
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/**
+ * BUG-46702
+ * with rollup 구문이 들어오면 group by의 전체 expression을 rollup의 arguments
+ * 로 transform해서 기존 rollup처럼 동작하도록 한다.
+ */
+IDE_RC qmv::convertWithRoullupToRollup( qcStatement * aStatement,
+                                            qmsSFWGH    * aSFWGH )
+{
+    qmsConcatElement * sConcatElement = NULL;
+    qmsConcatElement * sTemp = NULL;
+    idBool             sIsWithRollup = ID_FALSE;
+    qcuSqlSourceInfo   sqlInfo;
+
+    for ( sConcatElement = aSFWGH->group;
+          sConcatElement != NULL;
+          sConcatElement = sConcatElement->next )
+    {
+        if ( sConcatElement->type == QMS_GROUPBY_WITH_ROLLUP )
+        {
+            sIsWithRollup = ID_TRUE;
+            sConcatElement->type = QMS_GROUPBY_NORMAL;
+
+            if ( sConcatElement->next != NULL )
+            {
+                sqlInfo.setSourceInfo( aStatement, &sConcatElement->next->position );
+                IDE_RAISE( ERR_NOT_SUPPORT );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    IDE_TEST_CONT( sIsWithRollup == ID_FALSE, normal_exit );
+
+    for ( sConcatElement = aSFWGH->group;
+          sConcatElement != NULL;
+          sConcatElement = sConcatElement->next )
+    {
+        if ( sConcatElement->type != QMS_GROUPBY_NORMAL )
+        {
+            sqlInfo.setSourceInfo( aStatement, &sConcatElement->position );
+            IDE_RAISE( ERR_NOT_SUPPORT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    sConcatElement = aSFWGH->group;
+
+    IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmsConcatElement),
+                                             (void **) &sTemp )
+              != IDE_SUCCESS );
+
+    sTemp->type = QMS_GROUPBY_ROLLUP;
+    sTemp->arithmeticOrList = NULL;
+    sTemp->next = NULL;
+    sTemp->arguments = sConcatElement;
+    SET_EMPTY_POSITION( sTemp->position );
+
+    aSFWGH->group = sTemp;
+
+    IDE_EXCEPTION_CONT( normal_exit );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_SUPPORT )
+    {
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_number.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfTo_number.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -88,6 +88,7 @@ const mtcExecute mtfTo_numberExecuteFor2Args = {
     mtf::calculateNA,
     mtfTo_numberCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -265,6 +266,7 @@ static const mtcExecute mtfTo_numberExecuteInteger = {
     mtf::calculateNA,
     mtfTo_numberCalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -344,6 +346,7 @@ static const mtcExecute mtfTo_numberExecuteSmallint = {
     mtf::calculateNA,
     mtfTo_numberCalculateSmallint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -423,6 +426,7 @@ static const mtcExecute mtfTo_numberExecuteBigint = {
     mtf::calculateNA,
     mtfTo_numberCalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -500,6 +504,7 @@ static const mtcExecute mtfTo_numberExecuteNumeric = {
     mtf::calculateNA,
     mtfTo_numberCalculateNumeric,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -592,6 +597,7 @@ static const mtcExecute mtfTo_numberExecuteFloat = {
     mtf::calculateNA,
     mtfTo_numberCalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -684,6 +690,7 @@ static const mtcExecute mtfTo_numberExecuteReal = {
     mtf::calculateNA,
     mtfTo_numberCalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -763,6 +770,7 @@ static const mtcExecute mtfTo_numberExecuteDouble = {
     mtf::calculateNA,
     mtfTo_numberCalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

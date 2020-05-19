@@ -8,7 +8,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 322
+# Last Number = 323
 
 SECTION = 9
 
@@ -607,6 +607,10 @@ SECTION = 9
 316, HY000, utERR_ABORT_Table_Not_Found_Error = The table (<0%s>.<1%s>) specified in the configuration file does not exist on the <2%s> database.
 # *Cause: The specified table does not exist in the database.
 # *Action: Check to see if the specified table name located in the altiComp configuration file is correct.
+
+323, HY000, utERR_ABORT_AUDIT_DB_Error = Error occurred on the database while processing LOB data. (<0%s>)
+# *Cause: The specified error returned from the database.
+# *Action: Send a bug report to the vendor
 
 ############# ILOADER API ##############
 264, HY000, utERR_ABORT_UPLOAD_Error = Could not upload the entire data file.

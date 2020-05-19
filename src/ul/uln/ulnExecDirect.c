@@ -290,7 +290,9 @@ SQLRETURN ulnExecDirect(ulnStmt *aStmt, acp_char_t *aStatementText, acp_sint32_t
     {
         ACI_TEST( ULN_FNCONTEXT_GET_RC( &sFnContext ) != SQL_NO_DATA );
         ULN_FNCONTEXT_GET_DBC( &sFnContext, sDbc );
-        ACI_TEST( sDbc == NULL );
+        /* BUG-46052 codesonar Null Pointer Dereference */
+        ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+
         if ( sDbc->mAttrOdbcCompatibility == 2 )
         {
             ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_SUCCESS );
@@ -333,6 +335,11 @@ SQLRETURN ulnExecDirect(ulnStmt *aStmt, acp_char_t *aStatementText, acp_sint32_t
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     ULN_IS_FLAG_UP(sNeedFinPtContext)

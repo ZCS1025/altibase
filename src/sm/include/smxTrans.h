@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTrans.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTrans.h 82916 2018-04-26 06:29:17Z seulki $
  **********************************************************************/
 
 #ifndef _O_SMX_TRANS_H_
@@ -114,7 +114,8 @@ public:
                  UInt     aFlag,
                  UInt     aReplID );
 
-    IDE_RC abort();
+    IDE_RC abort( idBool      aIsLegacyTrans,
+                  void     ** aLegacyTrans );
     //PROJ-1677 DEQ.
     IDE_RC commit( smSCN*  aCommitSCN,
                    idBool  aIsLegacyTrans = ID_FALSE,
@@ -756,6 +757,7 @@ public:
     smSCN              mMinMemViewSCN;      // Minimum Memory ViewSCN
     smSCN              mMinDskViewSCN;      // Minimum Disk ViewSCN
     smSCN              mFstDskViewSCN;      // 트랜잭션의 디스크 시작 ViewSCN
+    smSCN              mCursorOpenInfSCN;   // 해당 Tx에서 cursor가 열렸을때의 Infinite SCN
 
     // BUG-26881 잘못된 CTS stamping으로 acces할 수 없는 row를 접근함
     // 트랜잭션 시작시점에서 active transaction 중 oldestFstViewSCN을 설정
@@ -913,6 +915,10 @@ public:
     smrRTOI          mRTOI4UndoFailure;
 
     static smGetDtxGlobalTxId  mGetDtxGlobalTxIdFunc;
+
+    /* PROJ-2694 Fetch Across Rollback */
+    idBool           mIsReusableRollback;
+    idBool           mIsCursorHoldable;
 
 private:
     /* TASK-2401 MMAP Logging환경에서 Disk/Memory Log의 분리

@@ -117,6 +117,10 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
             sCurExtFstPIDPtr++;
         }
     }
+    else
+    {
+        // 위에서 검사하고 들어왔으니 무조건 DiskTalbeSpace... 따로 검사하지 말자. 
+    }
 
     while( sNrExts > 0 )
     {
@@ -870,6 +874,8 @@ IDE_RC sdptbExtent::freeExt( idvSQL           *  aStatistics,
     }
     else
     {
+        IDE_ERROR( sctTableSpaceMgr::isDiskTableSpace(aSpaceID ) == ID_TRUE );
+
         IDE_TEST( freeExtsInLG( aStatistics,
                                 aMtx,
                                 aSpaceID,

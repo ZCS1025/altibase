@@ -26,7 +26,7 @@
 class mmcChildPCO
 {
 public:
-    void   initialize(SChar         *aSQLTextIdStr,
+    void   initialize(SChar         *aSQLTextId,
                       const UInt     aChildID,
                       mmcChildPCOCR  aCreateReason,
                       const UInt     aRebuildedCnt,
@@ -38,6 +38,7 @@ public:
     
     
     inline void   getPlanState(mmcChildPCOPlanState* aPlanState);
+    inline mmcChildPCOPlanState getPlanState();
     //fix BUG-24607 hard-prepare대기 완료후에 child PCO가
     //old PCO list으로 옮겨질수 있다.
     void   wait4HardPrepare(idvSQL* aStatistics);
@@ -58,7 +59,7 @@ public:
     inline qciPlanBindInfo*     getPlanBindInfo(); // PROJ-2163
  
     //for performance view.
-    SChar                *mSQLTextIdStr;
+    SChar                *mSQLTextId;
     UInt                  mChildID;
     mmcChildPCOCR         mCreateReason;
     UInt                  mRebuildedCnt;
@@ -66,7 +67,7 @@ public:
     UInt                 *mHitCntPtr;
 private:
     // PROJ-2408
-    iduLatch           mPrepareLatch;
+    iduLatch              mPrepareLatch;
     qciPlanProperty       mEnvironment;
     qciPlanBindInfo       mPlanBindInfo; // PROJ-2163
     mmcChildPCOEnvState   mEnvState;
@@ -112,6 +113,11 @@ inline UInt  mmcChildPCO::getRebuildCnt()
 inline void  mmcChildPCO::getPlanState(mmcChildPCOPlanState* aPlanState)
 {
     *aPlanState = mPlanState;
+}
+
+inline mmcChildPCOPlanState mmcChildPCO::getPlanState()
+{
+    return mPlanState;
 }
 
 // PROJ-2163

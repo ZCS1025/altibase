@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdnForeignKey.cpp 82174 2018-02-02 02:28:16Z andrew.shin $
+ * $Id: qdnForeignKey.cpp 83534 2018-07-19 06:28:22Z andrew.shin $
  *
  * Description :
  *
@@ -1207,8 +1207,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
             //------------------------------
 
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aStatement->qmxMem->getStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS);
+            IDE_TEST_RAISE( aStatement->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             IDE_TEST( checkParentRef4Const( aStatement,
                                             NULL,
@@ -1219,8 +1218,7 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
                       != IDE_SUCCESS);
 
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aStatement->qmxMem->setStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS);
+            IDE_TEST_RAISE( aStatement->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             IDE_TEST( sReadCursor.readRow( & sRow, & sRid, SMI_FIND_NEXT)
                       != IDE_SUCCESS );
@@ -1235,6 +1233,13 @@ qdnForeignKey::checkRef4AddConst( qcStatement      * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qdnForeignKey::checkRef4AddConst"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     if ( sCursorOpen == ID_TRUE )
@@ -1565,8 +1570,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
             //------------------------------
 
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aStatement->qmxMem->getStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS);
+            IDE_TEST_RAISE( aStatement->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             IDE_TEST( checkParentRef4Const( aStatement,
                                             NULL,
@@ -1577,8 +1581,7 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
                       != IDE_SUCCESS);
 
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aStatement->qmxMem->setStatus(&sQmxMemStatus)
-                      != IDE_SUCCESS);
+            IDE_TEST_RAISE( aStatement->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             IDE_TEST( sReadCursor.readRow( & sRow, & sRid, SMI_FIND_NEXT)
                       != IDE_SUCCESS );
@@ -1593,6 +1596,13 @@ qdnForeignKey::checkRef4ModConst( qcStatement      * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qdnForeignKey::checkRef4ModConst"
+                     " memory error" );
+    }
     IDE_EXCEPTION(ERR_CONSTRAINT_NOT_EXIST);
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDN_REFERENCED_CONSTRAINT_NOT_FOUND));
@@ -2409,6 +2419,24 @@ IDE_RC qdnForeignKey::searchParentKey(
                         IDE_TEST( qmoPartition::hashPartitionFilteringWithPartOrder(
                                       sParentTableRef,
                                       sPartOrder,
+                                      &sSelectedPartitionRef )
+                                  != IDE_SUCCESS );
+                    }
+                    break;
+                /* BUG-46065 support range using hash */
+                case QCM_PARTITION_METHOD_RANGE_USING_HASH:
+                    {
+                        IDE_TEST( qmoPartition::getPartOrder( sParentTableRef->tableInfo->partKeyColumns,
+                                                              QMO_RANGE_USING_HASH_MAX_VALUE,
+                                                              &sPartCondVal,
+                                                              &sPartOrder )
+                                  != IDE_SUCCESS );
+                        sPartCondVal.partCondValCount = 1;
+                        sPartCondVal.partCondValType  = QMS_PARTCONDVAL_NORMAL;
+                        sPartCondVal.partCondValues[0] = &sPartOrder;
+                        IDE_TEST( qmoPartition::rangeUsingHashPartitionFilteringWithValues(
+                                      sParentTableRef,
+                                      &sPartCondVal,
                                       &sSelectedPartitionRef )
                                   != IDE_SUCCESS );
                     }
@@ -6324,9 +6352,8 @@ qdnForeignKey::checkChild4DeleteChildRow( qcStatement      * aStatement,
     {
         if( sChildInfo->parentTableID == aChildTableInfo->tableID )
         {
-            IDE_TEST( aStatement->qmxMem->getStatus( & sQmxMemStatus )
-                      != IDE_SUCCESS );
-            
+            IDE_TEST_RAISE( aStatement->qmxMem->getStatus( & sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
+
             IDE_TEST( checkChildRefOnDelete(
                           aStatement,
                           aChildConstraints,
@@ -6335,9 +6362,8 @@ qdnForeignKey::checkChild4DeleteChildRow( qcStatement      * aStatement,
                           aOldRow,
                           ID_TRUE )
                       != IDE_SUCCESS );
-                    
-            IDE_TEST( aStatement->qmxMem->setStatus( &sQmxMemStatus )
-                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( aStatement->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
         }
         else
         {
@@ -6349,6 +6375,13 @@ qdnForeignKey::checkChild4DeleteChildRow( qcStatement      * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qdnForeignKey::checkChild4DeleteChildRow"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -9185,8 +9218,7 @@ qdnForeignKey::checkChild4UpdateNullChildRow( qcStatement      * aStatement,
             // grand child 
             if ( sIsSkip == ID_FALSE )
             {
-                IDE_TEST( aStatement->qmxMem->getStatus( & sQmxMemStatus )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( aStatement->qmxMem->getStatus( & sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
                         
                 IDE_TEST( checkChildRefOnDelete(
                               aStatement,
@@ -9197,8 +9229,7 @@ qdnForeignKey::checkChild4UpdateNullChildRow( qcStatement      * aStatement,
                               ID_FALSE )
                           != IDE_SUCCESS );
                         
-                IDE_TEST( aStatement->qmxMem->setStatus( &sQmxMemStatus )
-                          != IDE_SUCCESS );
+                IDE_TEST_RAISE( aStatement->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
             }
             else
             {
@@ -9211,6 +9242,13 @@ qdnForeignKey::checkChild4UpdateNullChildRow( qcStatement      * aStatement,
     
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qdnForeignKey::checkChild4UpdateNullChildRow"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

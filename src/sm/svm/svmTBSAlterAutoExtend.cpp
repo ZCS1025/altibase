@@ -87,9 +87,7 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
     UInt                sState = 0;
     
     IDE_DASSERT( aTrans != NULL );
-
-    IDE_DASSERT( sctTableSpaceMgr::isVolatileTableSpace( aTableSpaceID )
-                 == ID_TRUE );
+    IDE_DASSERT( sctTableSpaceMgr::isVolatileTableSpace( aTableSpaceID ) == ID_TRUE );
 
     ///////////////////////////////////////////////////////////////////////////
     // Tablespace ID로부터 Node를 가져온다

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgGrouping.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgGrouping.cpp 85262 2019-04-17 01:37:36Z andrew.shin $
  *
  * Description :
  *     Grouping Graph를 위한 수행 함수
@@ -291,8 +291,10 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     idBool               sEnableParallel = ID_TRUE;
     SDouble              sRecordSize;
     SDouble              sAggrCost;
+    idBool               sIsFuncData = ID_FALSE; /* BUG-46906 */
 
-    
+    extern mtfModule     mtfListagg; /* BUG-46906 */
+
     IDU_FIT_POINT_FATAL( "qmgGrouping::optimize::__FT__" );
 
     //------------------------------------------
@@ -331,6 +333,16 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
             sMtcColumn   = QTC_TMPL_COLUMN(QC_SHARED_TMPLATE(aStatement), sNode);
             sRecordSize += sMtcColumn->column.size;
+
+            /* BUG-46906 */
+            if ( sNode->node.module == & mtfListagg )
+            {
+                sIsFuncData = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
 
             // aggregation의 subquery 최적화
             IDE_TEST(
@@ -557,6 +569,17 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   != IDE_SUCCESS );
     }
 
+    /* BUG-46906 */
+    if ( sIsFuncData == ID_TRUE )
+    {
+        sMyGraph->graph.flag &= ~QMG_SORT_HASH_METHOD_MASK;
+        sMyGraph->graph.flag |= QMG_SORT_HASH_METHOD_SORT;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     // BUG-37074
     if( sMyGraph->distAggArg != NULL )
     {
@@ -652,7 +675,8 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         // BUG-43830 parallel aggregation
-        if ( QTC_STMT_EXECUTE( aStatement, sAggr->aggr )->merge != mtf::calculateNA )
+        if ( ( QTC_STMT_EXECUTE( aStatement, sAggr->aggr )->merge != mtf::calculateNA ) ||
+             ( QTC_STMT_EXECUTE( aStatement, sAggr->aggr )->merge == NULL ) )
         {
             //nothing to do
         }

@@ -357,9 +357,9 @@ ACI_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
     switch (aKey)
     {
         case CMN_LINK_INFO_ALL:
-        case CMN_LINK_INFO_TCP_REMOTE_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_PORT:
+        case CMN_LINK_INFO_REMOTE_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_IP_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_PORT:
 
             ACI_TEST_RAISE(
                 acpInetGetNameInfo((acp_sock_addr_t *)&sLink->mDesc.mAddr,
@@ -378,9 +378,9 @@ ACI_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
                 GetNameInfoError);
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_ADDRESS:
-        case CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS:
-        case CMN_LINK_INFO_TCP_LOCAL_PORT:
+        case CMN_LINK_INFO_LOCAL_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_IP_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_PORT:
 
             sAddrLen = ACI_SIZEOF(sAddr);
             ACI_TEST_RAISE(acpSockGetName(&sLink->mDesc.mSock,
@@ -406,7 +406,7 @@ ACI_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
             break;
 
         case CMN_LINK_INFO_IMPL:
-        case CMN_LINK_INFO_TCP_REMOTE_SOCKADDR:
+        case CMN_LINK_INFO_REMOTE_SOCKADDR:
             break;
 
 #if defined(TCP_INFO)
@@ -431,23 +431,23 @@ ACI_RC cmnLinkPeerGetInfoSSL(cmnLinkPeer *aLink,
             sRet = acpSnprintf(aBuf, aBufLen, "SSL");
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_ADDRESS:
             sRet = acpSnprintf(aBuf, aBufLen, "%s:%s", sAddrStr, sPortStr);
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS:
-        case CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS:
+        case CMN_LINK_INFO_LOCAL_IP_ADDRESS:
+        case CMN_LINK_INFO_REMOTE_IP_ADDRESS:
             sRet = acpSnprintf(aBuf, aBufLen, "%s", sAddrStr);
             break;
 
-        case CMN_LINK_INFO_TCP_LOCAL_PORT:
-        case CMN_LINK_INFO_TCP_REMOTE_PORT:
+        case CMN_LINK_INFO_LOCAL_PORT:
+        case CMN_LINK_INFO_REMOTE_PORT:
             sRet = acpSnprintf(aBuf, aBufLen, "%s", sPortStr);
             break;
 
         /* proj-1538 ipv6 */
-        case CMN_LINK_INFO_TCP_REMOTE_SOCKADDR:
+        case CMN_LINK_INFO_REMOTE_SOCKADDR:
             /*ACI_TEST_RAISE(aBufLen < (acp_uint32_t)(sLink->mDesc.mAddrLen),*/
             ACI_TEST_RAISE(aBufLen < sLink->mDesc.mAddrLen, StringTruncated);
             acpMemCpy(aBuf, &sLink->mDesc.mAddr, sLink->mDesc.mAddrLen);

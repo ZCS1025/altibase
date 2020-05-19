@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbField.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utAtbField.cpp 82790 2018-04-15 23:41:55Z bethy $
  ******************************************************************************/
 
 #include <utAtb.h>
@@ -36,6 +36,7 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
     realSqlType =0;
     /* TASK-4212: audit툴의 대용량 처리시 개선 */
     mValueInd   = NULL;
+    mLob        = NULL; // BUG-45909
 
     IDE_TEST(Field::initialize(aNo, aRow ) != IDE_SUCCESS);
     mRow  = aRow;
@@ -87,7 +88,8 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
     mType = mapType(sqltype);
 
     if(sqltype == SQL_INTEGER || sqltype == SQL_BIGINT || sqltype == SQL_SMALLINT
-       || sqltype == SQL_BLOB || sqltype == SQL_CLOB)
+       || sqltype == SQL_BLOB || sqltype == SQL_CLOB
+       || sqltype == SQL_BIT || sqltype == SQL_VARBIT)
     {
         sqlType = sqltype;
     }
@@ -130,6 +132,16 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
                 mWidth = 24; break; // header(8), body(16)
             case SQL_NIBBLE  :
                 mWidth=(UInt)((precision+1)/2+1); break; // length(1)
+
+            /*
+             * BUG-45958 Need to support BIT/VARBIT type
+             *   mWidth: SQLBindCol에 사용될 버퍼 할당시 필요한 크기
+             */
+            case SQL_BIT  :
+            case SQL_VARBIT  :
+                mWidth = BIT_TYPE_STRUCT_SIZE(precision);
+                break;
+
             default:
                 mWidth  = (UInt)precision; break; // SQL_BYTES, SQL_BINARY
         }
@@ -147,6 +159,13 @@ IDE_RC utAtbField::finalize( )
     {
         idlOS::free(mValueInd);
         mValueInd = NULL;
+    }
+
+    /* BUG-45909 Improve LOB Processing */
+    if ( mLob )
+    {
+        delete mLob;
+        mLob = NULL;
     }
     return Field::finalize();
 }
@@ -243,3 +262,82 @@ IDE_RC utAtbField::bindColumn(SInt aSqlType,void * aLinks)
 
     return IDE_FAILURE;
 }
+
+/* BUG-45909 Improve LOB Processing */
+IDE_RC utAtbField::initLob()
+{
+    if (mLob == NULL)
+    {
+        mLob = new utAtbLob();
+    }
+
+    IDE_TEST(mLob == NULL);
+    IDE_TEST(mLob->initialize(mRow->mQuery, sqlType, mLobLoc)
+             != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC utAtbField::finiLob()
+{
+    if (mLob != NULL)
+    {
+        mLob->finalize();
+    }
+    return IDE_SUCCESS;
+}
+
+bool utAtbField::compareLob(Field *aField)
+{
+    bool         sIsEqual = true;
+    SQLUINTEGER  sLenA;
+    SQLUINTEGER  sLenB;
+    SQLUINTEGER  sLobLenA;
+    SQLUINTEGER  sLobLenB;
+    utAtbLob    *sLobB = NULL;
+
+    initLob();
+    aField->initLob();
+
+    sLobB = ((utAtbField*)aField)->getLob();
+
+    sLobLenA = mLob->getLobLength();
+    sLobLenB = sLobB->getLobLength();
+
+    // Comparing length is enough for the following cases.
+    if(sLobLenA == 0 && sLobLenB == 0)
+    {
+        sIsEqual = true;
+    }
+    else if(sLobLenA != sLobLenB)
+    {
+        sIsEqual = false;
+    }
+    // In case of sLobLenA == sLobLenB,
+    // need to investigate the inside of both LOBs
+    else
+    {
+        while(1)
+        {
+            IDE_TEST(mLob->next(&sLenA) != IDE_SUCCESS);
+            IDE_TEST(sLobB->next(&sLenB) != IDE_SUCCESS);
+
+            sIsEqual = mLob->equals(sLobB);
+            if (sIsEqual == false || sLenA == 0)
+            {
+                break;
+            }
+        }
+    }
+    
+    return sIsEqual;
+
+    IDE_EXCEPTION_END;
+
+    return sIsEqual;
+}
+

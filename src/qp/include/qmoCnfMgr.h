@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCnfMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoCnfMgr.h 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     CNF Critical Path Manager
@@ -255,6 +255,10 @@ public:
                                          qmoCNF            * aCNF,
                                          qmsQuerySet       * aQuerySet );
 
+    // where의 Predicate 분류
+    static IDE_RC    classifyPred4WhereHierachyJoin( qcStatement  * aStatement,
+                                                     qmoCrtPath   * aCrtPath,
+                                                     qmgGraph     * aGraph );
     // on Condition Predicate 분류
     static IDE_RC    classifyPred4OnCondition( qcStatement       * aStatement,
                                                qmoCNF            * aCNF,
@@ -264,11 +268,13 @@ public:
 
     // startWith의 Predicate 분류
     static IDE_RC    classifyPred4StartWith( qcStatement       * aStatement,
-                                             qmoCNF            * aCNF );
+                                             qmoCNF            * aCNF,
+                                             qcDepInfo         * aDepInfo );
 
     // connectBy의 Predicate 분류
     static IDE_RC    classifyPred4ConnectBy( qcStatement       * aStatement,
-                                             qmoCNF            * aCNF );
+                                             qmoCNF            * aCNF,
+                                             qcDepInfo         * aDepInfo );
 
     // baseGraph들의 초기화 함수 호출하여 baseGraph를 생성 및 초기화함
     static IDE_RC    initBaseGraph( qcStatement   * aStatement,

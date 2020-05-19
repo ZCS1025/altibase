@@ -53,7 +53,6 @@ UInt dkuProperty::mDblinkRemoteStatementAutoCommit;
 UInt dkuProperty::mDblinkAltilinkerConnectTimeout;
 UInt dkuProperty::mDblinkRemoteTableBufferSize;
 UInt dkuProperty::mDblinkRecoveryMaxLogfile;
-UInt dkuProperty::mDblinkRmAbortEnable;
 
 /*
  * Load and register update callback function.
@@ -91,10 +90,6 @@ IDE_RC dkuProperty::load( void )
                            &mDblinkRemoteTableBufferSize )
                 == IDE_SUCCESS );
 
-    IDE_ASSERT( idp::read( (SChar *)"__DBLINK_RM_ABORT_ENABLE",
-                           &mDblinkRmAbortEnable )
-                == IDE_SUCCESS );
-
     IDE_TEST( idp::setupAfterUpdateCallback(
                   (const SChar *)"DBLINK_GLOBAL_TRANSACTION_LEVEL",
                   dkuProperty::notifyDBLINK_GLOBAL_TRANSACTION_LEVEL )
@@ -113,11 +108,6 @@ IDE_RC dkuProperty::load( void )
     IDE_TEST( idp::setupAfterUpdateCallback(
                    (const SChar *)"DBLINK_RECOVERY_MAX_LOGFILE",
                    dkuProperty::notifyDBLINK_RECOVERY_MAX_LOGFILE )
-              != IDE_SUCCESS );
-
-    IDE_TEST( idp::setupAfterUpdateCallback(
-                  (const SChar *)"__DBLINK_RM_ABORT_ENABLE",
-                  dkuProperty::notifyDBLINK_RM_ABORT_ENABLE )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -172,11 +162,6 @@ UInt dkuProperty::getDblinkRecoveryMaxLogfile( void )
     return mDblinkRecoveryMaxLogfile;
 }
 
-UInt dkuProperty::getDblinkRmAbortEnable( void )
-{
-    return mDblinkRmAbortEnable;
-}
-
 IDE_RC dkuProperty::notifyDBLINK_GLOBAL_TRANSACTION_LEVEL( idvSQL* /* aStatistics */,
                                                            SChar * /* Name */,
                                                            void  * /* aOldValue */,
@@ -223,19 +208,6 @@ IDE_RC dkuProperty::notifyDBLINK_RECOVERY_MAX_LOGFILE( idvSQL* /* aStatistics */
                                                        void  * /* aArg */ )
 {
     idlOS::memcpy( &mDblinkRecoveryMaxLogfile,
-                   aNewValue,
-                   ID_SIZEOF( UInt ) );
-
-    return IDE_SUCCESS;
-}
-
-IDE_RC dkuProperty::notifyDBLINK_RM_ABORT_ENABLE( idvSQL * /* aStatistics */,
-                                                  SChar  * /* Name */,
-                                                  void   * /* aOldValue */,
-                                                  void   * aNewValue,
-                                                  void   * /* aArg */ )
-{
-    idlOS::memcpy( &mDblinkRmAbortEnable,
                    aNewValue,
                    ID_SIZEOF( UInt ) );
 

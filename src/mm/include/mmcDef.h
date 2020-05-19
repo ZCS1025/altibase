@@ -56,6 +56,7 @@ typedef UInt mmcTransID;
 #define MMC_STMT_PLAN_TEXT_LEN 64
 #define MMC_STMT_PLAN_MAX_LEN  (32 * 1024)
 #define MMC_SQL_CACHE_TEXT_ID_LEN (64)
+#define MMC_SQL_CACHE_TEXT_ID_BUCKET_DIGIT (4)  /* BUG-46158 */
 // fix BUG-21429
 #define MMC_SQL_PCB_MUTEX_NAME_LEN (MMC_SQL_CACHE_TEXT_ID_LEN+64)
 typedef enum
@@ -229,6 +230,13 @@ typedef enum
     MMC_SOFT_PREPARE_FOR_REBUILD
 }mmcSoftPrepareReason;
 
+typedef enum  /* BUG-46158 */
+{
+    MMC_PCO_PLAN_CACHE_UNKEEP = 0,
+    MMC_PCO_PLAN_CACHE_KEEP   = 1
+} mmcPCOPlanCacheKeep;
+
+
 //fix BUG-30891
 typedef enum
 {
@@ -253,10 +261,11 @@ typedef enum
 //-----------------------------------
 typedef struct mmcParentPCOInfo4PerfV
 {
-    SChar        mSQLTextIdString[MMC_SQL_CACHE_TEXT_ID_LEN + 1]; // SQL_TEXT_ID
-    SChar*       mSQLString4SoftPrepare;       // SQL_TEXT
-    UInt         mChildCnt;                    // CHILD_PCO_COUNT
-    UInt         mChildCreateCnt;              // CHILD_PCO_CREATE_COUNT
+    SChar               mSQLTextId[MMC_SQL_CACHE_TEXT_ID_LEN + 1]; // SQL_TEXT_ID
+    SChar*              mSQLString4SoftPrepare;       // SQL_TEXT
+    UInt                mChildCnt;                    // CHILD_PCO_COUNT
+    UInt                mChildCreateCnt;              // CHILD_PCO_CREATE_COUNT
+    mmcPCOPlanCacheKeep mPlanCacheKeep;               /* PLAN_CACHE_KEEP */
 } mmcParentPCOInfo4PerfV;
 
 //-------------------------------
@@ -264,7 +273,7 @@ typedef struct mmcParentPCOInfo4PerfV
 //-------------------------------
 typedef struct mmcChildPCOInfo4PerfV
 {
-    SChar                *mSQLTextIdStr;       // SQL_TEXT_ID
+    SChar                *mSQLTextId;          // SQL_TEXT_ID
     UInt                  mChildID;            // PCO_ID
     mmcChildPCOCR         mCreateReason;       // CREATE_REASON
     //fix BUG-31169,The LRU region of a PCO has better to be showed in V$SQL_PLAN_CACHE_PCO
@@ -272,6 +281,9 @@ typedef struct mmcChildPCOInfo4PerfV
     UInt                 *mHitCntPtr;          // HIT_COUNT
     UInt                  mRebuildedCnt;       // REBUILD_COUNT
     mmcChildPCOPlanState  mPlanState;          // PLAN_STATE
+    UInt                  mPlanSize;           /* PLAN_SIZE */
+    UInt                  mFixCount;           /* PLAN_FIX_COUNT */
+    mmcPCOPlanCacheKeep   mPlanCacheKeep;      /* PLAN_CACHE_KEEP */
 } mmcChildPCOInfo4PerfV;
 /*  fix BUG-31408,[mm-protocols] It need to describe mmERR_ABORT_INVALID_DATA_SIZE error message in detail.*/
 typedef struct mmcMtTypeName

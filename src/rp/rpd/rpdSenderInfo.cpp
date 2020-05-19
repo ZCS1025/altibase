@@ -36,7 +36,6 @@ IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
 
     mLastProcessedSN        = SM_SN_NULL;
     mLastArrivedSN          = SM_SN_NULL;
-    mMinWaitSN              = SM_SN_NULL;
     mRestartSN              = SM_SN_NULL;
     mRmtLastCommitSN        = SM_SN_NULL;
     mIsSenderSleep          = ID_FALSE;
@@ -46,7 +45,6 @@ IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
     mReplMode               = RP_USELESS_MODE;
     mOriginReplMode         = RP_USELESS_MODE;
     mRole                   = RP_ROLE_REPLICATION;
-    mIsExceedRepGap         = ID_FALSE;
 
     mSenderStatus           = RP_SENDER_STOP;
     mIsPeerFailbackEnd      = ID_FALSE;
@@ -56,6 +54,8 @@ IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
     mIsRebuildIndex         = ID_FALSE;
     mReconnectCount         = 0;
     mTransTableSize         = smiGetTransTblSize();
+    mIsSkipUpdateXSN        = ID_FALSE;
+    mIsWaitOnFailback       = ID_FALSE;
 
     (void)idlOS::memset(mRepName, 0x00, QCI_MAX_NAME_LEN + 1);
 
@@ -139,6 +139,8 @@ IDE_RC rpdSenderInfo::initialize(UInt aSenderListIdx)
     
     initializeLastProcessedSNTable();
 
+    mSenderListIndex = RPX_INVALID_SENDER_INDEX;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_MUTEX_INIT);
@@ -213,8 +215,9 @@ IDE_RC rpdSenderInfo::initSyncPKPool( SChar * aReplName )
                                           8,                        /* align byte(default) */
                                           ID_FALSE,					/* ForcePooling */
                                           ID_TRUE,					/* GarbageCollection */
-                                          ID_TRUE )                 /* HWCacheLine */
-                  != IDE_SUCCESS );
+                                          ID_TRUE,                  /* HWCacheLine */
+                                          IDU_MEMPOOL_TYPE_LEGACY   /* mempool type */) 
+                 != IDE_SUCCESS);			
 
         mIsSyncPKPoolAllocated = ID_TRUE;
     }
@@ -374,7 +377,6 @@ void rpdSenderInfo::finalize()
     initializeLastProcessedSNTable();
 
     mLastProcessedSN      = SM_SN_NULL;
-    mMinWaitSN            = SM_SN_NULL;
     mLastArrivedSN        = SM_SN_NULL;
     mIsSenderSleep        = ID_FALSE;
     mRmtLastCommitSN      = SM_SN_NULL;
@@ -382,9 +384,10 @@ void rpdSenderInfo::finalize()
     mAssignedTransTable   = NULL;
     mReplMode             = RP_USELESS_MODE;
     mIsActive             = ID_FALSE;
-    mIsExceedRepGap       = ID_FALSE;
     mRestartSN            = SM_SN_NULL;
     mSenderStatus         = RP_SENDER_STOP;
+    mIsSkipUpdateXSN      = ID_FALSE;
+    mSenderListIndex      = RPX_INVALID_SENDER_INDEX;
 
     IDE_ASSERT(mSenderSNMtx.unlock() == IDE_SUCCESS);
     IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
@@ -433,15 +436,14 @@ void rpdSenderInfo::deActivate()
 
     mActiveTransTbl       = NULL;
     mAssignedTransTable   = NULL;
+    mSenderListIndex      = RPX_INVALID_SENDER_INDEX;
     mReplMode             = RP_USELESS_MODE;
     mRole                 = RP_ROLE_REPLICATION;
     mIsActive             = ID_FALSE;
-    if(mMinWaitSN != SM_SN_NULL)
-    {
-        mMinWaitSN = SM_SN_NULL;
-        //service thread wakeup
-        IDE_ASSERT(mServiceWaitCV.broadcast() == IDE_SUCCESS);
-    }
+    mIsSkipUpdateXSN      = ID_FALSE;
+
+    //service thread wakeup
+    IDE_ASSERT(mServiceWaitCV.broadcast() == IDE_SUCCESS);
 
     initializeLastProcessedSNTable();
 
@@ -457,6 +459,7 @@ void rpdSenderInfo::activate(rpdTransTbl *aActTransTbl,
                              smSN         aRestartSN,
                              SInt         aReplMode,
                              SInt         aRole,
+                             UInt         aSenderListIdx,
                              rpxSender ** aAssignedTransTable )
 {
     IDE_ASSERT( mAssignedTransTableMutex.lock( NULL ) == IDE_SUCCESS );
@@ -474,6 +477,8 @@ void rpdSenderInfo::activate(rpdTransTbl *aActTransTbl,
     mIsActive           = ID_TRUE;
     mActiveTransTbl     = aActTransTbl;
     mAssignedTransTable = aAssignedTransTable;
+    mIsSkipUpdateXSN    = ID_FALSE;
+    mSenderListIndex    = aSenderListIdx;
 
     initializeLastProcessedSNTable();
 
@@ -539,31 +544,6 @@ smSN rpdSenderInfo::getLastProcessedSN()
 }
 
 /***********************************************************************
- * Function    : getMinWaitSN, setMinWaitSN
- * Description : deactive된 경우에도 mMinWaitSN을 보고 대기하고 있는
- *               Service Thread가 있는지 확인해야함 때문에 mIsActive를
- *               체크하지 않음
- **********************************************************************/
-smSN rpdSenderInfo::getMinWaitSN()
-{
-    smSN    sMinWaitSN;
-
-    IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-    sMinWaitSN = mMinWaitSN;
-    IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
-
-    return sMinWaitSN;
-}
-
-void rpdSenderInfo::setMinWaitSN(smSN aMinWaitSN)
-{
-    IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-    mMinWaitSN = aMinWaitSN;
-    IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
-
-    return;
-}
-/***********************************************************************
  * Function    : setRestartSN
  * Description : SenderApply가 종료되고 deactive된 경우에도 Sender에서
  *               restartSN을 보기 때문에 mIsActive를 체크하지 않는다.
@@ -625,6 +605,24 @@ void rpdSenderInfo::setAckedValue( smSN     aLastProcessedSN,
     return;
 }
 
+void rpdSenderInfo::setSkipUpdateXSN( idBool aIsSkip )
+{
+    IDE_ASSERT( mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
+    mIsSkipUpdateXSN = aIsSkip;
+    IDE_ASSERT( mServiceSNMtx.unlock() == IDE_SUCCESS );
+}
+
+idBool rpdSenderInfo::getSkipUpdateXSN()
+{
+    idBool sIsSkipUpdateXSN= ID_FALSE;
+
+    IDE_ASSERT( mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
+    sIsSkipUpdateXSN = mIsSkipUpdateXSN;
+    IDE_ASSERT( mServiceSNMtx.unlock() == IDE_SUCCESS );
+
+    return sIsSkipUpdateXSN;
+}
+
 void rpdSenderInfo::serviceWaitForNetworkError( void )
 {
     if ( ( mOriginReplMode == RP_EAGER_MODE ) &&
@@ -661,15 +659,9 @@ void rpdSenderInfo::serviceWaitForNetworkError( void )
 
 /***********************************************************************
  * Description : eager/acked mode에서 service thr가 서비스 중인 트랜잭션의
- *               마지막 로그인 aLastSN을 받아 현재 대기 중인 트랜잭션들의
- *               가장 작은 aLastSN인 mMinWaitSN 보다 작은 경우
- *               mMinWaitSN을 Set하고, 대기한다.
+ *               마지막 로그인 aLastSN을 받아 remote 에서 처리 여부를 확인하고 
+ *               처리가 되지 않았으면 대기한다.
  * return value: sender info가 acitve인지 아닌지 반환한다.
- *+----------------------------------------------+
- *|TxMode / ReplMode| Lazy    |  Acked |  Eager  |
- *|----------------------------------------------|
- *|Default(USELESS) | Lazy    |  Acked |  Eager  |
- *+----------------------------------------------+
  **********************************************************************/
 idBool rpdSenderInfo::serviceWaitBeforeCommit(smSN    aLastSN,
                                               UInt    aTxReplMode,
@@ -677,11 +669,6 @@ idBool rpdSenderInfo::serviceWaitBeforeCommit(smSN    aLastSN,
                                               idBool *aWaitedLastSN)
 {
     UInt   sMode;
-    SInt   sWaitCount = 0;
-    idBool sIsLocked = ID_FALSE;
-    SInt   i;
-    idBool sIsActive = ID_TRUE;
-    SInt   sTotalYieldCount = 0;
 
     *aWaitedLastSN = ID_FALSE;
 
@@ -697,132 +684,24 @@ idBool rpdSenderInfo::serviceWaitBeforeCommit(smSN    aLastSN,
         sMode = mReplMode;
     }
 
-    IDE_TEST_CONT( sMode != RP_EAGER_MODE, NORMAL_EXIT );
+    IDE_TEST_CONT( ( sMode != RP_EAGER_MODE ) ||
+                   ( mRole == RP_ROLE_ANALYSIS ) || 
+                   ( mRole == RP_ROLE_ANALYSIS_PROPAGATION ),
+                   NORMAL_EXIT );
 
-    IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-    sIsLocked = ID_TRUE;
-    while(1)
-    {
-        /*Exit(),Sync(),Disconnect()인 경우 skip한다.*/
-        if(mIsActive != ID_TRUE)
-        {
-            sIsActive = mIsActive;
-            break;
-        }
-
-        if ( ( mSenderStatus != RP_SENDER_FAILBACK_EAGER ) &&
-             ( mSenderStatus != RP_SENDER_FLUSH_FAILBACK ) &&
-             ( mSenderStatus != RP_SENDER_IDLE ) )
-        {
-            break;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        /* PROJ-1537 */
-        if(mRole == RP_ROLE_ANALYSIS)
-        {
-            break;
-        }
-
-        if ( needWait( aTransID ) == ID_FALSE )
-        {
-            if ( sIsLocked != ID_TRUE )
-            {
-                IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-                sIsLocked = ID_TRUE;
-            }
-            else
-            {
-                /*do nothing*/
-            }
-            if ( needWait( aTransID ) == ID_FALSE )
-            {
-                /* BUG-36632 */
-                *aWaitedLastSN = ID_TRUE;
-
-                break;
-            }
-            else
-            {
-                /*do nothing*/
-            }
-        }
-        else
-        {
-            if( sIsLocked == ID_TRUE )
-            {
-                sIsLocked = ID_FALSE;
-                IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
-            }
-            sWaitCount = sWaitCount + 2;
-            for( i = 0; 
-                 i < IDL_MIN( sWaitCount, (RPU_REPLICATION_EAGER_MAX_YIELD_COUNT - sTotalYieldCount) ); 
-                 i++ )
-            {
-                idlOS::thr_yield();
-            }
-            sTotalYieldCount = sTotalYieldCount + i;
-        }
-
-        if ( sTotalYieldCount >= RPU_REPLICATION_EAGER_MAX_YIELD_COUNT )
-        {
-            sTotalYieldCount = 0;
-            if ( sIsLocked != ID_TRUE )
-            {
-                IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-                sIsLocked = ID_TRUE;
-            }
-            else
-            {
-                /*do nothing*/
-            }
-            if ( needWait( aTransID ) == ID_FALSE )
-            {
-                *aWaitedLastSN = ID_TRUE;
-                break;
-            }
-            else
-            {
-                if ( mMinWaitSN > aLastSN )
-                {
-                    mMinWaitSN = aLastSN;
-                }
-                else
-                {
-                    /*do nothing*/
-                }
-                (void)mServiceWaitCV.wait( &mServiceSNMtx );
-            }
-        }
-        else
-        {
-            /*do nothing*/
-        }
-    }
-
-    if( sIsLocked == ID_TRUE )
-    {
-        sIsLocked = ID_FALSE;
-        IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
-    }
+    checkAndWaitToApply( aTransID, aLastSN, aWaitedLastSN );
 
     RP_LABEL(NORMAL_EXIT);
-    return sIsActive;
+
+    return mIsActive;
 }
 
 void rpdSenderInfo::serviceWaitAfterCommit( smSN aLastSN,
                                             UInt aTxReplMode,
                                             smTID aTransID )
 {
-    smSN    sLstSN       = SM_SN_NULL;
-    SInt    sWaitCount = 0;
-    idBool  sIsLocked = ID_FALSE;
-    SInt    i;
     UInt    sMode;
-    SInt    sTotalYieldCount = 0;
+    idBool  sDummy = ID_FALSE;
 
     IDE_DASSERT(aTxReplMode != RP_LAZY_MODE);
 
@@ -836,149 +715,20 @@ void rpdSenderInfo::serviceWaitAfterCommit( smSN aLastSN,
         sMode = mReplMode;
     }
 
-    IDE_TEST_CONT(sMode != RP_EAGER_MODE, NORMAL_EXIT);
+    IDE_TEST_CONT( ( sMode != RP_EAGER_MODE ) ||
+                   ( mRole == RP_ROLE_ANALYSIS ) || 
+                   ( mRole == RP_ROLE_ANALYSIS_PROPAGATION ),
+                   NORMAL_EXIT );
 
-    IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-    sIsLocked = ID_TRUE;
-    while(1)
-    {
-        //Exit(),Sync(),Disconnect()인 경우 skip한다.
-        if(mIsActive != ID_TRUE)
-        {
-            break;
-        }
+    checkAndWaitToApply( aTransID, aLastSN, &sDummy );
 
-        if ( ( mSenderStatus != RP_SENDER_FAILBACK_EAGER ) &&
-             ( mSenderStatus != RP_SENDER_FLUSH_FAILBACK ) &&
-             ( mSenderStatus != RP_SENDER_IDLE ) )
-        {
-            break;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        // PROJ-1537
-        if(mRole == RP_ROLE_ANALYSIS)
-        {
-            break;
-        }
-
-        if ( needWait( aTransID ) == ID_FALSE )
-        {
-            if ( sIsLocked != ID_TRUE )
-            {
-                IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-                sIsLocked = ID_TRUE;
-            }
-            else
-            {
-                /*do nothing*/
-            }
-            if ( needWait( aTransID ) == ID_FALSE )
-            {
-                break;
-            }
-            else
-            {
-                /*do nothing*/
-            }
-        }
-        else
-        {
-            if( sIsLocked == ID_TRUE )
-            {
-                sIsLocked = ID_FALSE;
-                IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
-            }
-            else
-            {
-                /*do nothing*/
-            }
-            sWaitCount = sWaitCount + 2;
-            for( i = 0; 
-                 i < IDL_MIN( sWaitCount, (RPU_REPLICATION_EAGER_MAX_YIELD_COUNT - sTotalYieldCount) ); 
-                 i++ )
-            {
-                idlOS::thr_yield();
-            }
-            sTotalYieldCount = sTotalYieldCount + i;
-        }
-
-        IDE_ASSERT(smiGetLastValidGSN(&sLstSN) == IDE_SUCCESS)
-
-        //BUG-22173 :
-        //V$REPSENDER act_repl_mode 추가, REPGAP을 초과 할경우 LAZY처럼
-        //altibase_rp.log에 초과 시점 에 로그 남기고 내려 갈때 로그 남김
-        //Delay()
-        if((sMode != RP_EAGER_MODE) && (mLastProcessedSN != SM_SN_NULL))
-        {
-            if((sLstSN - mLastProcessedSN) > RPU_REPLICATION_SERVICE_WAIT_MAX_LIMIT) //REPGAP 초과
-            {
-                if(mIsExceedRepGap == ID_FALSE)
-                {
-                    ideLog::log(IDE_RP_0, RP_TRC_SI_REPLICATION_GAP_IS_OVER_MAX);
-                    mIsExceedRepGap = ID_TRUE;
-                }
-                break;
-            }
-            else
-            {
-                if(mIsExceedRepGap == ID_TRUE)
-                {
-                    ideLog::log(IDE_RP_0, RP_TRC_SI_REPLICATION_GAP_IS_UNDER_MAX);
-                    mIsExceedRepGap = ID_FALSE;
-                }
-            }
-        }
-
-        if ( sTotalYieldCount > RPU_REPLICATION_EAGER_MAX_YIELD_COUNT )
-        {
-            sTotalYieldCount = 0;
-            if ( sIsLocked != ID_TRUE )
-            {
-                IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
-                sIsLocked = ID_TRUE;
-            }
-            else
-            {
-                /*do nothing*/
-            }
-            if ( needWait( aTransID ) == ID_FALSE )
-            {
-                break;
-            }
-            else
-            {
-                if ( mMinWaitSN > aLastSN )
-                {
-                    mMinWaitSN = aLastSN;
-                }
-                else
-                {
-                    /*do nothing*/
-                }
-                (void)mServiceWaitCV.wait(&mServiceSNMtx);
-            }
-        }
-        else
-        {
-            /*do nothing*/
-        }
-    }
-    if( sIsLocked == ID_TRUE )
-    {
-        IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
-        sIsLocked = ID_FALSE;
-    }
-    
     removeAssignedSender( aTransID );
     
     RP_LABEL(NORMAL_EXIT);
 
     return;
 }
+
 void rpdSenderInfo::wakeupEagerSender()
 {
     if(mIsSenderSleep == ID_TRUE)
@@ -994,45 +744,42 @@ void rpdSenderInfo::wakeupEagerSender()
 }
 void rpdSenderInfo::signalToAllServiceThr( idBool aForceAwake, smTID aTID )
 {
+    idBool  sIsSendSignal = ID_FALSE;
+
     IDE_ASSERT(mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
     //이 함수에서는 가능성있는 모든 서비스 스레드를 깨워주고
     //판단은 서비스 스레드가 직접 할 수 있도록 한다.
-    if ( aForceAwake != ID_TRUE )
+    
+    if ( ( aForceAwake == ID_TRUE ) || ( mIsWaitOnFailback == ID_TRUE ) )
     {
-        // Eager일 때만 mMinWaitSN을 설정
-
-        if ( aTID != SM_NULL_TID )
+        sIsSendSignal = ID_TRUE;
+    }
+    else
+    {
+        if ( ( mIsActive == ID_TRUE ) && ( aTID != SM_NULL_TID ) )
         {
-            if ( ( mIsActive == ID_TRUE ) && ( mMinWaitSN != SM_SN_NULL ) )
+            if ( isTransAcked( aTID ) == ID_TRUE )
             {
-                if ( isTransAcked( aTID ) == ID_TRUE )
-                {
-                    mMinWaitSN = SM_SN_NULL;
-                    IDE_ASSERT( mServiceWaitCV.broadcast() == IDE_SUCCESS );
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
+                sIsSendSignal = ID_TRUE;
             }
             else
             {
-                /* Nothing to do */
+                /* do nothing */
             }
         }
         else
         {
-            /* Nothing to do */
+            /* do nothing */
         }
+    }
+
+    if ( sIsSendSignal == ID_TRUE )
+    {
+        IDE_ASSERT(mServiceWaitCV.broadcast() == IDE_SUCCESS);
     }
     else
     {
-        if(mMinWaitSN != SM_SN_NULL)
-        {
-            mMinWaitSN = SM_SN_NULL;
-            //service thread wakeup
-            IDE_ASSERT(mServiceWaitCV.broadcast() == IDE_SUCCESS);
-        }
+        /* do nothing */
     }
 
     IDE_ASSERT(mServiceSNMtx.unlock() == IDE_SUCCESS);
@@ -1071,20 +818,13 @@ void rpdSenderInfo::isTransAbort(smTID   aTID,
         //Exit(),Sync(),Disconnect()인 경우 skip한다.
         if((mActiveTransTbl != NULL) && (mIsActive == ID_TRUE))
         {
-            // eager replication에서 parallel로 트랜잭션을 복제할 때,
-            // parallel child는 자신이 처리해야하는 트랜잭션임에도 불구하고
-            // 자신이 처리하지 않고 있는 트랜잭션이 존재한다.
-            // 그러므로, Active가 아닌 트랜잭션이 있을 수 있다.
-            // failback normal시 parallel parent가 처리하던 트랜잭션은
-            // failback이 끝나고 run 상태가 되어서도 parallel parent이 처리하기 때문에
-            // 자신이 처리하지 않고 있는 트랜잭션은 parallel parent가 처리하고 있다.
             if(mActiveTransTbl->isATrans(aTID) == ID_TRUE)
             {
                 *aIsAbort = mActiveTransTbl->getAbortFlag(aTID);
             }
             else
             {
-                *aIsActive = ID_FALSE;
+                /* do nothing */
             }
         }
         else
@@ -1480,28 +1220,184 @@ void rpdSenderInfo::setThroughput( UInt aThroughput )
     mThroughput = aThroughput;
 }
 
-idBool rpdSenderInfo::needWait( smTID aTID )
+void rpdSenderInfo::checkAndWaitToApply( smTID      aTransID,
+                                         smSN       aLastSN,
+                                         idBool   * aWaitedLastSN )
 {
-    idBool sResult = ID_FALSE;
+    SInt                i = 0;
+    SInt                sWaitCount = 0;
+    SInt                sTotalYieldCount = 0;
+    RP_SENDER_STATUS    sSenderStatus = mSenderStatus;
 
-    if ( mIsActive == ID_TRUE )
+    while( 1 )
     {
-        if ( isTransAcked( aTID ) == ID_TRUE )
+        //Exit(),Sync(),Disconnect()인 경우 skip한다.
+        if ( mIsActive != ID_TRUE )
         {
-            sResult = ID_FALSE;
+            break;
         }
         else
         {
-            sResult = ID_TRUE;
+            /* do noting */
         }
 
+        if ( needWait( sSenderStatus,
+                       aTransID,
+                       aLastSN,
+                       ID_FALSE,
+                       aWaitedLastSN ) == ID_FALSE )
+        {
+            break;
+        }
+        else
+        {
+            if ( sTotalYieldCount < RPU_REPLICATION_EAGER_MAX_YIELD_COUNT )
+            {
+                sWaitCount = sWaitCount + 2;
+                for( i = 0; 
+                     i < IDL_MIN( sWaitCount, (RPU_REPLICATION_EAGER_MAX_YIELD_COUNT - sTotalYieldCount) ); 
+                     i++ )
+                {
+                    idlOS::thr_yield();
+                }
+                sTotalYieldCount = sTotalYieldCount + i;
+            }
+            else
+            {
+                IDE_ASSERT( mServiceSNMtx.lock(NULL /* idvSQL* */) == IDE_SUCCESS );
+
+                // 위에서 lock 을 안 잡고 확인 했으므로 lock 을 잡고 sleep 하기 전에
+                // 다시 확인 한다.
+                if ( needWait( sSenderStatus,
+                               aTransID,
+                               aLastSN,
+                               ID_TRUE,
+                               aWaitedLastSN ) == ID_FALSE )
+                {
+                    IDE_ASSERT( mServiceSNMtx.unlock() == IDE_SUCCESS );
+                    break;
+                }
+                else
+                {
+                    /* do noting */
+                }
+
+                sTotalYieldCount = 0;
+
+                if ( ( sSenderStatus == RP_SENDER_FAILBACK_EAGER ) ||
+                     ( sSenderStatus == RP_SENDER_FLUSH_FAILBACK ) )
+                {
+                    mIsWaitOnFailback = ID_TRUE;
+                }
+                else
+                {
+                    /* do nothing */
+                }
+
+                (void)mServiceWaitCV.wait( &mServiceSNMtx );
+
+                mIsWaitOnFailback = ID_FALSE;
+
+                IDE_ASSERT( mServiceSNMtx.unlock() == IDE_SUCCESS );
+            }
+        }
     }
-    else
+}
+
+idBool rpdSenderInfo::needWait( RP_SENDER_STATUS    aSenderStatus,
+                                smTID               aTransID,
+                                smSN                aLastSN,
+                                idBool              aAlreadyLocked,
+                                idBool            * aWaitedLastSN )
+{
+    idBool      sNeedWait = ID_TRUE;
+
+    switch( aSenderStatus )
     {
-        sResult = ID_FALSE;
+        case RP_SENDER_FAILBACK_EAGER:
+        case RP_SENDER_FLUSH_FAILBACK:
+            // Parent 만 온다.
+            if ( aLastSN <= mLastProcessedSN )
+            {
+                if ( aAlreadyLocked == ID_FALSE )
+                {
+                    IDE_ASSERT( mServiceSNMtx.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+
+                    if ( mIsActive == ID_TRUE )
+                    {
+                        if ( aLastSN <= mLastProcessedSN )
+                        {
+                            *aWaitedLastSN = ID_TRUE;
+                            sNeedWait = ID_FALSE;
+                        }
+                        else
+                        {
+                            /*do nothing*/
+                        }
+                    }
+                    else
+                    {
+                        sNeedWait = ID_FALSE;
+                    }
+
+                    IDE_ASSERT( mServiceSNMtx.unlock() == IDE_SUCCESS );
+                }
+                else
+                {
+                    *aWaitedLastSN = ID_TRUE;
+                    sNeedWait = ID_FALSE;
+                }
+            }
+            else
+            {
+                sNeedWait = ID_TRUE;
+            }
+            break;
+
+        case RP_SENDER_IDLE:
+            if ( isTransAcked( aTransID ) == ID_TRUE )
+            {
+                if ( aAlreadyLocked == ID_FALSE )
+                {
+                    IDE_ASSERT( mServiceSNMtx.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+
+                    if ( mIsActive == ID_TRUE )
+                    {
+                        if ( isTransAcked( aTransID ) == ID_TRUE )
+                        {
+                            *aWaitedLastSN = ID_TRUE;
+                            sNeedWait = ID_FALSE;
+                        }
+                        else
+                        {
+                            /*do nothing*/
+                        }
+                    }
+                    else
+                    {
+                        sNeedWait = ID_FALSE;
+                    }
+
+                    IDE_ASSERT( mServiceSNMtx.unlock() == IDE_SUCCESS );
+                }
+                else
+                {
+                    *aWaitedLastSN = ID_TRUE;
+                    sNeedWait = ID_FALSE;
+                }
+            }
+            else
+            {
+                sNeedWait = ID_TRUE;
+            }
+            break;
+
+        default:
+            sNeedWait = ID_FALSE;
+            break;
     }
 
-    return sResult;
+    return sNeedWait;
 }
 
 rpdSenderInfo * rpdSenderInfo::getAssignedSenderInfo( smTID     aTransID )
@@ -1645,3 +1541,38 @@ void rpdSenderInfo::initializeLastProcessedSNTable( void )
     }
 }
 
+IDE_RC rpdSenderInfo::waitLastProcessedSN( idvSQL * aStatistics,
+                                           idBool * aExitFlag, 
+                                           smSN     aLastSN )
+{
+    smSN sLastProcessedSN = getLastProcessedSN();
+
+    while( ( sLastProcessedSN != SM_SN_NULL ) && 
+           ( sLastProcessedSN < aLastSN ) && 
+           ( *( aExitFlag ) != ID_TRUE ) )
+    {
+        IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
+
+        idlOS::sleep( 1 );
+        sLastProcessedSN = getLastProcessedSN();
+    }
+
+    IDU_FIT_POINT( "rpdSenderInfo::waitLastProcessedSN" );
+
+    IDE_TEST_RAISE( getSenderStatus() != RP_SENDER_RUN, ERR_SENDER_NOT_RUNNING ); 
+    IDE_TEST_RAISE( *( aExitFlag ) == ID_TRUE, ERR_EXIT_FLAG );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_EXIT_FLAG );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_IGNORE_EXIT_FLAG_SET ) );
+    }
+    IDE_EXCEPTION( ERR_SENDER_NOT_RUNNING )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_NOT_RUNNING, mRepName ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

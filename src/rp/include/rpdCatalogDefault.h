@@ -110,6 +110,13 @@ public:
                               SChar            * aRepName,
                               rpdReplications  * aReplications,
                               idBool             aForUpdateFlag);
+
+    static IDE_RC selectReplWithCursor( smiStatement     * aSmiStmt,
+                                        SChar            * aReplName,
+                                        rpdReplications  * aReplications,
+                                        idBool             aForUpdateFlag,
+                                        smiTableCursor   * aCursor);
+
     static IDE_RC removeRepl( smiStatement     * aSmiStmt,
                               SChar            * aRepName );
 
@@ -143,9 +150,9 @@ public:
     /* PROJ-1442 Replication Online 중 DDL 허용
      * SYS_REPL_OLD_ITEMS_ 관련
      */
-    static IDE_RC insertReplOldItem(smiStatement * aSmiStmt,
-                                    SChar        * aRepName,
-                                    smiTableMeta * aItem);
+    static IDE_RC insertReplOldItem( smiStatement * aSmiStmt,
+                                     SChar        * aRepName,
+                                     rpdOldItem   * aItem );
     static IDE_RC deleteReplOldItem(smiStatement * aSmiStmt,
                                     SChar        * aRepName,
                                     ULong          aTableOID);
@@ -154,10 +161,10 @@ public:
     static IDE_RC getReplOldItemsCount(smiStatement * aSmiStmt,
                                        SChar        * aRepName,
                                        vSLong       * aItemCount);
-    static IDE_RC selectReplOldItems(smiStatement * aSmiStmt,
-                                     SChar        * aRepName,
-                                     smiTableMeta * aItemArr,
-                                     vSLong         aItemCount);
+    static IDE_RC selectReplOldItems( smiStatement * aSmiStmt,
+                                      SChar        * aRepName,
+                                      rpdOldItem   * aItemArr,
+                                      vSLong         aItemCount );
 
     /* PROJ-1442 Replication Online 중 DDL 허용
      * SYS_REPL_OLD_COLUMNS_ 관련
@@ -310,6 +317,10 @@ public:
                                    SChar        * aRepName, 
                                    smSN           aSN );
 
+    static IDE_RC updateRemoteLastDDLXSN( smiStatement * aSmiStmt,
+                                          SChar        * aRepName, 
+                                          smSN           aSN );
+
     static IDE_RC updateXSN( smiStatement * aSmiStmt,
                              SChar        * aRepName, 
                              smSN           aSN );
@@ -337,6 +348,10 @@ public:
                                       rpdReplItems * aReplItems,
                                       smSN           aSN );
 
+    static IDE_RC updateOldInvalidMaxSN( smiStatement * aSmiStmt,
+                                         rpdReplItems * aReplItems,
+                                         smSN           aSN );
+
     static IDE_RC selectReplicationsWithSmiStatement( smiStatement    * aSmiStmt,
                                                       UInt            * aNumReplications,
                                                       rpdReplications * aReplications,
@@ -359,6 +374,12 @@ public:
                                    SChar          * aRepName,
                                    rpdMetaItem    * aMetaItems,
                                    SInt             aItemCount );
+
+    static IDE_RC selectReplItemsWithCursor( smiStatement   * aSmiStmt,
+                                             SChar          * aReplName,
+                                             rpdMetaItem    * aMetaItems,
+                                             SInt             aItemCount,
+                                             smiTableCursor * aCursor );
 
     static IDE_RC getIndexByAddr( SInt          aLastUsedIP,
                                   rpdReplHosts *aReplHosts,
@@ -458,6 +479,14 @@ public:
     static IDE_RC  selectAllReplications( smiStatement    * aSmiStmt,
                                           rpdReplications * aReplicationsList,
                                           SInt            * aItemCount );
+
+    static IDE_RC  selectAllReplicationsWithCursor( smiStatement    * aSmiStmt,
+                                                    rpdReplications * aReplicationsList,
+                                                    SInt            * aItemCount,
+                                                    smiTableCursor  * aCursor );
+
+    static IDE_RC updateRemoteDataInit( smiStatement * aSmiStmt,
+                                        SChar        * aReplName );
 private:
     static IDE_RC setReplMember( rpdReplications * aRepl, 
                                  const void      * aRow );
@@ -471,8 +500,8 @@ private:
                                           const void         * aRow);
 
     // PROJ-1442 Replication Online 중 DDL 허용
-    static void   setReplOldItemMember(smiTableMeta * aReplOldItem,
-                                       const void   * aRow);
+    static void   setReplOldItemMember( rpdOldItem * aReplOldItem,
+                                        const void   * aRow );
     static IDE_RC setReplOldColumnMember( smiColumnMeta * aReplOldColumn,
                                           const void    * aRow );
     static void   setReplOldIndexMember(smiIndexMeta * aReplOldIndex,
@@ -486,5 +515,9 @@ private:
     static IDE_RC getStrForMeta( SChar        * aSrcStr,
                                  SInt           aSize,
                                  SChar       ** aStrForMeta );
+
+    static const char *   ConnTypeEnumToString( RP_SOCKET_TYPE aConnType ); 
+    static RP_SOCKET_TYPE ConnTypeStrToEnum( mtdCharType  * aConnStr );
+    static rpIBLatency    IBLatencyStrToEnum( mtdCharType * aConnStr );
 };
 #endif /* _O_RPD_CATALOG_DEFAULT_H_ */

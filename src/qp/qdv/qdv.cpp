@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdv.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdv.cpp 84969 2019-03-06 05:26:17Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -128,11 +128,17 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
     qcuSqlSourceInfo      sqlInfo;
     idBool                sExist = ID_FALSE;
     qsOID                 sProcID;
-    UInt                  sSessionUserID;
+    volatile UInt         sSessionUserID;
     SChar                 sViewName[QC_MAX_OBJECT_NAME_LEN + 1];
+
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdv::validateCreate::__FT__" );
 
     // 현재 session userID 저장
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
+
+    IDU_FIT_POINT_FATAL( "qdv::validateCreate::__FT__::SessionUserID" );
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
@@ -553,8 +559,14 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
     //BUGBUG view가 저장될 tablespace ??
     sParseTree->TBSAttr.mID = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC;
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
     
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION(ERR_EXIST_OBJECT_NAME);
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_EXIST_OBJECT_NAME));
@@ -589,9 +601,13 @@ IDE_RC qdv::validateCreate(qcStatement * aStatement)
     }
     IDE_EXCEPTION_END;
 
+    IDE_FT_EXCEPTION_BEGIN();
+
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
     
+    IDE_FT_EXCEPTION_END();
+
     return IDE_FAILURE;
 
 #undef IDE_FN
@@ -901,21 +917,25 @@ IDE_RC qdv::executeRecreate(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     // related PSM
+    // BUG-46416 Set status of PSM to invalid using new transaction.
     IDE_TEST( qcmProc::relSetInvalidProcOfRelated(
                   aStatement,
                   sParseTree->userID,
                   sParseTree->tableInfo->name,
                   idlOS::strlen((SChar*)sParseTree->tableInfo->name),
-                  QS_TABLE )
+                  QS_TABLE,
+                  ID_TRUE )
               != IDE_SUCCESS);
 
     // PROJ-1073 Package
+    // BUG-46416 Set status of PSM to invalid using new transaction.
     IDE_TEST( qcmPkg::relSetInvalidPkgOfRelated(
                   aStatement,
                   sParseTree->userID,
                   sParseTree->tableInfo->name,
                   idlOS::strlen((SChar*)sParseTree->tableInfo->name),
-                  QS_TABLE )
+                  QS_TABLE,
+                  ID_TRUE )
               != IDE_SUCCESS);
 
     // related VIEW

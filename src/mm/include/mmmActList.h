@@ -61,8 +61,8 @@ extern mmmPhaseAction gMmmActInitREPL;
 extern mmmPhaseAction gMmmActTimer;
 extern mmmPhaseAction gMmmActInitAudit; /* PROJ-2223 Altibase Auditing */
 extern mmmPhaseAction gMmmActInitJobManager; /* PROJ-1438 Job Scheduler */
-extern mmmPhaseAction gMmmActInitIPCDAProcMonitor;
 extern mmmPhaseAction gMmmActInitSnapshotExport; /* PROJ-2626 Snapshot Export */
+extern mmmPhaseAction gMmmActInitSD;
 
 // shutdown
 extern mmmPhaseAction gMmmActShutdownPrepare;
@@ -84,6 +84,7 @@ extern mmmPhaseAction gMmmActShutdownEND;
 extern mmmPhaseAction gMmmActShutdownTimer;
 extern mmmPhaseAction gMmmActShutdownRC;
 extern mmmPhaseAction gMmmActShutdownProperty;
+extern mmmPhaseAction gMmmActShutdownSD;
 
 // Descriptor Begin & End Actions
 extern mmmPhaseAction gMmmActBeginPreProcess;

@@ -1,4 +1,4 @@
-# $Id: utEnv.mk 79821 2017-04-25 01:50:09Z kit.lee $
+# $Id: utEnv.mk 83627 2018-08-06 10:11:18Z lswhh $
 #
 
 include $(dir $(word $(words $(MAKEFILE_LIST)), $(MAKEFILE_LIST)))../env.mk
@@ -12,9 +12,10 @@ else
 INCLUDES += $(IDROPT)$(UL_DIR)/include/unix-odbc
 endif
 
-LFLAGS += $(foreach i, $(ALTI_HOME)/lib $(MT_DIR)/lib $(QP_DIR)/lib $(RP_DIR)/lib $(SM_DIR)/lib $(ID_DIR)/lib $(UL_DIR)/lib $(UT_DIR)/util/lib, $(LDROPT)$(i))
+LFLAGS += $(foreach i, $(ALTI_HOME)/lib $(MT_DIR)/lib $(QP_DIR)/lib $(SD_DIR)/lib $(RP_DIR)/lib $(SM_DIR)/lib $(ID_DIR)/lib $(UL_DIR)/lib $(UT_DIR)/util/lib, $(LDROPT)$(i))
 
-SHARDFLAGS:=$(DEFOPT)COMPILE_SHARDCLI
+SHARDLOADERFLAGS:=$(DEFOPT)COMPILE_SHARDCLI
+SHARDLOADERFLAGS+=$(DEFOPT)COMPILE_SHARDLOADERCLI
 
 ODBCCLI_LIB = odbccli
 UTIL_LIB = altiutil
@@ -35,16 +36,16 @@ JAVALIB = $(JAVA_HOME)/lib
 $(TARGET_DIR)/%.$(OBJEXT): $(DEV_DIR)/%.cpp
 	$(COMPILE_IT)
 
-$(TARGET_DIR)/%_sd.$(OBJEXT): $(DEV_DIR)/%.cpp
-	$(COMPILE_IT) $(SHARDFLAGS)
-
 $(TARGET_DIR)/%.$(OBJEXT): $(DEV_DIR)/%.c
 	mkdir -p $(dir $@)
 	$(COMPILE.c) $(INCLUDES) $(CC_OUTPUT_FLAG)$@ $<
 
-$(TARGET_DIR)/%)_sd.$(OBJEXT): $(DEV_DIR)/%.c
+$(TARGET_DIR)/%_sdld.$(OBJEXT): $(DEV_DIR)/%.cpp
+	$(COMPILE_IT) $(SHARDLOADERFLAGS)
+
+$(TARGET_DIR)/%)_sdld.$(OBJEXT): $(DEV_DIR)/%.c
 	mkdir -p $(dir $@)
-	$(COMPILE.c) $(SHARDFLAGS) $(INCLUDES) $(CC_OUTPUT_FLAG)$@ $<
+	$(COMPILE.c) $(SHARDLOADERFLAGS) $(INCLUDES) $(CC_OUTPUT_FLAG)$@ $<
 
 $(TARGET_DIR)/%.$(OBJEXT): $(DEV_DIR)/%.s
 	mkdir -p $(dir $@)

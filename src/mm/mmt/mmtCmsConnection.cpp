@@ -574,7 +574,7 @@ IDE_RC connectProtocolCore(cmiProtocolContext *aProtocolContext,
     if( cmiGetLinkInfo( sTask->getLink(),
                         aUserInfo->loginIP,
                         QCI_MAX_IP_LEN,
-                        CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS )
+                        CMI_LINK_INFO_REMOTE_IP_ADDRESS )
         == IDE_SUCCESS )
     {
         aUserInfo->loginIP[QCI_MAX_IP_LEN] = '\0';
@@ -658,6 +658,24 @@ IDE_RC connectProtocolCore(cmiProtocolContext *aProtocolContext,
 
     IDV_SESS_ADD(sTask->getSession()->getStatistics(), IDV_STAT_INDEX_LOGON_CUMUL, 1);
     IDV_SESS_ADD(sTask->getSession()->getStatistics(), IDV_STAT_INDEX_LOGON_CURR, 1);
+
+
+    if ( ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( sSession->isShardData() == ID_FALSE ) )
+    {
+        /* Make Shard PIN
+         * SHARD_META_ENABLE Property 가 설정된 META 노드만 신규 Shard PIN을 생성한다.
+         * DATA 노드는 PropertySet 프로토콜을 통해 Shard PIN을 받는다.
+         * */
+        sSession->setNewSessionShardPin();
+
+        /* BUG-46090 Meta Node SMN 전파 */
+        sSession->setShardMetaNumber( sdi::getSMNForDataNode() );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -883,19 +901,19 @@ IDE_RC mmtServiceThread::disconnectProtocol(cmiProtocolContext *aProtocolContext
 
     IDE_EXCEPTION_CONT( AUDIT_NOT_STARTED );
 
-    /* shard connection인 경우 disconnect시 rollback한다. */
-    if (sSession->isShardData() == ID_TRUE )
+    /* sharding의 모든 connection은 disconnect시 rollback한다. */
+    if (sSession->isShardTrans() == ID_TRUE )
     {
         /* freeSession에서 rollback한다. */
+        sSession->setSessionState(MMC_SESSION_STATE_ROLLBACK);
     }
     else
     {
         sSession->setSessionState(MMC_SESSION_STATE_END);
-
-        /* BUG-38585 IDE_ASSERT remove */
-        IDU_FIT_POINT("mmtServiceThread::disconnectProtocol::EndSession");
-        IDE_TEST(sSession->endSession() != IDE_SUCCESS);
     }
+    /* BUG-38585 IDE_ASSERT remove */
+    IDU_FIT_POINT("mmtServiceThread::disconnectProtocol::EndSession");
+    IDE_TEST(sSession->endSession() != IDE_SUCCESS);
 
     IDE_TEST(mmtSessionManager::freeSession(sTask) != IDE_SUCCESS);
 
@@ -905,18 +923,17 @@ IDE_RC mmtServiceThread::disconnectProtocol(cmiProtocolContext *aProtocolContext
 
     IDE_EXCEPTION_END;
 
-    /* BUG-41986 */
-    IDE_TEST_CONT( mmtAuditManager::isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED_FOR_ERR_RESULT );
+    /* BUG-41986,46038 */
+    if ((mmtAuditManager::isAuditStarted() == ID_TRUE) && (sSession != NULL))
+    {
+        mmtAuditManager::initAuditConnInfo( sSession, 
+                                            &sAuditTrail, 
+                                            sSession->getUserInfo(), 
+                                            E_ERROR_CODE(ideGetErrorCode()),
+                                            QCI_AUDIT_OPER_DISCONNECT );
 
-    mmtAuditManager::initAuditConnInfo( sSession, 
-                                        &sAuditTrail, 
-                                        sSession->getUserInfo(), 
-                                        E_ERROR_CODE(ideGetErrorCode()),
-                                        QCI_AUDIT_OPER_DISCONNECT );
-
-    mmtAuditManager::auditConnectInfo( &sAuditTrail );
-
-    IDE_EXCEPTION_CONT( AUDIT_NOT_STARTED_FOR_ERR_RESULT );
+        mmtAuditManager::auditConnectInfo( &sAuditTrail );
+    }
 
     sRet = sThread->answerErrorResult(aProtocolContext,
                                       CMI_PROTOCOL_OPERATION(DB, Disconnect),
@@ -1267,15 +1284,7 @@ IDE_RC mmtServiceThread::propertySetProtocol(cmiProtocolContext *aProtocolContex
 
             /* PROJ-2638 shard native linker */
         case CMP_DB_PROPERTY_SHARD_LINKER_TYPE:
-            CMI_RD1( aProtocolContext, sBool );
-            if ( sBool > 0 )
-            {
-                IDE_TEST( sSession->setShardLinker() != IDE_SUCCESS );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
+            /* Nothing to do */
             break;
 
             /* PROJ-2638 shard native linker */
@@ -1292,13 +1301,45 @@ IDE_RC mmtServiceThread::propertySetProtocol(cmiProtocolContext *aProtocolContex
             CMI_RD8( aProtocolContext, &sInfo->mShardPin );
             break;
 
+        /* BUG-46090 Meta Node SMN 전파 */
+        case CMP_DB_PROPERTY_SHARD_META_NUMBER:
+            CMI_RD8( aProtocolContext, &sValue8 );
+
+            /* BUG-45967 Data Node의 Shard Session 정리 */
+            IDE_TEST( sSession->checkSMNForDataNodeAndSetSMN( sValue8,
+                                                              "PropertySetResult" )
+                      != IDE_SUCCESS );
+
+            /* PROJ-2701 Sharding online data rebuild */
+            sSession->checkAndFinalizeRebuildCoordinator();
+            break;
+
+        /* BUG-45707 */
+        case CMP_DB_PROPERTY_SHARD_CLIENT:
+            CMI_RD1( aProtocolContext, sBool );
+            sSession->setShardClient( (sdiShardClient)sBool );
+            break;
+
+        case CMP_DB_PROPERTY_SHARD_SESSION_TYPE:
+            CMI_RD1( aProtocolContext, sBool );
+            sSession->setShardSessionType( (sdiSessionType)sBool );
+            break;
+
         case CMP_DB_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL:
             CMI_RD1( aProtocolContext, sBool );
-            IDE_TEST( dkiSessionSetGlobalTransactionLevel(
-                          sSession->getDatabaseLinkSession(),
-                          (UInt)sBool )
-                      != IDE_SUCCESS );
-            sSession->setDblinkGlobalTransactionLevel((UInt)sBool);
+
+            /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction을 지원해야 합니다. */
+            IDE_TEST( sSession->setDblinkGlobalTransactionLevel( (UInt)sBool ) != IDE_SUCCESS );
+            break;
+
+        /* BUG-46092 */
+        case CMP_DB_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT:
+            IDU_FIT_POINT_RAISE( "answerPropertyGetResult::ShardConnectionReport",
+                                 UnsupportedProperty );
+
+            CMI_RD4( aProtocolContext, &sValue4 );
+            CMI_RD1( aProtocolContext, sBool );
+            IDE_TEST( sSession->shardNodeConnectionReport( sValue4, sBool ) != IDE_SUCCESS );
             break;
 
         /* 서버-클라이언트(Session) 프로퍼티는 FIT 테스트를 추가하자. since 2015.07.09 */

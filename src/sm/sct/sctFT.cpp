@@ -143,6 +143,8 @@ IDE_RC sctFT::getSpaceHeaderAttrFlags(
 
     UInt * sAttrFlag;
 
+    IDU_FIT_POINT("BUG-46450@sctFT::getSpaceHeaderAttrFlags::getTBSLocation");
+
     switch( sctTableSpaceMgr::getTBSLocation( aSpaceNode->mID ) )
     {
         case SMI_TBS_DISK:
@@ -158,8 +160,11 @@ IDE_RC sctFT::getSpaceHeaderAttrFlags(
                                            &sAttrFlag );
             break;
         default:
-            IDE_ASSERT( 0 );
-            break;
+           IDE_ERROR_MSG( 0,
+                          "Tablespace Type not found ( ID : %"ID_UINT32_FMT", Name : %s ) \n",
+                          aSpaceNode->mID,
+                          aSpaceNode->mName );
+            //break;
     }
 
     if ( ( *sAttrFlag & SMI_TBS_ATTR_LOG_COMPRESS_MASK )
@@ -173,6 +178,10 @@ IDE_RC sctFT::getSpaceHeaderAttrFlags(
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 /******************************************************************************
@@ -622,6 +631,8 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
             /* Nothing to do */
         }
 
+        IDU_FIT_POINT("BUG-46450@sctFT::buildRecordForTABLESPACES::getTBSLocation");
+
         switch( sctTableSpaceMgr::getTBSLocation( sCurrSpaceNode->mID ) )
         {
             case SMI_TBS_DISK:
@@ -630,7 +641,7 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
                 // sddDiskMgr::read 수행하다가 sctTableSpaceMgr::lock을 잡는다
                 // 여기에서 lock해제한다.
                 IDE_ASSERT( sctTableSpaceMgr::lockGlobalPageCountCheckMutex() 
-                    == IDE_SUCCESS );
+                            == IDE_SUCCESS );
                 sState = 2;
 
                 IDE_TEST( getDiskTBSInfo( (sddTableSpaceNode*)sCurrSpaceNode,
@@ -639,7 +650,7 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
 
                 sState = 0;
                 IDE_ASSERT( sctTableSpaceMgr::unlockGlobalPageCountCheckMutex() 
-                    == IDE_SUCCESS );
+                            == IDE_SUCCESS );
 
                 break;
 
@@ -672,7 +683,10 @@ IDE_RC sctFT::buildRecordForTABLESPACES(idvSQL              * /*aStatistics*/,
                 break;
 
             default:
-                IDE_ASSERT( 0 );
+                IDE_ERROR_MSG( 0,
+                                "Tablespace Type not found ( ID : %"ID_UINT32_FMT", Name : %s ) \n",
+                                sCurrSpaceNode->mID,
+                                sCurrSpaceNode->mName );
                 break;
         }
 

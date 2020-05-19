@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtcValue.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qtcValue.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  *
  * Description :
  *
@@ -80,6 +80,7 @@ static const mtcExecute qtcExecute = {
     mtf::calculateNA,     // Aggregation 종료 함수, 없음
     qtcCalculate_Value,   // VALUE 연산 함수
     NULL,                 // 연산을 위한 부가 정보, 없음
+    mtx::calculateEmpty,
     mtk::estimateRangeNA, // Key Range 크기 추출 함수, 없음
     mtk::extractRangeNA   // Key Range 생성 함수, 없음
 };

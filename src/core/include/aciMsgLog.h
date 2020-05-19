@@ -53,6 +53,7 @@ typedef enum aci_log_module_t
     ACI_SM,
     ACI_RP,
     ACI_QP,
+    ACI_SD, /* BUG-46138 */
     ACI_DL,
     ACI_LK,
     ACI_XA,
@@ -358,6 +359,80 @@ typedef enum aci_log_module_t
 #define ACI_QP_30   ACI_TRC_QP_30, ACI_QP, 30
 #define ACI_QP_31   ACI_TRC_QP_31, ACI_QP, 31
 #define ACI_QP_32   ACI_TRC_QP_32, ACI_QP, 32
+
+/* ------------------------------------------------
+ *  SD  BUG-46138 
+ *  Macro: ACI_*_LEV   ==> DO_FLAG,MODULE,LEVEL
+ * ----------------------------------------------*/
+
+#define ACI_TRC_SD_0   1           /* always do */
+#define ACI_TRC_SD_1   (iduProperty::getSdTrcFlag() & 0x00000001)
+#define ACI_TRC_SD_2   (iduProperty::getSdTrcFlag() & 0x00000002)
+#define ACI_TRC_SD_3   (iduProperty::getSdTrcFlag() & 0x00000004)
+#define ACI_TRC_SD_4   (iduProperty::getSdTrcFlag() & 0x00000008)
+#define ACI_TRC_SD_5   (iduProperty::getSdTrcFlag() & 0x00000010)
+#define ACI_TRC_SD_6   (iduProperty::getSdTrcFlag() & 0x00000020)
+#define ACI_TRC_SD_7   (iduProperty::getSdTrcFlag() & 0x00000040)
+#define ACI_TRC_SD_8   (iduProperty::getSdTrcFlag() & 0x00000080)
+#define ACI_TRC_SD_9   (iduProperty::getSdTrcFlag() & 0x00000100)
+#define ACI_TRC_SD_10  (iduProperty::getSdTrcFlag() & 0x00000200)
+#define ACI_TRC_SD_11  (iduProperty::getSdTrcFlag() & 0x00000400)
+#define ACI_TRC_SD_12  (iduProperty::getSdTrcFlag() & 0x00000800)
+#define ACI_TRC_SD_13  (iduProperty::getSdTrcFlag() & 0x00001000)
+#define ACI_TRC_SD_14  (iduProperty::getSdTrcFlag() & 0x00002000)
+#define ACI_TRC_SD_15  (iduProperty::getSdTrcFlag() & 0x00004000)
+#define ACI_TRC_SD_16  (iduProperty::getSdTrcFlag() & 0x00008000)
+#define ACI_TRC_SD_17  (iduProperty::getSdTrcFlag() & 0x00010000)
+#define ACI_TRC_SD_18  (iduProperty::getSdTrcFlag() & 0x00020000)
+#define ACI_TRC_SD_19  (iduProperty::getSdTrcFlag() & 0x00040000)
+#define ACI_TRC_SD_20  (iduProperty::getSdTrcFlag() & 0x00080000)
+#define ACI_TRC_SD_21  (iduProperty::getSdTrcFlag() & 0x00100000)
+#define ACI_TRC_SD_22  (iduProperty::getSdTrcFlag() & 0x00200000)
+#define ACI_TRC_SD_23  (iduProperty::getSdTrcFlag() & 0x00400000)
+#define ACI_TRC_SD_24  (iduProperty::getSdTrcFlag() & 0x00800000)
+#define ACI_TRC_SD_25  (iduProperty::getSdTrcFlag() & 0x01000000)
+#define ACI_TRC_SD_26  (iduProperty::getSdTrcFlag() & 0x02000000)
+#define ACI_TRC_SD_27  (iduProperty::getSdTrcFlag() & 0x04000000)
+#define ACI_TRC_SD_28  (iduProperty::getSdTrcFlag() & 0x08000000)
+#define ACI_TRC_SD_29  (iduProperty::getSdTrcFlag() & 0x10000000)
+#define ACI_TRC_SD_30  (iduProperty::getSdTrcFlag() & 0x20000000)
+#define ACI_TRC_SD_31  (iduProperty::getSdTrcFlag() & 0x40000000)
+#define ACI_TRC_SD_32  (iduProperty::getSdTrcFlag() & 0x80000000)
+
+
+#define ACI_SD_0    ACI_TRC_SD_0,  ACI_SD, 0
+#define ACI_SD_1    ACI_TRC_SD_1,  ACI_SD, 1
+#define ACI_SD_2    ACI_TRC_SD_2,  ACI_SD, 2 
+#define ACI_SD_3    ACI_TRC_SD_3,  ACI_SD, 3 
+#define ACI_SD_4    ACI_TRC_SD_4,  ACI_SD, 4 
+#define ACI_SD_5    ACI_TRC_SD_5,  ACI_SD, 5 
+#define ACI_SD_6    ACI_TRC_SD_6,  ACI_SD, 6 
+#define ACI_SD_7    ACI_TRC_SD_7,  ACI_SD, 7 
+#define ACI_SD_8    ACI_TRC_SD_8,  ACI_SD, 8 
+#define ACI_SD_9    ACI_TRC_SD_9,  ACI_SD, 9 
+#define ACI_SD_10   ACI_TRC_SD_10, ACI_SD, 10 
+#define ACI_SD_11   ACI_TRC_SD_11, ACI_SD, 11 
+#define ACI_SD_12   ACI_TRC_SD_12, ACI_SD, 12 
+#define ACI_SD_13   ACI_TRC_SD_13, ACI_SD, 13 
+#define ACI_SD_14   ACI_TRC_SD_14, ACI_SD, 14 
+#define ACI_SD_15   ACI_TRC_SD_15, ACI_SD, 15 
+#define ACI_SD_16   ACI_TRC_SD_16, ACI_SD, 16 
+#define ACI_SD_17   ACI_TRC_SD_17, ACI_SD, 17 
+#define ACI_SD_18   ACI_TRC_SD_18, ACI_SD, 18 
+#define ACI_SD_19   ACI_TRC_SD_19, ACI_SD, 19
+#define ACI_SD_20   ACI_TRC_SD_20, ACI_SD, 20 
+#define ACI_SD_21   ACI_TRC_SD_21, ACI_SD, 21
+#define ACI_SD_22   ACI_TRC_SD_22, ACI_SD, 22
+#define ACI_SD_23   ACI_TRC_SD_23, ACI_SD, 23
+#define ACI_SD_24   ACI_TRC_SD_24, ACI_SD, 24
+#define ACI_SD_25   ACI_TRC_SD_25, ACI_SD, 25
+#define ACI_SD_26   ACI_TRC_SD_26, ACI_SD, 26
+#define ACI_SD_27   ACI_TRC_SD_27, ACI_SD, 27
+#define ACI_SD_28   ACI_TRC_SD_28, ACI_SD, 28
+#define ACI_SD_29   ACI_TRC_SD_29, ACI_SD, 29
+#define ACI_SD_30   ACI_TRC_SD_30, ACI_SD, 30
+#define ACI_SD_31   ACI_TRC_SD_31, ACI_SD, 31
+#define ACI_SD_32   ACI_TRC_SD_32, ACI_SD, 32
 
 /* ------------------------------------------------
  *  DL(Database Link:Server side)

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnSort.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnSort.cpp 83669 2018-08-09 06:52:06Z ahra.cho $
  *
  * Description :
  *     SORT(SORT) Node
@@ -1472,10 +1472,26 @@ qmnSORT::setMtrRow( qcTemplate * aTemplate,
 
     for ( sNode = aDataPlan->mtrNode; sNode != NULL; sNode = sNode->next )
     {
-        IDE_TEST( sNode->func.setMtr( aTemplate,
-                                      sNode,
-                                      aDataPlan->plan.myTuple->row )
-                  != IDE_SUCCESS );
+        if ( sNode->func.setMtr == qmc::setMtrByCopy )
+        {
+            IDE_TEST( sNode->func.setMtr( aTemplate,
+                                          sNode,
+                                          aDataPlan->plan.myTuple->row )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    // BUG-46279  Disk temp 사용 시 grouping 데이터의 정렬이 subquery를 참조하는 경우
+    //            결과 값 오류가 발생합니다.
+    for ( sNode = aDataPlan->mtrNode; sNode != NULL; sNode = sNode->next )
+    {
+        if ( sNode->func.setMtr != qmc::setMtrByCopy )
+        {
+            IDE_TEST( sNode->func.setMtr( aTemplate,
+                                          sNode,
+                                          aDataPlan->plan.myTuple->row )
+                      != IDE_SUCCESS );
+        }
     }
 
     return IDE_SUCCESS;

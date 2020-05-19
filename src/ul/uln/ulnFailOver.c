@@ -29,23 +29,21 @@
 /* BUGBUG (2016-11-10) 값 일치 필요: MMC_FAILOVER_SOURCE_MAX_LEN */
 #define ULN_MAX_FAILOVER_SOURCE_LEN 256
 
-/* BUG-31390 Failover info for v$session */
-typedef enum
-{
-    ULN_FAILOVER_TYPE_CTF = 0,
-    ULN_FAILOVER_TYPE_STF = 1
-} ulnFailoverType;
-
 static const acp_char_t* gFailoverTypeName[] =
 {
     "CTF",
     "STF"
 };
 
-ACP_INLINE
 acp_bool_t ulnFailoverIsOn(ulnDbc *aDbc)
 {
-    return acpListIsEmpty(ulnDbcGetFailoverServerList(aDbc)) ? ACP_FALSE : ACP_TRUE;
+    return (aDbc->mFailoverServersCnt == 0) ? ACP_FALSE : ACP_TRUE;
+}
+
+ACP_INLINE
+acp_uint32_t ulnFailoverChooseRandomServer(ulnDbc *aDbc, acp_uint32_t aStart)
+{
+   return aStart + (acpRandSeedAuto() % (aDbc->mFailoverServersCnt - aStart));
 }
 
 /**
@@ -96,7 +94,9 @@ acp_sint32_t ulnFailoverMakeSource( acp_char_t            *aBuf,
  *
  * @return 접속 성공 여부: 성공하면 ACP_TRUE, 아니면 ACP_FALSE
  */
-ACP_INLINE ACI_RC ulnFailoverConnect(ulnFnContext *aFnContext, ulnFailoverType aFailoverType, ulnFailoverServerInfo *aNewServerInfo)
+ACI_RC ulnFailoverConnect(ulnFnContext              *aFnContext, 
+                          ulnFailoverType            aFailoverType, 
+                          ulnFailoverServerInfo     *aNewServerInfo)
 {
     ulnDbc                *sDbc           = ulnFnContextGetDbc(aFnContext);
     ACI_RC                 sRC            = ACI_FAILURE;
@@ -122,6 +122,12 @@ ACP_INLINE ACI_RC ulnFailoverConnect(ulnFnContext *aFnContext, ulnFailoverType a
             sConnectArg->mTCP.mPort = aNewServerInfo->mPort;
             break;
 
+        /* PROJ-2681 */
+        case ULN_CONNTYPE_IB:
+            sConnectArg->mIB.mAddr = aNewServerInfo->mHost;
+            sConnectArg->mIB.mPort = aNewServerInfo->mPort;
+            break;
+
         default:
             /* unreachable */
             ACE_ASSERT(0);
@@ -130,7 +136,7 @@ ACP_INLINE ACI_RC ulnFailoverConnect(ulnFnContext *aFnContext, ulnFailoverType a
 
     for (sCurRetryCnt = 0; sCurRetryCnt < sMaxRetryCnt; sCurRetryCnt++)
     {
-        ulnClearDiagnosticInfoFromObject(&sDbc->mObj);
+        ulnClearDiagnosticInfoFromObject(aFnContext->mHandle.mObj);  /* BUG-46586 */
 
         if (cmiConnect(&(sDbc->mPtContext.mCmiPtContext),
                        sConnectArg,
@@ -140,7 +146,7 @@ ACP_INLINE ACI_RC ulnFailoverConnect(ulnFnContext *aFnContext, ulnFailoverType a
             ulnDbcSetIsConnected(sDbc, ACP_TRUE);
             sFOSrcLen = ulnFailoverMakeSource(sFOSrc, ACI_SIZEOF(sFOSrc),
                                               aFailoverType, sOldServerInfo);
-            ulnDbcSetFailoverSource(sDbc, sFOSrc, sFOSrcLen);
+            (void)ulnDbcSetFailoverSource(sDbc, sFOSrc, sFOSrcLen);
             ulnDbcSetCurrentServer(sDbc, aNewServerInfo);
 
             ULN_INIT_FUNCTION_CONTEXT(sTmpFnContext, ULN_FID_CONNECT, sDbc, ULN_OBJ_TYPE_DBC);
@@ -187,17 +193,35 @@ static ACI_RC ulnFailoverCore(ulnFnContext *aFnContext, ulnFailoverType aFailove
     ACI_RC                 sRC            = ACI_FAILURE;
     ulnFailoverServerInfo *sOldServerInfo = ulnDbcGetCurrentServer(sDbc);
     ulnFailoverServerInfo *sNewServerInfo = NULL;
-    acp_list_node_t       *sIterator      = NULL;
+    acp_uint32_t           sChosen;
+    acp_uint32_t           i;
 
-    ACE_DASSERT(sDbc != NULL);
-    ACE_DASSERT(ulnFailoverIsOn(sDbc) == ACP_TRUE);
+    /* BUG-46453 SessionFailOver=on, AlternateServers를 지정하지 않은 경우 체크 */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
+    ACI_TEST_RAISE(ulnFailoverIsOn(sDbc) != ACP_TRUE, NotSetAlternateServers);
 
     sRC = ulnFailoverConnect(aFnContext, aFailoverType, sOldServerInfo);
     ACP_TEST_RAISE(sRC == ACI_SUCCESS, CTF_END);
 
-    ACP_LIST_ITERATE(ulnDbcGetFailoverServerList(sDbc), sIterator)
+    for (i = 0; i < sDbc->mFailoverServersCnt; i++)
     {
-        sNewServerInfo = (ulnFailoverServerInfo *)sIterator->mObj;
+        if (ulnDbcGetLoadBalance(sDbc) == ACP_TRUE)
+        {
+            if (i > 0 && sChosen != i - 1)
+            {
+                sNewServerInfo                  = sDbc->mFailoverServers[ i - 1 ];
+                sDbc->mFailoverServers[ i - 1 ] = sDbc->mFailoverServers[sChosen];
+                sDbc->mFailoverServers[sChosen] = sNewServerInfo;
+            }
+
+            sChosen = ulnFailoverChooseRandomServer(sDbc, i);
+            sNewServerInfo = sDbc->mFailoverServers[sChosen];
+        }
+        else
+        {
+            sNewServerInfo = sDbc->mFailoverServers[i];
+        }
+
         if (sNewServerInfo == sOldServerInfo)
         {
             continue;
@@ -210,6 +234,18 @@ static ACI_RC ulnFailoverCore(ulnFnContext *aFnContext, ulnFailoverType aFailove
     ACI_EXCEPTION_CONT(CTF_END);
 
     return sRC;
+
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
+    ACI_EXCEPTION(NotSetAlternateServers)
+    {
+        ulnError(aFnContext, ulERR_ABORT_ALTERNATE_SERVER_NOT_SET);
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }
 
 ACP_INLINE acp_bool_t ulnIsCmError(acp_uint32_t aNativeErrorCode)
@@ -219,11 +255,23 @@ ACP_INLINE acp_bool_t ulnIsCmError(acp_uint32_t aNativeErrorCode)
 
 ACP_INLINE acp_bool_t ulnFailoverIsNeeded(ulnDbc *aDbc)
 {
-    ulnDiagRec *sDiagRec = NULL;
-
     ACI_TEST(ulnFailoverIsOn(aDbc) != ACP_TRUE);
 
-    if (ulnGetDiagRecFromObject(&aDbc->mObj, &sDiagRec, 1) == ACI_SUCCESS)
+    ACI_TEST(ulnDiagRecIsNeedFailover(&aDbc->mObj) != ACP_TRUE);
+
+    return ACP_TRUE;
+
+    ACI_EXCEPTION_END;
+
+    return ACP_FALSE;
+}
+
+/* BUG-46092 */
+acp_bool_t ulnDiagRecIsNeedFailover(ulnObject *aObject)
+{
+    ulnDiagRec *sDiagRec = NULL;
+
+    if (ulnGetDiagRecFromObject(aObject, &sDiagRec, 1) == ACI_SUCCESS)
     {
         /* Failover 대상
            - CM 에러, 연결 실패 (ref. ulnErrorMgrSetCmError)
@@ -260,12 +308,35 @@ ACI_RC ulnFailoverDoCTF(ulnFnContext *aFnContext)
     ulnDbc *sDbc = NULL;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACE_ASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnFailoverIsNeeded(sDbc) != ACP_TRUE);
 
-    return ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_CTF);
+    ACI_TEST(ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_CTF) != ACI_SUCCESS);
 
+#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+    ACI_TEST_RAISE( ulsdModuleNotifyFailOver( sDbc ) != ACI_SUCCESS,
+                    NotifyFailException );
+#endif /* COMPILE_SHARDCLI */
+
+    return ACI_SUCCESS;
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
+#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+    ACI_EXCEPTION( NotifyFailException )
+    {
+        if ( ulnDbcIsConnected( sDbc ) == ACP_TRUE )
+        {
+            ulnDbcSetIsConnected( sDbc, ACP_FALSE );
+            ulnClosePhysicalConn( sDbc );
+        }
+    }
+#endif /* COMPILE_SHARDCLI */
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;
@@ -290,7 +361,7 @@ static acp_bool_t ulnFailoverCanSTF(ulnDbc *aDbc)
     return sSessionFailover;
 }
 
-static ACI_RC ulnFailoverXaReOpen(ulnDbc *  aDbc)
+ACI_RC ulnFailoverXaReOpen(ulnDbc *  aDbc)
 {
     ACI_RC       sRC;
     acp_sint32_t sResult;
@@ -326,9 +397,17 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
     SQLFailOverCallbackContext   sDummyFailoverCallbackContext;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACE_DASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sFailoverCallbackContext = ulnDbcGetFailoverCallbackContext(sDbc);
+#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+    if ( sDbc->mShardDbcCxt.mParentDbc != NULL )
+    {
+        /* Node DBC. Not allow failover callback function. */
+        sFailoverCallbackContext = NULL;
+    }
+#endif /* COMPILE_SHARDCLI */
     if (sFailoverCallbackContext == NULL)
     {
         sDummyFailoverCallbackContext.mFailOverCallbackFunc = ulnDummyFailoverCallbackFunction;
@@ -352,7 +431,18 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
         ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
         if( sFailoverIntention != ALTIBASE_FO_QUIT)
         {
-            if (ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_STF) == ACI_SUCCESS)
+            sRC = ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_STF);
+#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+            if ( sRC == ACI_SUCCESS )
+            {
+                sRC = ulsdModuleUpdateNodeList(aFnContext, sDbc);
+            }
+            if ( sRC == ACI_SUCCESS )
+            {
+                sRC = ulsdModuleNotifyFailOver( sDbc );
+            }
+#endif /* COMPILE_SHARDCLI */
+            if ( sRC == ACI_SUCCESS )
             {
                 ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
 
@@ -371,7 +461,6 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
                 if(sFailoverIntention != ALTIBASE_FO_QUIT)
                 {
                     ulnDbcCloseAllStatement(sDbc);
-                    sRC = ACI_SUCCESS;
                     //XA Connection.
                     if (sDbc->mXaConnection != NULL)
                     {
@@ -384,16 +473,10 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
                         ACE_ASSERT(ulnClearDiagnosticInfoFromObject(aFnContext->mHandle.mObj) == ACI_SUCCESS);
                     }
 
-#ifdef COMPILE_SHARDCLI
-                    /* PROJ-2598 altibase sharding */
-                    sRC = ulsdModuleUpdateNodeList(aFnContext, sDbc);
-#endif /* COMPILE_SHARDCLI */
                 }
                 else
                 {
                     sRC = ACI_FAILURE;
-                    ulnDbcSetIsConnected(sDbc, ACP_FALSE);
-                    ulnClosePhysicalConn(sDbc);
                 }
             }
             else
@@ -416,20 +499,55 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
     {
         sRC = ACI_FAILURE;
     }
-    return sRC;
+
+    ACI_TEST_RAISE( sRC != ACI_SUCCESS, FailoverFailException );
+
+    return ACI_SUCCESS;
+
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
+    ACI_EXCEPTION( FailoverFailException )
+    {
+        if ( ulnDbcIsConnected( sDbc ) == ACP_TRUE )
+        {
+            ulnDbcSetIsConnected( sDbc, ACP_FALSE );
+            ulnClosePhysicalConn( sDbc );
+        }
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }
 
 void ulnFailoverInitialize(ulnDbc *aDbc)
 {
-    acpListInit(ulnDbcGetFailoverServerList(aDbc));
+    aDbc->mFailoverServers    = NULL;
+    aDbc->mFailoverServersCnt = 0;
+    aDbc->mFailoverServersMax = 0;
+
     ulnDbcSetCurrentServer(aDbc, NULL);
     ulnDbcSetFailoverCallbackContext(aDbc, NULL);
     ulnDbcSetFailoverCallbackState(aDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
 }
 
+void ulnFailoverFinalize(ulnDbc *aDbc)
+{
+    if (aDbc->mFailoverServers != NULL)
+    {
+        ulnFailoverClearServerList(aDbc);
+        acpMemFree(aDbc->mFailoverServers);
+        aDbc->mFailoverServers = NULL;
+    }
+    aDbc->mFailoverServersCnt = 0;
+    aDbc->mFailoverServersMax = 0;
+}
+
 /* BUG-39160 */
-static ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnContext,
-                                                  ulnFailoverServerInfo **aServerInfo )
+ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnContext,
+                                           ulnFailoverServerInfo **aServerInfo )
 {
     ulnDbc                *sDbc            = NULL;
     acp_char_t            *sHostName       = NULL;
@@ -438,7 +556,8 @@ static ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnCon
     ulnFailoverServerInfo *sServerInfo     = NULL;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACE_DASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     if (ulnDbcGetHostNameString(sDbc) == NULL)
     {
@@ -456,8 +575,25 @@ static ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnCon
     sPortNumber = ulnDbcGetPortNumber(sDbc);
     if (sPortNumber == 0)
     {
-        ACI_TEST_RAISE(acpEnvGet("ALTIBASE_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
-                       LABEL_PORT_NO_NOT_SET);
+        switch (ulnDbcGetConnType(sDbc))
+        {
+            case ULN_CONNTYPE_INVALID:
+            case ULN_CONNTYPE_TCP:
+                ACI_TEST_RAISE(acpEnvGet("ALTIBASE_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
+                               LABEL_PORT_NO_NOT_SET);
+                break;
+            case ULN_CONNTYPE_SSL:
+                ACI_TEST_RAISE(acpEnvGet("ALTIBASE_SSL_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
+                               LABEL_SSL_PORT_NO_NOT_SET);
+                break;
+            case ULN_CONNTYPE_IB:
+                ACI_TEST_RAISE(acpEnvGet("ALTIBASE_IB_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
+                               LABEL_IB_PORT_NO_NOT_SET);
+                break;
+            default:
+                ACE_ASSERT(0);
+                break;
+        }
 
         /*
          * 32 비트 int 의 최대값 : 4294967295 : 10자리
@@ -482,6 +618,11 @@ static ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnCon
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_INVALID_PORT_NO)
     {
         ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_PORT_NO, sPortNoEnvValue);
@@ -489,6 +630,14 @@ static ACI_RC ulnFailoverCreatePrimaryServerInfo( ulnFnContext           *aFnCon
     ACI_EXCEPTION(LABEL_PORT_NO_NOT_SET)
     {
         ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_PORT_NO_NOT_SET);
+    }
+    ACI_EXCEPTION(LABEL_SSL_PORT_NO_NOT_SET)
+    {
+        ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_SSL_PORT_NO_NOT_SET);
+    }
+    ACI_EXCEPTION(LABEL_IB_PORT_NO_NOT_SET)
+    {
+        ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_IB_PORT_NO_NOT_SET);
     }
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
     {
@@ -503,15 +652,18 @@ ACI_RC ulnFailoverBuildServerList(ulnFnContext *aFnContext)
 {
     ulnDbc                *sDbc        = NULL;
     ulnFailoverServerInfo *sServerInfo = NULL;
+    acp_uint32_t           sChosen;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACE_DASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ulnFailoverClearServerList(sDbc);
 
-    /* Failover는 TCP/SSL에서만 허용. (미설정일 경우, TCP로 간주) */
+    /* Failover는 TCP/SSL/IB에서만 허용. (미설정일 경우, TCP로 간주) */
     ACI_TEST_RAISE( (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_INVALID) &&
                     (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_TCP) &&
+                    (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_IB) && /* PROJ-2681 */
                     (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_SSL),
                     SKIP_BUILD_SERVER_LIST );
     ACI_TEST_RAISE( sDbc->mAlternateServers == NULL,
@@ -519,34 +671,48 @@ ACI_RC ulnFailoverBuildServerList(ulnFnContext *aFnContext)
 
     ACI_TEST( ulnFailoverCreatePrimaryServerInfo(aFnContext, &sServerInfo) != ACI_SUCCESS );
     ulnFailoverAddServer(sDbc, sServerInfo);
-    ulnDbcSetCurrentServer(sDbc, sServerInfo);
 
     ACI_TEST( ulnFailoverAddServerList(aFnContext, sDbc->mAlternateServers) != ACI_SUCCESS );
+
+    if (ulnDbcGetLoadBalance(sDbc) == ACP_TRUE)
+    {
+        sChosen = ulnFailoverChooseRandomServer(sDbc, 0);
+        sServerInfo = sDbc->mFailoverServers[sChosen];
+    }
+    ulnDbcSetCurrentServer(sDbc, sServerInfo);
 
     ACI_EXCEPTION_CONT( SKIP_BUILD_SERVER_LIST );
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
-    ulnFailoverClearServerList(sDbc);
-    ulnDbcSetCurrentServer(sDbc, NULL);
+    if ( sDbc != NULL)    /* BUG-46360 */
+    {
+        ulnFailoverClearServerList(sDbc);
+        ulnDbcSetCurrentServer(sDbc, NULL);
+    }
 
     return ACI_FAILURE;
 }
 
 void ulnFailoverClearServerList(ulnDbc *aDbc)
 {
-   acp_list_node_t         *sIterator   = NULL;
-   acp_list_node_t         *sNodeNext   = NULL;
-   ulnFailoverServerInfo   *sServerInfo = NULL;
+    ulnFailoverServerInfo   *sServerInfo = NULL;
+    acp_uint32_t             i;
 
-   ACP_LIST_ITERATE_SAFE(ulnDbcGetFailoverServerList(aDbc), sIterator, sNodeNext)
-   {
-       sServerInfo = (ulnFailoverServerInfo *)sIterator->mObj;
-       acpListDeleteNode(&(sServerInfo->mLink));
-       ulnFailoverDestroyServerInfo(sServerInfo);
-   }
+    for (i = 0; i < aDbc->mFailoverServersCnt; i++)
+    {
+        sServerInfo = aDbc->mFailoverServers[i];
+        ulnFailoverDestroyServerInfo(sServerInfo);
+        aDbc->mFailoverServers[i] = NULL;
+    }
+    aDbc->mFailoverServersCnt = 0;
 }
 
 /**
@@ -598,7 +764,6 @@ ACI_RC ulnFailoverCreateServerInfo( ulnFailoverServerInfo **aServerInfo,
     }
 
     sServerInfo->mPort =  aPort;
-    acpListInitObj(&(sServerInfo->mLink),sServerInfo);
 
     *aServerInfo = sServerInfo;
 
@@ -618,7 +783,12 @@ void ulnFailoverDestroyServerInfo(ulnFailoverServerInfo *aServerInfo)
 void ulnFailoverAddServer( ulnDbc                *aDbc,
                            ulnFailoverServerInfo *aServerInfo )
 {
-    acpListAppendNode( ulnDbcGetFailoverServerList(aDbc), &(aServerInfo->mLink) );
+    if (aDbc->mFailoverServersCnt <= aDbc->mFailoverServersMax)
+    {
+        aDbc->mFailoverServersMax += 10;
+        acpMemRealloc((void **)&aDbc->mFailoverServers, ACI_SIZEOF(ulnFailoverServerInfo*) * aDbc->mFailoverServersMax);
+    }
+    aDbc->mFailoverServers[aDbc->mFailoverServersCnt++] = aServerInfo;
 }
 
 /**
@@ -636,6 +806,7 @@ ACI_RC ulnFailoverAddServerList( ulnFnContext *aFnContext,
                                  acp_char_t   *aAlternateServerList )
 {
     ulnDbc                 *sDbc               = NULL;
+    acp_char_t             *sAltServListStrOrg = NULL;
     acp_char_t             *sAltServListStr    = NULL;
     acp_sint32_t            sAltServListStrLen = 0;
     acp_char_t             *sLBraket           = NULL;
@@ -653,11 +824,16 @@ ACI_RC ulnFailoverAddServerList( ulnFnContext *aFnContext,
     ACE_DASSERT( aAlternateServerList != NULL );
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    ACE_DASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     sAltServListStrLen = acpCStrLen(aAlternateServerList, ACP_SINT32_MAX);
-    ACI_TEST_RAISE( acpMemAlloc((void**)&sAltServListStr, sAltServListStrLen + 1)
+    ACI_TEST_RAISE( acpMemAlloc((void**)&sAltServListStrOrg, sAltServListStrLen + 1)
                     != ACI_SUCCESS, LABEL_MEM_MAN_ERR );
+    
+    /* BUG-46599 sAltServListStr는 포인터가 이동된다. */
+    sAltServListStr = sAltServListStrOrg;
+
     acpMemCpy( sAltServListStr,
                aAlternateServerList,
                sAltServListStrLen + 1 );
@@ -742,10 +918,15 @@ ACI_RC ulnFailoverAddServerList( ulnFnContext *aFnContext,
         ulnFailoverAddServer(sDbc, sServerInfo);
     }
 
-    acpMemFree(sAltServListStr);
+    acpMemFree(sAltServListStrOrg);
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(LABEL_MEM_MAN_ERR)
     {
         ulnError(aFnContext, ulERR_FATAL_MEMORY_MANAGEMENT_ERROR, "ulnFailoverAddServerList");
@@ -768,9 +949,9 @@ ACI_RC ulnFailoverAddServerList( ulnFnContext *aFnContext,
     }
     ACI_EXCEPTION_END;
 
-    if (sAltServListStr == NULL)
+    if (sAltServListStrOrg != NULL)
     {
-        acpMemFree(sAltServListStr);
+        acpMemFree(sAltServListStrOrg);
     }
 
     return ACI_FAILURE;

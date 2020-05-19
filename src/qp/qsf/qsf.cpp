@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsf.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qsf.cpp 83637 2018-08-07 05:40:38Z khkwak $
  *
  * Description :
  *     여기에는 PSM에서 사용되는 extended 함수가 정의되어 있다.
@@ -197,6 +197,15 @@ extern mtfModule qsfRecvTextModule;
 extern mtfModule qsfCheckConnectStateModule;
 extern mtfModule qsfCheckConnectReplyModule;
 
+// BUG-46137
+extern mtfModule qsfKeepPlanModule;
+extern mtfModule qsfUnkeepPlanModule;
+
+// BUG-46074 Multiple trigger event
+extern mtfModule qsfInsertingModule;
+extern mtfModule qsfUpdatingModule;
+extern mtfModule qsfDeletingModule;
+
 //PROJ-2689
 extern mtfModule qsfSetPrevMetaVerModule;
 //-------------------------------------------------------------------
@@ -348,6 +357,13 @@ const mtfModule* qsf::extendedFunctionModules[] =
     &qsfCheckConnectReplyModule,
     /* PROJ-2689 */
     &qsfSetPrevMetaVerModule,
+    // BUG-46137
+    &qsfKeepPlanModule,
+    &qsfUnkeepPlanModule,
+    // BUG-46074 Multiple trigger event
+    &qsfInsertingModule,
+    &qsfUpdatingModule,
+    &qsfDeletingModule,
     NULL
 };
 

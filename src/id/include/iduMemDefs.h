@@ -145,6 +145,7 @@ typedef enum
     IDU_MEM_RCS,
     IDU_MEM_RCC,
     IDU_MEM_QCR,
+    IDU_MEM_SD_STMT,    /* BUG-46092 */
     IDU_MEM_OTHER,
     IDU_MEM_MAPPED,
     IDU_MEM_RAW,

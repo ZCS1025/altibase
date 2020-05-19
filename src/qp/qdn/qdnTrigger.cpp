@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdnTrigger.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdnTrigger.cpp 84969 2019-03-06 05:26:17Z ahra.cho $
  *
  * Description :
  *
@@ -198,12 +198,17 @@ qdnTrigger::validateCreate( qcStatement * aStatement )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     qdnCreateTriggerParseTree * sParseTree;
-    UInt                        sSessionUserID;
+    volatile UInt               sSessionUserID;
+
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdnTrigger::validateCreate::__FT__" );
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
     // 현재 session userID 저장
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
+    IDU_FIT_POINT_FATAL( "qdnTrigger::validateCreate::__FT__::SessionUserID" );
 
     // Action Body의 Validtion을 위하여 해당 정보를 설정해 주어야 함.
     aStatement->spvEnv->createProc = & sParseTree->actionBody;
@@ -247,12 +252,22 @@ qdnTrigger::validateCreate( qcStatement * aStatement )
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
 
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 
@@ -275,15 +290,21 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     qdnCreateTriggerParseTree * sParseTree;
-    UInt                        sSessionUserID;
+    volatile UInt               sSessionUserID;
 
     UInt                        sTableID;
     idBool                      sExist;
+
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdnTrigger::validateReplace::__FT__" );
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
     // 현재 session userID 저장
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
+
+    IDU_FIT_POINT_FATAL( "qdnTrigger::validateReplace::__FT__::SessionUserID" );
 
     // Action Body의 Validtion을 위하여 해당 정보를 설정해 주어야 함.
     aStatement->spvEnv->createProc = & sParseTree->actionBody;
@@ -373,12 +394,22 @@ qdnTrigger::validateReplace( qcStatement * aStatement )
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
 
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 
@@ -477,12 +508,18 @@ qdnTrigger::optimizeCreate( qcStatement * aStatement )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     qdnCreateTriggerParseTree * sParseTree;
-    UInt                        sSessionUserID;
+    volatile UInt               sSessionUserID;
+
+    IDE_FT_BEGIN();
+
+    IDU_FIT_POINT_FATAL( "qdnTrigger::optimizeCreate::__FT__" );
 
     sParseTree = (qdnCreateTriggerParseTree *) aStatement->myPlan->parseTree;
 
     // 현재 session userID 저장
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
+
+    IDU_FIT_POINT_FATAL( "qdnTrigger::optimizeCreate::__FT__::SessionUserID" );
 
     //---------------------------------------------------
     // Action Body의 Optimization
@@ -500,12 +537,22 @@ qdnTrigger::optimizeCreate( qcStatement * aStatement )
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
+    IDE_FT_END();
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
 
     // session userID를 원복
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
+
+    IDE_FT_EXCEPTION_END();
 
     return IDE_FAILURE;
 
@@ -1768,6 +1815,22 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
     idBool sNeedAction = ID_FALSE;
     idBool sIsRebuild  = ID_FALSE;
 
+    // BUG-46074 Multiple trigger event
+    UInt            sOrgTriggerEventType  = aStatement->spxEnv->mTriggerEventType;
+    qcmColumn     * sOrgTriggerUptColList = aStatement->spxEnv->mTriggerUptColList;
+
+    if ( (aEventType == QCM_TRIGGER_EVENT_UPDATE) &&
+         (aStatement->myPlan->parseTree->stmtKind == QCI_STMT_UPDATE) )
+    {
+        aStatement->spxEnv->mTriggerUptColList = ((qmmUptParseTree*)aStatement->myPlan->parseTree)->updateColumns;
+    }
+    else
+    {
+        aStatement->spxEnv->mTriggerUptColList = NULL;
+    }
+
+    aStatement->spxEnv->mTriggerEventType = aEventType;
+
     //-------------------------------------------
     // Trigger 조건 검사
     //-------------------------------------------
@@ -1811,9 +1874,17 @@ qdnTrigger::fireTrigger( qcStatement         * aStatement,
         }
     }
 
+    // BUG-46074 Multiple trigger event
+    aStatement->spxEnv->mTriggerEventType  = sOrgTriggerEventType;
+    aStatement->spxEnv->mTriggerUptColList = sOrgTriggerUptColList;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    // BUG-46074 Multiple trigger event
+    aStatement->spxEnv->mTriggerEventType  = sOrgTriggerEventType;
+    aStatement->spxEnv->mTriggerUptColList = sOrgTriggerUptColList;
 
     return IDE_FAILURE;
 
@@ -2288,9 +2359,11 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
 
         // To fix BUG-12622
         // BEFORE TRIGGER에서 new row는 변경이 가능하다.
-        if( aParseTree->triggerEvent.eventTime == QCM_TRIGGER_BEFORE )
+        if( sRef->refType == QCM_TRIGGER_REF_NEW_ROW )
         {
-            if( sRef->refType == QCM_TRIGGER_REF_NEW_ROW )
+            sCurVar->common.itemType = QS_TRIGGER_NEW_VARIABLE;
+
+            if( aParseTree->triggerEvent.eventTime == QCM_TRIGGER_BEFORE )
             {
                 sCurVar->inOutType = QS_INOUT;
             }
@@ -2302,11 +2375,12 @@ qdnTrigger::addActionBodyInfo( qcStatement               * aStatement,
         else
         {
             sCurVar->inOutType = QS_IN;
+            sCurVar->common.itemType = QS_TRIGGER_OLD_VARIABLE;
         }
+
         sCurVar->nocopyType      = QS_COPY;
         sCurVar->typeInfo        = NULL;
 
-        sCurVar->common.itemType = QS_TRIGGER_VARIABLE;
         sCurVar->common.table    = sCurVar->variableTypeNode->node.table;
         sCurVar->common.column   = sCurVar->variableTypeNode->node.column;
 
@@ -2802,8 +2876,6 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
     qcmColumn          * sColumn;
     qcmColumn          * sColumnInfo;
 
-    qdnTriggerRef      * sRef;
-
     //---------------------------------------
     // 적합성 검사
     //---------------------------------------
@@ -2847,36 +2919,6 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
         IDE_DASSERT(0);
         IDE_RAISE( err_invalid_event_referencing );
     }
-    // or insert
-    if ( ( (aParseTree->triggerEvent.eventTypeList->eventType) &
-           QCM_TRIGGER_EVENT_INSERT) != 0)
-    {
-        for ( sRef = aParseTree->triggerReference;
-              sRef != NULL;
-              sRef = sRef->next )
-        {
-            IDE_TEST_RAISE( sRef->refType != QCM_TRIGGER_REF_NEW_ROW,
-                            err_invalid_event_referencing );
-        }
-    }
-    // or delete
-    if  ( ( (aParseTree->triggerEvent.eventTypeList->eventType) &
-            QCM_TRIGGER_EVENT_DELETE) != 0)
-    {
-        for ( sRef = aParseTree->triggerReference;
-              sRef != NULL;
-              sRef = sRef->next )
-        {
-            IDE_TEST_RAISE( sRef->refType != QCM_TRIGGER_REF_OLD_ROW,
-                            err_invalid_event_referencing );
-        }
-    }
-    // or update
-    if  ( ( (aParseTree->triggerEvent.eventTypeList->eventType) &
-            QCM_TRIGGER_EVENT_UPDATE) != 0)
-    {
-        // Nothing to do.
-    }
 
     if( aParseTree->actionBody.paraDecls != NULL )
     {
@@ -2892,7 +2934,6 @@ qdnTrigger::valEventReference( qcStatement               * aStatement,
     {
         // Nothing to do.
     }
-
 
     return IDE_SUCCESS;
 
@@ -4572,9 +4613,11 @@ qdnTrigger::makeValueListFromReferencingRow(
                 break;
 
             case QCM_TRIGGER_REF_NEW_ROW:
-
-                if( aParseTree->triggerEvent.eventTime ==
-                    QCM_TRIGGER_BEFORE )
+                // BUG-46074
+                // Before delete trigger에서 new row를 reference 할 수 있도록 수정함.
+                // 이 경우 param init 과정에서 null row로 초기화 됨.
+                if( (aParseTree->triggerEvent.eventTime == QCM_TRIGGER_BEFORE) &&
+                    (aClonedTemplate->stmt->spxEnv->mTriggerEventType != QCM_TRIGGER_EVENT_DELETE) )
                 {
                     // Insert할 때
                     IDE_TEST( copyValueListFromRow(

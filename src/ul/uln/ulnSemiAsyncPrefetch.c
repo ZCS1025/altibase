@@ -135,9 +135,8 @@ acp_bool_t ulnCanSemiAsyncPrefetch(ulnFnContext *aFnContext)
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() 에서 발생 */
-    ACE_ASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST_RAISE(ulnStmtGetAttrPrefetchAsync(sStmt) != ALTIBASE_PREFETCH_ASYNC_PREFERRED, NOT_ALLOWED);
 
@@ -150,6 +149,11 @@ acp_bool_t ulnCanSemiAsyncPrefetch(ulnFnContext *aFnContext)
  
     return ACP_TRUE;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION(NOT_ALLOWED);
     ACI_EXCEPTION_END;
 
@@ -754,9 +758,8 @@ ACI_RC ulnFetchAutoTuning(ulnFnContext *aFnContext,
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() 에서 발생 */
-    ACE_ASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACE_DASSERT(aPredictedPrefetchRows != NULL);
     ACE_DASSERT(sAutoTuning != NULL);
@@ -848,6 +851,11 @@ ACI_RC ulnFetchAutoTuning(ulnFnContext *aFnContext,
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     ULN_PREFETCH_ASYNC_STAT_TRCLOG(aFnContext, "auto-tuning : error and stopped");
@@ -1183,9 +1191,8 @@ ACI_RC ulnFetchEndAutoTuning(ulnFnContext *aFnContext)
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() 에서 발생 */
-    ACE_ASSERT(sDbc != NULL);
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACE_DASSERT(sAutoTuning != NULL);
 
@@ -1219,6 +1226,11 @@ ACI_RC ulnFetchEndAutoTuning(ulnFnContext *aFnContext)
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;

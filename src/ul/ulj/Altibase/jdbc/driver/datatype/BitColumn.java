@@ -23,6 +23,7 @@ public class BitColumn extends CommonBitColumn
     BitColumn()
     {
         super();
+        addMappedJdbcTypeSet(AltibaseTypes.BIT);
     }
 
     public BitColumn(int aPrecision)
@@ -33,11 +34,6 @@ public class BitColumn extends CommonBitColumn
     public int getDBColumnType()
     {
         return ColumnTypes.BIT;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.BIT };
     }
 
     public String getDBColumnTypeName()

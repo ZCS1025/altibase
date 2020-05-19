@@ -23,6 +23,7 @@ release_on_commit in boolean default FALSE)
 return integer;
 function release(id in integer) return integer;
 procedure sleep(seconds in number);
+procedure sleep2(seconds in number, microseconds in number);
 
 end dbms_lock;
 /

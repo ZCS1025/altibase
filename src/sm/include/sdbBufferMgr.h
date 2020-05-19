@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdbBufferMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdbBufferMgr.h 84847 2019-01-31 05:18:28Z jiwon.kim $
  **********************************************************************/
 
 #ifndef _O_SDB_BUFFER_MGR_H_
@@ -413,6 +413,10 @@ public:
     static inline void setSBufferServiceable( void );
 
     static IDE_RC gatherStatFromEachBCB();
+    
+    // BUG-45598
+    static inline idBool isPageReadError( UChar *aPagePtr );
+
 private:
     // buffer pinning을 위한 함수들 /////////////////////////////////////////////
     static sdbBCB* findPinnedPage(sdbPinningEnv *aEnv,
@@ -589,6 +593,14 @@ inline void sdbBufferMgr::unlatchPage( UChar *aPagePtr )
 inline sdbBufferPool* sdbBufferMgr::getBufferPool()
 {
     return &mBufferPool;
+}
+
+// BUG-45598
+inline idBool sdbBufferMgr::isPageReadError( UChar *aPagePtr )
+{
+    sdbBCB *sBCB = getBCBFromPagePtr( aPagePtr );
+
+    return sBCB->mPageReadError;
 }
 
 /* PROJ-2102 Secondary Buffer */

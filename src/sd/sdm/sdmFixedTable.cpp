@@ -101,7 +101,6 @@ IDE_RC sdmFixedTable::buildRecordForShardConnectionInfo(
     qcSession         * sQcSess;
     sdiClientInfo     * sClientInfo;
     sdiConnectInfo    * sConnectInfo;
-    idBool              sLinkAlive;
     UShort              i = 0;
 
     sStatistics = aStatistics;
@@ -136,8 +135,7 @@ IDE_RC sdmFixedTable::buildRecordForShardConnectionInfo(
                            SDI_NODE_NAME_MAX_SIZE + 1 );
 
             // comm namae
-            (void) sdl::getLinkInfo( sConnectInfo->mDbc,
-                                     sConnectInfo->mNodeName,
+            (void) sdl::getLinkInfo( sConnectInfo,
                                      sConnectInfo4PV.mCommName,
                                      IDL_IP_ADDR_MAX_LEN,
                                      CMN_LINK_INFO_ALL );
@@ -151,19 +149,9 @@ IDE_RC sdmFixedTable::buildRecordForShardConnectionInfo(
             // link failure가 아닌경우 현재 시점에서 한번 더 검사한다.
             if ( sConnectInfo4PV.mLinkFailure == ID_FALSE )
             {
-                (void) sdl::checkDbcAlive( sConnectInfo->mDbc,
-                                           sConnectInfo->mNodeName,
-                                           &sLinkAlive,
-                                           &sConnectInfo->mLinkFailure );
-
-                if ( ( sConnectInfo->mLinkFailure == ID_TRUE ) ||
-                     ( sLinkAlive == ID_FALSE ) )
+                if ( sdl::checkDbcAlive( sConnectInfo->mDbc ) == ID_FALSE )
                 {
                     sConnectInfo4PV.mLinkFailure = ID_TRUE;
-                }
-                else
-                {
-                    // Nothing to do.
                 }
             }
             else
@@ -190,3 +178,116 @@ IDE_RC sdmFixedTable::buildRecordForShardConnectionInfo(
 
     return IDE_FAILURE;
 }
+
+/* --------------------------------------------------------------------------
+ *  Fixed Table Define for Shard Meta Node Info
+ * -------------------------------------------------------------------------- */
+iduFixedTableColDesc gShardMetaNodeInfoColDesc[] =
+{
+    {
+        (SChar *)"SMN",
+        offsetof( sdmMetaNodeInfo4PV, mSMN ),
+        IDU_FT_SIZEOF( sdmMetaNodeInfo4PV, mSMN ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0, NULL // for internal use
+    }
+};
+
+iduFixedTableDesc gShardMetaNodeInfoTableDesc =
+{
+    (SChar *)"X$SHARD_META_NODE_INFO",
+    sdmFixedTable::buildRecordForShardMetaNodeInfo,
+    gShardMetaNodeInfoColDesc,
+    IDU_STARTUP_META,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+IDE_RC sdmFixedTable::buildRecordForShardMetaNodeInfo( idvSQL              * /*aStatistics*/,
+                                                       void                * aHeader,
+                                                       void                * /* aDumpObj */,
+                                                       iduFixedTableMemory * aMemory )
+{
+    sdmMetaNodeInfo4PV   sMetaNodeInfo = { ID_ULONG(0) };
+
+    sMetaNodeInfo.mSMN = sdi::getSMNForMetaNode();
+
+    IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                          aMemory,
+                                          (void *)&sMetaNodeInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* --------------------------------------------------------------------------
+ *  Fixed Table Define for Shard Data Node Info
+ * -------------------------------------------------------------------------- */
+iduFixedTableColDesc gShardDataNodeInfoColDesc[] =
+{
+    {
+        (SChar *)"SMN",
+        offsetof( sdmDataNodeInfo4PV, mSMN ),
+        IDU_FT_SIZEOF( sdmDataNodeInfo4PV, mSMN ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0, NULL // for internal use
+    }
+};
+
+iduFixedTableDesc gShardDataNodeInfoTableDesc =
+{
+    (SChar *)"X$SHARD_DATA_NODE_INFO",
+    sdmFixedTable::buildRecordForShardDataNodeInfo,
+    gShardDataNodeInfoColDesc,
+    IDU_STARTUP_META,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+IDE_RC sdmFixedTable::buildRecordForShardDataNodeInfo( idvSQL              * /*aStatistics*/,
+                                                       void                * aHeader,
+                                                       void                * /* aDumpObj */,
+                                                       iduFixedTableMemory * aMemory )
+{
+    sdmDataNodeInfo4PV   sDataNodeInfo = { ID_ULONG(0) };
+
+    sDataNodeInfo.mSMN = sdi::getSMNForDataNode();
+
+    IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                          aMemory,
+                                          (void *)&sDataNodeInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

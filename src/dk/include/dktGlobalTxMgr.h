@@ -98,6 +98,13 @@ public:
     static UInt getDtxGlobalTxId( UInt aLocalTxId );
     static void findGlobalCoordinatorByLocalTxId( UInt                    aLocalTxId,
                                                   dktGlobalCoordinator ** aGlobalCrd );
+    
+    static IDE_RC createGlobalCoordinatorAndSetSessionTxId( dksDataSession        * aSession,
+                                                            UInt                    aLocalTxId,
+                                                            dktGlobalCoordinator ** aGlobalCoordinator );
+
+    static void   destroyGlobalCoordinatorAndUnSetSessionTxId(  dktGlobalCoordinator * aGlobalCoordinator,
+                                                                dksDataSession       * aSession );
 };
 
 inline UInt dktGlobalTxMgr::getActiveGlobalCoordinatorCnt()

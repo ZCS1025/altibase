@@ -44,8 +44,9 @@ IDE_RC rpdDelayedLogQueue::initialize( SChar        * aRepName )
                                     IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                     ID_FALSE,							/* ForcePoolling */
                                     ID_TRUE,							/* GarbageCollection */
-                                    ID_TRUE )							/* HWCacheLine */
-              != IDE_SUCCESS );
+                                    ID_TRUE,                            /* HWCacheLine */
+                                    IDU_MEMPOOL_TYPE_LEGACY             /* mempool type*/ ) 
+              != IDE_SUCCESS);			
     sIsPoolInitialized = ID_TRUE;
 
     mHead = NULL;

@@ -78,6 +78,19 @@ SECTION = 14
 # *Cause: The range value of shard key is duplicated.
 # *Action: Verify if the range value of shard key is correct.
 
+14,sdERR_ABORT_SDM_INVALID_META_NODE_INFO = Invalid information of shard meta node
+# *Cause: Table SYS_SHARD.LOCAL_META_INFO_ has no record or more than one record.
+# *Action: Execute function DBMS_SHARD.RESET_META_NODE_ID to correct the table SYS_SHARD.LOCAL_META_INFO_.
+
+15,sdERR_ABORT_SDM_SHARD_RANGE_OVERFLOW = There is overflow in the number of shard ranges.
+# *Cause: The shard ranges are exceeded.
+# *Action: Refer to the manual to verify the number of permissible shard ranges.
+
+16,sdERR_ABORT_SDM_EXIST_REFERENCES_NODE = There is an object that references a node.
+# *Cause: There is an object that references a node.
+# *Action: Verify the shard meta information.
+
+
 ###############################################################################
 #########                 SDA ERROR CODE (101~)                       #########
 ###############################################################################
@@ -154,6 +167,18 @@ SECTION = 14
 # *Cause: The shard split method is not supported.
 # *Action: Verify that the split method name.
 
+214,sdERR_ABORT_SDF_UNSUPPORTED_META_CONNTYPE = The internal(meta) connection type is not supported. : <0%d>
+# *Cause: Supported internal connection types are 1, 8.
+# *Action: Verify the internal connection type.
+
+215,sdERR_ABORT_SDF_CANNOT_DELETE_CURRENT_SMN = The shard meta data as the current SMN can not be deleted.
+# *Cause: Only the shard meta data with the old shard meta number can be deleted.
+# *Action: Check the current shard meta number of SYS_SHARD.GLOBAL_META_INFO_.
+
+216,sdERR_ABORT_SDF_INVALID_META_CHANGE = Invalid shard meta change information
+# *Cause: The shard meta information that you need is not exist. 
+# *Action: Check the the shard meta information of the object.
+
 ###############################################################################
 #########                 SDL ERROR CODE (301~)                       #########
 ###############################################################################
@@ -178,7 +203,7 @@ SECTION = 14
 # *Cause: An error occurred during the library function call of the shard data node.
 # *Action: Verify the state of shard data node.
 
-306,sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR = The link failed when performing <1%s> on shard data node <0%s>.
+306,sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR = The link failed when performing <1%s> on shard data node <0%s>.: <2%s>
 # *Cause: The link on the shard data node failed.
 # *Action: Verify the state of link on the shard data node.
 
@@ -206,6 +231,22 @@ SECTION = 14
 # *Cause: There is an error in library function call of shard xa function
 # *Action: Verify the state of shard library.
 
+313,sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS = The <1%s> of server-side failover success.: <0%s> <2%s>
+# *Cause: Session failover success
+# *Action: Re-execute application logic.
+
+314,sdERR_ABORT_INTERNAL_ALTERNATE_NODE_SETTING_IS_MISSING = Alternate shard node <0%s> information is missing from external or internal network settings.
+# *Cause: Alternate shard node information is missing from external or internal network settings.
+# *Action: Verify the alternate host IP and port number of the shard node.
+
+315,sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE = Failover is not available.
+# *Cause: Failed to connect to shard library or coordinates.
+# *Action: Check the shard node status or network.
+
+316,sdERR_ABORT_EXECUTE_NULL_SD_STMT = The shard statement cannot be found when performing <1%s> to shard data node <0%s>.
+# *Cause: The statement in the shard coordinator does not exist.
+# *Action: Verify the statement in the shard coordinator.
+
 ###############################################################################
 #########                 SDP ERROR CODE (401~)                       #########
 ###############################################################################
@@ -218,7 +259,7 @@ SECTION = 14
 # *Cause: There is insufficient memory buffer in JSON parser.
 # *Action: Verify the memory buffer size.
 
-403,sdERR_ABORT_SDPJ_CONVERT = Fail to convert the condition to shard analyze infomation. (<0%s>)
+403,sdERR_ABORT_SDPJ_CONVERT = Fail to convert the condition to shard analyze information. (<0%s>)
 # *Cause: The condition does not contain shard information or is incorrect.
 # *Action: Verify the condition.
 
@@ -254,6 +295,10 @@ SECTION = 14
 # *Cause: Invalid node name
 # *Action: Verify that the node name is valid.
 
+808,sdERR_ABORT_SDI_SHARD_META_PROPAGATION_TIMEOUT = Shard meta update propagation timeout.
+# *Cause: The changes of the shard meta information are not arrived in time limit.
+# *Action: Check shard meta number and information.
+
 ###############################################################################
 #########                 SDC ERROR CODE (901~)                       #########
 ###############################################################################
@@ -269,6 +314,10 @@ SECTION = 14
 903,sdERR_ABORT_UNSUPPORTED_SHARD_DATA_IN_DML = SHARD_DATA feature is not supported in DML statements
 # *Cause: The shard query is invalid.
 # *Action: Rewrite the shard query.
+
+904,sdERR_ABORT_SHARD_REBUILD_ERROR = Shard rebuild error
+# *Cause: The changes of the shard meta information are not applicable on online.
+# *Action: Re-connect the client program.
 
 999,sdERR_ABORT_SDC_UNEXPECTED_ERROR = Unexpected errors have occurred.: <0%s>: <1%s>
 # *Cause: An unexpected error has occurred.

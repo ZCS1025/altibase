@@ -48,8 +48,9 @@ IDE_RC rpdReplicatedTransGroup::initialize( SChar   * aRepName,
                                                    IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                                    ID_FALSE,						/* ForcePooling */
                                                    ID_TRUE,							/* GarbageCollection */
-                                                   ID_TRUE)							/* HWCacheLine */
-              != IDE_SUCCESS );
+                                                   ID_TRUE,                         /* HWCacheLine */
+                                                   IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/)
+             != IDE_SUCCESS);			
     sStage = 1;
 
     mReplicationTransGroupMaxCount = aReplicationTransGroupMaxCount;
@@ -68,8 +69,9 @@ IDE_RC rpdReplicatedTransGroup::initialize( SChar   * aRepName,
                                         IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                         ID_FALSE,							/* ForcePooling */
                                         ID_TRUE,							/* GarbageCollection */
-                                        ID_TRUE)							/* HWCacheLine */
-              != IDE_SUCCESS );
+                                        ID_TRUE,                          /* HWCacheLine */
+                                        IDU_MEMPOOL_TYPE_LEGACY           /* mempool type*/ ) 
+              != IDE_SUCCESS);			
     sStage = 2;
 
     IDU_FIT_POINT( "rpdReplicatedTransGroup::initialize::initialize::mReplicatedTransPool",
@@ -86,8 +88,9 @@ IDE_RC rpdReplicatedTransGroup::initialize( SChar   * aRepName,
                                                IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                                ID_FALSE,						/* ForcePooling */
                                                ID_TRUE,							/* GarbageCollection */
-                                               ID_TRUE)							/* HWCacheLine */
-              != IDE_SUCCESS );
+                                               ID_TRUE,                         /* HWCacheLine */
+                                               IDU_MEMPOOL_TYPE_LEGACY          /* mempool type*/ ) 
+              != IDE_SUCCESS);			
     sStage = 3;
 
     IDE_TEST( mHeadCompletedGroupList.initialize( &mSlotNodePool,

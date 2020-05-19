@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoStatMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoStatMgr.cpp 83963 2018-09-12 05:46:48Z donovan.seo $
  *
  * Description :
  *     Statistical Information Manager
@@ -2404,6 +2404,22 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
                         }
                     } // end for ( sCnt2 = ...
                 } // end for ( sPartitionRef = ...
+
+                /* BUG-46432 */
+                if ( sCnt2 == 0 )
+                {
+                    aStatInfo->idxCardInfo[sCnt].isValidStat        = ID_FALSE;
+                    aStatInfo->idxCardInfo[sCnt].flag               = QMO_STAT_CLEAR;
+                    aStatInfo->idxCardInfo[sCnt].KeyNDV             = QMO_STAT_INDEX_KEY_NDV;
+                    aStatInfo->idxCardInfo[sCnt].avgSlotCount       = QMO_STAT_INDEX_AVG_SLOT_COUNT;
+                    aStatInfo->idxCardInfo[sCnt].pageCnt            = 0;
+                    aStatInfo->idxCardInfo[sCnt].indexLevel         = QMO_STAT_INDEX_HEIGHT;
+                    aStatInfo->idxCardInfo[sCnt].clusteringFactor   = QMO_STAT_INDEX_CLUSTER_FACTOR;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
             }
         } // end for ( sCnt = ...
 

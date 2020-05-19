@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSubtract2.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfSubtract2.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -29,6 +29,8 @@
 #include <mtdTypes.h>
 
 extern mtfModule mtfSubtract2;
+
+extern mtxModule mtxSubtract; /* PROJ-2632 */
 
 static mtcName mtfSubtract2FunctionName[1] = {
     { NULL, 1, (void*)"-" }
@@ -177,8 +179,25 @@ static mtfSubModule* mtfGroupTableHighPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAX
 /* INTERVAL */ { mtfXX, mtfXX, mtfII, mtfXX, mtfII }
 };
 
+/* BUG-46195 */
+static mtfSubModule mtfNF[1] = {
+    { NULL, mtfSubtract2EstimateFloat }
+};
+
+static mtfSubModule * mtfGroupTableMaxPrecision[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
+/*               MISC   TEXT   NUMBE  DATE   INTER */
+/* MISC     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* TEXT     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* NUMBER   */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* DATE     */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF },
+/* INTERVAL */ { mtfNF, mtfNF, mtfNF, mtfNF, mtfNF }
+};
+
 static mtfSubModule*** mtfTable = NULL;
 static mtfSubModule*** mtfTableHighPrecision = NULL;
+
+/* BUG-46195 */
+static mtfSubModule*** mtfTableMaxPrecision = NULL;
 
 IDE_RC mtfSubtract2Initialize( void )
 {
@@ -191,7 +210,13 @@ IDE_RC mtfSubtract2Initialize( void )
                                                  mtfGroupTableHighPrecision,
                                                  mtfXX )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::initializeComparisonTemplate( &mtfTableMaxPrecision,
+                                                 mtfGroupTableMaxPrecision,
+                                                 mtfXX )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -203,10 +228,14 @@ IDE_RC mtfSubtract2Finalize( void )
 {
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTable )
               != IDE_SUCCESS );
-    
+
     IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableHighPrecision )
               != IDE_SUCCESS );
-    
+
+    /* BUG-46195 */
+    IDE_TEST( mtf::finalizeComparisonTemplate( &mtfTableMaxPrecision )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -238,11 +267,16 @@ IDE_RC mtfSubtract2Estimate( mtcNode*     aNode,
     {
         sTable = mtfTableHighPrecision;
     }
+    /* BUG-46195 */
+    else if ( aTemplate->arithmeticOpMode == MTC_ARITHMETIC_OPERATION_MAX_PRECISION )
+    {
+        sTable = mtfTableMaxPrecision;
+    }
     else
     {
         sTable = mtfTable;
     }
-    
+
     IDE_TEST( mtf::getSubModule2Args( &sSubModule,
                                       sTable,
                                       aStack[1].column->module->no,
@@ -286,6 +320,7 @@ static const mtcExecute mtfSubtract2ExecuteInteger = {
     mtf::calculateNA,
     mtfSubtract2CalculateInteger,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -310,7 +345,11 @@ IDE_RC mtfSubtract2EstimateInteger( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteInteger;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdInteger.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -477,6 +516,7 @@ static const mtcExecute mtfSubtract2ExecuteBigint = {
     mtf::calculateNA,
     mtfSubtract2CalculateBigint,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -501,7 +541,11 @@ IDE_RC mtfSubtract2EstimateBigint( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteBigint;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdBigint.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -592,6 +636,7 @@ static const mtcExecute mtfSubtract2ExecuteFloat = {
     mtf::calculateNA,
     mtfSubtract2CalculateFloat,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -616,7 +661,11 @@ IDE_RC mtfSubtract2EstimateFloat( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteFloat;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdFloat.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -699,6 +748,7 @@ static const mtcExecute mtfSubtract2ExecuteReal = {
     mtf::calculateNA,
     mtfSubtract2CalculateReal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -723,7 +773,11 @@ IDE_RC mtfSubtract2EstimateReal( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteReal;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdReal.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -791,6 +845,7 @@ static const mtcExecute mtfSubtract2ExecuteDouble = {
     mtf::calculateNA,
     mtfSubtract2CalculateDouble,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -815,7 +870,11 @@ IDE_RC mtfSubtract2EstimateDouble( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteDouble;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdDouble.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -884,6 +943,7 @@ static const mtcExecute mtfSubtract2ExecuteDate = {
     mtf::calculateNA,
     mtfSubtract2CalculateDate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -908,7 +968,11 @@ IDE_RC mtfSubtract2EstimateDate( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteDate;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdInterval.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -1021,6 +1085,7 @@ static const mtcExecute mtfSubtract2ExecuteIntervalInterval = {
     mtf::calculateNA,
     mtfSubtract2CalculateIntervalInterval,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1045,7 +1110,11 @@ IDE_RC mtfSubtract2EstimateIntervalInterval( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteIntervalInterval;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdInterval,
                                      0,
@@ -1157,6 +1226,7 @@ static const mtcExecute mtfSubtract2ExecuteDateInterval = {
     mtf::calculateNA,
     mtfSubtract2CalculateDateInterval,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -1181,7 +1251,11 @@ IDE_RC mtfSubtract2EstimateDateInterval( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfSubtract2ExecuteDateInterval;
-    
+
+    /* PROJ-2632 */
+    aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+        = mtxSubtract.mGetExecute( sModules[0]->id, sModules[1]->id );
+
     //IDE_TEST( mtdDate.estimate( aStack[0].column, 0, 0, 0 )
     //          != IDE_SUCCESS );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,

@@ -480,6 +480,15 @@ SQLRETURN ulnGetDescField(ulnDesc      *aDesc,
                           acp_sint32_t  aBufferLength,
                           acp_sint32_t *aStringLengthPtr);
 
+/* BUG-46785 Shard statement partial rollback */
+SQLRETURN ulnSetSavepoint( ulnDbc             * aDbc,
+                           const acp_char_t   * aSavepointName,
+                           acp_uint32_t         aSavepointNameLength );
+
+SQLRETURN ulnRollbackToSavepoint( ulnDbc             * aDbc,
+                                  const acp_char_t   * aSavepointName,
+                                  acp_uint32_t         aSavepointNameLength );
+
 /*
  * Functions dealing with LOB
  */

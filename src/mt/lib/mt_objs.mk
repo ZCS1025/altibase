@@ -1,4 +1,4 @@
-# $Id: mt_objs.mk 81056 2017-09-11 02:30:10Z tyler.park $
+# $Id: mt_objs.mk 85090 2019-03-28 01:15:28Z andrew.shin $
 
 MTC_SRCS = $(MT_DIR)/mtc/mtc.cpp
 
@@ -449,7 +449,44 @@ MTU_SRCS = $(MT_DIR)/mtu/mtuProperty.cpp $(MT_DIR)/mtu/mtuTraceCode.cpp
 MTS_SRCS = $(MT_DIR)/mts/mtsFileType.cpp                \
            $(MT_DIR)/mts/mtsConnectType.cpp
 
-MT_SRCS = $(MTC_SRCS) $(MTD_SRCS) $(MTF_SRCS) $(MTK_SRCS) $(MTL_SRCS) $(MTV_SRCS) $(MTZ_SRCS) $(MTU_SRCS) $(MTS_SRCS)
+MTX_SRCS = $(MT_DIR)/mtx/mtx.cpp               \
+           $(MT_DIR)/mtx/mtxRid.cpp            \
+           $(MT_DIR)/mtx/mtxColumn.cpp         \
+           $(MT_DIR)/mtx/mtxFromDateTo.cpp     \
+           $(MT_DIR)/mtx/mtxFromSmallintTo.cpp \
+           $(MT_DIR)/mtx/mtxFromIntegerTo.cpp  \
+           $(MT_DIR)/mtx/mtxFromBigintTo.cpp   \
+           $(MT_DIR)/mtx/mtxFromRealTo.cpp     \
+           $(MT_DIR)/mtx/mtxFromDoubleTo.cpp   \
+           $(MT_DIR)/mtx/mtxFromFloatTo.cpp    \
+           $(MT_DIR)/mtx/mtxFromNumericTo.cpp  \
+           $(MT_DIR)/mtx/mtxFromCharTo.cpp     \
+           $(MT_DIR)/mtx/mtxFromVarcharTo.cpp  \
+           $(MT_DIR)/mtx/mtxFromNcharTo.cpp    \
+           $(MT_DIR)/mtx/mtxFromNvarcharTo.cpp \
+           $(MT_DIR)/mtx/mtxFromIntervalTo.cpp \
+           $(MT_DIR)/mtx/mtxFromNibbleTo.cpp   \
+           $(MT_DIR)/mtx/mtxFromBitTo.cpp      \
+           $(MT_DIR)/mtx/mtxFromVarbitTo.cpp   \
+           $(MT_DIR)/mtx/mtxFromByteTo.cpp     \
+           $(MT_DIR)/mtx/mtxFromVarbyteTo.cpp  \
+           $(MT_DIR)/mtx/mtxAnd.cpp            \
+           $(MT_DIR)/mtx/mtxOr.cpp             \
+           $(MT_DIR)/mtx/mtxNot.cpp            \
+           $(MT_DIR)/mtx/mtxEqual.cpp          \
+           $(MT_DIR)/mtx/mtxNotEqual.cpp       \
+           $(MT_DIR)/mtx/mtxGreaterThan.cpp    \
+           $(MT_DIR)/mtx/mtxGreaterEqual.cpp   \
+           $(MT_DIR)/mtx/mtxLessThan.cpp       \
+           $(MT_DIR)/mtx/mtxLessEqual.cpp      \
+           $(MT_DIR)/mtx/mtxAdd.cpp            \
+           $(MT_DIR)/mtx/mtxSubtract.cpp       \
+           $(MT_DIR)/mtx/mtxMultiply.cpp       \
+           $(MT_DIR)/mtx/mtxDivide.cpp         \
+           $(MT_DIR)/mtx/mtxIsNotNull.cpp      \
+           $(MT_DIR)/mtx/mtxLnnvl.cpp
+
+MT_SRCS = $(MTC_SRCS) $(MTD_SRCS) $(MTF_SRCS) $(MTK_SRCS) $(MTL_SRCS) $(MTV_SRCS) $(MTZ_SRCS) $(MTU_SRCS) $(MTS_SRCS) $(MTX_SRCS) 
 MT_OBJS = $(MT_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT))
 MT_SHOBJS = $(MT_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_shobj.$(OBJEXT))
 

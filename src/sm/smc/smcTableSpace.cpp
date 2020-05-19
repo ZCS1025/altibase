@@ -181,12 +181,13 @@ IDE_RC smcTableSpace::alterTBSOffline4Tables( idvSQL*     aStatistics,
                                     alterTBSOfflineAction,
                                     (void*)&sMaxSmoNo )
                    != IDE_SUCCESS );
+
         ((sddTableSpaceNode*)sSpaceNode)->mMaxSmoNoForOffline = sMaxSmoNo;
     }
     else
     {
         //Memory TBS
-        IDE_DASSERT( sctTableSpaceMgr::isDiskTableSpace( aTBSID ) == ID_FALSE );
+        IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aTBSID ) == ID_TRUE );
 
         IDE_TEST ( run4TablesInTBS( aStatistics,
                                     aTBSID,

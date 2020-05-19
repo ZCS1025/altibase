@@ -5,7 +5,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 105
+# Last Number = 106
 
 SECTION = 2
 
@@ -420,6 +420,10 @@ SECTION = 2
 104, mtERR_ABORT_SMTP_REPLY_ERROR = SMTP Reply Error: <0%s>
 # *Cause: The SMTP server reply an error message.
 # *Action: check an error message.
+
+106, mtERR_ABORT_MAX_MEM_SIZE_EXCEED = The memory size allocated for the statement has exceeded the maximum limit ( Name : <0%s>, Wanted Memory Size : <1%lu>, Max size : <2%lu> ).
+# *Cause: The memory size allocated for the statement has exceeded the maximum limit.
+# *Action: Increase the XXXXXXX_MEMORY_MAXIMUM property value...
 
 ###############################################################################
 #########       DCI ERROR CODE                              #########

@@ -21,6 +21,7 @@
 #include <ulaErrorMgr.h>
 #include <mtcl.h>
 #define ULA_ROLE_ANALYSIS   (1)
+#define ULA_ROLE_ANALYSIS_PROPAGATION   (4)
 
 /* Replication Handshake Flags */
 // 1번 비트 : Endian bit : 0 - Big Endian, 1 - Little Endian

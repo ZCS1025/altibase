@@ -30,6 +30,7 @@ const ulnKeyLinkImpl gULN_CM_PROTOCOL[]=
     { "ipc"   , CMI_LINK_IMPL_IPC      },
     { "ipcda" , CMI_LINK_IMPL_IPCDA    },
     { "ssl"   , CMI_LINK_IMPL_SSL      },
+    { "ib"    , CMI_LINK_IMPL_IB       },    /* PROJ-2681 */
     {  NULL   , CMI_LINK_IMPL_INVALID  }
 };
 
@@ -125,8 +126,24 @@ const ulnDiscreteInt gULN_CONNTYPE[] =
     { "6"    , ULN_CONNTYPE_SSL },
     { "IPCDA", ULN_CONNTYPE_IPCDA },
     { "7"    , ULN_CONNTYPE_IPCDA },
+    { "IB"   , ULN_CONNTYPE_IB },    /* PROJ-2681 */
+    { "8"    , ULN_CONNTYPE_IB },
 
     { NULL   , ULN_CONN_ATTR_INVALID_VALUE }
+};
+
+const ulnDiscreteInt gULN_SHARD_CONNTYPE[] = 
+{
+    { "DEFAULT" , ULN_CONNTYPE_INVALID },
+    { "0"       , ULN_CONNTYPE_INVALID },
+    { "TCP"     , ULN_CONNTYPE_TCP },
+    { "1"       , ULN_CONNTYPE_TCP },
+    { "SSL"     , ULN_CONNTYPE_SSL },
+    { "6"       , ULN_CONNTYPE_SSL },
+    { "IB"      , ULN_CONNTYPE_IB },
+    { "8"       , ULN_CONNTYPE_IB },
+
+    { NULL      , ULN_CONN_ATTR_INVALID_VALUE }
 };
 
 const ulnDiscreteInt gULN_POOL[] =
@@ -386,7 +403,7 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* AttrType    */ tDINT,
       /* Min         */ ULN_CONNTYPE_TCP,
       /* Default     */ ULN_CONNTYPE_TCP,
-      /* Max         */ ULN_CONNTYPE_SSL,
+      /* Max         */ ULN_CONNTYPE_IB,    /* PROJ-2681 */
       /* Check       */ gULN_CONNTYPE 
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_PORT_NO,
@@ -755,6 +772,15 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Max         */ 0,
       /* Check       */ gNULL_LIST
     },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_LOAD_BALANCE,
+      /* Keyword     */ "LOAD_BALANCE",
+      /* SQL_ATTR_ID */ ALTIBASE_LOAD_BALANCE,
+      /* AttrType    */ tDINT,
+      /* Min         */ SQL_FALSE,
+      /* Default     */ SQL_FALSE,
+      /* Max         */ SQL_TRUE,
+      /* Check       */ gULN_BOOL
+    },
     { /* ConnAttrID  */ ULN_CONN_ATTR_CONNECTION_RETRY_COUNT,
       /* Keyword     */ "CONNECTION_RETRY_COUNT",
       /* SQL_ATTR_ID */ ALTIBASE_CONNECTION_RETRY_COUNT,
@@ -985,9 +1011,19 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Keyword     */ "SHARD_PIN",
       /* SQL_ATTR_ID */ ACP_SINT32_MIN,
       /* AttrType    */ tINT,
-      /* Min         */ 0,
-      /* Default     */ 1,
-      /* Max         */ ACP_SINT32_MAX,
+      /* Min         */ ACP_SINT64_MIN,
+      /* Default     */ 0,
+      /* Max         */ ACP_SINT64_MAX,
+      /* Check       */ gULN_MUL
+    },
+    /* BUG-46090 Meta Node SMN 전파 */
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_META_NUMBER,
+      /* Keyword     */ "SHARD_META_NUMBER",
+      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* AttrType    */ tINT,
+      /* Min         */ ACP_SINT64_MIN,
+      /* Default     */ 0,
+      /* Max         */ ACP_SINT64_MAX,
       /* Check       */ gULN_MUL
     },
     /*
@@ -1005,7 +1041,65 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Default     */ 0,
       /* Max         */ 2,
       /* Check       */ gNULL_LIST
-    }
+    },
+    /* PROJ-2681 */
+    { /* ConnAttrID  */ ULN_CONN_ATTR_IB_LATENCY,
+      /* Keyword     */ "IB_LATENCY",
+      /* SQL_ATTR_ID */ ALTIBASE_IB_LATENCY,
+      /* AttrType    */ tINT,
+      /* Min         */ ALTIBASE_IB_LATENCY_NORMAL,
+      /* Default     */ ALTIBASE_IB_LATENCY_NORMAL,
+      /* Max         */ ALTIBASE_IB_LATENCY_PREFERRED,
+      /* Check       */ gNULL_LIST
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_IB_CONCHKSPIN,
+      /* Keyword     */ "IB_CONCHKSPIN",
+      /* SQL_ATTR_ID */ ALTIBASE_IB_CONCHKSPIN,
+      /* AttrType    */ tINT,
+      /* Min         */ ALTIBASE_IB_CONCHKSPIN_MIN,
+      /* Default     */ ALTIBASE_IB_CONCHKSPIN_DEFAULT,
+      /* Max         */ ALTIBASE_IB_CONCHKSPIN_MAX,
+      /* Check       */ gNULL_LIST
+    },
+    /* BUG-45998 Support Infiniband on the both of shardcli connections and meta (internal) connections. */
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_CONNTYPE,
+      /* Keyword     */ "SHARD_CONNTYPE",
+      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* AttrType    */ tDINT,
+      /* Min         */ ULN_CONNTYPE_INVALID,
+      /* Default     */ ULN_CONNTYPE_INVALID,
+      /* Max         */ ULN_CONNTYPE_IB,
+      /* Check       */ gULN_SHARD_CONNTYPE 
+    },
+    /* BUG-45707 */
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_CLIENT,
+      /* Keyword     */ "SHARD_CLIENT",
+      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_SESSION_TYPE,
+      /* Keyword     */ "SHARD_SESSION_TYPE",
+      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST
+    },
+    /* BUG-46092 */
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_CLIENT_CONNECTION_REPORT,
+      /* Keyword     */ "SHARD_CLIENT_CONNECTION_REPORT",
+      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 0,
+      /* Check       */ gNULL_LIST
+    },
 };
 
 #undef tINT
@@ -1023,6 +1117,7 @@ const ulnAttrNameIdPair gUlnConnAttrMap_PROFILE[] =
 {
     { "AutoCommit"                , ULN_CONN_ATTR_AUTOCOMMIT                },
     { "AlternateServers"          , ULN_CONN_ATTR_ALTERNATE_SERVERS         },
+    { "LoadBalance"               , ULN_CONN_ATTR_LOAD_BALANCE              },
     { "ConnectTimeOut"            , ULN_CONN_ATTR_CONNECTION_TIMEOUT        },
     { "ConnectionPool"            , ULN_CONN_ATTR_CONNECTION_POOLING        },
     { "ConnectionRetryCount"      , ULN_CONN_ATTR_CONNECTION_RETRY_COUNT    },
@@ -1042,6 +1137,9 @@ const ulnAttrNameIdPair gUlnConnAttrMap_PROFILE[] =
     { "ShardLinkerType"           , ULN_CONN_ATTR_SHARD_LINKER_TYPE         }, /* PROJ-2638 shard native linker */
     { "ShardNodeName"             , ULN_CONN_ATTR_SHARD_NODE_NAME           }, /* PROJ-2638 shard native linker */
     { "ShardPin"                  , ULN_CONN_ATTR_SHARD_PIN                 }, /* PROJ-2638 shard native linker */
+    { "ShardMetaNumber"           , ULN_CONN_ATTR_SHARD_META_NUMBER         }, /* BUG-46090 Meta Node SMN 전파 */
+    { "ShardClient"               , ULN_CONN_ATTR_SHARD_CLIENT              }, /* BUG-45707 */
+    { "ShardSessionType"          , ULN_CONN_ATTR_SHARD_SESSION_TYPE        }, /* BUG-45707 */
     { "TimeOut"                   , ULN_CONN_ATTR_LOGIN_TIMEOUT             }, /* BUG-40769 */
     { "TraceLog"                  , ULN_CONN_ATTR_TRACELOG                  },
     { "TxIsolation"               , ULN_CONN_ATTR_TXN_ISOLATION             },
@@ -1095,10 +1193,15 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "header_display_mode"       , ULN_CONN_ATTR_HEADER_DISPLAY_MODE       },
     { "host"                      , ULN_CONN_ATTR_HOSTNAME                  },
     { "hostname"                  , ULN_CONN_ATTR_HOSTNAME                  },
+    { "ib_conchkspin"             , ULN_CONN_ATTR_IB_CONCHKSPIN             }, /* PROJ-2681 */
+    { "ib_latency"                , ULN_CONN_ATTR_IB_LATENCY                }, /* PROJ-2681 */
     { "idle_timeout"              , ULN_CONN_ATTR_IDLE_TIMEOUT              },
     { "idn_lang"                  , ULN_CONN_ATTR_NLS_USE                   },
     { "ipc_filepath"              , ULN_CONN_ATTR_IPC_FILEPATH              },
+    { "ipcdafilepath"             , ULN_CONN_ATTR_IPCDA_FILEPATH            },
     { "ipcfilepath"               , ULN_CONN_ATTR_IPC_FILEPATH              },
+    { "load_balance"              , ULN_CONN_ATTR_LOAD_BALANCE              },
+    { "loadbalance"               , ULN_CONN_ATTR_LOAD_BALANCE              },
     { "lob_cache_threshold"       , ULN_CONN_ATTR_LOB_CACHE_THRESHOLD       }, /* PROJ-2047 */
     { "login_timeout"             , ULN_CONN_ATTR_LOGIN_TIMEOUT             },
     { "longdatacompat"            , ULN_CONN_ATTR_LONGDATA_COMPAT           },
@@ -1124,9 +1227,13 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "servername"                , ULN_CONN_ATTR_HOSTNAME                  }, /* BUG-20809 4.3.9 style*/
     { "session_failover"          , ULN_CONN_ATTR_SESSION_FAILOVER          },
     { "sessionfailover"           , ULN_CONN_ATTR_SESSION_FAILOVER          },
+    { "shard_client"              , ULN_CONN_ATTR_SHARD_CLIENT              }, /* BUG-45707 */
+    { "shard_conntype"            , ULN_CONN_ATTR_SHARD_CONNTYPE            }, /* BUG-45998 */
     { "shard_linker_type"         , ULN_CONN_ATTR_SHARD_LINKER_TYPE         }, /* PROJ-2638 shard native linker */
+    { "shard_meta_number"         , ULN_CONN_ATTR_SHARD_META_NUMBER         }, /* BUG-46090 Meta Node SMN 전파 */
     { "shard_node_name"           , ULN_CONN_ATTR_SHARD_NODE_NAME           }, /* PROJ-2638 shard native linker */
     { "shard_pin"                 , ULN_CONN_ATTR_SHARD_PIN                 }, /* PROJ-2660 shard native linker */
+    { "shard_session_type"        , ULN_CONN_ATTR_SHARD_SESSION_TYPE        }, /* BUG-45707 */
     { "sock_bind_addr"            , ULN_CONN_ATTR_SOCK_BIND_ADDR            }, /* BUG-44271 */
     { "sock_rcvbuf_block_ratio"   , ULN_CONN_ATTR_SOCK_RCVBUF_BLOCK_RATIO   }, /* PROJ-2625 */
     { "ssl_ca"                    , ULN_CONN_ATTR_SSL_CA                    }, /* PROJ-2474 SSL/TLS */
@@ -1155,7 +1262,6 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "utrans_timeout"            , ULN_CONN_ATTR_UTRANS_TIMEOUT            },
     { "xa_log_dir"                , ULN_CONN_ATTR_XA_LOG_DIR                },
     { "xa_name"                   , ULN_CONN_ATTR_XA_NAME                   },
-    { "ipcdafilepath"             , ULN_CONN_ATTR_IPCDA_FILEPATH            },
     { NULL                        , ULN_CONN_ATTR_MAX                       }
 };
 

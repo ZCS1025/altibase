@@ -23,6 +23,8 @@
 #include <ulnPrivate.h>
 
 #include <ulsd.h>
+#include <ulsdFailover.h>
+
 
 ACI_RC ulsdModuleHandshake_META(ulnFnContext *aFnContext)
 {
@@ -300,13 +302,45 @@ void ulsdModuleOnCmError_META(ulnFnContext     *aFnContext,
                               ulnDbc           *aDbc,
                               ulnErrorMgr      *aErrorMgr)
 {
-    ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
+    ulsdDbc      *sShard = NULL;
+
+    (void)ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
+
+    if ( aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
+    {
+        sShard = aDbc->mShardDbcCxt.mShardDbc;
+        ulsdSetTouchedToAllNodes( sShard );
+    }
+
+    return;
 }
 
 ACI_RC ulsdModuleUpdateNodeList_META(ulnFnContext  *aFnContext,
                                      ulnDbc        *aDbc)
 {
     return ulsdUpdateNodeList(aFnContext, &(aDbc->mPtContext));
+}
+
+ACI_RC ulsdModuleNotifyFailOver_META( ulnDbc *aDbc )
+{
+    return ulsdNotifyFailoverOnMeta( aDbc );
+}
+
+void ulsdModuleAlignDataNodeConnection_META( ulnFnContext * aFnContext,
+                                             ulnDbc       * aNodeDbc )
+{
+    ulsdAlignDataNodeConnection( aFnContext,
+                                 aNodeDbc );
+}
+
+void ulsdModuleErrorCheckAndAlignDataNode_META( ulnFnContext * aFnContext )
+{
+    ulsdErrorCheckAndAlignDataNode( aFnContext );
+}
+
+acp_bool_t ulsdModuleHasNoData_META( ulnStmt * aStmt )
+{
+    return ulsdStmtHasNoDataOnNodes( aStmt );
 }
 
 ulsdModule gShardModuleMETA =
@@ -323,5 +357,9 @@ ulsdModule gShardModuleMETA =
     ulsdModuleMoreResults_META,
     ulsdModuleGetPreparedStmt_META,
     ulsdModuleOnCmError_META,
-    ulsdModuleUpdateNodeList_META
+    ulsdModuleUpdateNodeList_META,
+    ulsdModuleNotifyFailOver_META,
+    ulsdModuleAlignDataNodeConnection_META,
+    ulsdModuleErrorCheckAndAlignDataNode_META,
+    ulsdModuleHasNoData_META
 };

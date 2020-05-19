@@ -31,6 +31,7 @@
 #define CMI_DISPATCHER_IMPL_UNIX            CMN_DISPATCHER_IMPL_SOCK
 #define CMI_DISPATCHER_IMPL_IPC             CMN_DISPATCHER_IMPL_IPC
 #define CMI_DISPATCHER_IMPL_IPCDA           CMN_DISPATCHER_IMPL_IPCDA
+#define CMI_DISPATCHER_IMPL_IB              CMN_DISPATCHER_IMPL_IB
 #define CMI_DISPATCHER_IMPL_BASE            CMN_DISPATCHER_IMPL_BASE
 #define CMI_DISPATCHER_IMPL_MAX             CMN_DISPATCHER_IMPL_MAX
 #define CMI_DISPATCHER_IMPL_INVALID         CMN_DISPATCHER_IMPL_INVALID
@@ -54,16 +55,18 @@
 #define CMI_LINK_IMPL_INVALID               CMN_LINK_IMPL_INVALID
 /* PROJ-2474 SSL/TLS */
 #define CMI_LINK_IMPL_SSL                   CMN_LINK_IMPL_SSL
+/* PROJ-2681 */
+#define CMI_LINK_IMPL_IB                    CMN_LINK_IMPL_IB
 
 #define CMI_LINK_INFO_ALL                   CMN_LINK_INFO_ALL
 #define CMI_LINK_INFO_IMPL                  CMN_LINK_INFO_IMPL
-#define CMI_LINK_INFO_TCP_LOCAL_ADDRESS     CMN_LINK_INFO_TCP_LOCAL_ADDRESS
-#define CMI_LINK_INFO_TCP_LOCAL_IP_ADDRESS  CMN_LINK_INFO_TCP_LOCAL_IP_ADDRESS
-#define CMI_LINK_INFO_TCP_LOCAL_PORT        CMN_LINK_INFO_TCP_LOCAL_PORT
-#define CMI_LINK_INFO_TCP_REMOTE_ADDRESS    CMN_LINK_INFO_TCP_REMOTE_ADDRESS
-#define CMI_LINK_INFO_TCP_REMOTE_IP_ADDRESS CMN_LINK_INFO_TCP_REMOTE_IP_ADDRESS
-#define CMI_LINK_INFO_TCP_REMOTE_PORT       CMN_LINK_INFO_TCP_REMOTE_PORT
-#define CMI_LINK_INFO_TCP_REMOTE_SOCKADDR   CMN_LINK_INFO_TCP_REMOTE_SOCKADDR
+#define CMI_LINK_INFO_LOCAL_ADDRESS         CMN_LINK_INFO_LOCAL_ADDRESS
+#define CMI_LINK_INFO_LOCAL_IP_ADDRESS      CMN_LINK_INFO_LOCAL_IP_ADDRESS
+#define CMI_LINK_INFO_LOCAL_PORT            CMN_LINK_INFO_LOCAL_PORT
+#define CMI_LINK_INFO_REMOTE_ADDRESS        CMN_LINK_INFO_REMOTE_ADDRESS
+#define CMI_LINK_INFO_REMOTE_IP_ADDRESS     CMN_LINK_INFO_REMOTE_IP_ADDRESS
+#define CMI_LINK_INFO_REMOTE_PORT           CMN_LINK_INFO_REMOTE_PORT
+#define CMI_LINK_INFO_REMOTE_SOCKADDR       CMN_LINK_INFO_REMOTE_SOCKADDR
 #define CMI_LINK_INFO_UNIX_PATH             CMN_LINK_INFO_UNIX_PATH
 #define CMI_LINK_INFO_IPC_KEY               CMN_LINK_INFO_IPC_KEY
 #define CMI_LINK_INFO_IPCDA_KEY             CMN_LINK_INFO_IPCDA_KEY
@@ -197,10 +200,10 @@ typedef struct cmiProtocolContext
     acp_uint32_t                  mIPDASpinMaxCount;
     
     /* BUG-45184 network 전송 size와 count 확인 (RP View에서 확인용도) */
-    ULong                         mSendDataSize;
-    ULong                         mReceiveDataSize;    
-    ULong                         mSendDataCount;
-    ULong                         mReceiveDataCount;
+    ULong               mSendDataSize;
+    ULong               mReceiveDataSize;    
+    ULong               mSendDataCount;
+    ULong               mReceiveDataCount;
 } cmiProtocolContext;
 
 /*
@@ -271,6 +274,10 @@ IDE_RC cmiGetSslCipherInfo(cmnLink *aLink,
                            UInt aBufLen);
 IDE_RC cmiSslInitialize( void );
 IDE_RC cmiSslFinalize( void );
+
+/* PROJ-2681 */
+IDE_RC cmiIBInitialize(void);
+IDE_RC cmiIBFinalize(void);
 
 IDE_RC cmiCheckLink(cmiLink *aLink, idBool *aIsClosed);
 
@@ -498,6 +505,14 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
     CM_ENDIAN_ASSIGN8(aDst, aSrc);
 }
 
+/* PROJ-2677 peek 블럭의 커서를 옮기지 않고 읽어 오기만 한다. */
+#define CMI_PEEK1(aCtx, aDst)                                                                  \
+    do                                                                                         \
+    {                                                                                          \
+        IDE_DASSERT( ID_SIZEOF(aDst) == 1 );                                                   \
+        CM_ENDIAN_ASSIGN1((aDst), *((aCtx)->mReadBlock->mData + (aCtx)->mReadBlock->mCursor)); \
+    } while (0)
+
 /* read */
 /* 블럭에 직접 데이타를 읽고, 쓰기 위해서 사용된다. Align 을 맞추지 않고 1바이트씩 복사한다. */
 #define CMI_RD1(aCtx, aDst)                                                                    \
@@ -694,6 +709,13 @@ IDE_RC cmiAllocCmBlockForA5( cmiProtocolContext* aCtx,
                              cmiLink*            aLink,
                              void*               aOwner,
                              idBool              aResendBlock = ID_FALSE );
+/* 
+ * PROJ-2704 이중화 DDL 복제 비정상 종료 극복 
+ * cmiProtocolContext에 cmBlock을 할당 했는지 확인하는 함수 추가 */
+inline idBool cmiIsAllocCmBlock( cmiProtocolContext* aCtx )
+{
+    return ( aCtx->mReadBlock != NULL ) ? ID_TRUE : ID_FALSE;
+}
 IDE_RC cmiFreeCmBlock(cmiProtocolContext* aCtx);
 IDE_RC cmiRecv(cmiProtocolContext* aCtx,
                void*           aUserContext,
@@ -709,6 +731,8 @@ IDE_RC cmiRecvNext(cmiProtocolContext* aCtx, PDL_Time_Value* aTimeout);
 IDE_RC cmiSend( cmiProtocolContext  * aCtx, 
                 idBool                aIsEnd, 
                 PDL_Time_Value      * aTimeout = NULL );
+
+IDE_RC cmiLinkPeerFinalizeSvrForIPCDA( cmiProtocolContext  *aCtx );
 
 /* 
  * BUG-38716 [rp-sender] It needs a property to give sending timeout to replication sender.
@@ -807,8 +831,7 @@ inline void cmiIPCDAIncDataCount(cmiProtocolContext * aCtx)
      * mDataSize, mOperationCount 값을 보장하기 위하여
      * mem barrier 위치 조정 */
     sWriteBlock->mBlock.mDataSize = sWriteBlock->mBlock.mCursor;
-    IDL_MEM_BARRIER;
-    /* Increase data count. */
-    sWriteBlock->mOperationCount++;
+    /* BUG-46502 atomic 함수 적용 atomic에 mem_barrier가 포함되어 있다.*/
+    acpAtomicInc32(&(sWriteBlock->mOperationCount));
 }
 #endif

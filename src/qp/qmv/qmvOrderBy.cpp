@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmvOrderBy.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmvOrderBy.cpp 84835 2019-01-30 01:06:28Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
@@ -86,7 +86,7 @@ IDE_RC qmvOrderBy::searchSiblingColumn( qtcNode  * aExpression,
     }
 
     return IDE_SUCCESS;
-    
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -109,6 +109,8 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
     qmsSortColumns  * sSort          = NULL;
     qmsSortColumns    sTemp;
     qcuSqlSourceInfo  sqlInfo;
+    qtcNode         * sNewNode = NULL;
+    qtcNode         * sPrevNode = NULL;
 
     IDU_FIT_POINT_FATAL( "qmvOrderBy::validate::__FT__" );
 
@@ -121,7 +123,46 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
     // validate 처리 단계 설정
     //---------------
     sParseTree->querySet->processPhase = QMS_VALIDATE_ORDERBY;
-    
+
+    /* BUG-46728 */
+    if ( QCU_COERCE_HOST_VAR_TO_VARCHAR > 0 )
+    {
+        for ( sCurrSort = sParseTree->orderBy;
+              sCurrSort != NULL;
+              sCurrSort = sCurrSort->next)
+        {
+            IDE_TEST( qmvQuerySet::searchHostVarAndAddCastOper( aStatement,
+                                                                sCurrSort->sortColumn,
+                                                                &sNewNode,
+                                                                ID_FALSE )
+                      != IDE_SUCCESS );
+
+            if ( sNewNode != NULL )
+            {
+                sCurrSort->sortColumn = sNewNode;
+
+                if ( sPrevNode != NULL )
+                {
+                    sPrevNode->node.next = (mtcNode*)sNewNode;
+                }
+                else
+                {
+                    /* Nothing to do */
+               }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            sPrevNode = sCurrSort->sortColumn;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     if (sParseTree->querySet->setOp == QMS_NONE)
     {
         // This Query doesn't have SET(UNION, INTERSECT, MINUS) operations.
@@ -165,7 +206,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
          sCurrSort = sCurrSort->next)
     {
         IDE_FT_ASSERT( sCurrSort->sortColumn != NULL );
-        
+
         // BUG-27208
         if ( sCurrSort->sortColumn->node.module == &qtc::assignModule )
         {
@@ -246,11 +287,11 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
         {
             // Nothing to do.
         }
-        
+
         // BUG-15896
         // BUG-24133
         sColumn = QTC_TMPL_COLUMN( QC_SHARED_TMPLATE(aStatement), sSortColumn );
-            
+
         if ( ( sColumn->module->id == MTD_BOOLEAN_ID ) ||
              ( sColumn->module->id == MTD_ROWTYPE_ID ) ||
              ( sColumn->module->id == MTD_RECORDTYPE_ID ) ||
@@ -414,7 +455,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
                                   != IDE_SUCCESS );
                         idlOS::memcpy( sSort, sCurrSort, sizeof( qmsSortColumns ) );
                         sSort->targetPosition = QMV_EMPTY_TARGET_POSITION;
-
+                        sSort->next           = NULL; /* BUG-46184 */
                         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
                                                 qtcNode,
                                                 &sSiblingColumn )
@@ -459,7 +500,7 @@ IDE_RC qmvOrderBy::validate(qcStatement * aStatement)
           sCurrSort = sCurrSort->next )
     {
         if ( qtc::dependencyContains( & sQuerySet->depInfo,
-                                      & sCurrSort->sortColumn->depInfo ) 
+                                      & sCurrSort->sortColumn->depInfo )
              == ID_FALSE )
         {
             // QuerySet의 depInfo 밖에 있으니, 외부 참조

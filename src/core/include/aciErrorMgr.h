@@ -73,6 +73,7 @@ ACP_EXTERN_C_BEGIN
 #define ACI_E_MODULE_MM      0x40000000
 #define ACI_E_MODULE_RP      0x60000000
 #define ACI_E_MODULE_CM      0x70000000
+#define ACI_E_MODULE_SD      0xE0000000
 
 /* PROJ-1335 user-defined error */
 #define ACI_E_MODULE_USER    0xF0000000   /* user-defined error */

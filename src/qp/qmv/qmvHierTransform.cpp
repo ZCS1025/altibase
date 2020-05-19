@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvHierTransform.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmvHierTransform.cpp 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  ***********************************************************************/
 
@@ -107,7 +107,7 @@ IDE_RC qmvHierTransform::doTransform( qcStatement * aStatement,
     /* Set pivot */
     aTableRef->pivot = sTableRef->pivot;
     sTableRef->pivot = NULL;
-    
+
     aTableRef->unpivot = sTableRef->unpivot;
     sTableRef->unpivot = NULL;
 
@@ -147,7 +147,7 @@ IDE_RC qmvHierTransform::doTransform( qcStatement * aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_HIERARCHY_TRANSFORMATION );
 
     return IDE_SUCCESS;
-    
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

@@ -25,7 +25,7 @@ static IDE_RC mmmPhaseActionShutdownCM(mmmPhase         /*aPhase*/,
                                        mmmPhaseAction * /*aAction*/)
 {
 #if !defined(WRS_VXWORKS)
-    if( idf::isVFS() != ID_TRUE )
+    if (idf::isVFS() != ID_TRUE)
     {
         // BUG-15876
         IDE_TEST(mmm::mCheckStat.release() != IDE_SUCCESS);
@@ -41,13 +41,21 @@ static IDE_RC mmmPhaseActionShutdownCM(mmmPhase         /*aPhase*/,
     IDE_TEST(cmiFinalize() != IDE_SUCCESS);
 
     /* BUG-44488 */
-    if( mmuProperty::getSslEnable() == ID_TRUE )
+    if (mmuProperty::getSslEnable() == ID_TRUE)
     {
         cmiSslFinalize();
     }
 
+    /* PROJ-2681 */
+    if (mmuProperty::getIBEnable() == ID_TRUE)
+    {
+        (void)cmiIBFinalize();
+    }
+
     return IDE_SUCCESS;
+
     IDE_EXCEPTION_END;
+
     return IDE_FAILURE;
 }
 

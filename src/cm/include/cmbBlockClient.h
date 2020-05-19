@@ -49,7 +49,7 @@ typedef struct cmbBlock
 typedef struct cmbBlockIPCDA
 {
     cmbBlock                        mBlock;
-    acp_uint32_t                    mOperationCount;              /* 데이터영역에 있는 Protocol block의 수 */
+    volatile acp_uint32_t           mOperationCount;              /* 데이터영역에 있는 Protocol block의 수 */
     volatile cmbIPCDAChannelState   mWFlag;                       /* Write lock flag */
     volatile cmbIPCDAChannelState   mRFlag;                       /* Read lock flag */
     acp_uint8_t                     mData;                        /* 실제 데이터 영역 */

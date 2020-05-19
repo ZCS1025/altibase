@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtc.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -3059,14 +3059,21 @@ IDE_RC mtc::cloneTemplate( iduVarMemList * aMemory,
  ******************************************************************/
 void mtc::finiTemplate( mtcTemplate  * aTemplate )
 {
-    UInt  i;
-    
+    /* BUG-46892 */
+    idvSQL * sStatistics = NULL;
+    ULong    sTotalSize  = (ULong)0;
+    UInt     i;
+
+    sStatistics = mtc::getStatistics( aTemplate );
+
     if ( aTemplate->funcData != NULL )
     {
         for ( i = 0; i < aTemplate->funcDataCnt; i++ )
         {
             if ( aTemplate->funcData[i] != NULL )
             {
+                sTotalSize += aTemplate->funcData[i]->memoryMgr->getSize(); /* BUG-46892 */
+
                 mtf::freeFuncDataMemory( aTemplate->funcData[i]->memoryMgr );
 
                 aTemplate->funcData[i] = NULL;
@@ -3080,6 +3087,16 @@ void mtc::finiTemplate( mtcTemplate  * aTemplate )
     else
     {
         // Nothing to do.
+    }
+
+    /* BUG-46892 */
+    if ( sStatistics != NULL )
+    {
+        IDV_SQL_SET( sStatistics, mMathTempMem, sTotalSize );
+    }
+    else
+    {
+        /* Nothing to do */
     }
 }
 
@@ -8145,4 +8162,129 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
     }
 
     return sWeekOfYear;
+}
+
+/***********************************************************************
+ *
+ * Description :
+ *    ISO 8601 표준 연도를 구합니다.
+ *      주차는 월요일부터 시작합니다.
+ *      1월 1일이 목요일 이전이면, 첫 주와 전년도의 마지막 주는 당년도의 1주차입니다.
+ *      1월 1일이 금요일 이후이면, 첫 주는 전년도의 마지막 주차입니다.
+ *
+ * Implementation :
+ *    1. 연도를 구합니다.
+ *      1월 1일 : 1월 1일이 금토일인 경우, 전년도입니다.
+ *      1월 2일 : 1월 1일이 금토인 경우, 전년도입니다.
+ *      1월 3일 : 1월 1일이 금인 경우, 전년도입니다.
+ *      12월 29일 : 12월 31일이 수인 경우, 차년도입니다.
+ *      12월 30일 : 12월 31일이 화수인 경우, 차년도입니다.
+ *      12월 31일 : 12월 31일이 월화수인 경우, 차년도입니다.
+ *      나머지 : 당년도입니다.
+ *
+ ***********************************************************************/
+SInt mtc::yearForStandard( SInt aYear,
+                           SInt aMonth,
+                           SInt aDay )
+{
+    SInt    sYear  = 0;
+    SInt    sDayOfWeek   = 0;
+
+    /* Step 1. 연도를 구합니다. */
+    sYear = aYear;
+
+    if ( aMonth == 1 )
+    {
+        switch ( aDay )
+        {
+            case 1 :
+                sDayOfWeek = dayOfWeek( aYear, 1, 1 );
+                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // 금토일
+                {
+                    sYear = aYear - 1;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                break;
+
+            case 2 :
+                sDayOfWeek = dayOfWeek( aYear, 1, 1 );
+                if ( sDayOfWeek >= 5 )                              // 금토
+                {
+                    sYear = aYear - 1;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                break;
+
+            case 3 :
+                sDayOfWeek = dayOfWeek( aYear, 1, 1 );
+                if ( sDayOfWeek == 5 )                              // 금
+                {
+                    sYear = aYear - 1;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                break;
+
+            default :
+                break;
+        }
+    }
+    else if ( aMonth == 12 )
+    {
+        switch ( aDay )
+        {
+            case 29 :
+                sDayOfWeek = dayOfWeek( aYear, 12, 31 );
+                if ( sDayOfWeek == 3 )                                                      // 수
+                {
+                    sYear = aYear + 1;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                break;
+
+            case 30 :
+                sDayOfWeek = dayOfWeek( aYear, 12, 31 );
+                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // 화수
+                {
+                    sYear = aYear + 1;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                break;
+
+            case 31 :
+                sDayOfWeek = dayOfWeek( aYear, 12, 31 );
+                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // 월화수
+                {
+                    sYear = aYear + 1;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                break;
+
+            default :
+                break;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return sYear;
 }

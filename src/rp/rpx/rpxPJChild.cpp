@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJChild.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxPJChild.cpp 84443 2018-11-27 06:21:50Z minku.kang $
  **********************************************************************/
 
 #include <idl.h> // to remove win32 compile warning
@@ -43,6 +43,10 @@ rpxPJChild::rpxPJChild() : idtBaseThread(IDT_DETACHED)
 
 IDE_RC rpxPJChild::initialize( rpxPJMgr     * aParent,
                                rpdMeta      * aMeta,
+                               RP_SOCKET_TYPE aSocketType,
+                               SChar        * aIPAddress,
+                               UInt           aPortNo,
+                               rpIBLatency    aIBLatency, 
                                smiStatement * aStatement,
                                UInt           aChildCount,
                                UInt           aNumber,
@@ -57,7 +61,11 @@ IDE_RC rpxPJChild::initialize( rpxPJMgr     * aParent,
     mStatement    = aStatement;
     mMeta         = aMeta;
     mSyncList     = aSyncList;
-    
+    mSocketType   = aSocketType;
+    mIPAddress    = aIPAddress;
+    mPortNo       = aPortNo;
+    mIBLatency    = aIBLatency;
+
     return IDE_SUCCESS;
 }
 
@@ -75,8 +83,10 @@ IDE_RC rpxPJChild::initializeThread()
      * PJ Child 는 Sync 모드에서만 동작하기 때문에 Messager 안 SOCKET 에서 
      * Lock 을 잡을 필요가 없다
      */
-    IDE_TEST( mMessenger.initialize( RPN_MESSENGER_SOCKET_TYPE_TCP,
+    
+    IDE_TEST( mMessenger.initialize( mSocketType,
                                      mExitFlag,
+                                     &( mMeta->mReplication ),
                                      NULL,
                                      ID_FALSE )
               != IDE_SUCCESS );
@@ -133,7 +143,6 @@ void rpxPJChild::run()
 {
     idBool       sIsConnect = ID_FALSE;
     SChar        sLog[512] = { 0, };
-    SInt         sPos = 0;
 
     rpxSyncItem * sSyncItem  = NULL;
     iduListNode * sCurNode   = NULL;
@@ -141,17 +150,25 @@ void rpxPJChild::run()
 
     IDE_CLEAR();
 
-    IDE_TEST( rpdCatalog::getIndexByAddr( mMeta->mReplication.mLastUsedHostNo,
-                                          mMeta->mReplication.mReplHosts,
-                                          mMeta->mReplication.mHostCount,
-                                          &sPos )
-              != IDE_SUCCESS );
-
-    IDE_TEST( mMessenger.connectThroughTcp( 
-                  mMeta->mReplication.mReplHosts[sPos].mHostIp,
-                  mMeta->mReplication.mReplHosts[sPos].mPortNo )
-              != IDE_SUCCESS );
-    sIsConnect = ID_TRUE;
+    if ( mSocketType == RP_SOCKET_TYPE_TCP )
+    {
+        IDE_TEST( mMessenger.connectThroughTcp( mIPAddress,
+                                                mPortNo )
+                  != IDE_SUCCESS );
+        sIsConnect = ID_TRUE;
+    }
+    else if ( mSocketType == RP_SOCKET_TYPE_IB )
+    {
+        IDE_TEST( mMessenger.connectThroughIB( mIPAddress,
+                                               mPortNo,
+                                               mIBLatency )
+                  != IDE_SUCCESS );
+        sIsConnect = ID_TRUE;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
 
     IDE_TEST( mMessenger.handshake( mMeta ) != IDE_SUCCESS );
 

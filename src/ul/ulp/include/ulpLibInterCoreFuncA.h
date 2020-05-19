@@ -32,6 +32,10 @@
 #include <ulpTypes.h>
 #include <mtcl.h>            /* mtlUTF16, mtlUTF8*/
 
+/* BUG-45779 */
+#define ULP_MAX_OBJECT_NAME_LEN    (50)
+
+#define ULP_PSM_ARRAY_DATA_TYPE    (1000003)
 
 /* library internal core functions */
 
@@ -67,6 +71,29 @@ ACI_RC ulpBindHostVarCore ( ulpLibConnNode *aConnNode,
                             ulpSqlca       *aSqlca,
                             ulpSqlcode     *aSqlcode,
                             ulpSqlstate    *aSqlstate );
+
+ACI_RC ulpCheckPackagePSMArray(ulpLibConnNode *aConnNode,
+                               ulpSqlstmt     *aSqlstmt,
+                               acp_char_t     *aUserName,
+                               acp_uint32_t    aUserNameLen,
+                               acp_char_t     *aPackageName,
+                               acp_uint32_t    aPackageNameLen,
+                               acp_char_t     *aPSMName,
+                               acp_uint32_t    aPSMNameLen,
+                               acp_bool_t     *aIsPSMArray);
+
+ACI_RC ulpCheckUserPSMArray(ulpLibConnNode *aConnNode,
+                            ulpSqlstmt     *aSqlstmt,
+                            acp_char_t     *aUserName,
+                            acp_uint32_t    aUserNameLen,
+                            acp_char_t     *aPSMName,
+                            acp_uint32_t    aPSMNameLen,
+                            acp_bool_t     *aIsPSMArray);
+
+/* BUG-45779 */
+ACI_RC ulpCheckPSMArray ( ulpLibConnNode *aConnNode,
+                          ulpSqlstmt  *aSqlstmt,
+                          acp_bool_t  *aIsPSMArray );
 
 ACI_RC ulpExecuteCore( ulpLibConnNode *aConnNode,
                        ulpLibStmtNode *aStmtNode,

@@ -15,7 +15,7 @@
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
 
-# Last Number = 1132
+# Last Number = 1141
 
 SECTION = 3
 
@@ -595,6 +595,10 @@ SECTION = 3
 985,qpERR_ABORT_QDB_DDL_WITH_REPLICATED_PART = You cannot execute DDL on a replicated partition.
 # *Cause: You cannot execute DDL on a replicated partition.
 # *Action: Verify that the specified partition is not replicated.
+
+1141,qpERR_ABORT_QDB_DDL_SYNC_WITH_LOCK_UNTIL_NEXT_DDL = You cannot execute DDL for the replicated table after performing LOCK.. UNTIL NEXT DDL on REPLICATION_DDL_SYNC enable mode.
+# *Cause: You cannot use the property REPLICATION_DDL_SYNC enable and LOCK.. UNTIL NEX DDL statement on the replicated table.
+# *Action: Change the property REPLICATION_DDL_SYNC to 0(disable) or close a transaction.
 
 34,qpERR_ABORT_QDB_EXIST_OBJECT_NAME = The name is already used by an existing object.
 # *Cause: An attempt was made to create a database object (such as a table, view or sequence) that already exists. A user's database objects must have distinct names.
@@ -1186,6 +1190,14 @@ SECTION = 3
 1132,qpERR_ABORT_QDB_DROP_COL_UNIQUE_INDEX_WITH_REPLICATED_TBL = A column contains an unique index that can not be dropped from a replicated table.
 # *Cause: A column contains an unique index that can not be dropped from a replicated table.
 # *Action: Drop column again after dropping the replication.
+
+1134,qpERR_ABORT_QDB_CANNOT_ALTER_REPLACE_PARTITON_NONE_PART = ALTER TABLE REPLACE statement is not allowed on a non partitioned table.
+# *Cause: The user tried to execute ALTER TABLE REPLACE statement, but does not support different schema in the partitioned table. 
+# *Action: Check the partitioning method of the table.
+
+1135,qpERR_ABORT_QDB_REPLACE_DIFFERENT_PARTITION = The schema is different between the source partition table and the destination partition table.
+# *Cause: The user tried to execute a replace DDL command, but does not support different schema in the partitioned table.
+# *Action: Verify that the source and target tables have the same schema.
 
 ###############################################################################
 #########                 QCV ERROR CODE                              #########
@@ -2030,6 +2042,10 @@ SECTION = 3
 1110,qpERR_ABORT_QMV_CANNOT_USE_ORDER_BY_CLAUSE = An ORDER BY clause is not allowed in the function. <0%s>
 # *Cause: An ORDER BY clause is not allowed in the function.
 # *Action: Remove the ORDER BY clause from the statement.
+
+1133,qpERR_ABORT_QCV_NOT_ALLOWED_ANALYTIC = An analytic function is not allowed here. <0%s>
+# *Cause: An analytic function cannot be used here.
+# *Action: Check all anaytic functions.
 
 ##############################################################################
 #########                 QMX ERROR CODE                              #########
@@ -3060,6 +3076,14 @@ SECTION = 3
 # *Cause: The attempt to recompile the object failed due to creating an invalid statement.
 # *Action: Modify the object creating statement.
 
+1137,qpERR_ABORT_QSX_ARRAY_INDEX_OUT_OF_RANGE = Index out of range for host language array.
+# *Cause: An index in the array is either less than one or greater than the maximum size of the host language array.
+# *Action: Verify an index in the array or size of the host language array.
+
+1138,qpERR_ABORT_QSX_INVALID_ARRAY_BINDING_PROTOCOL = Invalid host language array binding protocol.
+# *Cause: Invalid host language array binding protocol.
+# *Action: Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
 ###############################################################################
 #########                         QDC ERROR CODE                      #########
 ###############################################################################
@@ -3663,7 +3687,9 @@ SECTION = 3
 # *Cause: An encrypted column with a default value other than NULL cannot be added.
 # *Action: Remove the default value or set null value.
 
-
+1136,qpERR_ABORT_QDQ_NOT_EMPTY_QUEUE = A queue is not empty. Only empty queue can reset a msgid.
+# *Cause: Can not perform to reset a msgid because it is not a empty queue.
+# *Action: Check whether the queue is empty, otherwise remove the data from the queue.
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

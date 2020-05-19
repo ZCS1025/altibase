@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCrtPathMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoCrtPathMgr.cpp 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     Critical Path Manager
@@ -44,6 +44,7 @@
 #include <qmoInnerJoinPushDown.h>
 #include <qmv.h>
 #include <qmoCostDef.h>
+#include <qmgHierarchy.h>
 
 IDE_RC
 qmoCrtPathMgr::init( qcStatement * aStatement,
@@ -705,6 +706,39 @@ qmoCrtPathMgr::optimize( qcStatement * aStatement,
         default:
             IDE_DASSERT(0);
             break;
+    }
+
+    //------------------------------------------
+    // PROJ-2509 Join에서의 Hierarhcy 처리
+    //------------------------------------------
+    if ( ( sQuerySet->SFWGH->hierarchy != NULL ) &&
+         ( ( sQuerySet->SFWGH->from->joinType != QMS_NO_JOIN ) ||
+           ( sQuerySet->SFWGH->from->next != NULL ) ) )
+    {
+        sMyGraph = sCrtPath->myGraph;
+
+        IDE_TEST( qmgHierarchy::init( aStatement,
+                                      sQuerySet,
+                                      sMyGraph,
+                                      sQuerySet->SFWGH->from,
+                                      sQuerySet->SFWGH->hierarchy,
+                                      &sMyGraph )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmoCnfMgr::classifyPred4WhereHierachyJoin( aStatement,
+                                                             sCrtPath,
+                                                             sMyGraph )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmgHierarchy::optimize( aStatement,
+                                          sMyGraph )
+                  != IDE_SUCCESS );
+
+        sCrtPath->myGraph = sMyGraph;
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     //------------------------------------------

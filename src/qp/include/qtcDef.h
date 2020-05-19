@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtcDef.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qtcDef.h 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #include <qc.h>
@@ -317,7 +317,7 @@
 #define QTC_NODE_AGGR_ESTIMATE_FALSE            ID_ULONG(0x0000000000000000)
 
 /* qtcNode.lflag
- * PROJ-2187 PSM Renewal
+ * PROJ-2197 PSM Renewal
  */
 #define QTC_NODE_COLUMN_CONVERT_MASK            ID_ULONG(0x0000001000000000)
 #define QTC_NODE_COLUMN_CONVERT_TRUE            ID_ULONG(0x0000001000000000)
@@ -421,20 +421,20 @@
 #define QTC_NODE_REMOVABLE_SEMI_JOIN_TRUE       ID_ULONG(0x0010000000000000)
 #define QTC_NODE_REMOVABLE_SEMI_JOIN_FALSE      ID_ULONG(0x0000000000000000)
 
-/* PROJ-2598 Shard pilot(shard analyze) */
-#define QTC_NODE_SHARD_KEY_MASK                 ID_ULONG(0x0020000000000000)
-#define QTC_NODE_SHARD_KEY_TRUE                 ID_ULONG(0x0020000000000000)
-#define QTC_NODE_SHARD_KEY_FALSE                ID_ULONG(0x0000000000000000)
-
-/* PROJ-2655 Composite shard key */
-#define QTC_NODE_SUB_SHARD_KEY_MASK             ID_ULONG(0x0040000000000000)
-#define QTC_NODE_SUB_SHARD_KEY_TRUE             ID_ULONG(0x0040000000000000)
-#define QTC_NODE_SUB_SHARD_KEY_FALSE            ID_ULONG(0x0000000000000000)
-
 /* PROJ-2687 Shard aggregation transform */
-#define QTC_NODE_SHARD_VIEW_TARGET_REF_MASK     ID_ULONG(0x0080000000000000)
-#define QTC_NODE_SHARD_VIEW_TARGET_REF_TRUE     ID_ULONG(0x0080000000000000)
+#define QTC_NODE_SHARD_VIEW_TARGET_REF_MASK     ID_ULONG(0x0020000000000000)
+#define QTC_NODE_SHARD_VIEW_TARGET_REF_TRUE     ID_ULONG(0x0020000000000000)
 #define QTC_NODE_SHARD_VIEW_TARGET_REF_FALSE    ID_ULONG(0x0000000000000000)
+
+/* BUG-46032 */
+#define QTC_NODE_SP_NESTED_ARRAY_MASK          ID_ULONG(0x0040000000000000)
+#define QTC_NODE_SP_NESTED_ARRAY_TRUE          ID_ULONG(0x0040000000000000)
+#define QTC_NODE_SP_NESTED_ARRAY_FALSE         ID_ULONG(0x0000000000000000)
+
+/* BUG-46174 */
+#define QTC_NODE_SP_INS_UPT_VALUE_REC_MASK     ID_ULONG(0x0080000000000000)
+#define QTC_NODE_SP_INS_UPT_VALUE_REC_TRUE     ID_ULONG(0x0080000000000000)
+#define QTC_NODE_SP_INS_UPT_VALUE_REC_FALSE    ID_ULONG(0x0000000000000000)
 
 # define QTC_HAVE_AGGREGATE( aNode ) \
     ( ( (aNode)->lflag & QTC_NODE_AGGREGATE_MASK )           \
@@ -1000,5 +1000,71 @@ extern IDE_RC qtcSubqueryCalculateNotExists( mtcNode     * aNode,
                                              SInt          aRemain,
                                              void        * aInfo,
                                              mtcTemplate * aTemplate );
+
+/* PROJ-2632 */
+#define QTC_ENTRY_TYPE_NONE          (MTX_ENTRY_TYPE_NONE)
+#define QTC_ENTRY_TYPE_VALUE         (MTX_ENTRY_TYPE_VALUE)
+#define QTC_ENTRY_TYPE_RID           (MTX_ENTRY_TYPE_RID)
+#define QTC_ENTRY_TYPE_COLUMN        (MTX_ENTRY_TYPE_COLUMN)
+#define QTC_ENTRY_TYPE_FUNCTION      (MTX_ENTRY_TYPE_FUNCTION)
+#define QTC_ENTRY_TYPE_SINGLE        (MTX_ENTRY_TYPE_SINGLE)
+#define QTC_ENTRY_TYPE_CONVERT       (MTX_ENTRY_TYPE_CONVERT)
+#define QTC_ENTRY_TYPE_CONVERT_CHAR  (MTX_ENTRY_TYPE_CONVERT_CHAR)
+#define QTC_ENTRY_TYPE_CONVERT_DATE  (MTX_ENTRY_TYPE_CONVERT_DATE)
+#define QTC_ENTRY_TYPE_CHECK         (MTX_ENTRY_TYPE_CHECK)
+#define QTC_ENTRY_TYPE_AND           (MTX_ENTRY_TYPE_AND)
+#define QTC_ENTRY_TYPE_OR            (MTX_ENTRY_TYPE_OR)
+#define QTC_ENTRY_TYPE_AND_SINGLE    (MTX_ENTRY_TYPE_AND_SINGLE)
+#define QTC_ENTRY_TYPE_OR_SINGLE     (MTX_ENTRY_TYPE_OR_SINGLE)
+#define QTC_ENTRY_TYPE_NOT           (MTX_ENTRY_TYPE_NOT)
+#define QTC_ENTRY_TYPE_LNNVL         (MTX_ENTRY_TYPE_LNNVL)
+
+#define QTC_ENTRY_SIZE_ZERO          (MTX_ENTRY_SIZE_ZERO)
+#define QTC_ENTRY_SIZE_ONE           (MTX_ENTRY_SIZE_ONE)
+#define QTC_ENTRY_SIZE_TWO           (MTX_ENTRY_SIZE_TWO)
+#define QTC_ENTRY_SIZE_THREE         (MTX_ENTRY_SIZE_THREE)
+
+#define QTC_ENTRY_COUNT_ZERO         (MTX_ENTRY_COUNT_ZERO)
+#define QTC_ENTRY_COUNT_ONE          (MTX_ENTRY_COUNT_ONE)
+#define QTC_ENTRY_COUNT_TWO          (MTX_ENTRY_COUNT_TWO)
+#define QTC_ENTRY_COUNT_THREE        (MTX_ENTRY_COUNT_THREE)
+
+#define QTC_SET_SERIAL_FILTER_INFO( _info_ ,     \
+                                    _node_ ,     \
+                                    _execute_ ,  \
+                                    _offset_,    \
+                                    _left_,      \
+                                    _right_)     \
+    MTX_SET_SERIAL_FILTER_INFO( ( _info_ ),      \
+                                ( _node_ ),      \
+                                ( _execute_ ),   \
+                                ( _offset_ ),    \
+                                ( _left_ ),      \
+                                ( _right_ ) )
+
+#define QTC_SET_ENTRY_HEADER( _header_,  \
+                              _id_,      \
+                              _type_,    \
+                              _size_,    \
+                              _count_ )  \
+    MTX_SET_ENTRY_HEADER( ( _header_ ),  \
+                          ( _id_ ),      \
+                          ( _type_ ),    \
+                          ( _size_ ),    \
+                          ( _count_ ) )
+
+#define QTC_SERIAL_EXEUCTE_DATA_INITIALIZE( _data_ ,     \
+                                            _template_,  \
+                                            _count_,     \
+                                            _setcount_,  \
+                                            _offset_ )   \
+    MTX_SERIAL_EXEUCTE_DATA_INITIALIZE( ( _data_ ),      \
+                                        ( _template_ ),  \
+                                        ( _count_ ),     \
+                                        ( _setcount_ ),  \
+                                        ( _offset_ ) )
+
+#define QTC_GET_SERIAL_EXECUTE_DATA_SIZE( _count_ ) \
+    MTX_GET_SERIAL_EXECUTE_DATA_SIZE( ( _count_ ) )
 
 #endif /* _O_QTC_DEF_H_ */

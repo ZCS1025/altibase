@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRegExpReplace.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfRegExpReplace.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -177,6 +177,7 @@ const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -188,6 +189,7 @@ const mtcExecute mtfExecuteFor3Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -199,6 +201,7 @@ const mtcExecute mtfExecuteFor4Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateFor4Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -210,6 +213,7 @@ const mtcExecute mtfExecuteFor5Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateFor5Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -221,6 +225,7 @@ const mtcExecute mtfExecuteNcharFor2Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateNcharFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -232,6 +237,7 @@ const mtcExecute mtfExecuteNcharFor3Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateNcharFor3Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -243,6 +249,7 @@ const mtcExecute mtfExecuteNcharFor4Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateNcharFor4Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -254,6 +261,7 @@ const mtcExecute mtfExecuteNcharFor5Args = {
     mtf::calculateNA,
     mtfRegExpReplaceCalculateNcharFor5Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -423,6 +431,13 @@ IDE_RC mtfRegExpReplaceEstimate( mtcNode*     aNode,
                 }
             }
         }
+
+        IDE_TEST( mtc::initializeColumn( aStack[0].column,
+                                         &mtdVarchar,
+                                         1,
+                                         sReturnLength,
+                                         0 )
+                  != IDE_SUCCESS );
     }
     else
     {
@@ -561,20 +576,20 @@ IDE_RC mtfRegExpReplaceEstimate( mtcNode*     aNode,
                                              0,
                                              0 )
                       != IDE_SUCCESS );
+
+            IDE_TEST( mtc::initializeColumn( aStack[0].column,
+                                             &mtdVarchar,
+                                             1,
+                                             sReturnLength,
+                                             0 )
+                      != IDE_SUCCESS );
         }
         else
         {
-            // Nothing to do
+            /* Nothing to do */
         }
     }
 
-    IDE_TEST( mtc::initializeColumn( aStack[0].column,
-                                     &mtdVarchar,
-                                     1,
-                                     sReturnLength,
-                                     0 )
-              != IDE_SUCCESS );
-    
     if ( ( MTC_NODE_IS_DEFINED_VALUE( aNode->arguments->next ) == ID_TRUE )
          &&
          ( ( ( aTemplate->rows[aNode->arguments->next->table].lflag

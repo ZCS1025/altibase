@@ -154,4 +154,13 @@ public final class RuntimeEnvironmentVariables
         }
         return sValue;
     }
+
+    /**
+     * Java 가상 머신이 이용할 수 있는 CPU 코어 수를 돌려 준다.
+     * @return Java 가상 머신에서 사용할 수 있는 최대 코어 수
+     */
+    public static int getAvailableProcessors()
+    {
+        return Runtime.getRuntime().availableProcessors();
+    }
 }

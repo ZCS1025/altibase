@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgHierarchy.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgHierarchy.cpp 82490 2018-03-16 00:17:55Z donovan.seo $
  *
  * Description :
  *     Hierarchy Graph를 위한 수행 함수
@@ -40,6 +40,7 @@
 IDE_RC
 qmgHierarchy::init( qcStatement  * aStatement,
                     qmsQuerySet  * aQuerySet,
+                    qmgGraph     * aChildGraph,
                     qmsFrom      * aFrom,
                     qmsHierarchy * aHierarchy,
                     qmgGraph    ** aGraph )
@@ -95,6 +96,7 @@ qmgHierarchy::init( qcStatement  * aStatement,
     IDE_TEST( qmg::initGraph( &sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_HIERARCHY;
+    sMyGraph->graph.left = aChildGraph;
     qtc::dependencySetWithDep( & sMyGraph->graph.depInfo,
                                & aFrom->depInfo );
     sMyGraph->graph.myFrom = aFrom;
@@ -104,21 +106,26 @@ qmgHierarchy::init( qcStatement  * aStatement,
     sMyGraph->graph.makePlan = qmgHierarchy::makePlan;
     sMyGraph->graph.printGraph = qmgHierarchy::printGraph;
 
-
-    // DISK/MEMORY 정보 설정
-    if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.
-           rows[sMyGraph->graph.myFrom->tableRef->table].lflag
-           & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
+    if ( aChildGraph != NULL )
     {
-        sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
-        sMyGraph->graph.flag |= QMG_GRAPH_TYPE_DISK;
+        sMyGraph->graph.flag &= ~QMG_HIERARCHY_JOIN_MASK;
+        sMyGraph->graph.flag |= QMG_HIERARCHY_JOIN_TRUE;
     }
     else
     {
-        sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
-        sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MEMORY;
+        if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.
+             rows[sMyGraph->graph.myFrom->tableRef->table].lflag & MTC_TUPLE_STORAGE_MASK )
+             == MTC_TUPLE_STORAGE_DISK )
+        {
+            sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
+            sMyGraph->graph.flag |= QMG_GRAPH_TYPE_DISK;
+        }
+        else
+        {
+            sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
+            sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MEMORY;
+        }
     }
-
     //---------------------------------------------------
     // Hierarchy Graph 만을 위한 자료 구조 초기화
     //---------------------------------------------------
@@ -319,6 +326,11 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     UInt          i          = 0;
     UInt          sFlag      = 0;
     UInt          sSelectedScanHint = 0;
+    UShort        sTableID          = 0;
+    idBool        sFind             = ID_FALSE;
+    qmsFrom     * sFrom             = NULL;
+    qmsFrom     * sFindFrom         = NULL;
+    qmoPredicate * sPredicate       = NULL;
 
     SDouble       sOutputRecordCnt = 0;
     SDouble       sInputRecordCnt  = 0;
@@ -342,39 +354,46 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph = (qmgHIER*) aGraph;
     sTableRef = sMyGraph->graph.myFrom->tableRef;
 
-    /*
-     * PROJ-1715 Hierarchy
-     * View Graph의 생성 및 통계 정보 구축
-     *   ( 일반 Table의 통계 정보는 Validation 과정에서 설정됨 )
-     */
-    if( sTableRef->view != NULL )
+    if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+         == QMG_HIERARCHY_JOIN_FALSE )
     {
-        sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_CMTR;
-        // View Graph의 생성
-        IDE_TEST( qmgSelection::makeViewGraph( aStatement, & sMyGraph->graph )
-                  != IDE_SUCCESS );
+        /*
+         * PROJ-1715 Hierarchy
+         * View Graph의 생성 및 통계 정보 구축
+         *   ( 일반 Table의 통계 정보는 Validation 과정에서 설정됨 )
+         */
+        if ( sTableRef->view != NULL )
+        {
+            sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_CMTR;
+            // View Graph의 생성
+            IDE_TEST( qmgSelection::makeViewGraph( aStatement, & sMyGraph->graph )
+                      != IDE_SUCCESS );
 
-        sMyGraph->graph.left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK;
-        sMyGraph->graph.left->flag |= QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE;
+            sMyGraph->graph.left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK;
+            sMyGraph->graph.left->flag |= QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE;
 
-        // 통계 정보의 구축
-        IDE_TEST( qmoStat::getStatInfo4View( aStatement,
-                                             & sMyGraph->graph,
-                                             & sTableRef->statInfo )
-                  != IDE_SUCCESS );
+            // 통계 정보의 구축
+            IDE_TEST( qmoStat::getStatInfo4View( aStatement,
+                                                 & sMyGraph->graph,
+                                                 & sTableRef->statInfo )
+                      != IDE_SUCCESS );
 
-        // fix BUG-11209
-        // selection graph는 하위에 view가 올 수 있으므로
-        // view가 있을 때는 view의 projection graph의 타입으로 flag를 보정한다.
-        sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
-        sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MASK &
-            sMyGraph->graph.left->flag;
+            // fix BUG-11209
+            // selection graph는 하위에 view가 올 수 있으므로
+            // view가 있을 때는 view의 projection graph의 타입으로 flag를 보정한다.
+            sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
+            sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MASK & sMyGraph->graph.left->flag;
+        }
+        else
+        {
+            sIndexCnt = sMyGraph->graph.myFrom->tableRef->tableInfo->indexCount;
+        }
     }
     else
     {
-        sIndexCnt = sMyGraph->graph.myFrom->tableRef->tableInfo->indexCount;
+        /* Nothing to do */
     }
-    
+
     //---------------------------------------------------
     // Subquery Graph 생성
     //---------------------------------------------------
@@ -407,24 +426,88 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     /* connectByCNF의 Predicate 분류 및 access method의 선택 */
     // Predicate 분류
-    IDE_TEST(
-        qmoCnfMgr::classifyPred4ConnectBy( aStatement,
-                                           sMyGraph->connectByCNF )
-        != IDE_SUCCESS );
+    if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+         == QMG_HIERARCHY_JOIN_FALSE )
+    {
+        IDE_TEST(
+            qmoCnfMgr::classifyPred4ConnectBy( aStatement,
+                                               sMyGraph->connectByCNF,
+                                               &sMyGraph->connectByCNF->depInfo )
+            != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST(
+            qmoCnfMgr::classifyPred4ConnectBy( aStatement,
+                                               sMyGraph->connectByCNF,
+                                               &sMyGraph->graph.myQuerySet->depInfo )
+            != IDE_SUCCESS );
+    }
 
+    sFindFrom = sMyGraph->graph.myFrom;
     // To Fix BUG-9050
     if ( sMyGraph->connectByCNF->oneTablePredicate != NULL )
     {
-        // Predicate 재배치
-        IDE_TEST(
-            qmoPred::relocatePredicate(
-                aStatement,
-                sMyGraph->connectByCNF->oneTablePredicate,
-                & sMyGraph->graph.depInfo,
-                & qtc::zeroDependencies,
-                sMyGraph->graph.myFrom->tableRef->statInfo,
-                & sMyGraph->connectByCNF->oneTablePredicate )
-            != IDE_SUCCESS );
+        if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+             == QMG_HIERARCHY_JOIN_FALSE )
+        {
+            // Predicate 재배치
+            IDE_TEST(
+                qmoPred::relocatePredicate(
+                    aStatement,
+                    sMyGraph->connectByCNF->oneTablePredicate,
+                    & sMyGraph->graph.depInfo,
+                    & qtc::zeroDependencies,
+                    sMyGraph->graph.myFrom->tableRef->statInfo,
+                    & sMyGraph->connectByCNF->oneTablePredicate )
+                != IDE_SUCCESS );
+        }
+        else
+        {
+            for ( sPredicate = sMyGraph->connectByCNF->oneTablePredicate;
+                  sPredicate != NULL;
+                  sPredicate = sPredicate->next )
+            {
+                IDE_TEST( searchTableID( sPredicate->node,
+                                         &sTableID,
+                                         &sFind )
+                          != IDE_SUCCESS );
+                if ( sFind == ID_TRUE )
+                {
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            sFind = ID_FALSE;
+            for ( sFrom = sMyGraph->graph.myFrom; sFrom != NULL; sFrom = sFrom->next )
+            {
+                IDE_TEST( searchFrom( sTableID, sFrom, &sFindFrom, &sFind )
+                          != IDE_SUCCESS );
+                if ( sFind == ID_TRUE )
+                {
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+
+            // Predicate 재배치
+            IDE_TEST(
+                qmoPred::relocatePredicate(
+                    aStatement,
+                    sMyGraph->connectByCNF->oneTablePredicate,
+                    & sMyGraph->graph.depInfo,
+                    & qtc::zeroDependencies,
+                    sFindFrom->tableRef->statInfo,
+                    & sMyGraph->connectByCNF->oneTablePredicate )
+                != IDE_SUCCESS );
+            sTableRef = sFindFrom->tableRef;
+        }
     }
     else
     {
@@ -438,7 +521,9 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     /* PROJ-2641 Hierarchy Index Support */
-    if ( sTableRef->view == NULL )
+    if ( ( sTableRef->view == NULL ) &&
+         ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+           == QMG_HIERARCHY_JOIN_FALSE ) )
     {
         if ( sMyGraph->mSelectedStartWithMethod == NULL )
         {
@@ -495,7 +580,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                       sMyGraph->graph.myPredicate,
                       & sMyGraph->graph.depInfo,
                       & qtc::zeroDependencies,
-                      sMyGraph->graph.myFrom->tableRef->statInfo,
+                      sFindFrom->tableRef->statInfo,
                       & sMyGraph->graph.myPredicate )
                   != IDE_SUCCESS );
     }
@@ -510,8 +595,10 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     //                       * selectivity
     // output page count = record size * output record count / page size
     //---------------------------------------------------
-
-    if ( sTableRef->view != NULL )
+ 
+    if ( ( sTableRef->view != NULL ) ||
+         ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+            == QMG_HIERARCHY_JOIN_TRUE ) )
     {
         // recordSize 설정
         sMyGraph->graph.costInfo.recordSize =
@@ -531,9 +618,18 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                       & sMyGraph->graph.costInfo.selectivity )
                   != IDE_SUCCESS );
 
-        // output Record Cnt 설정
-        sOutputRecordCnt = sInputRecordCnt * sInputRecordCnt *
-            sMyGraph->graph.costInfo.selectivity;
+        if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+             == QMG_HIERARCHY_JOIN_FALSE )
+        {
+            // output Record Cnt 설정
+            sOutputRecordCnt = sInputRecordCnt * sInputRecordCnt *
+                sMyGraph->graph.costInfo.selectivity;
+        }
+        else
+        {
+            sOutputRecordCnt = sInputRecordCnt * sMyGraph->graph.costInfo.selectivity;
+        }
+
         sOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
         sMyGraph->graph.costInfo.outputRecordCnt = sOutputRecordCnt;
@@ -630,7 +726,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-    
+
     return IDE_FAILURE;
 
 }
@@ -640,7 +736,12 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
                                         qmsTableRef * aTableRef,
                                         UInt          aIndexCnt )
 {
-    UInt  sSelectedScanHint = 0;
+    UInt          sSelectedScanHint = 0;
+    qmsTableRef * sTableRef         = NULL;
+    UShort        sTableID          = 0;
+    idBool        sFind             = ID_FALSE;
+    qmsFrom     * sFrom             = NULL;
+    qmsFrom     * sFindFrom         = NULL;
 
     IDU_FIT_POINT_FATAL( "qmgHierarchy::optimizeStartWith::__FT__" );
 
@@ -649,15 +750,65 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
     // start with의 access method 선택
     //---------------------------------------------------
 
-    // Predicate 분류
-    IDE_TEST(
-        qmoCnfMgr::classifyPred4StartWith( aStatement,
-                                           aMyGraph->startWithCNF )
-        != IDE_SUCCESS );
+    if ( ( aMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+         == QMG_HIERARCHY_JOIN_FALSE )
+    {
+        // Predicate 분류
+        IDE_TEST(
+            qmoCnfMgr::classifyPred4StartWith( aStatement,
+                                               aMyGraph->startWithCNF,
+                                               &aMyGraph->startWithCNF->depInfo )
+            != IDE_SUCCESS );
+    }
+    else
+    {
+        // Predicate 분류
+        IDE_TEST(
+            qmoCnfMgr::classifyPred4StartWith( aStatement,
+                                               aMyGraph->startWithCNF,
+                                               &aMyGraph->graph.myQuerySet->depInfo )
+            != IDE_SUCCESS );
+    }
 
     // To Fix BUG-9050
     if ( aMyGraph->startWithCNF->oneTablePredicate != NULL )
     {
+        if ( ( aMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+             == QMG_HIERARCHY_JOIN_FALSE )
+        {
+            sTableRef = aTableRef;
+        }
+        else
+        {
+            IDE_TEST( searchTableID( aMyGraph->startWithCNF->oneTablePredicate->node,
+                                     &sTableID,
+                                     &sFind )
+                      != IDE_SUCCESS );
+            sFind = ID_FALSE;
+
+            for ( sFrom = aMyGraph->graph.myFrom; sFrom != NULL; sFrom = sFrom->next )
+            {
+                IDE_TEST( searchFrom( sTableID, sFrom, &sFindFrom, &sFind )
+                          != IDE_SUCCESS );
+                if ( sFind == ID_TRUE )
+                {
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            if ( sFindFrom != NULL )
+            {
+                sTableRef = sFindFrom->tableRef;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
         // Predicate 재배치
         IDE_TEST(
             qmoPred::relocatePredicate(
@@ -665,12 +816,14 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
                 aMyGraph->startWithCNF->oneTablePredicate,
                 & aMyGraph->graph.depInfo,
                 & qtc::zeroDependencies,
-                aMyGraph->graph.myFrom->tableRef->statInfo,
+                sTableRef->statInfo,
                 & aMyGraph->startWithCNF->oneTablePredicate )
             != IDE_SUCCESS );
        
         /* PROJ-2641 Hierarchy Query Index Support */
-        if ( aTableRef->view == NULL )
+        if ( ( sTableRef->view == NULL ) &&
+             ( ( aMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+             == QMG_HIERARCHY_JOIN_FALSE ) )
         {
             // rid predicate 이 있는 경우 무조건 rid scan 을 시도한다.
             // rid predicate 이 있더라도  rid scan 을 할수 없는 경우도 있다.
@@ -689,7 +842,7 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
                 aMyGraph->mStartWithAccessMethod->methodSelectivity    = 0;
 
                 aMyGraph->mStartWithAccessMethod->totalCost = qmoCost::getTableRIDScanCost(
-                    aTableRef->statInfo,
+                    sTableRef->statInfo,
                     &aMyGraph->mStartWithAccessMethod->accessCost,
                     &aMyGraph->mStartWithAccessMethod->diskCost );
                 aMyGraph->mSelectedStartWithIdx = NULL;
@@ -703,7 +856,7 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
 
                 IDE_TEST( qmgSelection::getBestAccessMethod( aStatement,
                                                              & aMyGraph->graph,
-                                                             aTableRef->statInfo,
+                                                             sTableRef->statInfo,
                                                              aMyGraph->startWithCNF->oneTablePredicate,
                                                              aMyGraph->mStartWithAccessMethod,
                                                              & aMyGraph->mSelectedStartWithMethod,
@@ -899,7 +1052,9 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
         }
     }
 
-    if ( sMyGraph->graph.left == NULL )
+    if ( ( sMyGraph->graph.left == NULL ) &&
+         ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+           == QMG_HIERARCHY_JOIN_FALSE ) )
     {
         /* CNBY 노드의 생성 */
         sLeafInfo[0].predicate         = NULL;
@@ -932,7 +1087,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
                                            &sCNBY)
                   != IDE_SUCCESS );
         sMyGraph->graph.myPlan = sCNBY;
-        
+
         sSCANInfo.flag = QMO_SCAN_INFO_INITIALIZE;
         if ( ( sMyGraph->graph.flag & QMG_SELT_NOTNULL_KEYRANGE_MASK ) ==
              QMG_SELT_NOTNULL_KEYRANGE_TRUE )
@@ -1001,44 +1156,94 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
         sLeafInfo[1].nnfFilter         = NULL;
         sLeafInfo[1].forceIndexScan    = ID_FALSE;
 
-        IDE_TEST( qmoOneMtrPlan::initCNBY( aStatement,
-                                           sMyGraph->graph.myQuerySet,
-                                           sLeafInfo,
-                                           sMyGraph->myHierarchy->siblings,
-                                           sMyGraph->graph.myPlan ,
-                                           &sCNBY)
-                  != IDE_SUCCESS );
-        sMyGraph->graph.myPlan = sCNBY;
-
-        IDE_DASSERT( sMyGraph->graph.left->type == QMG_PROJECTION );
-
-        if ( sMyGraph->graph.left->myPlan == NULL )
+        if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+             == QMG_HIERARCHY_JOIN_FALSE )
         {
-            /* 항상 Memeory Temp Table 을 이용한다. */
-            sMyGraph->graph.left->flag &= ~QMG_GRAPH_TYPE_MASK;
-            sMyGraph->graph.left->flag |= QMG_GRAPH_TYPE_MEMORY;
-            IDE_TEST( sMyGraph->graph.left->makePlan(
-                          sMyGraph->graph.myFrom->tableRef->view,
-                          &sMyGraph->graph,
-                          sMyGraph->graph.left)
+            IDE_TEST( qmoOneMtrPlan::initCNBY( aStatement,
+                                               sMyGraph->graph.myQuerySet,
+                                               sLeafInfo,
+                                               sMyGraph->myHierarchy->siblings,
+                                               sMyGraph->graph.myPlan ,
+                                               &sCNBY)
                       != IDE_SUCCESS );
-
-            sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
         }
         else
         {
-            sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
+            IDE_TEST( qmoOneMtrPlan::initCNBYForJoin( aStatement,
+                                                      sMyGraph->graph.myQuerySet,
+                                                      sLeafInfo,
+                                                      sMyGraph->myHierarchy->siblings,
+                                                      sMyGraph->graph.myPlan ,
+                                                      &sCNBY )
+                      != IDE_SUCCESS );
+        }
+
+        sMyGraph->graph.myPlan = sCNBY;
+
+        if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+             == QMG_HIERARCHY_JOIN_FALSE )
+        {
+            IDE_DASSERT( sMyGraph->graph.left->type == QMG_PROJECTION );
+
+            if ( sMyGraph->graph.left->myPlan == NULL )
+            {
+                /* 항상 Memeory Temp Table 을 이용한다. */
+                sMyGraph->graph.left->flag &= ~QMG_GRAPH_TYPE_MASK;
+                sMyGraph->graph.left->flag |= QMG_GRAPH_TYPE_MEMORY;
+                IDE_TEST( sMyGraph->graph.left->makePlan(
+                              sMyGraph->graph.myFrom->tableRef->view,
+                              &sMyGraph->graph,
+                              sMyGraph->graph.left)
+                          != IDE_SUCCESS );
+
+                sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
+            }
+            else
+            {
+                sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
+            }
+        }
+        else
+        {
+            if ( sMyGraph->graph.left != NULL )
+            {
+                IDE_TEST( sMyGraph->graph.left->makePlan( aStatement ,
+                                                          &sMyGraph->graph,
+                                                          sMyGraph->graph.left )
+                          != IDE_SUCCESS);
+                sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
         }
     }
 
-    IDE_TEST( qmoOneMtrPlan::makeCNBY( aStatement,
-                                       sMyGraph->graph.myQuerySet,
-                                       sMyGraph->graph.myFrom,
-                                       &sLeafInfo[0],
-                                       &sLeafInfo[1],
-                                       sMyGraph->graph.myPlan ,
-                                       sCNBY)
-              != IDE_SUCCESS );
+    if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
+         == QMG_HIERARCHY_JOIN_FALSE )
+    {
+        IDE_TEST( qmoOneMtrPlan::makeCNBY( aStatement,
+                                           sMyGraph->graph.myQuerySet,
+                                           sMyGraph->graph.myFrom,
+                                           &sLeafInfo[0],
+                                           &sLeafInfo[1],
+                                           sMyGraph->graph.myPlan,
+                                           sCNBY)
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( qmoOneMtrPlan::makeCNBYForJoin( aStatement,
+                                                  sMyGraph->graph.myQuerySet,
+                                                  sMyGraph->myHierarchy->siblings,
+                                                  &sLeafInfo[0],
+                                                  &sLeafInfo[1],
+                                                  sMyGraph->graph.myPlan,
+                                                  sCNBY)
+                  != IDE_SUCCESS );
+
+    }
     sMyGraph->graph.myPlan = sCNBY;
 
     qmg::setPlanInfo( aStatement, sCNBY, &(sMyGraph->graph) );
@@ -1131,3 +1336,124 @@ qmgHierarchy::printGraph( qcStatement  * aStatement,
     
     return IDE_FAILURE;
 }
+
+IDE_RC qmgHierarchy::searchTableID( qtcNode * aNode,
+                                    UShort  * aTableID,
+                                    idBool  * aFind )
+{
+    if ( *aFind == ID_FALSE )
+    {
+        if ( aNode->node.module == &qtc::columnModule )
+        {
+            *aTableID = aNode->node.table;
+            if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK) ==
+                   QTC_NODE_PRIOR_EXIST )
+            {
+                *aFind = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            if ( aNode->node.arguments != NULL )
+            {
+                IDE_TEST( searchTableID( (qtcNode *)aNode->node.arguments,
+                                         aTableID,
+                                         aFind )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            if ( aNode->node.next != NULL )
+            {
+                IDE_TEST( searchTableID( (qtcNode *)aNode->node.next,
+                                         aTableID,
+                                         aFind )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgHierarchy::searchFrom( UShort     aTableID,
+                                 qmsFrom  * aFrom,
+                                 qmsFrom ** aFindFrom,
+                                 idBool   * aFind )
+{
+    qmsFrom * sFrom = aFrom;
+
+    if ( *aFind == ID_FALSE )
+    {
+        if ( sFrom->joinType == QMS_NO_JOIN )
+        {
+            if ( sFrom->tableRef->table == aTableID )
+            {
+                *aFindFrom = sFrom;
+                *aFind = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            if ( sFrom->left != NULL )
+            {
+                IDE_TEST( searchFrom( aTableID,
+                                      sFrom->left,
+                                      aFindFrom,
+                                      aFind )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            if ( sFrom->right != NULL )
+            {
+                IDE_TEST( searchFrom( aTableID,
+                                      sFrom->right,
+                                      aFindFrom,
+                                      aFind )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

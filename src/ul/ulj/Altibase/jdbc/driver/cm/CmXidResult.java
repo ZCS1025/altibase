@@ -35,7 +35,7 @@ public class CmXidResult extends CmResult
         return (Xid[])mXids.toArray(new Xid[0]);
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

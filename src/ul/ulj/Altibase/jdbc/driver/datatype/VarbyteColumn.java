@@ -23,16 +23,13 @@ public class VarbyteColumn extends CommonBinaryColumn
     VarbyteColumn()
     {
         super(LENGTH_SIZE_INT16);
+        addMappedJdbcTypeSet(AltibaseTypes.VARBYTE);
+        addMappedJdbcTypeSet(AltibaseTypes.BINARY);
     }
 
     public int getDBColumnType()
     {
         return ColumnTypes.VARBYTE;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.VARBYTE, AltibaseTypes.BINARY };
     }
 
     public String getDBColumnTypeName()

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smlLockMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smlLockMgr.cpp 84032 2018-09-19 05:32:05Z kclee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smlLockMgr.cpp                          *
@@ -306,11 +306,9 @@ smlFreeLockNodeFunc             smlLockMgr::mFreeLockNodeFunc;
 
 SInt**                  smlLockMgr::mPendingMatrix;
 SInt*                   smlLockMgr::mPendingArray;
-SInt*                   smlLockMgr::mPendingCount;
-SInt**                  smlLockMgr::mIndicesMatrix;
-SInt*                   smlLockMgr::mIndicesArray;
 idBool*                 smlLockMgr::mIsCycle;
 idBool*                 smlLockMgr::mIsChecked;
+idBool*                 smlLockMgr::mIsDetected;
 SInt*                   smlLockMgr::mDetectQueue;
 ULong*                  smlLockMgr::mSerialArray;
 ULong                   smlLockMgr::mPendSerial;
@@ -366,7 +364,9 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
                                     IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
                                     ID_FALSE,							/* ForcePooling */
                                     ID_TRUE,							/* GarbageCollection */
-                                    ID_TRUE ) != IDE_SUCCESS );			/* HWCacheLine */
+                                    ID_TRUE,                            /* HWCacheLine */
+                                    IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */) 
+              != IDE_SUCCESS);			
 
     // allocate transLock List array.
     mArrOfLockList = NULL;

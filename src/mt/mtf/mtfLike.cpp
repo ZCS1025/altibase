@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfLike.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfLike.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -523,6 +523,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfLikeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike,
     mtfExtractRange
 };
@@ -534,6 +535,7 @@ const mtcExecute mtfExecuteNormal = {
     mtf::calculateNA,
     mtfLikeCalculateNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike,
     mtfExtractRange
 };
@@ -545,6 +547,7 @@ const mtcExecute mtfExecute4Bit = {
     mtf::calculateNA,
     mtfLikeCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike,
     mtfExtractRange4Bit
 };
@@ -556,6 +559,7 @@ const mtcExecute mtfExecute4BitNormal = {
     mtf::calculateNA,
     mtfLikeCalculateNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike,
     mtfExtractRange4Bit
 };
@@ -568,8 +572,9 @@ const mtcExecute mtfExecuteMB = {
     mtf::calculateNA,
     mtfLikeCalculateMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike,
-    mtfExtractRange  // MB인 경우 mtfExtractRange안에서 분기함
+    mtfExtractRange   // MB인 경우 mtfExtractRange안에서 분기함
 };
 
 //fix for BUG-15930
@@ -580,8 +585,9 @@ const mtcExecute mtfExecuteMBNormal = {
     mtf::calculateNA,
     mtfLikeCalculateMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike,
-    mtfExtractRange  // MB인 경우 mtfExtractRange안에서 분기함
+    mtfExtractRange   // MB인 경우 mtfExtractRange안에서 분기함
 };
 
 // PROJ-1755
@@ -592,6 +598,7 @@ const mtcExecute mtfExecute4XlobLocator = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocator,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -604,6 +611,7 @@ const mtcExecute mtfExecute4XlobLocatorMB = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocatorMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -616,6 +624,7 @@ const mtcExecute mtfExecute4XlobLocatorNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocatorNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -628,6 +637,7 @@ const mtcExecute mtfExecute4XlobLocatorMBNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4XlobLocatorMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -640,8 +650,9 @@ const mtcExecute mtfExecute4Echar = {
     mtf::calculateNA,
     mtfLikeCalculate4Echar,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MB인 경우 mtfExtractRange안에서 분기함
+    mtfExtractRange4Echar   // MB인 경우 mtfExtractRange안에서 분기함
 };
 
 const mtcExecute mtfExecute4EcharMB = {
@@ -651,8 +662,9 @@ const mtcExecute mtfExecute4EcharMB = {
     mtf::calculateNA,
     mtfLikeCalculate4EcharMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MB인 경우 mtfExtractRange안에서 분기함
+    mtfExtractRange4Echar   // MB인 경우 mtfExtractRange안에서 분기함
 };
 
 // PROJ-2002 Column Security
@@ -663,8 +675,9 @@ const mtcExecute mtfExecute4EcharNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4EcharNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MB인 경우 mtfExtractRange안에서 분기함
+    mtfExtractRange4Echar   // MB인 경우 mtfExtractRange안에서 분기함
 };
 
 const mtcExecute mtfExecute4EcharMBNormal = {
@@ -674,8 +687,9 @@ const mtcExecute mtfExecute4EcharMBNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4EcharMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeDefaultLike4Echar,
-    mtfExtractRange4Echar  // MB인 경우 mtfExtractRange안에서 분기함
+    mtfExtractRange4Echar   // MB인 경우 mtfExtractRange안에서 분기함
 };
 
 /* PROJ-1530 PSM/Trigger에서 LOB 데이타 타입 지원 */
@@ -686,6 +700,7 @@ const mtcExecute mtfExecute4ClobValue = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValue,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -698,6 +713,7 @@ const mtcExecute mtfExecute4ClobValueMB = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValueMB,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -710,6 +726,7 @@ const mtcExecute mtfExecute4ClobValueNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValueNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };
@@ -722,6 +739,7 @@ const mtcExecute mtfExecute4ClobValueMBNormal = {
     mtf::calculateNA,
     mtfLikeCalculate4ClobValueMBNormal,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,  // lob은 index가 없음
     mtk::extractRangeNA
 };

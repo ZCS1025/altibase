@@ -636,6 +636,8 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
     {
         // Memory TableSpace의 경우는 Index와 Lob Column TableSpace가
         // 테이블과 동일하기 때문에 고려하지 않는다.
+        IDE_DASSERT( ( sctTableSpaceMgr::isMemTableSpace( sTableTBSID ) == ID_TRUE ) ||
+                     ( sctTableSpaceMgr::isVolatileTableSpace( sTableTBSID ) == ID_TRUE ) );
     }
 
     return IDE_SUCCESS;
@@ -1737,30 +1739,27 @@ void sctTableSpaceMgr::findNextSpaceNode( void  *aCurrSpaceNode,
  **********************************************************************/
 smiTBSLocation sctTableSpaceMgr::getTBSLocation( scSpaceID aSpaceID )
 {
-    smiTBSLocation  sTBSLocation    = SMI_TBS_LOCATION_MAX;
-    UInt            sType           = 0;
-
-    (void)sctTableSpaceMgr::getTableSpaceType( aSpaceID,
-                                               &sType );
+    smiTBSLocation  sTBSLocation;
+    UInt            sType        = sctTableSpaceMgr::getTableSpaceType( aSpaceID );
 
     switch( sType & SMI_TBS_LOCATION_MASK )
     {
-        case SMI_TBS_LOCATION_MEMORY:
-            sTBSLocation = SMI_TBS_MEMORY;
-            break;
         case SMI_TBS_LOCATION_DISK:
             sTBSLocation = SMI_TBS_DISK;
+            break;
+        case SMI_TBS_LOCATION_MEMORY:
+            sTBSLocation = SMI_TBS_MEMORY;
             break;
         case SMI_TBS_LOCATION_VOLATILE:
             sTBSLocation = SMI_TBS_VOLATILE;
             break;
         default:
             /* 위 타입 중 하나여야 함 */
-            IDE_ASSERT( 0 );
-            // break;
+            sTBSLocation = SMI_TBS_NONE;
+           break;
     }
 
-    return sTBSLocation;;
+    return sTBSLocation;
 }
 
 /**********************************************************************
@@ -1786,54 +1785,6 @@ idBool sctTableSpaceMgr::isSystemTableSpace( scSpaceID aSpaceID )
     return sIsSystemSpace;
 }
 
-/**********************************************************************
- * Description :
- **********************************************************************/
-idBool sctTableSpaceMgr::isUndoTableSpace( scSpaceID aSpaceID )
-{
-
-    idBool             sIsUndoSpace;
-    sctTableSpaceNode *sSpaceNode;
-
-    sSpaceNode = mSpaceNodeArray[aSpaceID];
-
-    IDE_ASSERT( sSpaceNode != NULL );
-
-    if ( sSpaceNode->mType == SMI_DISK_SYSTEM_UNDO )
-    {
-        sIsUndoSpace = ID_TRUE;
-    }
-    else
-    {
-        sIsUndoSpace = ID_FALSE;
-    }
-
-    return sIsUndoSpace;
-
-}
-
-/**********************************************************************
- * Description :
- **********************************************************************/
-idBool sctTableSpaceMgr::isTempTableSpace( scSpaceID aSpaceID )
-{
-    idBool  sIsTempSpace;
-    UInt    sType   = 0;
-
-    (void)sctTableSpaceMgr::getTableSpaceType( aSpaceID,
-                                               &sType );
-
-    if ( (sType & SMI_TBS_TEMP_MASK) == SMI_TBS_TEMP_YES )
-    {
-        sIsTempSpace = ID_TRUE;
-    }
-    else
-    {
-        sIsTempSpace = ID_FALSE;
-    }
-
-    return sIsTempSpace;
-}
 
 /**********************************************************************
  * Description :
@@ -1936,14 +1887,20 @@ IDE_RC  sctTableSpaceMgr::getDataFileNodeByName( SChar            * aFileName,
         {
             continue;
         }
+
         if ( isMemTableSpace(i) == ID_TRUE )
         {
             continue;
         }
-        if ( isVolatileTableSpace(i) == ID_TRUE )
+        else if ( isVolatileTableSpace(i) == ID_TRUE )
         {
             continue;
         }
+        else 
+        {
+            IDE_ERROR(isDiskTableSpace(i) == ID_TRUE );
+        }
+
         if ( SMI_TBS_IS_DROPPED(sSpaceNode->mState) )
         {
             continue;
@@ -2124,6 +2081,10 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
         IDE_TEST( unlock() != IDE_SUCCESS );
 
         IDE_CONT( CONT_RUN_PENDING );
+    }
+    else
+    {
+        IDE_ERROR( isDiskTableSpace(sPendingOp->mSpaceID )  == ID_TRUE );
     }
 
     // 불필요한 DIFF를 발생시키지 않게 하기 위해 indending하지 않음

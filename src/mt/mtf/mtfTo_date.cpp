@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_date.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfTo_date.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -74,6 +74,7 @@ const mtcExecute mtfExecuteFor1Arg = {
     mtf::calculateNA,
     mtfTo_dateCalculateFor1Arg,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -85,6 +86,7 @@ const mtcExecute mtfExecuteFor2Args = {
     mtf::calculateNA,
     mtfTo_dateCalculateFor2Args,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -29,7 +29,7 @@ public class CmConnectExResult extends CmResult
     {
     }
     
-    byte getResultOp()
+    protected byte getResultOp()
     {
         return MY_OP;
     }

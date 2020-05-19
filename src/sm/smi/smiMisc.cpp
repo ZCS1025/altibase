@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smiMisc.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smiMisc.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
  **********************************************************************/
 
 #include <idCore.h>
@@ -610,18 +610,16 @@ IDE_RC smiGetTableNullRow( const void * aTable,
     sTableHeader = (smcTableHeader*)SMI_MISC_TABLE_HEADER(aTable);
     sTableType   = SMI_GET_TABLE_TYPE( sTableHeader );
 
-    IDE_ASSERT( sTableType != SMI_TABLE_DISK );
-
     if ( (sTableType == SMI_TABLE_MEMORY) ||
-         (sTableType == SMI_TABLE_META)   ||
-         (sTableType == SMI_TABLE_VOLATILE) )
+         (sTableType == SMI_TABLE_META) )
     {
         if ( sTableHeader->mNullOID != SM_NULL_OID )
         {
-            IDE_ASSERT( sgmManager::getOIDPtr( sTableHeader->mSpaceID,
-                                               sTableHeader->mNullOID, 
-                                               aRow )
+            IDE_ERROR( smmManager::getOIDPtr( sTableHeader->mSpaceID,
+                                              sTableHeader->mNullOID, 
+                                              aRow )
                         == IDE_SUCCESS );
+
             SC_MAKE_GRID( *aRowGRID,
                           smcTable::getTableSpaceID(sTableHeader),
                           SM_MAKE_PID(sTableHeader->mNullOID),
@@ -632,7 +630,26 @@ IDE_RC smiGetTableNullRow( const void * aTable,
             SC_MAKE_NULL_GRID( *aRowGRID );
         }
     }
-    else
+    else if ( sTableType == SMI_TABLE_VOLATILE )  
+    {
+        if ( sTableHeader->mNullOID != SM_NULL_OID )
+        {
+            IDE_ERROR( svmManager::getOIDPtr( sTableHeader->mSpaceID,
+                                               sTableHeader->mNullOID, 
+                                               aRow )
+                        == IDE_SUCCESS );
+
+            SC_MAKE_GRID( *aRowGRID,
+                          smcTable::getTableSpaceID(sTableHeader),
+                          SM_MAKE_PID(sTableHeader->mNullOID),
+                          SM_MAKE_OFFSET(sTableHeader->mNullOID) );
+        }
+        else
+        {
+            SC_MAKE_NULL_GRID( *aRowGRID );
+        }
+    }
+    else if ( sTableType == SMI_TABLE_FIXED )
     {
         /* ------------------------------------------------
          * Fixed Table의 경우 Null Row를 smiFixedTableHeader의 mNullRow에 저장한다.
@@ -646,8 +663,17 @@ IDE_RC smiGetTableNullRow( const void * aTable,
 
         IDE_DASSERT( *aRow != NULL );
     }
+    else 
+    {
+        // sTableType == SMI_TABLE_DISK
+        IDE_ASSERT ( 0 );
+    }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 UInt smiGetTableFlag(const void * aTable)
@@ -1451,6 +1477,8 @@ IDE_RC smiValidateAndLockObjects( smiTrans           * aTrans,
 
     IDE_TEST( sLocked == ID_FALSE );
 
+    IDU_FIT_POINT("smiValidateAndLockObjects::_FT_");
+
     SMX_GET_SCN_AND_TID( ((smpSlotHeader*)aTable)->mCreateSCN, sSCN, sTID );
 
     IDE_TEST( smiValidateObjects( aTable, aSCN ) != IDE_SUCCESS );
@@ -1765,9 +1793,10 @@ idBool smiIsReplicationLogging()
   FOR A4 :
       TableSpace별로 Size를 알아내기 위해 id 인자를 추가
 */
+#if 0 //not used
 ULong smiTBSSize( scSpaceID aTableSpaceID )
 {
-    ULong sPageCnt;
+    ULong sPageCnt = 0;
     void * sTBSNode;
 
     if ( sctTableSpaceMgr::isMemTableSpace( aTableSpaceID ) == ID_TRUE )
@@ -1788,7 +1817,7 @@ ULong smiTBSSize( scSpaceID aTableSpaceID )
 
         return ((svmTBSNode*)sTBSNode)->mMemBase.mAllocPersPageCount * SM_PAGE_SIZE;
     }
-    else // Disk Table Spaces
+    else if ( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE )
     {
         // sddTableSpace의 getTableSpaceSize 함수를 호출후 리턴.
 
@@ -1799,7 +1828,12 @@ ULong smiTBSSize( scSpaceID aTableSpaceID )
 
         return sPageCnt * SD_PAGE_SIZE;
     }
+    else
+    {
+        return sPageCnt;
+    }
 }
+#endif
 
 // smiAPI function
 // callback for gSmiGlobalBackList.XXXEmergencyFunc.
@@ -2529,6 +2563,8 @@ void * smiGetCompressionColumnFromOID( smOID           * aCompressionRowOID,
     }
     else
     {
+        IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( aColumn->colSpace ) == ID_TRUE );
+
         sTableSpaceID = aColumn->colSpace;
     }
 

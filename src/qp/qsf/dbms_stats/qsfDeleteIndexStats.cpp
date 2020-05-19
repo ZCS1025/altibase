@@ -78,6 +78,7 @@ static const mtcExecute qsfExecute = {
     mtf::calculateNA,
     qsfCalculate_DeleteIndexStats,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

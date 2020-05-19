@@ -47,6 +47,7 @@ static const mtcExecute sdfExecute = {
     mtf::calculateNA,
     sdfCalculate_ShardNodeName,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfGreaterEqualAll.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfGreaterEqualAll.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -94,6 +94,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfGreaterEqualAllCalculateSelect,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };
@@ -105,6 +106,7 @@ static const mtcExecute mtfExecuteSubquery = {
     mtf::calculateNA,
     mtfGreaterEqualAllCalculateSubquery,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

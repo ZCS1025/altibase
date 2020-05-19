@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfConv_tz.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfConv_tz.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -63,6 +63,7 @@ const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfConvertTimezoneCalculate,
     NULL,
+    mtx::calculateNA,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

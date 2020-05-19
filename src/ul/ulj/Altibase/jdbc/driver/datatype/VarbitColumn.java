@@ -23,6 +23,7 @@ public class VarbitColumn extends CommonBitColumn
     VarbitColumn()
     {
         super();
+        addMappedJdbcTypeSet(AltibaseTypes.VARBIT);
     }
 
     public VarbitColumn(int aPrecision)
@@ -33,11 +34,6 @@ public class VarbitColumn extends CommonBitColumn
     public int getDBColumnType()
     {
         return ColumnTypes.VARBIT;
-    }
-
-    public int[] getMappedJDBCTypes()
-    {
-        return new int[] { AltibaseTypes.VARBIT };
     }
 
     public String getDBColumnTypeName()

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smuHash.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smuHash.cpp 84032 2018-09-19 05:32:05Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -146,7 +146,9 @@ IDE_RC smuHash::initialize(smuHashBase    *aBase,
                                IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,		/* AlignByte */
                                ID_FALSE,							/* ForcePooling */
                                ID_TRUE,								/* GarbageCollection */
-                               ID_TRUE) != IDE_SUCCESS);			/* HWCacheLine */
+                               ID_TRUE,                             /* HWCacheLine */
+                               IDU_MEMPOOL_TYPE_LEGACY              /* mempool type */) 
+             != IDE_SUCCESS);			
     aBase->mMemPool = (void *)sPool;
 
     /* TC/FIT/Limit/sm/smu/smuHash_initialize_malloc2.sql */

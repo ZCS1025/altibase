@@ -31,6 +31,8 @@
 #include <qcsModule.h>
 #include <qcg.h>
 
+extern mtdModule mtdInteger;
+
 // 0 : 비교필요
 // 1 or -1 : 1은 첫번째가 큰거, -1은 두번째가 큰거
 // 2 : 비교필요없이 서로 같음
@@ -102,6 +104,7 @@ IDE_RC qmoPartition::optimizeInto( qcStatement  * aStatement,
         case QCM_PARTITION_METHOD_RANGE:
         case QCM_PARTITION_METHOD_LIST:
         case QCM_PARTITION_METHOD_HASH:
+        case QCM_PARTITION_METHOD_RANGE_USING_HASH:
             {
                 IDE_TEST( makePartitions( aStatement,
                                           aTableRef )
@@ -193,9 +196,9 @@ IDE_RC qmoPartition::makePartitions(
     UInt               sLoopCount = 0;
 
     smiStatement       sSmiStmt;
-    smiStatement     * sSmiStmtOri  = NULL;
+    smiStatement     * sSmiStmtOri; /* BUG-45994 - 컴파일러 최적화 회피 */
     UInt               sSmiStmtFlag = 0;
-    idBool             sIsBeginStmt = ID_FALSE;
+    volatile idBool    sIsBeginStmt;
 
     IDE_FT_BEGIN();
 
@@ -211,7 +214,7 @@ IDE_RC qmoPartition::makePartitions(
     qcg::getSmiStmt( aStatement, &sSmiStmtOri );
     qcg::setSmiStmt( aStatement, &sSmiStmt );
 
-    IDU_FIT_POINT_FATAL( "qmoPartition::makePartitions::__FT__::STAGE1" );
+    sIsBeginStmt = ID_FALSE; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     // 이미 파티션이 생성된 적이 있다면
     // partitionRef를 NULL로 세팅하여 새로 만들게 한다.
@@ -239,6 +242,9 @@ IDE_RC qmoPartition::makePartitions(
                                        sSmiStmtFlag )
                        != IDE_SUCCESS);
         sIsBeginStmt = ID_TRUE;
+
+        /* BUG-45994 */
+        IDU_FIT_POINT_FATAL( "qmoPartition::makePartitions::__FT__::STAGE1" );
 
         IDE_TEST( qcmPartition::getPartitionCount( aStatement,
                                                    aTableRef->tableInfo->tableID,
@@ -637,6 +643,94 @@ SInt qmoPartition::compareRangePartition(
     return sRet;
 }
 
+/* BUG-46065 support range using hash */
+SInt qmoPartition::compareRangeUsingHashPartition( qmsPartCondValList * aComp1,
+                                                   qmsPartCondValList * aComp2 )
+{
+    mtdCompareFunc sCompare;
+    SInt           sRet;
+    SInt           sCompareType;
+    SInt           sCompRet;
+    UInt           sKeyColIter;
+    mtdValueInfo   sValueInfo1;
+    mtdValueInfo   sValueInfo2;
+
+    sCompareType = mCompareCondValType[aComp1->partCondValType][aComp2->partCondValType];
+
+    sKeyColIter = 0;
+
+    if ( sCompareType == 0 )
+    {
+        while ( 1 )
+        {
+            sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+
+            sValueInfo1.column = NULL;
+            sValueInfo1.value  = aComp1->partCondValues[sKeyColIter];
+            sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+            sValueInfo2.column = NULL;
+            sValueInfo2.value  = aComp2->partCondValues[sKeyColIter];
+            sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+            sCompRet = sCompare( &sValueInfo1, &sValueInfo2 );
+
+            if ( sCompRet < 0 )
+            {
+                sRet = -1;
+                break;
+            }
+            else if ( sCompRet == 0 )
+            {
+                sKeyColIter++;
+
+                if ( ( sKeyColIter < aComp1->partCondValCount ) &&
+                     ( sKeyColIter < aComp2->partCondValCount ) )
+                {
+                    continue;
+                }
+                else if ( ( sKeyColIter == aComp1->partCondValCount ) &&
+                          ( sKeyColIter == aComp2->partCondValCount ) )
+                {
+                    sRet = 0;
+                    break;
+                }
+                else if ( sKeyColIter == aComp1->partCondValCount )
+                {
+                    sRet = -1;
+                    break;
+                }
+                else
+                {
+                    sRet = 1;
+                    break;
+                }
+            }
+            else
+            {
+                sRet = 1;
+                break;
+            }
+        }
+    }
+    else
+    {
+        // 2는 비교할거없이 서로 같은 경우
+        if ( sCompareType == 2 )
+        {
+            sRet = 0;
+        }
+        else
+        {
+            // -1 또는 1, 비교할거없이 서로 크거나 작거나 한 경우
+            // 그대로 comparetype을 대응시킴.
+            sRet = sCompareType;
+        }
+    }
+
+    return sRet;
+}
+
 idBool qmoPartition::compareListPartition(
     qcmColumn          * aKeyColumn,
     qmsPartCondValList * aPartKeyCondVal,
@@ -776,6 +870,7 @@ IDE_RC qmoPartition::partitionFilteringWithRow(
  ***********************************************************************/
 
     qmsPartCondValList sPartCondVal;
+    qmsPartCondValList sPartCondVal2;
     UInt               sPartOrder;
 
     IDU_FIT_POINT_FATAL( "qmoPartition::partitionFilteringWithRow::__FT__" );
@@ -845,7 +940,29 @@ IDE_RC qmoPartition::partitionFilteringWithRow(
                       != IDE_SUCCESS );
         }
         break;
+        /* BUG-46065 support range using hash */
+        case QCM_PARTITION_METHOD_RANGE_USING_HASH:
+        {
+            IDE_TEST( getPartCondValuesFromRow( aTableRef->tableInfo->partKeyColumns,
+                                                aValues,
+                                                &sPartCondVal )
+                      != IDE_SUCCESS );
 
+            IDE_TEST( getPartOrder( aTableRef->tableInfo->partKeyColumns,
+                                    QMO_RANGE_USING_HASH_MAX_VALUE,
+                                    & sPartCondVal,
+                                    & sPartOrder )
+                      != IDE_SUCCESS );
+            sPartCondVal2.partCondValCount = 1;
+            sPartCondVal2.partCondValType  = QMS_PARTCONDVAL_NORMAL;
+            sPartCondVal2.partCondValues[0] = &sPartOrder;
+
+            IDE_TEST( rangeUsingHashPartitionFilteringWithValues( aTableRef,
+                                                                  &sPartCondVal2,
+                                                                  aSelectedPartitionRef )
+                      != IDE_SUCCESS );
+        }
+        break;
         case QCM_PARTITION_METHOD_NONE:
             // non-partitioned table.
             // Nothing to do.
@@ -920,6 +1037,60 @@ IDE_RC qmoPartition::rangePartitionFilteringWithValues(
 //                             "INSERT RANGE PARTITION FILTERING, tableID: %d,partitionID: %d\n",
 //                             aTableRef->tableInfo->tableID,
 //                             sCurrRef->partitionID );
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+
+    IDE_TEST_RAISE( *aSelectedPartitionRef == NULL,
+                    ERR_NO_MATCH_PARTITION );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_NO_MATCH_PARTITION);
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMV_INVALID_PARTITION_KEY_INSERT));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::rangeUsingHashPartitionFilteringWithValues( qmsTableRef        * aTableRef,
+                                                                 qmsPartCondValList * aPartCondVal,
+                                                                 qmsPartitionRef   ** aSelectedPartitionRef )
+{
+    qmsPartitionRef * sCurrRef;
+    SInt              sRet;
+
+    *aSelectedPartitionRef = NULL;
+
+    for ( sCurrRef  = aTableRef->partitionRef;
+          sCurrRef != NULL;
+          sCurrRef  = sCurrRef->next )
+    {
+        sRet = compareRangeUsingHashPartition( &sCurrRef->maxPartCondVal,
+                                               aPartCondVal );
+
+        if ( sRet == 1 )
+        {
+            // max partition key보다 작은 경우.
+            sRet = compareRangeUsingHashPartition( &sCurrRef->minPartCondVal,
+                                                   aPartCondVal );
+
+            if ( (sRet == 0) || (sRet == -1) )
+            {
+                // min partition key와 같거나 큰 경우
+                *aSelectedPartitionRef = sCurrRef;
                 break;
             }
             else
@@ -1433,8 +1604,6 @@ qmoPartition::makeHashKeyFromPartKeyRange(
     UInt                 sTargetArgCount;
     UInt                 sHashVal = mtc::hashInitialValue;
     mtkRangeCallBack   * sData;
-    iduVarMemListStatus  sMemStatus;
-    UInt                 sStage = 0;
     mtvConvert         * sConvert;
 
     mtcColumn          * sDestColumn;
@@ -1442,9 +1611,14 @@ qmoPartition::makeHashKeyFromPartKeyRange(
     void               * sDestCanonizedValue;
     UInt                 sErrorCode;
 
+    volatile iduVarMemListStatus sMemStatus;
+    volatile UInt                sStage;
+
     IDE_FT_BEGIN();
 
     IDU_FIT_POINT_FATAL( "qmoPartition::makeHashKeyFromPartKeyRange::__FT__" );
+
+    sStage = 0; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     // 적합성 검사.
     // keyrange는 composite가 아님.
@@ -1464,8 +1638,11 @@ qmoPartition::makeHashKeyFromPartKeyRange(
              sData != NULL;
              sData  = sData->next )
         {
-            IDE_TEST( aMemory-> getStatus( & sMemStatus ) != IDE_SUCCESS );
+            IDE_TEST( aMemory-> getStatus( (iduVarMemListStatus *) & sMemStatus ) != IDE_SUCCESS );
             sStage = 1;
+
+            /* BUG-45994 */
+            IDU_FIT_POINT_FATAL( "qmoPartition::makeHashKeyFromPartKeyRange::__FT__::STAGE1" );
 
             if( ( sData->compare == mtk::compareMaximumLimit4Mtd ) ||
                 ( sData->compare == mtk::compareMaximumLimit4Stored ) )
@@ -1565,7 +1742,7 @@ qmoPartition::makeHashKeyFromPartKeyRange(
                                                        sDestValue );
 
             sStage = 0;
-            IDE_TEST( aMemory-> setStatus( & sMemStatus ) != IDE_SUCCESS );
+            IDE_TEST( aMemory-> setStatus( (iduVarMemListStatus *) & sMemStatus ) != IDE_SUCCESS );
         } // end for
     }
     else
@@ -1590,7 +1767,7 @@ qmoPartition::makeHashKeyFromPartKeyRange(
     switch( sStage )
     {
         case 1 :
-            if ( aMemory-> setStatus( &sMemStatus ) != IDE_SUCCESS )
+            if ( aMemory-> setStatus( (iduVarMemListStatus *) & sMemStatus ) != IDE_SUCCESS )
             {
                 IDE_ERRLOG(IDE_QP_1);
             }
@@ -1650,10 +1827,6 @@ qmoPartition::makeHashKeyFromPartKeyRange(
     void               * sDestValue;
     void               * sDestCanonizedValue;
     UInt                 sErrorCode;
-
-    IDE_FT_BEGIN();
-
-    IDU_FIT_POINT_FATAL( "qmoPartition::makeHashKeyFromPartKeyRange::__FT__" );
 
     // 적합성 검사.
     // keyrange는 composite가 아님.
@@ -1780,17 +1953,9 @@ qmoPartition::makeHashKeyFromPartKeyRange(
 
     aPartKeyRange->minimum.mHashVal = sHashVal;
 
-    IDE_FT_END();
-
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION_SIGNAL()
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
-    }
     IDE_EXCEPTION_END;
-
-    IDE_FT_EXCEPTION_BEGIN();
 
     switch( sStage )
     {
@@ -1802,11 +1967,6 @@ qmoPartition::makeHashKeyFromPartKeyRange(
     }
 
     *aIsValidHashVal = ID_FALSE;
-
-    /* PROJ-2617 [안정성] QP - PVO에서의 안정성 향상
-     *  - 다중 반환구문을 지닌 경우로, 여러 반환구문 상위에서 IDE_FT_EXCEPTION_END를 호출한다.
-     */
-    IDE_FT_EXCEPTION_END();
 
     sErrorCode = ideGetErrorCode();
 
@@ -1911,7 +2071,15 @@ qmoPartition::partitionPruningWithKeyRange(
                       != IDE_SUCCESS );
         }
         break;
-
+        /* BUG-46065 support range using hash */
+        case QCM_PARTITION_METHOD_RANGE_USING_HASH:
+        {
+            IDE_TEST( rangeUsinghashPartitionPruningWithKeyRange( aStatement,
+                                                                  aTableRef,
+                                                                  aPartKeyRange )
+                      != IDE_SUCCESS );
+        }
+        break;
         default:
             IDE_DASSERT(0);
             break;
@@ -2196,7 +2364,19 @@ qmoPartition::partitionFilteringWithPartitionFilter(
                           != IDE_SUCCESS );
             }
             break;
-
+        /* BUG-46065 support range using hash */
+        case QCM_PARTITION_METHOD_RANGE_USING_HASH:
+            {
+                IDE_TEST( rangeUsingHashFilteringWithPartitionFilter( aStatement,
+                                                                      aRangeSortedChildrenArray,
+                                                                      aRangeIntersectCountArray,
+                                                                      aSelectedPartitionCount,
+                                                                      aPartFilter,
+                                                                      aSelectedChildrenArea,
+                                                                      aSelectedChildrenCount )
+                          != IDE_SUCCESS );
+            }
+            break;
         default:
             IDE_DASSERT(0);
             break;
@@ -2672,6 +2852,31 @@ compareRangePartChildren( const void* aElem1, const void* aElem2 )
     return sRet;
 }
 
+/* BUG-46065 support range using hash */
+extern "C" SInt compareRangeHashPartChildren( const void * aElem1, const void * aElem2 )
+{
+    qmnRangeSortedChildren * sComp1;
+    qmnRangeSortedChildren * sComp2;
+    qmsPartitionRef        * sPartitionRef1;
+    qmsPartitionRef        * sPartitionRef2;
+    SInt                     sRet = 0;
+
+    sComp1 = (qmnRangeSortedChildren*)aElem1;
+    sComp2 = (qmnRangeSortedChildren*)aElem2;
+
+    IDE_DASSERT( sComp1 != NULL );
+    IDE_DASSERT( sComp2 != NULL );
+
+    sPartitionRef1 = ((qmncSCAN*)(sComp1->children->childPlan))->partitionRef;
+    sPartitionRef2 = ((qmncSCAN*)(sComp2->children->childPlan))->partitionRef;
+
+    /* PROJ-2446 ONE SOURCE */
+    sRet = qmoPartition::compareRangeUsingHashPartition( &sPartitionRef1->minPartCondVal,
+                                                         &sPartitionRef2->minPartCondVal );
+
+    return sRet;
+}
+
 IDE_RC qmoPartition::sortPartitionRef(
                 qmnRangeSortedChildren * aRangeSortedChildrenArray,
                 UInt                     aPartitionCount)
@@ -2683,6 +2888,19 @@ IDE_RC qmoPartition::sortPartitionRef(
                   aPartitionCount,
                   ID_SIZEOF(qmnRangeSortedChildren),
                   compareRangePartChildren );
+
+    return IDE_SUCCESS;
+}
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::sortRangeHashPartitionRef( qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                                UInt                     aPartitionCount )
+{
+    /* PROJ-2446 ONE SOURCE */
+    idlOS::qsort( aRangeSortedChildrenArray,
+                  aPartitionCount,
+                  ID_SIZEOF(qmnRangeSortedChildren),
+                  compareRangeHashPartChildren );
 
     return IDE_SUCCESS;
 }
@@ -2813,7 +3031,7 @@ SInt qmoPartition::comparePartMinRangeMin( qmsPartCondValList * aMinPartCondVal,
             // key range compare에서는 fixed compare를 호출하므로
             // offset을 0으로 변경한다.
             sData->columnDesc.column.offset = 0;
-           
+
             sValueInfo1.column = &(sData->columnDesc);
             sValueInfo1.value  = aMinPartCondVal->partCondValues[i];
             sValueInfo1.flag   = MTD_OFFSET_USELESS;
@@ -3517,3 +3735,958 @@ void qmoPartition::partitionFilterLE( qmnRangeSortedChildren * aRangeSortedChild
         aRangeIntersectCountArray[i]++;        
     }
 }
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::makeHashKeyForRangePruning( qcStatement        * aStatement,
+                                                 mtkRangeCallBack   * aData,
+                                                 UInt               * aHashValue )
+{
+    iduVarMemList      * sMemory;
+    void               * sSourceValue;
+    UInt                 sTargetArgCount;
+    UInt                 sHashVal = mtc::hashInitialValue;
+    iduVarMemListStatus  sMemStatus;
+    volatile UInt        sStage;
+    mtvConvert         * sConvert;
+    mtcColumn          * sDestColumn;
+    void               * sDestValue;
+    void               * sDestCanonizedValue;
+
+    IDE_FT_BEGIN();
+
+    sStage = 0;
+    sMemory = QC_QMP_MEM( aStatement );
+
+    IDE_TEST( sMemory->getStatus( &sMemStatus ) != IDE_SUCCESS );
+    sStage = 1;
+
+    if ( ( aData->compare == mtk::compareMaximumLimit4Mtd ) ||
+         ( aData->compare == mtk::compareMaximumLimit4Stored ) )
+    {
+        sDestValue = aData->columnDesc.module->staticNull;
+        // is null인 경우임.
+    }
+    else
+    {
+        if ( aData->columnDesc.type.dataTypeId !=
+             aData->valueDesc.type.dataTypeId )
+        {
+            // PROJ-2002 Column Security
+            // echar, evarchar는 동일 group이 아니므로 들어올 수 없다.
+            IDE_DASSERT(
+                (aData->columnDesc.type.dataTypeId != MTD_ECHAR_ID) &&
+                (aData->columnDesc.type.dataTypeId != MTD_EVARCHAR_ID) &&
+                (aData->valueDesc.type.dataTypeId != MTD_ECHAR_ID) &&
+                (aData->valueDesc.type.dataTypeId != MTD_EVARCHAR_ID) );
+
+            sSourceValue = (void*)mtc::value( &(aData->valueDesc),
+                                              aData->value,
+                                              MTD_OFFSET_USE );
+
+            sTargetArgCount = aData->columnDesc.flag &
+                MTC_COLUMN_ARGUMENT_COUNT_MASK;
+
+            IDE_TEST( mtv::estimateConvert4Server( sMemory,
+                                                   & sConvert,
+                                                   aData->columnDesc.type,
+                                                   aData->valueDesc.type,
+                                                   sTargetArgCount,
+                                                   aData->columnDesc.precision,
+                                                   aData->valueDesc.scale,
+                                                   & QC_SHARED_TMPLATE( aStatement )->tmplate )
+                      != IDE_SUCCESS );
+
+            // source value pointer
+            sConvert->stack[sConvert->count].value = sSourceValue;
+
+            sDestColumn = sConvert->stack[0].column;
+            sDestValue  = sConvert->stack[0].value;
+
+            IDE_TEST( mtv::executeConvert( sConvert,
+                                           & QC_SHARED_TMPLATE( aStatement )->tmplate)
+                      != IDE_SUCCESS);
+
+            if ( ( aData->columnDesc.module->flag & MTD_CANON_MASK )
+                 == MTD_CANON_NEED )
+            {
+                sDestCanonizedValue = sDestValue;
+
+                IDE_TEST( aData->columnDesc.module->canonize( &( aData->columnDesc ),
+                                                              & sDestCanonizedValue,
+                                                              NULL,
+                                                              sDestColumn,
+                                                              sDestValue,
+                                                              NULL,
+                                                              & QC_SHARED_TMPLATE( aStatement )->tmplate )
+                          != IDE_SUCCESS );
+
+                sDestValue = sDestCanonizedValue;
+            }
+            else if ( ( aData->columnDesc.module->flag & MTD_CANON_MASK )
+                      == MTD_CANON_NEED_WITH_ALLOCATION )
+            {
+                IDE_TEST( sMemory->alloc( aData->columnDesc.column.size,
+                                          (void**)& sDestCanonizedValue )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( aData->columnDesc.module->canonize( &( aData->columnDesc ),
+                                                              & sDestCanonizedValue,
+                                                              NULL,
+                                                              sDestColumn,
+                                                              sDestValue,
+                                                              NULL,
+                                                              & QC_SHARED_TMPLATE( aStatement )->tmplate )
+                          != IDE_SUCCESS );
+
+                sDestValue = sDestCanonizedValue;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            sDestValue = (void*)mtc::value( &(aData->valueDesc),
+                                            aData->value,
+                                            MTD_OFFSET_USE );
+        }
+    } // end if
+
+    sHashVal = aData->columnDesc.module->hash( sHashVal,
+                                               &(aData->columnDesc),
+                                               sDestValue );
+
+    sStage = 0;
+    IDE_TEST( sMemory->setStatus( &sMemStatus ) != IDE_SUCCESS );
+
+    *aHashValue = sHashVal % QMO_RANGE_USING_HASH_MAX_VALUE;
+
+    IDE_FT_END();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_SIGNAL()
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_FT_EXCEPTION_BEGIN();
+
+    if ( sStage == 1 )
+    {
+        if ( sMemory->setStatus( &sMemStatus ) != IDE_SUCCESS )
+        {
+            IDE_ERRLOG(IDE_QP_1);
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    return IDE_FAILURE;
+}
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::isIntersectRangeUsingHashPartition( qmsPartCondValList * aMinPartCondVal,
+                                                         qmsPartCondValList * aMaxPartCondVal,
+                                                         UInt                 aMinHashVal,
+                                                         UInt                 aMaxHashVal,
+                                                         idBool             * aIsIntersect )
+{
+    UInt               i            = 0;
+    SInt               sOrder       = 0;
+    idBool             sIsIntersect = ID_FALSE;
+    mtdValueInfo       sValueInfo1;
+    mtdValueInfo       sValueInfo2;
+    mtdCompareFunc     sCompare;
+
+    sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+    // min condition check.QMS_PARTCONDVAL_MIN
+    // min condition이 원래 partitioned table의 min인 경우 무조건 포함.
+    if ( aMinPartCondVal->partCondValType == QMS_PARTCONDVAL_MIN )
+    {
+        sIsIntersect = ID_TRUE;
+    }
+    else
+    {
+        // min partcondval은 default일 수 없음.
+        IDE_DASSERT( aMinPartCondVal->partCondValType !=
+                     QMS_PARTCONDVAL_DEFAULT );
+
+        // range로 오는 것: LE, LT
+        // partcondval의 결과와 range maximum과의 결과는
+        // LE인 경우 : range maximum이 partcondval보다 작아야함
+        // LT인 경우 : range maximum이 partcondval보다 작거나 같아야함.
+        sValueInfo1.column = NULL;
+        sValueInfo1.value  = aMinPartCondVal->partCondValues[i];
+        sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+        sValueInfo2.column = NULL;
+        sValueInfo2.value  = (void *)&aMaxHashVal;
+        sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+        sOrder = sCompare( &sValueInfo1, &sValueInfo2 );
+
+        if ( sOrder > 0 )
+        {
+            sIsIntersect = ID_FALSE;
+        }
+        else
+        {
+            sIsIntersect = ID_TRUE;
+        }
+    }
+
+    if ( sIsIntersect == ID_TRUE )
+    {
+        // 위에서 체크했는데 intersect인 경우
+        // max condition하고 range minimum하고 체크해봐야 한다.
+
+        // max condition check.
+        // max condition이 원래 partitioned table의 max인 경우 무조건 포함.
+        if ( aMaxPartCondVal->partCondValType == QMS_PARTCONDVAL_DEFAULT )
+        {
+            sIsIntersect = ID_TRUE;
+        }
+        else
+        {
+            // max partcondval은 min일 수 없음.
+            IDE_DASSERT( aMaxPartCondVal->partCondValType
+                         != QMS_PARTCONDVAL_MIN );
+
+            // range로 오는 것 : GE, GT
+            // partcondval의 결과와 range minimum과의 결과는
+            // GT, GE인 경우 : range minimum이 partcondval보다 같거나 커야 함.
+
+            sValueInfo1.column = NULL;
+            sValueInfo1.value  = aMaxPartCondVal->partCondValues[i];
+            sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+            sValueInfo2.column = NULL;
+            sValueInfo2.value  = (void *)&aMinHashVal;
+            sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+            sOrder = sCompare( &sValueInfo1, &sValueInfo2 );
+
+            if ( sOrder <= 0 )
+            {
+                sIsIntersect = ID_FALSE;
+            }
+            else
+            {
+                sIsIntersect = ID_TRUE;
+            }
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    *aIsIntersect = sIsIntersect;
+
+    return IDE_SUCCESS;
+}
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::rangeUsinghashPartitionPruningWithKeyRange( qcStatement * aStatement,
+                                                                 qmsTableRef * aTableRef,
+                                                                 smiRange    * aPartKeyRange )
+{
+    qmsPartitionRef  * sCurrRef      = NULL;
+    qmsPartitionRef  * sPrevRef      = NULL;
+    smiRange         * sPartKeyRange = NULL;
+    idBool             sIsIntersect  = ID_FALSE;
+    UInt               sHashCount    = 0;
+    UInt               sMinHashValue[QMO_RANGE_USING_HASH_PRED_MAX];
+    UInt               sMaxHashValue[QMO_RANGE_USING_HASH_PRED_MAX];
+    UInt               sHashVal     = 0;
+    UInt               i            = 0;
+    mtkRangeCallBack * sData;
+
+    sPrevRef = NULL;
+
+    if ((( aPartKeyRange->minimum.callback == mtk::rangeCallBackGE4Mtd )
+        ||
+        ( aPartKeyRange->minimum.callback == mtk::rangeCallBackGE4Stored ) )
+       &&
+       ( ( aPartKeyRange->maximum.callback == mtk::rangeCallBackLE4Mtd )
+        ||
+       ( aPartKeyRange->maximum.callback == mtk::rangeCallBackLE4Stored )))
+    {
+        for ( sPartKeyRange  = aPartKeyRange;
+              sPartKeyRange != NULL;
+              sPartKeyRange  = sPartKeyRange->next )
+        {
+            sData = (mtkRangeCallBack*)sPartKeyRange->minimum.data;
+
+            if ( sData->value != NULL )
+            {
+                IDE_TEST( makeHashKeyForRangePruning( aStatement, sData, &sHashVal )
+                          != IDE_SUCCESS );
+                sMinHashValue[sHashCount] = sHashVal;
+            }
+            else
+            {
+                sMinHashValue[sHashCount] = 0;
+            }
+
+            sData = (mtkRangeCallBack*)sPartKeyRange->maximum.data;
+
+            if ( sData->value != NULL )
+            {
+                IDE_TEST( makeHashKeyForRangePruning( aStatement, sData, &sHashVal )
+                          != IDE_SUCCESS );
+                sMaxHashValue[sHashCount] = sHashVal;
+            }
+            else
+            {
+                sMaxHashValue[sHashCount] = 0;
+            }
+
+            sHashCount++;
+
+            IDE_TEST_RAISE( sHashCount >= QMO_RANGE_USING_HASH_PRED_MAX, UNEXPECTED_ERROR1 );
+        }
+    }
+    else
+    {
+        IDE_RAISE( UNEXPECTED_ERROR2 );
+    }
+
+    for ( sCurrRef  = aTableRef->partitionRef;
+          sCurrRef != NULL;
+          sCurrRef  = sCurrRef->next )
+    {
+        sIsIntersect = ID_FALSE;
+
+        for ( i = 0; i < sHashCount; i++ )
+        {
+            IDE_TEST( isIntersectRangeUsingHashPartition( &sCurrRef->minPartCondVal,
+                                                          &sCurrRef->maxPartCondVal,
+                                                          sMinHashValue[i],
+                                                          sMaxHashValue[i],
+                                                          &sIsIntersect )
+                      != IDE_SUCCESS );
+
+            if ( sIsIntersect == ID_TRUE )
+            {
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+
+        if ( sIsIntersect == ID_TRUE )
+        {
+            sPrevRef = sCurrRef;
+        }
+        else
+        {
+            // intersect되지 않으면 partitionRef 리스트에서 제거.
+            if ( sPrevRef == NULL )
+            {
+                aTableRef->partitionRef = sCurrRef->next;
+            }
+            else
+            {
+                sPrevRef->next = sCurrRef->next;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNEXPECTED_ERROR1 )
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                "qmoPartition::rangeUsinghashPartitionPruningWithKeyRange",
+                                "QMO_RANGE_USING_HASH_PRED_MAX over"));
+    }
+    IDE_EXCEPTION( UNEXPECTED_ERROR2 )
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                "qmoPartition::rangeUsinghashPartitionPruningWithKeyRange",
+                                "Callback error"));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::rangeUsingHashFilteringWithPartitionFilter( qcStatement            * aStatement,
+                                                                 qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                                                 UInt                   * aRangeIntersectCountArray,
+                                                                 UInt                     aPartCount,
+                                                                 smiRange               * aPartFilter,
+                                                                 qmnChildren           ** aSelectedChildrenArea,
+                                                                 UInt                   * aSelectedChildrenCount )
+{
+    mtkRangeCallBack * sData;
+    smiRange         * sPartFilter;
+    UInt               sPlusCount  = 0;
+    UInt               sMinHashVal = 0;
+    UInt               sMaxHashVal = 0;
+    UInt               i;
+
+    *aSelectedChildrenCount = 0;
+
+    for ( sPartFilter  = aPartFilter;
+          sPartFilter != NULL;
+          sPartFilter  = sPartFilter->next )
+    {
+        if ( ( sPartFilter->minimum.callback
+               == mtk::rangeCallBackGE4Mtd )
+             ||
+             ( sPartFilter->minimum.callback
+               == mtk::rangeCallBackGE4Stored ) )
+        {
+            sData = (mtkRangeCallBack*)sPartFilter->minimum.data;
+
+            if ( sData->value != NULL )
+            {
+                IDE_TEST( makeHashKeyForRangeFilter( aStatement, sData, &sMinHashVal )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+            partitionFilterGEUsingHash( aRangeSortedChildrenArray,
+                                        aRangeIntersectCountArray,
+                                        sMinHashVal,
+                                        aPartCount );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( ( sPartFilter->maximum.callback
+               == mtk::rangeCallBackLE4Mtd )
+             ||
+             ( sPartFilter->maximum.callback
+               == mtk::rangeCallBackLE4Stored ) )
+        {
+            sData = (mtkRangeCallBack*)sPartFilter->maximum.data;
+
+            if ( sData->value != NULL )
+            {
+                IDE_TEST( makeHashKeyForRangeFilter( aStatement, sData, &sMaxHashVal )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            partitionFilterLEUsingHash( aRangeSortedChildrenArray,
+                                        aRangeIntersectCountArray,
+                                        sMaxHashVal,
+                                        aPartCount );
+            sPlusCount ++;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+
+    for ( i = 0; i < aPartCount; i++ )
+    {
+        if ( aRangeIntersectCountArray[i] > sPlusCount )
+        {
+            aSelectedChildrenArea[(*aSelectedChildrenCount)++]
+                = aRangeSortedChildrenArray[i].children;
+        }
+        else
+        {
+            //Nothing to do.
+        }
+
+        aRangeIntersectCountArray[i] = 0;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-46065 support range using hash */
+SInt qmoPartition::comparePartMinRangeMaxUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                                    UInt                 aMaxHashVal )
+{
+    SInt               sOrder;
+    mtdValueInfo       sValueInfo1;
+    mtdValueInfo       sValueInfo2;
+    mtdCompareFunc     sCompare;
+
+    if ( aMinPartCondVal->partCondValType == QMS_PARTCONDVAL_MIN )
+    {
+        sOrder = -1;
+    }
+    else
+    {
+        // min partcondval은 default일 수 없음.
+        IDE_DASSERT( aMinPartCondVal->partCondValType !=
+                     QMS_PARTCONDVAL_DEFAULT );
+
+        sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+
+        sValueInfo1.column = NULL;
+        sValueInfo1.value  = aMinPartCondVal->partCondValues[0];
+        sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+        sValueInfo2.column = NULL;
+        sValueInfo2.value  = (void *)&aMaxHashVal;
+        sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+        sOrder = sCompare( &sValueInfo1, &sValueInfo2 );
+    }
+
+    return sOrder;
+}
+
+/* BUG-46065 support range using hash */
+SInt qmoPartition::comparePartMinRangeMinUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                                    UInt                 aMinHashVal )
+{
+    SInt               sOrder;
+    mtdValueInfo       sValueInfo1;
+    mtdValueInfo       sValueInfo2;
+    mtdCompareFunc     sCompare;
+
+    if ( aMinPartCondVal->partCondValType == QMS_PARTCONDVAL_MIN )
+    {
+        sOrder = -1;
+    }
+    else
+    {
+        // min partcondval은 default일 수 없음.
+        IDE_DASSERT( aMinPartCondVal->partCondValType !=
+                     QMS_PARTCONDVAL_DEFAULT );
+
+        sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+
+        sValueInfo1.column = NULL;
+        sValueInfo1.value  = aMinPartCondVal->partCondValues[0];
+        sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+        sValueInfo2.column = NULL;
+        sValueInfo2.value  = (void *)&aMinHashVal;
+        sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+        sOrder = sCompare( &sValueInfo1, &sValueInfo2 );
+    }
+
+    return sOrder;
+}
+
+/* BUG-46065 support range using hash */
+SInt qmoPartition::comparePartMaxRangeMinUsingHash( qmsPartCondValList * aMaxPartCondVal,
+                                                    UInt                 aMinHashVal )
+{
+    SInt               sOrder;
+    mtdValueInfo       sValueInfo1;
+    mtdValueInfo       sValueInfo2;
+    mtdCompareFunc     sCompare;
+
+    if ( aMaxPartCondVal->partCondValType == QMS_PARTCONDVAL_DEFAULT )
+    {
+        sOrder = 1;
+    }
+    else
+    {
+        // max partcondval은 min일 수 없음.
+        IDE_DASSERT( aMaxPartCondVal->partCondValType
+                     != QMS_PARTCONDVAL_MIN );
+
+        sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+
+        sValueInfo1.column = NULL;
+        sValueInfo1.value  = aMaxPartCondVal->partCondValues[0];
+        sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+        sValueInfo2.column = NULL;
+        sValueInfo2.value  = (void *)&aMinHashVal;
+        sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+        sOrder = sCompare( &sValueInfo1, &sValueInfo2 );
+    }
+
+    return sOrder;
+}
+
+/* BUG-46065 support range using hash */
+SInt qmoPartition::comparePartMaxRangeMaxUsingHash( qmsPartCondValList * aMaxPartCondVal,
+                                                    UInt                 aMaxHashVal )
+{
+    SInt               sOrder;
+    mtdValueInfo       sValueInfo1;
+    mtdValueInfo       sValueInfo2;
+    mtdCompareFunc     sCompare;
+
+    if ( aMaxPartCondVal->partCondValType == QMS_PARTCONDVAL_DEFAULT )
+    {
+        sOrder = 1;
+    }
+    else
+    {
+        // max partcondval은 min일 수 없음.
+        IDE_DASSERT( aMaxPartCondVal->partCondValType
+                     != QMS_PARTCONDVAL_MIN );
+
+        sCompare = mtdInteger.logicalCompare[MTD_COMPARE_ASCENDING];
+
+        sValueInfo1.column = NULL;
+        sValueInfo1.value  = aMaxPartCondVal->partCondValues[0];
+        sValueInfo1.flag   = MTD_OFFSET_USELESS;
+
+        sValueInfo2.column = NULL;
+        sValueInfo2.value  = (void *)&aMaxHashVal;
+        sValueInfo2.flag   = MTD_OFFSET_USELESS;
+
+        sOrder = sCompare( &sValueInfo1, &sValueInfo2 );
+    }
+
+    return sOrder;
+}
+
+/* BUG-46065 support range using hash */
+SInt qmoPartition::comparePartGEUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                           qmsPartCondValList * aMaxPartCondVal,
+                                           UInt                 aMinHashVal )
+{
+    SInt sOrder;
+    SInt sRes;
+
+    sOrder = comparePartMinRangeMinUsingHash( aMinPartCondVal, aMinHashVal );
+
+    if ( sOrder > 0 )
+    {
+        sRes = 1;
+    }
+    else if ( sOrder == 0 )
+    {
+        sRes = 0;
+    }
+    else
+    {
+        sOrder = comparePartMaxRangeMinUsingHash( aMaxPartCondVal, aMinHashVal );
+
+        if ( sOrder > 0 )
+        {
+            sRes = 0;
+        }
+        else if ( sOrder == 0 )
+        {
+            sRes = -1;
+        }
+        else
+        {
+            sRes = -1;
+        }
+    }
+
+    return sRes;
+}
+
+/* BUG-46065 support range using hash */
+SInt qmoPartition::comparePartLEUsingHash( qmsPartCondValList * aMinPartCondVal,
+                                           qmsPartCondValList * aMaxPartCondVal,
+                                           UInt                 aMaxHashVal )
+{
+    SInt sOrder;
+    SInt sRes;
+
+    sOrder = comparePartMaxRangeMaxUsingHash( aMaxPartCondVal, aMaxHashVal );
+
+    if ( sOrder < 0 )
+    {
+        sRes = -1;
+    }
+    else if ( sOrder == 0 )
+    {
+        sRes = -1;
+    }
+    else
+    {
+        sOrder = comparePartMinRangeMaxUsingHash( aMinPartCondVal, aMaxHashVal );
+
+        if ( sOrder > 0 )
+        {
+            sRes = 1;
+        }
+        else if ( sOrder == 0 )
+        {
+            sRes = 0;
+        }
+        else
+        {
+            sRes = 0;
+        }
+    }
+
+    return sRes;
+}
+
+/* BUG-46065 support range using hash */
+void qmoPartition::partitionFilterGEUsingHash( qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                               UInt                   * aRangeIntersectCountArray,
+                                               UInt                     aMinHashVal,
+                                               UInt                     aPartCount )
+{
+    UInt sHigh;
+    UInt sLow;
+    UInt sMid;
+    SInt sRes;
+
+    qmnRangeSortedChildren * sRangeSortedChildrenArray = NULL;
+
+    sHigh = aPartCount -1;
+    for ( sLow = 0, sMid = sHigh >> 1;
+          sLow <= sHigh;
+          sMid = (sHigh + sLow) >> 1 )
+    {
+        sRangeSortedChildrenArray = aRangeSortedChildrenArray + sMid;
+
+        sRes = comparePartGEUsingHash( &(sRangeSortedChildrenArray->partitionRef->minPartCondVal),
+                                       &(sRangeSortedChildrenArray->partitionRef->maxPartCondVal),
+                                       aMinHashVal );
+        if ( sRes == 0 )
+        {
+            break;
+        }
+        else if ( sRes > 0 )
+        {
+            if ( sMid == 0 )
+            {
+                break;
+            }
+            else
+            {
+                sHigh = sMid - 1;
+            }
+        }
+        else
+        {
+            sLow = sMid + 1;
+        }
+    }
+
+    for ( ; sMid < aPartCount; sMid++ )
+    {
+        aRangeIntersectCountArray[sMid]++;
+
+    }
+}
+
+/* BUG-46065 support range using hash */
+void qmoPartition::partitionFilterLEUsingHash( qmnRangeSortedChildren * aRangeSortedChildrenArray,
+                                               UInt                   * aRangeIntersectCountArray,
+                                               UInt                     aMaxHashVal,
+                                               UInt                     aPartCount )
+{
+    UInt sHigh;
+    UInt sLow;
+    UInt sMid;
+    UInt i;
+    SInt sRes;
+
+    qmnRangeSortedChildren * sRangeSortedChildrenArray = NULL;
+
+    sHigh = aPartCount -1;
+    for ( sLow = 0, sMid = sHigh >> 1;
+          sLow <= sHigh;
+          sMid = (sHigh + sLow) >> 1 )
+    {
+        sRangeSortedChildrenArray = aRangeSortedChildrenArray + sMid;
+
+        sRes = comparePartLEUsingHash( &(sRangeSortedChildrenArray->partitionRef->minPartCondVal),
+                                       &(sRangeSortedChildrenArray->partitionRef->maxPartCondVal),
+                                       aMaxHashVal );
+
+        if ( sRes == 0 )
+        {
+            break;
+        }
+        else if ( sRes > 0 )
+        {
+            if ( sMid == 0 )
+            {
+                break;
+            }
+            else
+            {
+                sHigh = sMid - 1;
+            }
+        }
+        else
+        {
+            sLow = sMid + 1;
+        }
+    }
+
+    for ( i = 0; i <= sMid; i++ )
+    {
+        aRangeIntersectCountArray[i]++;
+    }
+}
+
+/* BUG-46065 support range using hash */
+IDE_RC qmoPartition::makeHashKeyForRangeFilter( qcStatement        * aStatement,
+                                                mtkRangeCallBack   * aData,
+                                                UInt               * aHashValue )
+{
+    iduMemory      * sMemory;
+    void           * sSourceValue;
+    UInt             sTargetArgCount;
+    UInt             sHashVal = mtc::hashInitialValue;
+    iduMemoryStatus  sMemStatus;
+    mtvConvert     * sConvert;
+    mtcColumn      * sDestColumn;
+    void           * sDestValue;
+    void           * sDestCanonizedValue;
+    UInt             sStage = 0;
+
+    sMemory = QC_QMX_MEM( aStatement );
+
+    IDE_TEST( sMemory->getStatus( &sMemStatus ) != IDE_SUCCESS );
+    sStage = 1;
+
+    if ( ( aData->compare == mtk::compareMaximumLimit4Mtd ) ||
+         ( aData->compare == mtk::compareMaximumLimit4Stored ) )
+    {
+        sDestValue = aData->columnDesc.module->staticNull;
+        // is null인 경우임.
+    }
+    else
+    {
+        if ( aData->columnDesc.type.dataTypeId !=
+             aData->valueDesc.type.dataTypeId )
+        {
+            // PROJ-2002 Column Security
+            // echar, evarchar는 동일 group이 아니므로 들어올 수 없다.
+            IDE_DASSERT(
+                (aData->columnDesc.type.dataTypeId != MTD_ECHAR_ID) &&
+                (aData->columnDesc.type.dataTypeId != MTD_EVARCHAR_ID) &&
+                (aData->valueDesc.type.dataTypeId != MTD_ECHAR_ID) &&
+                (aData->valueDesc.type.dataTypeId != MTD_EVARCHAR_ID) );
+
+            sSourceValue = (void*)mtc::value( &(aData->valueDesc),
+                                              aData->value,
+                                              MTD_OFFSET_USE );
+
+            sTargetArgCount = aData->columnDesc.flag &
+                MTC_COLUMN_ARGUMENT_COUNT_MASK;
+
+            IDE_TEST( mtv::estimateConvert4Server( sMemory,
+                                                   & sConvert,
+                                                   aData->columnDesc.type,
+                                                   aData->valueDesc.type,
+                                                   sTargetArgCount,
+                                                   aData->columnDesc.precision,
+                                                   aData->valueDesc.scale,
+                                                   & QC_SHARED_TMPLATE( aStatement )->tmplate )
+                      != IDE_SUCCESS );
+
+            // source value pointer
+            sConvert->stack[sConvert->count].value = sSourceValue;
+
+            sDestColumn = sConvert->stack[0].column;
+            sDestValue  = sConvert->stack[0].value;
+
+            IDE_TEST( mtv::executeConvert( sConvert,
+                                           & QC_SHARED_TMPLATE( aStatement )->tmplate)
+                      != IDE_SUCCESS);
+
+            if ( ( aData->columnDesc.module->flag & MTD_CANON_MASK )
+                 == MTD_CANON_NEED )
+            {
+                sDestCanonizedValue = sDestValue;
+
+                IDE_TEST( aData->columnDesc.module->canonize( &( aData->columnDesc ),
+                                                              & sDestCanonizedValue,
+                                                              NULL,
+                                                              sDestColumn,
+                                                              sDestValue,
+                                                              NULL,
+                                                              & QC_SHARED_TMPLATE( aStatement )->tmplate )
+                          != IDE_SUCCESS );
+
+                sDestValue = sDestCanonizedValue;
+            }
+            else if ( ( aData->columnDesc.module->flag & MTD_CANON_MASK )
+                      == MTD_CANON_NEED_WITH_ALLOCATION )
+            {
+                IDE_TEST( sMemory->alloc( aData->columnDesc.column.size,
+                                          (void**)& sDestCanonizedValue )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( aData->columnDesc.module->canonize( &( aData->columnDesc ),
+                                                              & sDestCanonizedValue,
+                                                              NULL,
+                                                              sDestColumn,
+                                                              sDestValue,
+                                                              NULL,
+                                                              & QC_SHARED_TMPLATE( aStatement )->tmplate )
+                          != IDE_SUCCESS );
+
+                sDestValue = sDestCanonizedValue;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            sDestValue = (void*)mtc::value( &(aData->valueDesc),
+                                            aData->value,
+                                            MTD_OFFSET_USE );
+        }
+    } // end if
+
+    sHashVal = aData->columnDesc.module->hash( sHashVal,
+                                               &(aData->columnDesc),
+                                               sDestValue );
+
+    sStage = 0;
+    IDE_TEST( sMemory->setStatus( &sMemStatus ) != IDE_SUCCESS );
+
+    *aHashValue = sHashVal % QMO_RANGE_USING_HASH_MAX_VALUE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sStage == 1 )
+    {
+        if ( sMemory->setStatus( &sMemStatus ) != IDE_SUCCESS )
+        {
+            IDE_ERRLOG(IDE_QP_1);
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_FAILURE;
+}
+

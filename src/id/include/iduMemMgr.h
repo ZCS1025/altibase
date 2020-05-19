@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemMgr.h 80042 2017-05-19 02:07:25Z donghyun1 $
+ * $Id: iduMemMgr.h 85186 2019-04-09 07:37:00Z jayce.park $
  **********************************************************************/
 
 #ifndef _O_IDU_MEM_MGR_H_
@@ -47,6 +47,7 @@ typedef enum
     IDU_MEMMGR_CLIENT = IDU_MEMMGR_SINGLE,
     IDU_MEMMGR_LIBC,
     IDU_MEMMGR_TLSF,
+    IDU_MEMMGR_INNOCENSE, /*BUG-46568*/
     IDU_MEMMGR_MAX
 } iduMemMgrType;
 
@@ -72,6 +73,8 @@ typedef IDE_RC (*iduMemMAlignFunc)(iduMemoryClientIndex, ULong, ULong, void **);
 typedef IDE_RC (*iduMemCallocFunc)(iduMemoryClientIndex, vSLong, ULong, void **);
 typedef IDE_RC (*iduMemReallocFunc)(iduMemoryClientIndex, ULong, void **);
 typedef IDE_RC (*iduMemFreeFunc)(void *);
+typedef IDE_RC (*iduMemFree4MAlignFunc)(void *, iduMemoryClientIndex aIndex, ULong aSize);
+
 typedef IDE_RC (*iduMemShrinkFunc)(void);
 
 // malloc, calloc, free 함수 포인터를 저장하는 자료구조
@@ -84,6 +87,7 @@ typedef struct iduMemFuncType
     iduMemCallocFunc            mCallocFunc;
     iduMemReallocFunc           mReallocFunc;
     iduMemFreeFunc              mFreeFunc;
+    iduMemFree4MAlignFunc       mFree4MAlignFunc;
     iduMemShrinkFunc            mShrinkFunc;
 } iduMemFuncType;
 
@@ -376,7 +380,13 @@ public:
     /// malloc(), calloc(), realloc()으로 할당받은 메모리는 반드시 free()로 해지되야 한다.
     /// @param aMemPtr 해지할 메모리의 포인터
     /// @param aAlloc 메모리 관리자
-    static IDE_RC free(void* aMemPtr);
+    static IDE_RC free(void                 * aMemPtr);
+
+    //BUG-46165
+    //this function must be called by the address getting from malign()   not malloc()
+    static IDE_RC free4malign(void                  * aMemPtr,
+                              iduMemoryClientIndex    aIndex,
+                              ULong                   aSize);
 
     /* Memory management functions with specific allocator */
     static IDE_RC malloc(iduMemoryClientIndex   aIndex,
@@ -453,7 +463,10 @@ private:
     static IDE_RC single_realloc(iduMemoryClientIndex  aIndex,
                                  ULong                 aSize,
                                  void                **aMemPtr);
-    static IDE_RC single_free(void *aMemPtr);
+    static IDE_RC single_free(void                   *aMemPtr);
+    static IDE_RC single_free4malign(void                   *aMemPtr,
+                                     iduMemoryClientIndex    aIndex,
+                                     ULong                   aSize);
     static IDE_RC single_shrink(void);
 
 
@@ -480,12 +493,15 @@ private:
     static IDE_RC libc_realloc(iduMemoryClientIndex  aIndex,
                                ULong                 aSize,
                                void                **aMemPtr);
-    static IDE_RC libc_free(void *aMemPtr);
+    static IDE_RC libc_free(void                   *aMemPtr);
+    static IDE_RC libc_free4malign(void                   *aMemPtr,
+                                   iduMemoryClientIndex    aIndex,
+                                   ULong                   aSize);
+
     static IDE_RC libc_shrink(void);
     static void   libc_getHeader(void* aMemPtr,
                                  void** aHeader1,
-                                 void** aHeader2,
-                                 void** aTailer);
+                                 void** aHeader2);
 
 private:
     /*
@@ -511,6 +527,10 @@ private:
                                ULong                 aSize,
                                void                **aMemPtr);
     static IDE_RC tlsf_free(void *aMemPtr);
+
+    static IDE_RC tlsf_free4malign(void *aMemPtr,
+                                   iduMemoryClientIndex aIndex,
+                                   ULong                aSize);
     static IDE_RC tlsf_shrink(void);
     static void   tlsf_getHeader(void* aMemPtr,
                                  void** aHeader1,
@@ -524,6 +544,37 @@ private:
     static iduMemTlsf**         mTLSFLocal;
     static ULong                mTLSFLocalChunkSize;
     static SInt                 mTLSFLocalInstances;
+
+private:
+    /*
+     * IDU_MEMMGR_INNOCENSE
+     */
+    static IDE_RC innocense_initializeStatic(void);
+    static IDE_RC innocense_destroyStatic(void);
+    static IDE_RC innocense_malloc(iduMemoryClientIndex   aIndex,
+                                   ULong                  aSize,
+                                   void                 **aMemPtr);
+    static IDE_RC innocense_malign(iduMemoryClientIndex   aIndex,
+                                   ULong                  aSize,
+                                   ULong                  aAlign,
+                                   void                 **aMemPtr);
+    static IDE_RC innocense_calloc(iduMemoryClientIndex   aIndex,
+                                   vSLong                 aCount,
+                                   ULong                  aSize,
+                                   void                 **aMemPtr);
+    static IDE_RC innocense_realloc(iduMemoryClientIndex  aIndex,
+                                    ULong                 aSize,
+                                    void                **aMemPtr);
+    static IDE_RC innocense_free(void                   *aMemPtr);
+    static IDE_RC innocense_free4malign(void                   *aMemPtr,
+                                        iduMemoryClientIndex    aIndex,
+                                        ULong                   aSize);
+
+    static IDE_RC innocense_shrink(void);
+    static void   innocense_getHeader(void* aMemPtr,
+                                      void** aHeader1,
+                                      void** aHeader2,
+                                      void** aTailer);
 
     /*
      * BUG-32751

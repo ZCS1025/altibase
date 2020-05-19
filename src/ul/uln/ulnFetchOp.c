@@ -82,9 +82,8 @@ static ACI_RC ulnFetchReceiveFetchResult(ulnFnContext *aFnContext, ulnPtContext 
     ulnDbc  *sDbc;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
-    /* BUG-25579
-     * [CodeSonar::NullPointerDereference] ulnFetchReceiveFetchResult() 에서 발생 */
-    ACE_ASSERT( sDbc != NULL );
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     ACI_TEST(ulnFlushProtocol(aFnContext, aPtContext) != ACI_SUCCESS);
 
@@ -106,6 +105,11 @@ static ACI_RC ulnFetchReceiveFetchResult(ulnFnContext *aFnContext, ulnPtContext 
 
     return ACI_SUCCESS;
 
+    /* BUG-46052 codesonar Null Pointer Dereference */
+    ACI_EXCEPTION(InvalidHandleException)
+    {
+        ULN_FNCONTEXT_SET_RC(aFnContext, SQL_INVALID_HANDLE);
+    }
     ACI_EXCEPTION_END;
 
     return ACI_FAILURE;

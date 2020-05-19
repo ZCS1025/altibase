@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddUpdate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddUpdate.cpp 82961 2018-05-02 06:14:25Z emlee $
  *
  * Description :
  *
@@ -1276,15 +1276,15 @@ IDE_RC sddUpdate::undo_SCT_UPDATE_DRDB_EXTEND_DBF(
                 sPrepared = 1;
 
                 sState = 0;
-                IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS);
+                IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
-                IDE_TEST(sddDataFile::truncate(sFileNode, sBeforeSize) != IDE_SUCCESS);
+                IDE_TEST( sddDataFile::truncate(sFileNode, sBeforeSize) != IDE_SUCCESS );
 
                 IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
                 sState = 1;
 
                 sPrepared = 0;
-                IDE_TEST(sddDiskMgr::completeIO(sFileNode, SDD_IO_WRITE) != IDE_SUCCESS);
+                IDE_TEST( sddDiskMgr::completeIO(sFileNode, SDD_IO_WRITE) != IDE_SUCCESS );
 
                 sFileNode->mState &= ~SMI_FILE_RESIZING;
             }

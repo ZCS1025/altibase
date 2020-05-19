@@ -231,6 +231,10 @@ IDE_RC cmnOpenssl::initialize()
     *(void**)&mFuncs.X509_free = idlOS::dlsym(mSslHandle, "X509_free");
     IDE_TEST_RAISE(mFuncs.X509_free == NULL, ERR_DLSYM_LIBSSL);
 
+    /* BUG-46352 Output OpenSSL version */
+    mFuncs.SSL_version_str = (const SChar **)idlOS::dlsym(mSslHandle, "SSL_version_str");
+    *(void**)&mFuncs.SSLeay_version = idlOS::dlsym(mCryptoHandle, "SSLeay_version");
+
     /* Initialize SSL/TLS */
     /* register all ciphers and has algorithms used in SSL APIs. */
     mFuncs.SSL_library_init();
@@ -238,6 +242,19 @@ IDE_RC cmnOpenssl::initialize()
     mFuncs.OpenSSL_add_all_algorithms();
     /* load error strings for SSL APIs as well as for Crypto APIs. */
     mFuncs.SSL_load_error_strings();
+
+    /* BUG-46352 Output OpenSSL version */
+    if (mFuncs.SSL_version_str != NULL)
+    {
+        if (*mFuncs.SSL_version_str != NULL)
+        {
+            ideLog::log(IDE_SERVER_0, "SSL_version_str  : %s", *mFuncs.SSL_version_str);
+        }
+    }
+    if (mFuncs.SSLeay_version != NULL)
+    {
+        ideLog::log(IDE_SERVER_0, "SSLeay_version() : %s", mFuncs.SSLeay_version(SSLEAY_VERSION));
+    }
 
     mLibInitialized = ID_TRUE;
 

@@ -3,8 +3,9 @@
  *          1. Using as input host variables
  *          2. Using as output host variables
  *          3. Using APRE_BINARY
- *          4. Using APRE_BYTES
- *          5. Using APRE_NIBBLE
+ *          4. Using APRE_BINARY2
+ *          5. Using APRE_BYTES
+ *          6. Using APRE_NIBBLE
  *          +-------------+--------------------+
  *          | COLUMN TYPE | HOST VARIALBE TYPE |
  *          +-------------+--------------------+
@@ -12,6 +13,7 @@
  *          +-------------+--------------------+
  *          | BLOB        | APRE_BLOB          |
  *          |             | APRE_BINARY        |
+ *          |             | APRE_BINARY2       |
  *          +-------------+--------------------+
  *          | BYTE        | APRE_BYTES         |
  *          +-------------+--------------------+
@@ -22,6 +24,7 @@
 void f_clob();
 void f_blob();
 void f_binary();
+void f_binary2();
 void f_bytes();
 void f_nibble();
 
@@ -54,18 +57,21 @@ int main()
     EXEC SQL DROP TABLE T_CLOB;
     EXEC SQL DROP TABLE T_BLOB;
     EXEC SQL DROP TABLE T_BINARY;
+    EXEC SQL DROP TABLE T_BINARY2;
     EXEC SQL DROP TABLE T_BYTES;
     EXEC SQL DROP TABLE T_NIBBLE;
 
     EXEC SQL CREATE TABLE T_CLOB (I1 CLOB);
     EXEC SQL CREATE TABLE T_BLOB (I1 BLOB);
     EXEC SQL CREATE TABLE T_BINARY (I1 BLOB);
+    EXEC SQL CREATE TABLE T_BINARY2 (I1 BLOB);
     EXEC SQL CREATE TABLE T_BYTES (I1 BYTE(5));
     EXEC SQL CREATE TABLE T_NIBBLE (I1 NIBBLE(10));
 
     f_clob();
     f_blob();
     f_binary();
+    f_binary2();
     f_bytes();
     f_nibble();
 
@@ -231,6 +237,62 @@ void f_binary()
 
     /* use APRE_BINARY as output host variables */
     EXEC SQL SELECT * INTO :sel_blob :sel_blob_ind FROM T_BINARY;
+    /* check sqlca.sqlcode */
+    if (sqlca.sqlcode == SQL_SUCCESS)
+    {
+        sel_blob[sel_blob_ind] = '\0';
+        printf("sel_blob     = %s\n", sel_blob);
+        printf("sel_blob_ind = %d\n\n", sel_blob_ind);
+    }
+    else
+    {
+        printf("Error : [%d] %s\n\n", SQLCODE, sqlca.sqlerrm.sqlerrmc);
+    }
+
+    EXEC SQL AUTOCOMMIT ON;
+}
+
+/* column type is BLOB
+ * host variable type is APRE_BINARY2
+ * should use indicator variables together */
+void f_binary2()
+{
+    /* declare host variables */
+    EXEC SQL BEGIN DECLARE SECTION;
+    /* column type must be BLOB */
+    APRE_BINARY2 ins_blob[10+1];
+    APRE_BINARY2 sel_blob[10+1];
+
+    /* declare indicator variables */
+    SQLLEN ins_blob_ind;
+    SQLLEN sel_blob_ind;
+    EXEC SQL END DECLARE SECTION;
+
+    printf("------------------------------------------------------------------\n");
+    printf("[APRE_BINARY2]\n");
+    printf("------------------------------------------------------------------\n");
+
+    EXEC SQL AUTOCOMMIT OFF;
+
+    memset(ins_blob, 0x21, 10);
+    /* set length of ins_blob value to indicator variable */
+    ins_blob_ind = 10;
+
+    /* use APRE_BINARY2 as input host variables */
+    EXEC SQL INSERT INTO T_BINARY2 VALUES (:ins_blob :ins_blob_ind);
+    /* check sqlca.sqlcode */
+    if (sqlca.sqlcode == SQL_SUCCESS)
+    {
+        printf("Success insert with APRE_BINARY2\n");
+    }
+    else
+    {
+        printf("Error : [%d] %s\n", SQLCODE, sqlca.sqlerrm.sqlerrmc);
+    }
+    EXEC SQL COMMIT;
+
+    /* use APRE_BINARY2 as output host variables */
+    EXEC SQL SELECT * INTO :sel_blob :sel_blob_ind FROM T_BINARY2;
     /* check sqlca.sqlcode */
     if (sqlca.sqlcode == SQL_SUCCESS)
     {

@@ -930,16 +930,14 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
         while ( sTableTuple->row != NULL )
         {
             // Memory 재사용을 위하여 현재 위치 기록
-            IDE_TEST( aStatement->qmxMem->getStatus( & sQmxMemStatus )
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( aStatement->qmxMem->getStatus( & sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
             // Check Condition 연산 및 결과 확인
             IDE_TEST( verifyCheckConstraintList( sTemplate, aCheckConstrList )
                       != IDE_SUCCESS );
 
             // Memory 재사용을 위한 Memory 이동
-            IDE_TEST( aStatement->qmxMem->setStatus( & sQmxMemStatus )
-                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( aStatement->qmxMem->setStatus( & sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
             IDE_TEST( sReadCursor.readRow( (const void**) & (sTableTuple->row),
                                            & sTableTuple->rid,
@@ -960,6 +958,13 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     " qdnCheck::verifyCheckConstraintListWithFullTableScan"
+                     " memory error" );
+    }
     IDE_EXCEPTION_END;
 
     if ( sCursorOpen == ID_TRUE )

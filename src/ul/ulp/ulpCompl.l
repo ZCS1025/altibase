@@ -864,7 +864,7 @@ switch( gUlpCOMPStartCond )
 <C>(?-i:"APRE_BINARY")          { WRITESTR2BUFCOMP(yytext); return(C_APRE_BINARY); }
 <C>(?-i:"APRE_BIT")             { WRITESTR2BUFCOMP(yytext); return(C_APRE_BIT); }
 <C>(?-i:"APRE_BYTES")           { WRITESTR2BUFCOMP(yytext); return(C_APRE_BYTES); }
-<C>(?-i:"APRE_VARBYTES")         { WRITESTR2BUFCOMP(yytext); return(C_APRE_VARBYTES); }
+<C>(?-i:"APRE_VARBYTES")        { WRITESTR2BUFCOMP(yytext); return(C_APRE_VARBYTES); }
 <C>(?-i:"APRE_NIBBLE")          { WRITESTR2BUFCOMP(yytext); return(C_APRE_NIBBLE); }
 <C>(?-i:"APRE_INTEGER")         { WRITESTR2BUFCOMP(yytext); return(C_APRE_INTEGER); }
 <C>(?-i:"APRE_NUMERIC")         { WRITESTR2BUFCOMP(yytext); return(C_APRE_NUMERIC); }
@@ -872,6 +872,7 @@ switch( gUlpCOMPStartCond )
 <C>(?-i:"APRE_CLOB_LOCATOR")    { WRITESTR2BUFCOMP(yytext); return(C_APRE_CLOB_LOCATOR); }
 <C>(?-i:"APRE_BLOB")            { WRITESTR2BUFCOMP(yytext); return(C_APRE_BINARY); }
 <C>(?-i:"APRE_CLOB")            { WRITESTR2BUFCOMP(yytext); return(C_APRE_CLOB); }
+<C>(?-i:"APRE_BINARY2")         { WRITESTR2BUFCOMP(yytext); return(C_APRE_BINARY2); }  /* BUG-46418 */
 <C>(?-i:"SES_BINARY")           { 
     /* BUG-35518 Shared pointer should be supported in APRE */
     if ( gUlpParseInfo.mIsSharedPtr == ID_TRUE )
@@ -1308,8 +1309,7 @@ switch( gUlpCOMPStartCond )
 <EMSQL,EJ,EP,EN>LINKER            { WRITESTR2QUERYCOMP( yytext ); return TA_LINKER;            }           /* BUG-37100 */
 <EMSQL,EJ,EP,EN>REMOTE_TABLE      { WRITESTR2QUERYCOMP( yytext ); return TA_REMOTE_TABLE;      }           /* BUG-37100 */
 <EMSQL,EJ,EP,EN>SHARD             { WRITESTR2QUERYCOMP( yytext ); return TA_SHARD;             }           /* PROJ-2638 */
-/* BUG-45502 */
-<EMSQL,EJ,EP,EN>SEC               { WRITESTR2QUERYCOMP( yytext ); return TA_SEC;               }
+<EMSQL,EJ,EP,EN>SEC               { WRITESTR2QUERYCOMP( yytext ); return TA_SEC;               }           /* BUG-45502 */
 <EMSQL,EJ,EP,EN>MSEC              { WRITESTR2QUERYCOMP( yytext ); return TA_MSEC;              }
 <EMSQL,EJ,EP,EN>USEC              { WRITESTR2QUERYCOMP( yytext ); return TA_USEC;              }
 <EMSQL,EJ,EP,EN>SECOND            { WRITESTR2QUERYCOMP( yytext ); return TA_SECOND;            }
@@ -1333,6 +1333,8 @@ switch( gUlpCOMPStartCond )
 <EMSQL,EJ,EP,EN>DISJOIN           { WRITESTR2QUERYCOMP( yytext ); return TA_DISJOIN;           }           /* PROJ-1810 Partition Exchange */
 <EMSQL,EJ,EP,EN>CONJOIN           { WRITESTR2QUERYCOMP( yytext ); return TA_CONJOIN;           }           /* BUG-42468 JOIN TO CONJOIN */
 <EMSQL,EJ,EP,EN>KEEP              { WRITESTR2QUERYCOMP( yytext ); return TO_KEEP;              }           /* PROJ-2528 */
+<EMSQL,EJ,EP,EN>LOGGING           { WRITESTR2QUERYCOMP( yytext ); return TR_LOGGING;           }                /* BUG-46157 */
+<EMSQL,EJ,EP,EN>ANALYSIS[ \t\r\n]+PROPAGATION { WRITESTR2QUERYCOMP( yytext ); return TA_ANALYSIS_PROPAGATION; } /* BUG-46157 */
 
 <EMSQL,EJ,EP,EN>ABSOLUTE                 {  WRITESTR2QUERYCOMP( yytext ); return(SES_V_ABSOLUTE); }
 <EMSQL,EJ,EP,EN>ALLOCATE                 {  WRITESTR2QUERYCOMP( yytext ); return(SES_V_ALLOCATE); }

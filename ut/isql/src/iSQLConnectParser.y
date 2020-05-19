@@ -241,7 +241,6 @@ SP_ident_opt_arglist
     | identifier TI_ARGS
     {
         gCommand->setProcName($<str>1);
-        gCommand->SetArgList($<str>2);
     }
     ;
 

@@ -7,10 +7,7 @@ include $(ALTIDEV_HOME)/alticore.mk
 include adapter_objs.mk
 
 ifneq ($(ADAPTER_JAVA_HOME),)
-JAVA_VERSION=$(shell echo $(ADAPTER_JAVA_HOME)/bin/java -version 2>&1 | head -1 | sed 's%java version "\(.*\)"%\1%'| cut -f2 -d'.')
-else
-JAVA_VERSION="no ADAPTER_JAVA_HOME environment variable was set"
-endif
+JAVA_VERSION=$(shell echo `$(ADAPTER_JAVA_HOME)/bin/java -version 2>&1 | head -1 | sed 's%java version "\(.*\)"%\1%'| cut -f2 -d'.'`)
 
 # for distribution
 #REVISION = `svn up | cut -d" " -f"2 3"`
@@ -36,8 +33,23 @@ else
 LIBS_DYNAMIC += $(ALTI_HOME)/lib/libala.$(LIBEXT) $(ALTI_HOME)/lib/libalticore.$(LIBEXT) 
 LIBS_STATIC += $(ALTI_HOME)/lib/libala.$(LIBEXT) $(ALTI_HOME)/lib/libalticore.$(LIBEXT) 
 endif
-LIBS_DYNAMIC += $(ADAPTER_JAVA_HOME)/jre/lib/amd64/server/libjvm.so
-LIBS_STATIC += $(ADAPTER_JAVA_HOME)/jre/lib/amd64/server/libjvm.so
+ifeq "$(ALTI_CFG_OS)" "HPUX"
+LIBDIRS += $(LDROPT)$(ADAPTER_JAVA_HOME)/jre/lib/IA64W/server $(LDROPT).
+LIBS_DYNAMIC += $(LIBOPT)jvm
+LIBS_STATIC += $(LIBOPT)jvm
+endif
+
+ifeq "$(ALTI_CFG_OS)" "AIX"
+LIBDIRS += $(LDROPT)$(ADAPTER_JAVA_HOME)/jre/lib/ppc64/j9vm $(LDROPT).
+LIBS_DYNAMIC += $(LIBOPT)jvm
+LIBS_STATIC += $(LIBOPT)jvm
+endif
+
+ifeq "$(ALTI_CFG_OS)" "LINUX"
+LIBDIRS += $(LDROPT)$(ADAPTER_JAVA_HOME)/jre/lib/amd64/server $(LDROPT).
+LIBS_DYNAMIC += $(LIBOPT)jvm
+LIBS_STATIC += $(LIBOPT)jvm
+endif
 
 ifeq "$(ALTI_CFG_OS)" "LINUX"
 CFLAGS += -Werror
@@ -52,6 +64,9 @@ INCLUDES += $(ALTICORE_INCLUDES)
 INCLUDES += $(IDROPT)$(ALTIDEV_HOME)/src/ul/include
 # for jdbc
 INCLUDES += $(IDROPT)$(ADAPTER_JAVA_HOME)/include
+ifeq "$(ALTI_CFG_OS)" "HPUX"
+INCLUDES += $(IDROPT)$(ADAPTER_JAVA_HOME)/include/hp-ux
+endif
 
 OUT = jdbcAdapter$(BINEXT)
 
@@ -61,7 +76,6 @@ OBJS = $(JDBC_ADAPTER_OBJS)
 
 all: build
 
-ifeq "$(OS_TARGET)" "X86_64_LINUX"
 
 ifeq "$(JAVA_VERSION)" "7"
 
@@ -78,18 +92,14 @@ build: build_msg $(OBJS)
 	chmod +x jdbcAdapter_home/bin/oaUtility
 	cp -f msg/msgEN82.mdl jdbcAdapter_home/msg/
 	cp -f conf/jdbcAdapter.conf jdbcAdapter_home/conf/jdbcAdapter.conf
+	cp -f conf/jdbc_dbms_skip_error_include.list jdbcAdapter_home/conf/dbms_skip_error_include.list
+	cp -f conf/jdbc_dbms_skip_error_exclude.list jdbcAdapter_home/conf/dbms_skip_error_exclude.list
 
 else
 
 build:
 	@echo "not supported java version" "$(ADAPTER_JAVA_HOME)"
 	$(error java version: $(JAVA_VERSION))
-endif
-
-else
-
-build:
-	@echo "not supported os"
 endif
 
 
@@ -122,8 +132,6 @@ build_msg: msg/oaMsg.msg
 clean_msg:
 	$(MAKE) -C msg clean
 
-ifeq "$(OS_TARGET)" "X86_64_LINUX"
-
 ifeq "$(JAVA_VERSION)" "7"
 
 dist:
@@ -137,19 +145,24 @@ dist:
 	chmod +x dist/bin/oaUtility
 	cp -f msg/msgEN82.mdl dist/msg/
 	cp -f jdbcAdapter_home/conf/jdbcAdapter.conf dist/conf/jdbcAdapter.conf
+	cp -f jdbcAdapter_home/conf/dbms_skip_error_include.list dist/conf/dbms_skip_error_include.list
+	cp -f jdbcAdapter_home/conf/dbms_skip_error_exclude.list dist/conf/dbms_skip_error_exclude.list
 else
 
 dist:
 	@echo "not supported java version" "$(ADAPTER_JAVA_HOME)"
-endif
 
-else
-
-dist:
-	@echo "not supported os"
 endif
 
 pkg: dist
 	builder build $(JDBC_ADAPTER_INSTALLER_XML) --setvars jdbcadapter_filename=$(RELEASE_JDBC_ADAPTER_DIST_NAME) jdbcadapter_version=$(RELEASE_VERSION)
 
 -include $(OBJS:.$(OBJEXT)=.d)
+else
+clean:
+	@echo "no ADAPTER_JAVA_HOME environment variable was set"
+build:
+	@echo "no ADAPTER_JAVA_HOME environment variable was set"
+dist:
+	@echo "no ADAPTER_JAVA_HOME environment variable was set"    
+endif

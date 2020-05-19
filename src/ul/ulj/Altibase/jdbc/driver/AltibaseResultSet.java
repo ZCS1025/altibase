@@ -157,7 +157,7 @@ public abstract class AltibaseResultSet implements ResultSet
         }
     }
 
-    static void checkFetchDirection(int aFetchDirection) throws SQLException
+    public static void checkFetchDirection(int aFetchDirection) throws SQLException
     {
         switch (aFetchDirection)
         {
@@ -499,6 +499,7 @@ public abstract class AltibaseResultSet implements ResultSet
         return getAsciiStream(findColumn(aColumnName));
     }
 
+    @SuppressWarnings("deprecation")
     public final BigDecimal getBigDecimal(int aColumnIndex, int aScale) throws SQLException
     {
         BigDecimal sResult = getBigDecimal(aColumnIndex);
@@ -523,6 +524,7 @@ public abstract class AltibaseResultSet implements ResultSet
         return getTargetColumn(aColumnIndex).getBigDecimal();
     }
 
+    @SuppressWarnings("deprecation")
     public final BigDecimal getBigDecimal(String aColumnName, int aScale) throws SQLException
     {
         return getBigDecimal(findColumn(aColumnName), aScale);
@@ -899,12 +901,14 @@ public abstract class AltibaseResultSet implements ResultSet
         return getURL(findColumn(aColumnName));
     }
 
+    @SuppressWarnings("deprecation")
     public final InputStream getUnicodeStream(int aColumnIndex) throws SQLException
     {
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "Deprecated: getUnicodeStream");
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public final InputStream getUnicodeStream(String aColumnName) throws SQLException
     {
         return getUnicodeStream(findColumn(aColumnName));
@@ -1103,5 +1107,11 @@ public abstract class AltibaseResultSet implements ResultSet
             Error.throwSQLException(ErrorDef.CLOSED_RESULTSET);
         }
         mStatement.throwErrorForClosed();
+    }
+
+    // BUG-46513 cursor가 열려있는 statement가 있는지 확인하기 위해 추가
+    public boolean fetchRemains()
+    {
+        return mContext.getFetchResult().fetchRemains();
     }
 }

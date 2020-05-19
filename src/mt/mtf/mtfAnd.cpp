@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfAnd.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtfAnd.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -31,6 +31,8 @@
 extern mtfModule mtfOr;
 
 extern mtfModule mtfAnd;
+
+extern mtxModule mtxAnd; /* PROJ-2632 */
 
 static mtcName mtfAndFunctionName[1] = {
     { NULL, 3, (void*)"AND" }
@@ -67,6 +69,7 @@ static const mtcExecute mtfExecute = {
     mtf::calculateNA,
     mtfAndCalculate,
     NULL,
+    mtxAnd.mCommon,
     mtk::estimateRangeNA,
     mtk::extractRangeNA
 };

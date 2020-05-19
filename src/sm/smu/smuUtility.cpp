@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smuUtility.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smuUtility.cpp 82551 2018-03-21 23:56:10Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -85,7 +85,7 @@ IDE_RC smuUtility::outputUtilityHeader(const SChar *aUtilName)
 }
 
 
-IDE_RC smuUtility::loadErrorMsb(SChar *aRootDir, SChar *aIDN)
+IDE_RC smuUtility::loadErrorMsb( SChar *aRootDir, SChar *aIDN )
 {
     
     SChar filename[512];
@@ -121,7 +121,7 @@ IDE_RC smuUtility::loadErrorMsb(SChar *aRootDir, SChar *aIDN)
  ******************************************************************/
 void smuUtility::getTimeString( UInt    aTimeValue, 
                                 UInt    aBufferLength,
-                                SChar * aBuffer)
+                                SChar * aBuffer )
 {
     struct tm        sTimeStruct;
     time_t           sTimeValue;
@@ -144,20 +144,41 @@ void smuUtility::getTimeString( UInt    aTimeValue,
                      sTimeStruct.tm_sec );
 }
 
+/******************************************************************
+ * DESCRIPTION : 
+ *    특정함수 및 변수를 받아 해당 내용을 덤프한다. 
+ *
+ * 1.디스크템프 테이블에서만 사용하고 있어서  __TEMPDUMP_ENABLE에
+ *     따라 콜스택 Dump여부를 결정한다.
+ * 2.Callstack 출력은 지금 error.log 로 고정되어 있다. 
+ ******************************************************************/
 void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag, 
                                      ideLogModule   aModule, 
                                      UInt           aLevel, 
                                      smuDumpFunc    aDumpFunc,
-                                     void         * aTarget)
+                                     void         * aTarget )
 {
     SChar        * sTempBuf;
 
-    ideLog::logCallStack( aChkFlag, aModule, aLevel );
-    if( iduMemMgr::calloc( IDU_MEM_SM_SMU,
-                           1,
-                           ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
-                           (void**)&sTempBuf )
-              == IDE_SUCCESS )
+    /* __TEMPDUMP_ENABLE에 따라 Dump함 */
+    if ( smuProperty::getTempDumpEnable() == 1 )
+    {
+        ideLog::logCallStack( aChkFlag, aModule, aLevel );
+    }
+
+    ideLog::log( aChkFlag, 
+                 aModule, 
+                 aLevel,
+                 "[DUMP] ERR-%05X(error=%"ID_UINT32_FMT") %s\n",
+                 E_ERROR_CODE( ideGetErrorCode() ),
+                 ideGetSystemErrno(),
+                 ideGetErrorMsg( ideGetErrorCode() ) );
+
+    if ( iduMemMgr::calloc( IDU_MEM_SM_SMU,
+                            1,
+                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
+                            (void**)&sTempBuf )
+         == IDE_SUCCESS )
     {
         sTempBuf[0] = '\0';
         aDumpFunc( aTarget, sTempBuf, IDE_DUMP_DEST_LIMIT );
@@ -166,7 +187,7 @@ void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag,
     }
 }
 void smuUtility::printFuncWithBuffer( smuDumpFunc    aDumpFunc,
-                                      void         * aTarget)
+                                      void         * aTarget ) 
 {
     SChar        * sTempBuf;
 
@@ -183,6 +204,10 @@ void smuUtility::printFuncWithBuffer( smuDumpFunc    aDumpFunc,
     }
 }
 
+/******************************************************************
+ * DESCRIPTION : 
+ *    공용 변수들에 대한 DumpFunction
+ ******************************************************************/
 void smuUtility::dumpGRID( void  * aTarget,
                            SChar * aOutBuf, 
                            UInt    aOutSize )

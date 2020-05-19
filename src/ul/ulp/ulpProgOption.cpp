@@ -1011,7 +1011,8 @@ void ulpProgOption::ulpPrintHelpMsg()
         "                 : Process the specified variables using\n"
         "                   the Altibase national character set.\n"
         "-nchar_utf16     : Set client nchar encoding to UTF-16.\n"
-        "-lines           : Add #line directives to the generated code.\n\n"
+        "-lines           : Add #line directives to the generated code.\n"
+        "-silent          : No display Copyright\n\n"
         "======================================================================\n";
 
     idlOS::printf( sHelpMsg );
