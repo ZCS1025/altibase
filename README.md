@@ -62,7 +62,7 @@
   https://gmplib.org/ 
   http://www.mpfr.org/
   http://www.multiprecision.org/
-  http://www.mr511.de/software/english.html
+  https://github.com/WolfgangSt/libelf
   Gmp => ./configure --enable-shared --enable-static --prefix=/usr/gmp
   Mpfr => ./configure --enable-shared --enable-static --prefix=/usr/mpfr --with-gmp=/usr/gmp
   Mpc => ./configure --enable-shared --enable-static --prefix=/usr/mpc --with-gmp=/usr/gmp --with-mpfr=/usr/mpfr
