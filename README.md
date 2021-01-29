@@ -77,8 +77,7 @@
   --with-gmp=/usr/gmp \
   --with-mpfr=/usr/mpfr \
   --with-mpc=/usr/mpc \
-  --with-libelf=/usr/elf \
-  make; make install
+  --with-libelf=/usr/elf
 - glibc 2.12 ~ 2.27 (ldd --version) (If system doesn't have right one, change OS version itself)
 - gcc 4.6.3 ~ 7.3.0 (gcc --version)
   If you want to use gcc 7.x then refer this repostory Wiki page "changes for using gcc 7"
